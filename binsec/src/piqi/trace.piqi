@@ -1,0 +1,322 @@
+.protobuf-package "trace_format"
+
+.import [ .module dba ]
+
+.import [ .module common ]
+
+.import [ .module syscall ]
+
+.import [ .module libcall ]
+
+.record [
+    .name header-t
+    .field [
+        .name architecture
+        .type header-t-architecture-t
+        .code 1
+    ]
+    .field [
+        .name address-size
+        .type common/proto-size-t
+        .code 2
+    ]
+    .field [
+        .name kind
+        .type common/ir-kind-t
+        .optional
+        .default.DBA
+        .code 3
+    ]
+]
+
+.enum [
+    .name header-t-architecture-t
+    .option [
+        .name X86
+        .code 0
+        .protobuf-name "header_t_X86"
+    ]
+    .option [
+        .name X86-64
+        .code 1
+        .protobuf-name "header_t_X86_64"
+    ]
+]
+
+.record [
+    .name metadata-t
+    .field [
+        .name typeid
+        .type metadata-t-typeid-metadata-t
+        .code 1
+    ]
+    .field [
+        .name module-metadata
+        .type string
+        .optional
+        .code 2
+    ]
+    .field [
+        .name exception-metadata
+        .type metadata-t-exception-t
+        .optional
+        .code 3
+    ]
+    .field [
+        .name wave-metadata
+        .type uint32
+        .optional
+        .code 4
+    ]
+]
+
+.record [
+    .name metadata-t-exception-t
+    .field [
+        .name type-exception
+        .type uint32
+        .code 1
+    ]
+    .field [
+        .name handler
+        .type uint64
+        .code 2
+    ]
+]
+
+.enum [
+    .name metadata-t-typeid-metadata-t
+    .option [
+        .name INVALID-METADATA
+        .code 0
+        .protobuf-name "metadata_t_INVALID_METADATA"
+    ]
+    .option [
+        .name EXCEPTION-TYPE
+        .code 1
+        .protobuf-name "metadata_t_EXCEPTION_TYPE"
+    ]
+    .option [
+        .name MODULE-TYPE
+        .code 2
+        .protobuf-name "metadata_t_MODULE_TYPE"
+    ]
+    .option [
+        .name WAVE-TYPE
+        .code 3
+        .protobuf-name "metadata_t_WAVE_TYPE"
+    ]
+]
+
+.record [
+    .name ins-con-info-t
+    .field [
+        .name typeid
+        .type ins-con-info-t-typeid-con-info-t
+        .code 1
+    ]
+    .field [
+        .name read-register
+        .type common/register-t
+        .optional
+        .code 2
+    ]
+    .field [
+        .name write-register
+        .type common/register-t
+        .optional
+        .code 3
+    ]
+    .field [
+        .name load-memory
+        .type common/memory-t
+        .optional
+        .code 4
+    ]
+    .field [
+        .name store-memory
+        .type common/memory-t
+        .optional
+        .code 5
+    ]
+    .field [
+        .name call
+        .type libcall/libcall-t
+        .optional
+        .code 6
+    ]
+    .field [
+        .name system-call
+        .type syscall/syscall-t
+        .optional
+        .code 8
+    ]
+    .field [
+        .name next-address
+        .type uint64
+        .optional
+        .code 9
+    ]
+    .field [
+        .name reserved-comment
+        .type string
+        .optional
+        .code 10
+    ]
+    .field [
+        .name wave
+        .type uint32
+        .optional
+        .code 11
+    ]
+]
+
+.enum [
+    .name ins-con-info-t-typeid-con-info-t
+    .option [
+        .name INVALID
+        .code 0
+        .protobuf-name "ins_con_info_t_INVALID"
+    ]
+    .option [
+        .name REGREAD
+        .code 1
+        .protobuf-name "ins_con_info_t_REGREAD"
+    ]
+    .option [
+        .name REGWRITE
+        .code 2
+        .protobuf-name "ins_con_info_t_REGWRITE"
+    ]
+    .option [
+        .name MEMLOAD
+        .code 3
+        .protobuf-name "ins_con_info_t_MEMLOAD"
+    ]
+    .option [
+        .name MEMSTORE
+        .code 4
+        .protobuf-name "ins_con_info_t_MEMSTORE"
+    ]
+    .option [
+        .name CALL
+        .code 5
+        .protobuf-name "ins_con_info_t_CALL"
+    ]
+    .option [
+        .name SYSCALL
+        .code 6
+        .protobuf-name "ins_con_info_t_SYSCALL"
+    ]
+    .option [
+        .name NOT-RETRIEVED
+        .code 7
+        .protobuf-name "ins_con_info_t_NOT_RETRIEVED"
+    ]
+    .option [
+        .name NEXT-ADDRESS
+        .code 8
+        .protobuf-name "ins_con_info_t_NEXT_ADDRESS"
+    ]
+    .option [
+        .name COMMENT
+        .code 9
+        .protobuf-name "ins_con_info_t_COMMENT"
+    ]
+    .option [
+        .name WAVE
+        .code 10
+        .protobuf-name "ins_con_info_t_WAVE"
+    ]
+]
+
+.record [
+    .name instruction-t
+    .field [
+        .name thread-id
+        .type uint32
+        .code 1
+    ]
+    .field [
+        .name address
+        .type uint64
+        .code 2
+    ]
+    .field [
+        .name opcode
+        .type binary
+        .code 3
+    ]
+    .field [
+        .name concrete-infos
+        .type ins-con-info-t
+        .repeated
+        .code 4
+    ]
+    .field [
+        .name dba-instrs
+        .type dba/dba-list
+        .optional
+        .code 5
+    ]
+]
+
+.record [
+    .name body-t
+    .field [
+        .name typeid
+        .type body-t-typeid-body-t
+        .code 1
+    ]
+    .field [
+        .name metadata
+        .type metadata-t
+        .optional
+        .code 2
+    ]
+    .field [
+        .name instruction
+        .type instruction-t
+        .optional
+        .code 3
+    ]
+]
+
+.enum [
+    .name body-t-typeid-body-t
+    .option [
+        .name METADATA
+        .code 0
+        .protobuf-name "body_t_METADATA"
+    ]
+    .option [
+        .name INSTRUCTION
+        .code 1
+        .protobuf-name "body_t_INSTRUCTION"
+    ]
+]
+
+.record [
+    .name chunk-t
+    .field [
+        .name body
+        .type body-t
+        .repeated
+        .code 1
+    ]
+]
+
+.record [
+    .name trace-t
+    .field [
+        .name header
+        .type header-t
+        .code 1
+    ]
+    .field [
+        .name body
+        .type body-t
+        .repeated
+        .code 2
+    ]
+]

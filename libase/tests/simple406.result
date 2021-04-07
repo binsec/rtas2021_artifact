@@ -1,0 +1,16 @@
+[codex] compilation done
+[codex] simple406.c:12:svcomp: result is unknown (using abstract interpretation)
+[codex] After goal-orientation: status is VALID
+[codex] simple406.c:12:svcomp: result is VALID (using goal-oriented procedure)
+[codex] simple406.c:13:svcomp: result is unknown (using abstract interpretation)
+[codex] After goal-orientation: status is VALID
+[codex] simple406.c:13:svcomp: result is VALID (using goal-oriented procedure)
+[codex] simple406.c:14:svcomp: result is VALID (using abstract interpretation)
+[codex] simple406.c:15:svcomp: result is VALID (using abstract interpretation)
+[codex] simple406.c:16:svcomp: result is VALID (using abstract interpretation)
+[codex] simple406.c:17:svcomp: result is VALID (using abstract interpretation)
+[codex] simple406.c:18:svcomp: result is VALID (using abstract interpretation)
+[codex] simple406.c:19:svcomp: result is VALID (using abstract interpretation)
+[codex] simple406.c:20:svcomp: result is VALID (using abstract interpretation)
+[codex] simple406.c:21:svcomp: result is VALID (using abstract interpretation)
+[codex] Proved 58/58 alarms (remaining: 0; by SMT: 0)

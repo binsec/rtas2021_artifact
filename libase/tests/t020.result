@@ -1,0 +1,8 @@
+[kernel:typing:implicit-function-declaration] t020.c:8: Warning: 
+  Calling undeclared function u. Old style K&R code?
+[kernel:typing:implicit-function-declaration] t020.c:6: Warning: 
+  Calling undeclared function rand. Old style K&R code?
+[codex] Warning: Warning: no definition for rand
+[codex] Warning: Warning: no definition for u
+[codex] compilation done
+[codex] Proved 4/4 alarms (remaining: 0; by SMT: 0)

@@ -1,0 +1,33 @@
+digraph G {
+node[fillcolor=white style="filled,solid" shape=none margin=0];
+"08049566" -> "080491b0_08049566";
+"08049558" -> "08049558" [dir=back color=red];
+"08049558" -> "08049562";
+"080491b0_08049566" -> "0804956b";
+"08049541" -> "08049550";
+"08049540" -> "08049541";
+"0804956b" -> "08049550" [color=red constraint=false];
+"08049550" -> "08049558";
+"08049562" -> "08049566";
+"08049562" -> "08049578";
+subgraph "cluster_cut" {
+  style="filled,solid";
+  color=black;
+  fillcolor=lightgrey;
+  label="cut";"08049578" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0"><TR><TD>08049578</TD></TR><HR/><TR><TD>0804957c</TD></TR></TABLE>> fillcolor=lightblue];
+  "0804956b" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0"><TR><TD>0804956b</TD></TR><HR/><TR><TD>08049576</TD></TR></TABLE>>];
+  "08049566" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0"><TR><TD>08049566</TD></TR><HR/><TR><TD>08049566</TD></TR></TABLE>>];
+  "08049562" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0"><TR><TD>08049562</TD></TR><HR/><TR><TD>08049564</TD></TR></TABLE>>];
+  "08049558" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0"><TR><TD>08049558</TD></TR><HR/><TR><TD>08049560</TD></TR></TABLE>>];
+  "08049550" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0"><TR><TD>08049550</TD></TR><HR/><TR><TD>08049554</TD></TR></TABLE>>];
+  "08049541" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0"><TR><TD>08049541</TD></TR><HR/><TR><TD>0804954e</TD></TR></TABLE>>];
+  "08049540" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0"><TR><TD>08049540</TD></TR><HR/><TR><TD>08049540</TD></TR></TABLE>>];
+  subgraph "cluster_random_bool_08049566" {
+    style="filled,solid";
+    color=black;
+    fillcolor=lightgrey;
+    label="random_bool";"080491b0_08049566" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0"><TR><TD><FONT COLOR="red"><B>080491b0</B></FONT></TD></TR><HR/><TR><TD>080491b5</TD></TR></TABLE>>];
+    }
+}
+
+}

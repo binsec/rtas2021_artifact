@@ -1,0 +1,8 @@
+t115.c:3:6: `e' -> [--..--]
+t115.c:4:8: `d' -> [--..--]
+t115.c:5:6: `c | 1' -> [-0x7FFFFFFF..0x7FFFFFFF],1%2
+t115.c:5:6: `c' -> [--..--]
+t115.c:7:6: `c | 1' -> [-0x7FFFFFFF..0x7FFFFFFF],1%2
+t115.c:7:6: `c' -> [--..--]
+t115.c:8:4: `c + 1' -> {signed: [-0x7FFFFFFE..0x7FFFFFFE],0%2; unsigned: [0..0xFFFFFFFE],0%2}
+t115.c:8:4: `c' -> [-0x7FFFFFFF..0x7FFFFFFF],1%2

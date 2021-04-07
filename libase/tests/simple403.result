@@ -1,0 +1,7 @@
+[codex] compilation done
+[codex] simple403.c:17:svcomp: result is VALID (using abstract interpretation)
+[codex] simple403.c:18:svcomp: result is VALID (using abstract interpretation)
+[codex] simple403.c:19:svcomp: result is unknown (using abstract interpretation)
+[codex] After goal-orientation: status is VALID
+[codex] simple403.c:19:svcomp: result is VALID (using goal-oriented procedure)
+[codex] Proved 11/11 alarms (remaining: 0; by SMT: 0)

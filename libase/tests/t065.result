@@ -1,0 +1,13 @@
+[kernel:typing:implicit-function-declaration] t065.c:8: Warning: 
+  Calling undeclared function rand. Old style K&R code?
+[codex] Warning: Warning: no definition for rand
+[codex] compilation done
+[codex] t065.c:9:alarm Index_out_of_bound(b
+  >=
+  0): result is unknown (using abstract interpretation)
+[codex] t065.c:9:alarm Index_out_of_bound(b
+  <
+  20): result is unknown (using abstract interpretation)
+[codex] t065.c:10:alarm Memory_access(c->tag,
+  read): result is unknown (using abstract interpretation)
+[codex] Proved 5/8 alarms (remaining: 3; by SMT: 0)

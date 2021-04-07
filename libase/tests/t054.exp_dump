@@ -1,0 +1,6 @@
+t054.c:7:9: `tmp' -> [--..--]
+t054.c:8:4: `dst + 1' -> {{ &decompressed + 1 * {1; 2} }}
+t054.c:8:4: `dst' -> {{ &decompressed + 1 * {0; 1} }}
+t054.c:9:11: `decompressed < dst - 1' -> {0; 1}
+t054.c:9:26: `dst - 1' -> {{ &decompressed + 1 * {0; 1} }}
+t054.c:9:26: `dst' -> {{ &decompressed + 1 * {1; 2} }}

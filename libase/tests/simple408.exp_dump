@@ -1,0 +1,16 @@
+simple408.c:10:6: `t[i + j] + 1' -> {1}
+simple408.c:10:6: `t[i + j]' -> {0}
+simple408.c:10:8: `i + j' -> [--..--]
+simple408.c:10:8: `i' -> [--..--]
+simple408.c:10:10: `j' -> [--..--]
+simple408.c:11:6: `t[i + j] * 2' -> {0}
+simple408.c:11:6: `t[i + j]' -> {0}
+simple408.c:11:8: `i + j' -> {0; 1; 2}
+simple408.c:11:8: `i' -> [-0x7FFFFFFF..0x7FFFFFFF]
+simple408.c:11:10: `j' -> [-0x7FFFFFFF..0x7FFFFFFF]
+simple408.c:12:10: `i' -> [-0x7FFFFFFF..0x7FFFFFFF]
+simple408.c:13:6: `t[k + j] + 3' -> {3}
+simple408.c:13:6: `t[k + j]' -> {0}
+simple408.c:13:8: `k + j' -> {0; 1; 2}
+simple408.c:13:8: `k' -> [-0x7FFFFFFF..0x7FFFFFFF]
+simple408.c:13:10: `j' -> [-0x7FFFFFFF..0x7FFFFFFF]

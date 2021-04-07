@@ -1,0 +1,365 @@
+.protobuf-package "analysis_config"
+
+.import [ .module common ]
+
+.record [
+    .name specific-parameters-t
+    .field [
+        .name typeid
+        .type specific-parameters-t-analyse-type
+        .code 1
+    ]
+    .field [
+        .name generic-params
+        .type generic-analysis
+        .optional
+        .code 2
+    ]
+    .field [
+        .name standard-params
+        .type standard-analysis
+        .optional
+        .code 3
+    ]
+]
+
+.enum [
+    .name specific-parameters-t-analyse-type
+    .option [
+        .name NONE
+        .code 0
+        .protobuf-name "specific_parameters_t_NONE"
+    ]
+    .option [
+        .name GENERIC
+        .code 1
+        .protobuf-name "specific_parameters_t_GENERIC"
+    ]
+    .option [
+        .name STANDARD
+        .code 2
+        .protobuf-name "specific_parameters_t_STANDARD"
+    ]
+]
+
+.record [
+    .name standard-analysis
+    .field [
+        .name target-addr
+        .type uint64
+        .optional
+        .code 1
+    ]
+    .field [
+        .name uniq
+        .type bool
+        .optional
+        .code 2
+    ]
+    .field [
+        .name get-formula
+        .type bool
+        .optional
+        .code 3
+    ]
+]
+
+.record [
+    .name generic-analysis
+    .field [
+        .name kind
+        .type generic-analysis-query-type
+        .code 1
+    ]
+    .field [
+        .name target-addr
+        .type uint64
+        .code 2
+    ]
+    .field [
+        .name dba
+        .type string
+        .code 3
+    ]
+    .field [
+        .name limit-values
+        .type uint32
+        .optional
+        .code 4
+    ]
+    .field [
+        .name get-formula
+        .type bool
+        .optional
+        .code 5
+    ]
+    .field [
+        .name from-addr
+        .type uint64
+        .optional
+        .code 6
+    ]
+    .field [
+        .name to-addr
+        .type uint64
+        .optional
+        .code 7
+    ]
+    .field [
+        .name restrict-values-from
+        .type uint64
+        .optional
+        .code 8
+    ]
+    .field [
+        .name restrict-values-to
+        .type uint64
+        .optional
+        .code 9
+    ]
+]
+
+.enum [
+    .name generic-analysis-query-type
+    .option [
+        .name SATISFIABILITY
+        .code 0
+        .protobuf-name "generic_analysis_SATISFIABILITY"
+    ]
+    .option [
+        .name VALUES
+        .code 1
+        .protobuf-name "generic_analysis_VALUES"
+    ]
+]
+
+.record [
+    .name generic-analysis-results
+    .field [
+        .name result
+        .type common/smt-result
+        .code 1
+    ]
+    .field [
+        .name values
+        .type uint64
+        .repeated
+        .code 2
+    ]
+    .field [
+        .name smt-formula
+        .type string
+        .optional
+        .code 3
+    ]
+]
+
+.record [
+    .name callret-analysis-results
+    .field [
+        .name values
+        .type callret-analysis-results-ret-data
+        .repeated
+        .code 1
+    ]
+]
+
+.record [
+    .name callret-analysis-results-call-data
+    .field [
+        .name addr
+        .type uint64
+        .code 1
+    ]
+    .field [
+        .name status
+        .type callret-analysis-results-callret-status
+        .code 2
+    ]
+]
+
+.record [
+    .name callret-analysis-results-ret-data
+    .field [
+        .name ret-addr
+        .type uint64
+        .code 1
+    ]
+    .field [
+        .name status
+        .type callret-analysis-results-callret-status
+        .code 2
+    ]
+    .field [
+        .name labels
+        .type callret-analysis-results-callret-labels
+        .repeated
+        .code 3
+    ]
+    .field [
+        .name returnsites
+        .type uint64
+        .repeated
+        .code 4
+    ]
+    .field [
+        .name solve-count
+        .type uint32
+        .code 5
+    ]
+    .field [
+        .name calls
+        .type callret-analysis-results-call-data
+        .repeated
+        .code 6
+    ]
+]
+
+.enum [
+    .name callret-analysis-results-callret-labels
+    .option [
+        .name VIOLABLE
+        .code 1
+        .protobuf-name "callret_analysis_results_VIOLABLE"
+    ]
+    .option [
+        .name ALIGNED
+        .code 2
+        .protobuf-name "callret_analysis_results_ALIGNED"
+    ]
+    .option [
+        .name DISALIGNED
+        .code 3
+        .protobuf-name "callret_analysis_results_DISALIGNED"
+    ]
+    .option [
+        .name CAN-RETURN
+        .code 4
+        .protobuf-name "callret_analysis_results_CAN_RETURN"
+    ]
+    .option [
+        .name SINGLE
+        .code 5
+        .protobuf-name "callret_analysis_results_SINGLE"
+    ]
+    .option [
+        .name MULTIPLE
+        .code 6
+        .protobuf-name "callret_analysis_results_MULTIPLE"
+    ]
+    .option [
+        .name STRONG
+        .code 7
+        .protobuf-name "callret_analysis_results_STRONG"
+    ]
+    .option [
+        .name WEAK
+        .code 8
+        .protobuf-name "callret_analysis_results_WEAK"
+    ]
+    .option [
+        .name SOLVER-WRONG
+        .code 9
+        .protobuf-name "callret_analysis_results_SOLVER_WRONG"
+    ]
+    .option [
+        .name NO-CALL
+        .code 10
+        .protobuf-name "callret_analysis_results_NO_CALL"
+    ]
+    .option [
+        .name HAS-RETURNED
+        .code 11
+        .protobuf-name "callret_analysis_results_HAS_RETURNED"
+    ]
+]
+
+.enum [
+    .name callret-analysis-results-callret-status
+    .option [
+        .name OK
+        .code 1
+        .protobuf-name "callret_analysis_results_OK"
+    ]
+    .option [
+        .name VIOL
+        .code 2
+        .protobuf-name "callret_analysis_results_VIOL"
+    ]
+]
+
+.record [
+    .name po-analysis-results
+    .field [
+        .name values
+        .type po-analysis-results-po-data
+        .repeated
+        .code 1
+    ]
+]
+
+.record [
+    .name po-analysis-results-po-data
+    .field [
+        .name jmp-addr
+        .type uint64
+        .code 1
+    ]
+    .field [
+        .name status
+        .type po-analysis-results-po-status
+        .code 2
+    ]
+    .field [
+        .name ksteps
+        .type uint32
+        .code 3
+    ]
+    .field [
+        .name computation-time
+        .type float32
+        .code 4
+    ]
+    .field [
+        .name nb-paths
+        .type uint32
+        .optional
+        .code 5
+    ]
+    .field [
+        .name alive-branch
+        .type uint64
+        .optional
+        .code 6
+    ]
+    .field [
+        .name formula
+        .type string
+        .optional
+        .code 7
+    ]
+]
+
+.enum [
+    .name po-analysis-results-po-status
+    .option [
+        .name UNKNOWN
+        .code 1
+        .protobuf-name "po_analysis_results_UNKNOWN"
+    ]
+    .option [
+        .name NOT-OPAQUE
+        .code 2
+        .protobuf-name "po_analysis_results_NOT_OPAQUE"
+    ]
+    .option [
+        .name OPAQUE
+        .code 3
+        .protobuf-name "po_analysis_results_OPAQUE"
+    ]
+    .option [
+        .name LIKELY
+        .code 4
+        .protobuf-name "po_analysis_results_LIKELY"
+    ]
+]

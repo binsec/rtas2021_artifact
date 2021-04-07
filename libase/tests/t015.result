@@ -1,0 +1,20 @@
+[codex] compilation done
+[codex] t015.c:15:svcomp: result is VALID (using abstract interpretation)
+[codex] t015.c:16:svcomp: result is VALID (using abstract interpretation)
+[codex] t015.c:17:svcomp: result is unknown (using abstract interpretation)
+[codex] After goal-orientation: status is VALID
+[codex] t015.c:17:svcomp: result is VALID (using goal-oriented procedure)
+[codex] t015.c:24:svcomp: result is unknown (using abstract interpretation)
+[codex] After goal-orientation: status is **NOT** VALID
+[codex] t015.c:24:svcomp: result is **NOT** VALID (using goal-oriented procedure)
+[codex] t015.c:31:svcomp: result is VALID (using abstract interpretation)
+[codex] t015.c:32:svcomp: result is VALID (using abstract interpretation)
+[codex] t015.c:36:svcomp: result is VALID (using abstract interpretation)
+[codex] t015.c:37:svcomp: result is VALID (using abstract interpretation)
+[codex] t015.c:38:svcomp: result is VALID (using abstract interpretation)
+[codex] t015.c:39:svcomp: result is VALID (using abstract interpretation)
+[codex] t015.c:40:svcomp: result is VALID (using abstract interpretation)
+[codex] t015.c:41:svcomp: result is VALID (using abstract interpretation)
+[codex] t015.c:42:svcomp: result is VALID (using abstract interpretation)
+[codex] t015.c:43:svcomp: result is VALID (using abstract interpretation)
+[codex] Proved 38/38 alarms (remaining: 0; by SMT: 0)

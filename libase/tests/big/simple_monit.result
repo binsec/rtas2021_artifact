@@ -1,0 +1,15 @@
+[codex] Warning: Warning: no definition for getc
+[codex] Warning: Warning: no definition for do_it
+[codex] compilation done
+[codex] big/simple_monit.c:82:svcomp: result is VALID (using abstract interpretation)
+[codex] big/simple_monit.c:37:alarm Memory_access(pCmd->arg1,
+  read): result is unknown (using abstract interpretation)
+[codex] big/simple_monit.c:38:alarm Memory_access(pCmd->arg2,
+  read): result is unknown (using abstract interpretation)
+[codex] big/simple_monit.c:56:alarm Memory_access(*arg1,
+  read): result is unknown (using abstract interpretation)
+[codex] big/simple_monit.c:57:alarm Memory_access(*arg2,
+  read): result is unknown (using abstract interpretation)
+[codex] big/simple_monit.c:58:alarm Memory_access(*arg3,
+  read): result is unknown (using abstract interpretation)
+[codex] Proved 50/55 alarms (remaining: 5; by SMT: 0)

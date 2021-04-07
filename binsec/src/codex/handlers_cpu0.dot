@@ -1,0 +1,187 @@
+digraph G {
+node[fillcolor=white style="filled,solid" shape=none margin=0];
+"00104b86_00104b42_0010005c_cafecaf2" -> "00104860_00104b89_00104b42_0010005c_cafecaf2";
+"001056f9_001048d4_00104be6_0010005c_cafecaf2" -> "001048d9_00104be6_0010005c_cafecaf2";
+"00104b70_00104b42_0010005c_cafecaf2" -> "00105640_00104b7c_00104b42_0010005c_cafecaf2";
+"00104bf0_0010005c_cafecaf2" -> "00104ae0_00104bfa_0010005c_cafecaf2";
+"cafecaf2" -> "00100044_cafecaf2";
+"0010492a_00104be6_0010005c_cafecaf2" -> "cafecaf0_0010492d_00104be6_0010005c_cafecaf2";
+"00104880_0010486a_00104b89_00104b42_0010005c_cafecaf2" -> "001056f9_001048d4_0010486a_00104b89_00104b42_0010005c_cafecaf2";
+"00104be0_0010005c_cafecaf2" -> "00104880_00104be6_0010005c_cafecaf2";
+"cafecaf0_0010492d_00104be6_0010005c_cafecaf2" -> "cafecaf2" [color=red constraint=false];
+"001056f9_001048d4_0010486a_00104b89_00104b42_0010005c_cafecaf2" -> "001048d9_0010486a_00104b89_00104b42_0010005c_cafecaf2";
+"001056f9_00104919_00104be6_0010005c_cafecaf2" -> "0010491e_00104be6_0010005c_cafecaf2";
+"00104b40_0010005c_cafecaf2" -> "00104b70_00104b42_0010005c_cafecaf2";
+"00104ba0_0010005c_cafecaf2" -> "00104ae0_00104baa_0010005c_cafecaf2";
+"cafecaf0_0010492d_0010486a_00104b89_00104b42_0010005c_cafecaf2" -> "cafecaf2" [color=red constraint=false];
+"0010005c_cafecaf2" -> "00104b40_0010005c_cafecaf2";
+"0010005c_cafecaf2" -> "00104ba0_0010005c_cafecaf2";
+"0010005c_cafecaf2" -> "00104be0_0010005c_cafecaf2";
+"0010005c_cafecaf2" -> "00104bf0_0010005c_cafecaf2";
+"0010491e_0010486a_00104b89_00104b42_0010005c_cafecaf2" -> "00104930_00104925_0010486a_00104b89_00104b42_0010005c_cafecaf2";
+"001056c0_00104b81_00104b42_0010005c_cafecaf2" -> "00104b86_00104b42_0010005c_cafecaf2";
+"0010491e_00104be6_0010005c_cafecaf2" -> "00104930_00104925_00104be6_0010005c_cafecaf2";
+"00104880_00104be6_0010005c_cafecaf2" -> "001056f9_001048d4_00104be6_0010005c_cafecaf2";
+"00104860_00104b89_00104b42_0010005c_cafecaf2" -> "00104880_0010486a_00104b89_00104b42_0010005c_cafecaf2";
+"0010492a_0010486a_00104b89_00104b42_0010005c_cafecaf2" -> "cafecaf0_0010492d_0010486a_00104b89_00104b42_0010005c_cafecaf2";
+"00104b81_00104b42_0010005c_cafecaf2" -> "001056c0_00104b81_00104b42_0010005c_cafecaf2";
+"001048d9_0010486a_00104b89_00104b42_0010005c_cafecaf2" -> "001056f9_00104919_0010486a_00104b89_00104b42_0010005c_cafecaf2";
+"001048d9_00104be6_0010005c_cafecaf2" -> "001056f9_00104919_00104be6_0010005c_cafecaf2";
+"001056f9_00104919_0010486a_00104b89_00104b42_0010005c_cafecaf2" -> "0010491e_0010486a_00104b89_00104b42_0010005c_cafecaf2";
+"00100044_cafecaf2" -> "0010005c_cafecaf2";
+"00100044_cafecaf2" -> "00104ad0_00100056_cafecaf2";
+"00104930_00104925_0010486a_00104b89_00104b42_0010005c_cafecaf2" -> "0010492a_0010486a_00104b89_00104b42_0010005c_cafecaf2";
+"cafecaf1" -> "cafecaf2";
+"00104930_00104925_00104be6_0010005c_cafecaf2" -> "0010492a_00104be6_0010005c_cafecaf2";
+"00105640_00104b7c_00104b42_0010005c_cafecaf2" -> "00104b81_00104b42_0010005c_cafecaf2";
+subgraph "cluster__start" {
+  style="filled,solid";
+  color=black;
+  fillcolor=lightgrey;
+  label="_start";"cafecaf2" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0"><TR><TD>cafecaf2</TD></TR><HR/><TR><TD>cafecaf2</TD></TR></TABLE>>];
+  "cafecaf1" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0"><TR><TD>cafecaf1</TD></TR><HR/><TR><TD>cafecaf1</TD></TR></TABLE>>];
+  subgraph "cluster_asm_syscall_handler_cafecaf2" {
+    style="filled,solid";
+    color=black;
+    fillcolor=lightgrey;
+    label="asm_syscall_handler";"0010005c_cafecaf2" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0"><TR><TD>0010005c</TD></TR><HR/><TR><TD>0010005c</TD></TR></TABLE>>];
+    "00100044_cafecaf2" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0"><TR><TD>00100044</TD></TR><HR/><TR><TD>00100056</TD></TR></TABLE>>];
+    subgraph "cluster_error_infinite_loop_00100056_cafecaf2" {
+      style="filled,solid";
+      color=black;
+      fillcolor=lightgrey;
+      label="error_infinite_loop";"00104ad0_00100056_cafecaf2" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0"><TR><TD>00104ad0</TD></TR><HR/><TR><TD>00104ad0</TD></TR></TABLE>> fillcolor=lightblue];
+      }
+subgraph "cluster_syscall_dup_thread_0010005c_cafecaf2" {
+          style="filled,solid";
+          color=black;
+          fillcolor=lightgrey;
+          label="syscall_dup_thread";"00104bf0_0010005c_cafecaf2" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0"><TR><TD>00104bf0</TD></TR><HR/><TR><TD>00104bfa</TD></TR></TABLE>>];
+          subgraph "cluster_fatal_00104bfa_0010005c_cafecaf2" {
+            style="filled,solid";
+            color=black;
+            fillcolor=lightgrey;
+            label="fatal";"00104ae0_00104bfa_0010005c_cafecaf2" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0"><TR><TD>00104ae0</TD></TR><HR/><TR><TD>00104ae0</TD></TR></TABLE>> fillcolor=lightblue];
+            }
+}
+subgraph "cluster_syscall_trigger_bug_0010005c_cafecaf2" {
+                  style="filled,solid";
+                  color=black;
+                  fillcolor=lightgrey;
+                  label="syscall_trigger_bug";"00104be0_0010005c_cafecaf2" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0"><TR><TD>00104be0</TD></TR><HR/><TR><TD>00104be6</TD></TR></TABLE>>];
+                  subgraph "cluster_hw_context_switch_no_idle_00104be6_0010005c_cafecaf2" {
+                    style="filled,solid";
+                    color=black;
+                    fillcolor=lightgrey;
+                    label="hw_context_switch_no_idle";"0010492a_00104be6_0010005c_cafecaf2" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0"><TR><TD>0010492a</TD></TR><HR/><TR><TD>0010492d</TD></TR></TABLE>>];
+                    "0010491e_00104be6_0010005c_cafecaf2" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0"><TR><TD>0010491e</TD></TR><HR/><TR><TD>00104925</TD></TR></TABLE>>];
+                    "001048d9_00104be6_0010005c_cafecaf2" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0"><TR><TD>001048d9</TD></TR><HR/><TR><TD>00104919</TD></TR></TABLE>>];
+                    "00104880_00104be6_0010005c_cafecaf2" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0"><TR><TD>00104880</TD></TR><HR/><TR><TD>001048d4</TD></TR></TABLE>>];
+                    subgraph "cluster_ABSTASK_0010492d_00104be6_0010005c_cafecaf2" {
+                      style="filled,solid";
+                      color=black;
+                      fillcolor=lightgrey;
+                      label="ABSTASK";"cafecaf0_0010492d_00104be6_0010005c_cafecaf2" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0"><TR><TD>cafecaf0</TD></TR><HR/><TR><TD>cafecafe</TD></TR></TABLE>>];
+                      }
+subgraph "cluster_load_ds_reg_00104925_00104be6_0010005c_cafecaf2" {
+                          style="filled,solid";
+                          color=black;
+                          fillcolor=lightgrey;
+                          label="load_ds_reg";"00104930_00104925_00104be6_0010005c_cafecaf2" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0"><TR><TD>00104930</TD></TR><HR/><TR><TD>0010493d</TD></TR></TABLE>>];
+                          }
+subgraph "cluster_copy64_00104919_00104be6_0010005c_cafecaf2" {
+                              style="filled,solid";
+                              color=black;
+                              fillcolor=lightgrey;
+                              label="copy64";"001056f9_00104919_00104be6_0010005c_cafecaf2" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0"><TR><TD>001056f9</TD></TR><HR/><TR><TD>00105707</TD></TR></TABLE>>];
+                              }
+subgraph "cluster_copy64_001048d4_00104be6_0010005c_cafecaf2" {
+                                  style="filled,solid";
+                                  color=black;
+                                  fillcolor=lightgrey;
+                                  label="copy64";"001056f9_001048d4_00104be6_0010005c_cafecaf2" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0"><TR><TD>001056f9</TD></TR><HR/><TR><TD>00105707</TD></TR></TABLE>>];
+                                  }
+}
+}
+subgraph "cluster_syscall_putchar_0010005c_cafecaf2" {
+                                          style="filled,solid";
+                                          color=black;
+                                          fillcolor=lightgrey;
+                                          label="syscall_putchar";"00104ba0_0010005c_cafecaf2" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0"><TR><TD>00104ba0</TD></TR><HR/><TR><TD>00104baa</TD></TR></TABLE>>];
+                                          subgraph "cluster_fatal_00104baa_0010005c_cafecaf2" {
+                                            style="filled,solid";
+                                            color=black;
+                                            fillcolor=lightgrey;
+                                            label="fatal";"00104ae0_00104baa_0010005c_cafecaf2" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0"><TR><TD>00104ae0</TD></TR><HR/><TR><TD>00104ae0</TD></TR></TABLE>> fillcolor=lightblue];
+                                            }
+}
+subgraph "cluster_syscall_yield_0010005c_cafecaf2" {
+                                                  style="filled,solid";
+                                                  color=black;
+                                                  fillcolor=lightgrey;
+                                                  label="syscall_yield";"00104b40_0010005c_cafecaf2" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0"><TR><TD>00104b40</TD></TR><HR/><TR><TD>00104b42</TD></TR></TABLE>>];
+                                                  subgraph "cluster_c_syscall_yield_00104b42_0010005c_cafecaf2" {
+                                                    style="filled,solid";
+                                                    color=black;
+                                                    fillcolor=lightgrey;
+                                                    label="c_syscall_yield";"00104b86_00104b42_0010005c_cafecaf2" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0"><TR><TD>00104b86</TD></TR><HR/><TR><TD>00104b89</TD></TR></TABLE>>];
+                                                    "00104b81_00104b42_0010005c_cafecaf2" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0"><TR><TD>00104b81</TD></TR><HR/><TR><TD>00104b81</TD></TR></TABLE>>];
+                                                    "00104b70_00104b42_0010005c_cafecaf2" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0"><TR><TD>00104b70</TD></TR><HR/><TR><TD>00104b7c</TD></TR></TABLE>>];
+                                                    subgraph "cluster_hw_context_switch_00104b89_00104b42_0010005c_cafecaf2" {
+                                                      style="filled,solid";
+                                                      color=black;
+                                                      fillcolor=lightgrey;
+                                                      label="hw_context_switch";"00104860_00104b89_00104b42_0010005c_cafecaf2" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0"><TR><TD>00104860</TD></TR><HR/><TR><TD>0010486a</TD></TR></TABLE>>];
+                                                      subgraph "cluster_hw_context_switch_no_idle_0010486a_00104b89_00104b42_0010005c_cafecaf2" {
+                                                        style="filled,solid";
+                                                        color=black;
+                                                        fillcolor=lightgrey;
+                                                        label="hw_context_switch_no_idle";"0010492a_0010486a_00104b89_00104b42_0010005c_cafecaf2" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0"><TR><TD>0010492a</TD></TR><HR/><TR><TD>0010492d</TD></TR></TABLE>>];
+                                                        "0010491e_0010486a_00104b89_00104b42_0010005c_cafecaf2" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0"><TR><TD>0010491e</TD></TR><HR/><TR><TD>00104925</TD></TR></TABLE>>];
+                                                        "001048d9_0010486a_00104b89_00104b42_0010005c_cafecaf2" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0"><TR><TD>001048d9</TD></TR><HR/><TR><TD>00104919</TD></TR></TABLE>>];
+                                                        "00104880_0010486a_00104b89_00104b42_0010005c_cafecaf2" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0"><TR><TD>00104880</TD></TR><HR/><TR><TD>001048d4</TD></TR></TABLE>>];
+                                                        subgraph "cluster_ABSTASK_0010492d_0010486a_00104b89_00104b42_0010005c_cafecaf2" {
+                                                          style="filled,solid";
+                                                          color=black;
+                                                          fillcolor=lightgrey;
+                                                          label="ABSTASK";"cafecaf0_0010492d_0010486a_00104b89_00104b42_0010005c_cafecaf2" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0"><TR><TD>cafecaf0</TD></TR><HR/><TR><TD>cafecafe</TD></TR></TABLE>>];
+                                                          }
+subgraph "cluster_load_ds_reg_00104925_0010486a_00104b89_00104b42_0010005c_cafecaf2" {
+                                                              style="filled,solid";
+                                                              color=black;
+                                                              fillcolor=lightgrey;
+                                                              label="load_ds_reg";"00104930_00104925_0010486a_00104b89_00104b42_0010005c_cafecaf2" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0"><TR><TD>00104930</TD></TR><HR/><TR><TD>0010493d</TD></TR></TABLE>>];
+                                                              }
+subgraph "cluster_copy64_00104919_0010486a_00104b89_00104b42_0010005c_cafecaf2" {
+                                                                  style="filled,solid";
+                                                                  color=black;
+                                                                  fillcolor=lightgrey;
+                                                                  label="copy64";"001056f9_00104919_0010486a_00104b89_00104b42_0010005c_cafecaf2" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0"><TR><TD>001056f9</TD></TR><HR/><TR><TD>00105707</TD></TR></TABLE>>];
+                                                                  }
+subgraph "cluster_copy64_001048d4_0010486a_00104b89_00104b42_0010005c_cafecaf2" {
+                                                                    style="filled,solid";
+                                                                    color=black;
+                                                                    fillcolor=lightgrey;
+                                                                    label="copy64";"001056f9_001048d4_0010486a_00104b89_00104b42_0010005c_cafecaf2" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0"><TR><TD>001056f9</TD></TR><HR/><TR><TD>00105707</TD></TR></TABLE>>];
+                                                                    }
+}
+}
+
+                                                    subgraph "cluster_sched_choose_next_00104b81_00104b42_0010005c_cafecaf2" {
+                                                      style="filled,solid";
+                                                      color=black;
+                                                      fillcolor=lightgrey;
+                                                      label="sched_choose_next";"001056c0_00104b81_00104b42_0010005c_cafecaf2" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0"><TR><TD>001056c0</TD></TR><HR/><TR><TD>001056cd</TD></TR></TABLE>>];
+                                                      }
+subgraph "cluster_sched_set_waiting_00104b7c_00104b42_0010005c_cafecaf2" {
+                                                          style="filled,solid";
+                                                          color=black;
+                                                          fillcolor=lightgrey;
+                                                          label="sched_set_waiting";"00105640_00104b7c_00104b42_0010005c_cafecaf2" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0"><TR><TD>00105640</TD></TR><HR/><TR><TD>00105640</TD></TR></TABLE>>];
+                                                          }
+}
+}
+}
+}
+
+}

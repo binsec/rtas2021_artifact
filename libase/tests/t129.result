@@ -1,0 +1,28 @@
+[kernel:typing:implicit-function-declaration] t129.c:5: Warning: 
+  Calling undeclared function rand. Old style K&R code?
+[codex] Warning: Warning: no definition for rand
+[codex] compilation done
+[codex] Finite_memory: show eachthen:{1}
+                               {1}
+[codex] Finite_memory: show each3:{1}
+[codex] Warning: No backpropagation for 'bextract'
+[codex] Finite_memory: show eachthen:{1}
+                               {1}
+[codex] Finite_memory: show eachelse:{2}
+                               {2}
+[codex] Finite_memory: show each3:{1; 2}
+[codex] Finite_memory: show eachthen:[1..126],1%5
+                               [1..126],1%5
+[codex] Finite_memory: show eachelse:[1..128]
+                               [1..128]
+[codex] Finite_memory: show each3:[1..128]
+[codex] Finite_memory: show eachthen:[1..251],1%5
+                               [1..251],1%5
+[codex] Finite_memory: show eachelse:[0..255]
+                               [--..--]
+[codex] Finite_memory: show each3:[--..--]
+[codex] Proved 12/12 alarms (remaining: 0; by SMT: 0)
+[codex] Finite_memory: show eachthen:[1..251],1%5
+                               [1..251],1%5
+[codex] Finite_memory: show eachelse:[0..255]
+                               [--..--]

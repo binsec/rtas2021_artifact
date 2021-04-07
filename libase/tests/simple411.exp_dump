@@ -1,0 +1,6 @@
+simple411.c:6:10: `c + 4' -> [-0x7FFFFFFC..0x7FFFFFFF]
+simple411.c:6:10: `c' -> [--..--]
+simple411.c:7:5: `j > 11' -> {0; 1}
+simple411.c:7:5: `j' -> [-0x7FFFFFFC..0x7FFFFFFF]
+simple411.c:8:22: `c > 7' -> {1}
+simple411.c:8:22: `c' -> [8..0x7FFFFFFB]

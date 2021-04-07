@@ -1,0 +1,13 @@
+[codex] compilation done
+[codex] simple070.c:24:svcomp: result is unknown (using abstract interpretation)
+[codex] After goal-orientation: status is **NOT** VALID
+[codex] simple070.c:24:svcomp: result is **NOT** VALID (using goal-oriented procedure)
+[codex] simple070.c:25:svcomp: result is unknown (using abstract interpretation)
+[codex] After goal-orientation: status is **NOT** VALID
+[codex] simple070.c:25:svcomp: result is **NOT** VALID (using goal-oriented procedure)
+[codex] simple070.c:26:svcomp: result is unknown (using abstract interpretation)
+[codex] After goal-orientation: status is **NOT** VALID
+[codex] simple070.c:26:svcomp: result is **NOT** VALID (using goal-oriented procedure)
+[codex] Proved 29/29 alarms (remaining: 0; by SMT: 0)
+[codex] Warning: No backpropagation for 'bextract'
+[codex] Warning: No backpropagation for 'bashr'

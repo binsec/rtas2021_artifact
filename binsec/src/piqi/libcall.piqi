@@ -1,0 +1,1903 @@
+.protobuf-package "libcall_types"
+
+.import [ .module common ]
+
+.record [
+    .name libcall-pol
+    .field [
+        .name name
+        .type string
+        .code 1
+    ]
+    .field [
+        .name ident
+        .type lib-ident
+        .optional
+        .default.GENERIC
+        .code 2
+    ]
+    .field [
+        .name action
+        .type common/tracing-action
+        .optional
+        .default.SKIP
+        .code 3
+    ]
+    .field [
+        .name restrict-addresses
+        .type uint64
+        .repeated
+        .code 4
+    ]
+    .field [
+        .name strcpy
+        .type strcpy-pol
+        .optional
+        .code 5
+    ]
+    .field [
+        .name printf
+        .type printf-pol
+        .optional
+        .code 6
+    ]
+    .field [
+        .name atoi
+        .type atoi-pol
+        .optional
+        .code 7
+    ]
+    .field [
+        .name malloc
+        .type malloc-pol
+        .optional
+        .code 8
+    ]
+    .field [
+        .name getmodulehandle
+        .type getmodulehandle-pol
+        .optional
+        .code 9
+    ]
+    .field [
+        .name getprocaddress
+        .type getprocaddress-pol
+        .optional
+        .code 10
+    ]
+    .field [
+        .name getmainargs
+        .type getmainargs-pol
+        .optional
+        .code 11
+    ]
+    .field [
+        .name gethostname
+        .type gethostname-pol
+        .optional
+        .code 12
+    ]
+    .field [
+        .name free
+        .type free-pol
+        .optional
+        .code 13
+    ]
+    .field [
+        .name memcpy
+        .type memcpy-pol
+        .optional
+        .code 14
+    ]
+    .field [
+        .name memset
+        .type memset-pol
+        .optional
+        .code 15
+    ]
+    .field [
+        .name fgetc
+        .type fgetc-pol
+        .optional
+        .code 16
+    ]
+    .field [
+        .name read
+        .type read-pol
+        .optional
+        .code 17
+    ]
+    .field [
+        .name strchr
+        .type strchr-pol
+        .optional
+        .code 18
+    ]
+    .field [
+        .name exit
+        .type exit-pol
+        .optional
+        .code 19
+    ]
+    .field [
+        .name strcmp
+        .type strcmp-pol
+        .optional
+        .code 20
+    ]
+    .field [
+        .name ctype-b-loc
+        .type ctype-b-loc-pol
+        .optional
+        .code 22
+    ]
+    .field [
+        .name fscanf
+        .type fscanf-pol
+        .optional
+        .code 23
+    ]
+    .field [
+        .name strncpy
+        .type strncpy-pol
+        .optional
+        .code 24
+    ]
+    .field [
+        .name fstat
+        .type fstat-pol
+        .optional
+        .code 25
+    ]
+    .field [
+        .name realloc
+        .type realloc-pol
+        .optional
+        .code 26
+    ]
+    .field [
+        .name mmap
+        .type mmap-pol
+        .optional
+        .code 27
+    ]
+    .field [
+        .name qsort
+        .type qsort-pol
+        .optional
+        .code 28
+    ]
+    .field [
+        .name bsearch
+        .type bsearch-pol
+        .optional
+        .code 29
+    ]
+    .field [
+        .name open-stub
+        .type open-pol
+        .optional
+        .code 30
+    ]
+    .field [
+        .name lseek
+        .type lseek-pol
+        .optional
+        .code 31
+    ]
+    .field [
+        .name fread
+        .type fread-pol
+        .optional
+        .code 32
+    ]
+    .field [
+        .name strncmp
+        .type strncmp-pol
+        .optional
+        .code 33
+    ]
+    .field [
+        .name memcmp
+        .type memcmp-pol
+        .optional
+        .code 34
+    ]
+    .field [
+        .name fxstat64
+        .type fxstat64-pol
+        .optional
+        .code 35
+    ]
+    .field [
+        .name generic
+        .type generic-pol
+        .optional
+        .code 50
+    ]
+]
+
+.record [
+    .name libcall-t
+    .field [
+        .name func-addr
+        .type uint64
+        .code 1
+    ]
+    .field [
+        .name func-name
+        .type string
+        .code 2
+    ]
+    .field [
+        .name is-traced
+        .type bool
+        .code 3
+    ]
+    .field [
+        .name ident
+        .type lib-ident
+        .code 4
+    ]
+    .field [
+        .name strcpy
+        .type strcpy-t
+        .optional
+        .code 5
+    ]
+    .field [
+        .name printf
+        .type printf-t
+        .optional
+        .code 6
+    ]
+    .field [
+        .name atoi
+        .type atoi-t
+        .optional
+        .code 7
+    ]
+    .field [
+        .name malloc
+        .type malloc-t
+        .optional
+        .code 8
+    ]
+    .field [
+        .name getmodulehandle
+        .type getmodulehandle-t
+        .optional
+        .code 9
+    ]
+    .field [
+        .name getprocaddress
+        .type getprocaddress-t
+        .optional
+        .code 10
+    ]
+    .field [
+        .name getmainargs
+        .type getmainargs-t
+        .optional
+        .code 11
+    ]
+    .field [
+        .name gethostname
+        .type gethostname-t
+        .optional
+        .code 12
+    ]
+    .field [
+        .name free
+        .type free-t
+        .optional
+        .code 13
+    ]
+    .field [
+        .name memcpy
+        .type memcpy-t
+        .optional
+        .code 14
+    ]
+    .field [
+        .name memset
+        .type memset-t
+        .optional
+        .code 15
+    ]
+    .field [
+        .name fgetc
+        .type fgetc-t
+        .optional
+        .code 16
+    ]
+    .field [
+        .name generic
+        .type generic-t
+        .optional
+        .code 17
+    ]
+    .field [
+        .name read
+        .type read-t
+        .optional
+        .code 18
+    ]
+    .field [
+        .name strchr
+        .type strchr-t
+        .optional
+        .code 19
+    ]
+    .field [
+        .name exit
+        .type exit-t
+        .optional
+        .code 20
+    ]
+    .field [
+        .name strcmp
+        .type strcmp-t
+        .optional
+        .code 21
+    ]
+    .field [
+        .name ctype-b-loc
+        .type ctype-b-loc-t
+        .optional
+        .code 23
+    ]
+    .field [
+        .name fscanf
+        .type fscanf-t
+        .optional
+        .code 24
+    ]
+    .field [
+        .name strncpy
+        .type strncpy-t
+        .optional
+        .code 25
+    ]
+    .field [
+        .name fstat
+        .type fstat-t
+        .optional
+        .code 26
+    ]
+    .field [
+        .name realloc
+        .type realloc-t
+        .optional
+        .code 27
+    ]
+    .field [
+        .name mmap
+        .type mmap-t
+        .optional
+        .code 28
+    ]
+    .field [
+        .name qsort
+        .type qsort-t
+        .optional
+        .code 29
+    ]
+    .field [
+        .name bsearch
+        .type bsearch-t
+        .optional
+        .code 30
+    ]
+    .field [
+        .name open-stub
+        .type open-t
+        .optional
+        .code 31
+    ]
+    .field [
+        .name lseek
+        .type lseek-t
+        .optional
+        .code 32
+    ]
+    .field [
+        .name fread
+        .type fread-t
+        .optional
+        .code 33
+    ]
+    .field [
+        .name strncmp
+        .type strncmp-t
+        .optional
+        .code 34
+    ]
+    .field [
+        .name memcmp
+        .type memcmp-t
+        .optional
+        .code 35
+    ]
+    .field [
+        .name fxstat64
+        .type fxstat64-t
+        .optional
+        .code 36
+    ]
+]
+
+.record [
+    .name generic-pol
+    .field [
+        .name ret
+        .type common/action
+        .code 1
+    ]
+]
+
+.record [
+    .name ctype-b-loc-pol
+    .field [
+        .name table
+        .type common/memory-pol
+        .code 1
+    ]
+    .field [
+        .name ret
+        .type common/action
+        .code 2
+    ]
+]
+
+.record [ .name exit-pol ]
+
+.record [
+    .name fscanf-pol
+    .field [
+        .name stream
+        .type common/action
+        .code 1
+    ]
+    .field [
+        .name elems
+        .type common/action
+        .code 2
+    ]
+    .field [
+        .name ret
+        .type common/action
+        .code 3
+    ]
+]
+
+.record [
+    .name read-pol
+    .field [
+        .name fd
+        .type common/action
+        .code 1
+    ]
+    .field [
+        .name buf
+        .type common/memory-pol
+        .code 2
+    ]
+    .field [
+        .name count
+        .type common/action
+        .code 3
+    ]
+    .field [
+        .name ret
+        .type common/action
+        .code 4
+    ]
+]
+
+.record [
+    .name fread-pol
+    .field [
+        .name ptr
+        .type common/memory-pol
+        .code 1
+    ]
+    .field [
+        .name size
+        .type common/action
+        .code 2
+    ]
+    .field [
+        .name nmemb
+        .type common/action
+        .code 3
+    ]
+    .field [
+        .name stream
+        .type common/action
+        .code 4
+    ]
+    .field [
+        .name ret
+        .type common/action
+        .code 5
+    ]
+]
+
+.record [
+    .name strcmp-pol
+    .field [
+        .name src
+        .type common/memory-pol
+        .code 1
+    ]
+    .field [
+        .name dst
+        .type common/memory-pol
+        .code 2
+    ]
+    .field [
+        .name ret
+        .type common/action
+        .code 3
+    ]
+]
+
+.record [
+    .name strncmp-pol
+    .field [
+        .name s1
+        .type common/action
+        .code 1
+    ]
+    .field [
+        .name s2
+        .type common/action
+        .code 2
+    ]
+    .field [
+        .name n
+        .type common/action
+        .code 3
+    ]
+    .field [
+        .name ret
+        .type common/action
+        .code 4
+    ]
+]
+
+.record [
+    .name memcmp-pol
+    .field [
+        .name s1
+        .type common/action
+        .code 1
+    ]
+    .field [
+        .name s2
+        .type common/action
+        .code 2
+    ]
+    .field [
+        .name n
+        .type common/action
+        .code 3
+    ]
+    .field [
+        .name ret
+        .type common/action
+        .code 4
+    ]
+]
+
+.record [
+    .name strchr-pol
+    .field [
+        .name sc
+        .type common/memory-pol
+        .code 1
+    ]
+    .field [
+        .name c
+        .type common/memory-pol
+        .code 2
+    ]
+    .field [
+        .name ret
+        .type common/action
+        .code 3
+    ]
+]
+
+.record [
+    .name strncpy-pol
+    .field [
+        .name dst
+        .type common/action
+        .code 1
+    ]
+    .field [
+        .name src
+        .type common/action
+        .code 2
+    ]
+    .field [
+        .name n
+        .type common/action
+        .code 3
+    ]
+    .field [
+        .name ret
+        .type common/action
+        .code 4
+    ]
+]
+
+.record [ .name fstat-pol ]
+
+.record [ .name fxstat64-pol ]
+
+.record [
+    .name realloc-pol
+    .field [
+        .name ptr
+        .type common/action
+        .code 1
+    ]
+    .field [
+        .name size
+        .type common/action
+        .code 2
+    ]
+    .field [
+        .name ret
+        .type common/action
+        .code 3
+    ]
+]
+
+.record [
+    .name mmap-pol
+    .field [
+        .name addr
+        .type common/action
+        .code 1
+    ]
+    .field [
+        .name length
+        .type common/action
+        .code 2
+    ]
+    .field [
+        .name prot
+        .type common/action
+        .code 3
+    ]
+    .field [
+        .name flags
+        .type common/action
+        .code 4
+    ]
+    .field [
+        .name fd
+        .type common/action
+        .code 5
+    ]
+    .field [
+        .name offset
+        .type common/action
+        .code 6
+    ]
+    .field [
+        .name ret
+        .type common/memory-pol
+        .code 7
+    ]
+]
+
+.record [
+    .name qsort-pol
+    .field [
+        .name base
+        .type common/memory-pol
+        .code 1
+    ]
+    .field [
+        .name nmemb
+        .type common/action
+        .code 2
+    ]
+    .field [
+        .name size
+        .type common/action
+        .code 3
+    ]
+    .field [
+        .name compare
+        .type common/action
+        .code 4
+    ]
+]
+
+.record [
+    .name bsearch-pol
+    .field [
+        .name key
+        .type common/memory-pol
+        .code 1
+    ]
+    .field [
+        .name base
+        .type common/memory-pol
+        .code 2
+    ]
+    .field [
+        .name nmemb
+        .type common/action
+        .code 3
+    ]
+    .field [
+        .name size
+        .type common/action
+        .code 4
+    ]
+    .field [
+        .name compare
+        .type common/action
+        .code 5
+    ]
+    .field [
+        .name ret
+        .type common/memory-pol
+        .code 6
+    ]
+]
+
+.record [
+    .name open-pol
+    .field [
+        .name pathname
+        .type common/memory-pol
+        .code 1
+    ]
+    .field [
+        .name flags
+        .type common/action
+        .code 2
+    ]
+    .field [
+        .name mode
+        .type common/action
+        .code 3
+    ]
+    .field [
+        .name ret
+        .type common/action
+        .code 4
+    ]
+]
+
+.record [
+    .name strcpy-pol
+    .field [
+        .name src
+        .type common/memory-pol
+        .code 1
+    ]
+    .field [
+        .name dst
+        .type common/memory-pol
+        .code 2
+    ]
+    .field [
+        .name ret
+        .type common/action
+        .code 3
+    ]
+]
+
+.record [
+    .name printf-pol
+    .field [
+        .name format
+        .type common/memory-pol
+        .code 1
+    ]
+    .field [
+        .name ret
+        .type common/action
+        .code 2
+    ]
+]
+
+.record [
+    .name atoi-pol
+    .field [
+        .name src
+        .type common/memory-pol
+        .code 1
+    ]
+    .field [
+        .name ret
+        .type common/action
+        .code 3
+    ]
+]
+
+.record [
+    .name malloc-pol
+    .field [
+        .name size
+        .type common/action
+        .code 1
+    ]
+    .field [
+        .name ret
+        .type common/action
+        .code 2
+    ]
+]
+
+.record [
+    .name getmodulehandle-pol
+    .field [
+        .name module-name
+        .type common/memory-pol
+        .code 1
+    ]
+    .field [
+        .name ret
+        .type common/action
+        .code 2
+    ]
+]
+
+.record [
+    .name getprocaddress-pol
+    .field [
+        .name hmodule
+        .type common/action
+        .code 1
+    ]
+    .field [
+        .name proc-name
+        .type common/memory-pol
+        .code 2
+    ]
+    .field [
+        .name ret
+        .type common/action
+        .code 3
+    ]
+]
+
+.record [
+    .name getmainargs-pol
+    .field [
+        .name argc
+        .type common/memory-pol
+        .code 1
+    ]
+    .field [
+        .name argv
+        .type common/memory-pol
+        .code 2
+    ]
+    .field [
+        .name env
+        .type common/memory-pol
+        .code 3
+    ]
+    .field [
+        .name dowildcard
+        .type common/action
+        .code 4
+    ]
+    .field [
+        .name startinfo
+        .type common/memory-pol
+        .code 5
+    ]
+    .field [
+        .name ret
+        .type common/action
+        .code 6
+    ]
+]
+
+.record [
+    .name gethostname-pol
+    .field [
+        .name name
+        .type common/memory-pol
+        .code 1
+    ]
+    .field [
+        .name namelen
+        .type common/action
+        .code 2
+    ]
+    .field [
+        .name ret
+        .type common/action
+        .code 3
+    ]
+]
+
+.record [
+    .name free-pol
+    .field [
+        .name ptr
+        .type common/action
+        .code 1
+    ]
+]
+
+.record [
+    .name memcpy-pol
+    .field [
+        .name dest
+        .type common/memory-pol
+        .code 1
+    ]
+    .field [
+        .name src
+        .type common/memory-pol
+        .code 2
+    ]
+    .field [
+        .name size
+        .type common/action
+        .code 3
+    ]
+    .field [
+        .name ret
+        .type common/action
+        .code 4
+    ]
+]
+
+.record [
+    .name memset-pol
+    .field [
+        .name s
+        .type common/memory-pol
+        .code 1
+    ]
+    .field [
+        .name c
+        .type common/action
+        .code 2
+    ]
+    .field [
+        .name size
+        .type common/action
+        .code 3
+    ]
+    .field [
+        .name ret
+        .type common/action
+        .code 4
+    ]
+]
+
+.record [
+    .name fgetc-pol
+    .field [
+        .name stream
+        .type common/action
+        .code 1
+    ]
+    .field [
+        .name ret
+        .type common/action
+        .code 2
+    ]
+]
+
+.record [
+    .name lseek-pol
+    .field [
+        .name fd
+        .type common/action
+        .code 1
+    ]
+    .field [
+        .name offset
+        .type common/action
+        .code 2
+    ]
+    .field [
+        .name whence
+        .type common/action
+        .code 3
+    ]
+    .field [
+        .name ret
+        .type common/action
+        .code 4
+    ]
+]
+
+.record [ .name exit-t ]
+
+.record [
+    .name generic-t
+    .field [
+        .name ret
+        .type uint64
+        .code 1
+    ]
+]
+
+.record [
+    .name fscanf-elem-t
+    .field [
+        .name type
+        .type fscanf-enum
+        .code 1
+    ]
+    .field [
+        .name addr
+        .type uint64
+        .code 2
+    ]
+    .field [
+        .name value-dec
+        .type uint64
+        .optional
+        .code 3
+    ]
+    .field [
+        .name value-string
+        .type string
+        .optional
+        .code 4
+    ]
+]
+
+.record [
+    .name fscanf-t
+    .field [
+        .name stream
+        .type uint64
+        .code 1
+    ]
+    .field [
+        .name elems
+        .type fscanf-elem-t
+        .repeated
+        .code 2
+    ]
+    .field [
+        .name ret
+        .type uint64
+        .code 3
+    ]
+]
+
+.record [
+    .name ctype-b-loc-t
+    .field [
+        .name table
+        .type common/memory-t
+        .code 1
+    ]
+    .field [
+        .name ret
+        .type uint64
+        .code 2
+    ]
+]
+
+.record [
+    .name read-t
+    .field [
+        .name fd
+        .type uint64
+        .code 1
+    ]
+    .field [
+        .name buf
+        .type common/memory-t
+        .code 2
+    ]
+    .field [
+        .name count
+        .type uint64
+        .code 3
+    ]
+    .field [
+        .name ret
+        .type uint64
+        .code 4
+    ]
+]
+
+.record [
+    .name fread-t
+    .field [
+        .name ptr
+        .type common/memory-t
+        .code 1
+    ]
+    .field [
+        .name size
+        .type uint64
+        .code 2
+    ]
+    .field [
+        .name nmemb
+        .type uint64
+        .code 3
+    ]
+    .field [
+        .name stream
+        .type uint64
+        .code 4
+    ]
+    .field [
+        .name ret
+        .type uint64
+        .code 5
+    ]
+]
+
+.record [
+    .name strchr-t
+    .field [
+        .name s
+        .type uint64
+        .code 1
+    ]
+    .field [
+        .name c
+        .type uint64
+        .code 2
+    ]
+    .field [
+        .name size-max
+        .type uint64
+        .code 3
+    ]
+    .field [
+        .name ret
+        .type uint64
+        .code 4
+    ]
+]
+
+.record [
+    .name strncpy-t
+    .field [
+        .name dst
+        .type uint64
+        .code 1
+    ]
+    .field [
+        .name src
+        .type uint64
+        .code 2
+    ]
+    .field [
+        .name n
+        .type uint64
+        .code 3
+    ]
+    .field [
+        .name ret
+        .type uint64
+        .code 4
+    ]
+]
+
+.record [
+    .name fstat-t
+    .field [
+        .name fd
+        .type uint64
+        .code 1
+    ]
+    .field [
+        .name buf
+        .type common/memory-t
+        .code 2
+    ]
+    .field [
+        .name ret
+        .type uint64
+        .code 3
+    ]
+]
+
+.record [
+    .name fxstat64-t
+    .field [
+        .name vers
+        .type uint64
+        .code 1
+    ]
+    .field [
+        .name fd
+        .type uint64
+        .code 2
+    ]
+    .field [
+        .name buf
+        .type common/memory-t
+        .code 3
+    ]
+    .field [
+        .name ret
+        .type uint64
+        .code 4
+    ]
+]
+
+.record [
+    .name realloc-t
+    .field [
+        .name ptr
+        .type uint64
+        .code 1
+    ]
+    .field [
+        .name size
+        .type uint64
+        .code 2
+    ]
+    .field [
+        .name ret
+        .type uint64
+        .code 3
+    ]
+]
+
+.record [
+    .name mmap-t
+    .field [
+        .name addr
+        .type uint64
+        .code 1
+    ]
+    .field [
+        .name length
+        .type uint64
+        .code 2
+    ]
+    .field [
+        .name prot
+        .type uint64
+        .code 3
+    ]
+    .field [
+        .name flags
+        .type uint64
+        .code 4
+    ]
+    .field [
+        .name fd
+        .type uint64
+        .code 5
+    ]
+    .field [
+        .name offset
+        .type uint64
+        .code 6
+    ]
+    .field [
+        .name ret
+        .type common/memory-t
+        .code 7
+    ]
+]
+
+.record [
+    .name qsort-t
+    .field [
+        .name base
+        .type common/memory-t
+        .code 1
+    ]
+    .field [
+        .name nmemb
+        .type uint64
+        .code 2
+    ]
+    .field [
+        .name size
+        .type uint64
+        .code 3
+    ]
+    .field [
+        .name compare
+        .type uint64
+        .code 4
+    ]
+]
+
+.record [
+    .name bsearch-t
+    .field [
+        .name key
+        .type common/memory-t
+        .code 1
+    ]
+    .field [
+        .name base
+        .type common/memory-t
+        .code 2
+    ]
+    .field [
+        .name nmemb
+        .type uint64
+        .code 3
+    ]
+    .field [
+        .name size
+        .type uint64
+        .code 4
+    ]
+    .field [
+        .name compare
+        .type uint64
+        .code 5
+    ]
+    .field [
+        .name ret
+        .type common/memory-t
+        .code 6
+    ]
+]
+
+.record [
+    .name open-t
+    .field [
+        .name pathname
+        .type common/memory-t
+        .code 1
+    ]
+    .field [
+        .name flags
+        .type uint64
+        .code 3
+    ]
+    .field [
+        .name mode
+        .type uint64
+        .code 4
+    ]
+    .field [
+        .name ret
+        .type uint64
+        .code 5
+    ]
+]
+
+.record [
+    .name strcpy-t
+    .field [
+        .name src
+        .type common/memory-t
+        .code 1
+    ]
+    .field [
+        .name dst
+        .type common/memory-t
+        .code 2
+    ]
+    .field [
+        .name ret
+        .type uint64
+        .code 3
+    ]
+]
+
+.record [
+    .name strcmp-t
+    .field [
+        .name s1
+        .type uint64
+        .code 1
+    ]
+    .field [
+        .name s2
+        .type uint64
+        .code 2
+    ]
+    .field [
+        .name size-max-s1
+        .type uint64
+        .code 3
+    ]
+    .field [
+        .name size-max-s2
+        .type uint64
+        .code 4
+    ]
+    .field [
+        .name ret
+        .type uint64
+        .code 5
+    ]
+]
+
+.record [
+    .name strncmp-t
+    .field [
+        .name s1
+        .type uint64
+        .code 1
+    ]
+    .field [
+        .name s2
+        .type uint64
+        .code 2
+    ]
+    .field [
+        .name n
+        .type uint64
+        .code 3
+    ]
+    .field [
+        .name ret
+        .type uint64
+        .code 4
+    ]
+]
+
+.record [
+    .name memcmp-t
+    .field [
+        .name s1
+        .type uint64
+        .code 1
+    ]
+    .field [
+        .name s2
+        .type uint64
+        .code 2
+    ]
+    .field [
+        .name n
+        .type uint64
+        .code 3
+    ]
+    .field [
+        .name ret
+        .type uint64
+        .code 4
+    ]
+]
+
+.record [
+    .name printf-t
+    .field [
+        .name format
+        .type common/memory-t
+        .code 1
+    ]
+    .field [
+        .name ret
+        .type uint64
+        .code 2
+    ]
+]
+
+.record [
+    .name atoi-t
+    .field [
+        .name src
+        .type common/memory-t
+        .code 1
+    ]
+    .field [
+        .name ret
+        .type uint64
+        .code 3
+    ]
+]
+
+.record [
+    .name malloc-t
+    .field [
+        .name size
+        .type uint64
+        .code 1
+    ]
+    .field [
+        .name ret
+        .type uint64
+        .code 2
+    ]
+]
+
+.record [
+    .name getmodulehandle-t
+    .field [
+        .name module-name
+        .type common/memory-t
+        .code 1
+    ]
+    .field [
+        .name ret
+        .type uint64
+        .code 2
+    ]
+]
+
+.record [
+    .name getprocaddress-t
+    .field [
+        .name hmodule
+        .type uint64
+        .code 1
+    ]
+    .field [
+        .name proc-name
+        .type common/memory-t
+        .code 2
+    ]
+    .field [
+        .name ret
+        .type uint64
+        .code 3
+    ]
+]
+
+.record [
+    .name getmainargs-t
+    .field [
+        .name argc
+        .type common/memory-t
+        .code 1
+    ]
+    .field [
+        .name argv
+        .type common/memory-t
+        .code 2
+    ]
+    .field [
+        .name env
+        .type common/memory-t
+        .code 3
+    ]
+    .field [
+        .name dowildcard
+        .type uint64
+        .code 4
+    ]
+    .field [
+        .name startinfo
+        .type common/memory-t
+        .code 5
+    ]
+    .field [
+        .name ret
+        .type uint64
+        .code 6
+    ]
+]
+
+.record [
+    .name gethostname-t
+    .field [
+        .name name
+        .type common/memory-t
+        .code 1
+    ]
+    .field [
+        .name namelen
+        .type uint64
+        .code 2
+    ]
+    .field [
+        .name ret
+        .type uint64
+        .code 3
+    ]
+]
+
+.record [
+    .name free-t
+    .field [
+        .name ptr
+        .type uint64
+        .code 1
+    ]
+]
+
+.record [
+    .name memcpy-t
+    .field [
+        .name dest
+        .type common/memory-t
+        .code 1
+    ]
+    .field [
+        .name src
+        .type common/memory-t
+        .code 2
+    ]
+    .field [
+        .name size
+        .type uint64
+        .code 3
+    ]
+    .field [
+        .name ret
+        .type uint64
+        .code 4
+    ]
+]
+
+.record [
+    .name memset-t
+    .field [
+        .name s
+        .type common/memory-t
+        .code 1
+    ]
+    .field [
+        .name c
+        .type uint64
+        .code 2
+    ]
+    .field [
+        .name size
+        .type uint64
+        .code 3
+    ]
+    .field [
+        .name ret
+        .type uint64
+        .code 4
+    ]
+]
+
+.record [
+    .name fgetc-t
+    .field [
+        .name stream
+        .type uint64
+        .code 1
+    ]
+    .field [
+        .name ret
+        .type uint64
+        .code 2
+    ]
+]
+
+.record [
+    .name lseek-t
+    .field [
+        .name fd
+        .type uint64
+        .code 1
+    ]
+    .field [
+        .name offset
+        .type uint64
+        .code 2
+    ]
+    .field [
+        .name whence
+        .type uint64
+        .code 3
+    ]
+    .field [
+        .name ret
+        .type uint64
+        .code 4
+    ]
+]
+
+.enum [
+    .name lib-ident
+    .option [
+        .name INVALID
+        .code 0
+    ]
+    .option [
+        .name PRINTF
+        .code 1
+    ]
+    .option [
+        .name STRCPY
+        .code 2
+    ]
+    .option [
+        .name ATOI
+        .code 3
+    ]
+    .option [
+        .name MALLOC
+        .code 4
+    ]
+    .option [
+        .name FREE
+        .code 5
+    ]
+    .option [
+        .name MEMCPY
+        .code 6
+    ]
+    .option [
+        .name MEMSET
+        .code 7
+    ]
+    .option [
+        .name FGETC
+        .code 8
+    ]
+    .option [
+        .name READ
+        .code 9
+    ]
+    .option [
+        .name STRCHR
+        .code 10
+    ]
+    .option [
+        .name EXIT
+        .code 11
+    ]
+    .option [
+        .name STRCMP
+        .code 12
+    ]
+    .option [
+        .name CTYPE-B-LOC
+        .code 13
+    ]
+    .option [
+        .name FSCANF
+        .code 14
+    ]
+    .option [
+        .name STRRCHR
+        .code 15
+    ]
+    .option [
+        .name STRNCPY
+        .code 16
+    ]
+    .option [
+        .name FSTAT
+        .code 17
+    ]
+    .option [
+        .name REALLOC
+        .code 18
+    ]
+    .option [
+        .name MMAP
+        .code 19
+    ]
+    .option [
+        .name QSORT
+        .code 20
+    ]
+    .option [
+        .name BSEARCH
+        .code 21
+    ]
+    .option [
+        .name OPEN-STUB
+        .code 22
+    ]
+    .option [
+        .name LSEEK
+        .code 23
+    ]
+    .option [
+        .name FREAD
+        .code 24
+    ]
+    .option [
+        .name STRNCMP
+        .code 25
+    ]
+    .option [
+        .name MEMCMP
+        .code 26
+    ]
+    .option [
+        .name FXSTAT64
+        .code 27
+    ]
+    .option [
+        .name GETMODULEHANDLE
+        .code 100
+    ]
+    .option [
+        .name GETPROCADDRESS
+        .code 101
+    ]
+    .option [
+        .name GETMAINARGS
+        .code 102
+    ]
+    .option [
+        .name GETHOSTNAME
+        .code 103
+    ]
+    .option [
+        .name GENERIC
+        .code 255
+    ]
+]
+
+.enum [
+    .name fscanf-enum
+    .option [
+        .name d
+        .code 0
+    ]
+    .option [
+        .name dd
+        .code 1
+    ]
+    .option [
+        .name i
+        .code 2
+    ]
+    .option [
+        .name o
+        .code 3
+    ]
+    .option [
+        .name u
+        .code 4
+    ]
+    .option [
+        .name x
+        .code 5
+    ]
+    .option [
+        .name xx
+        .code 6
+    ]
+    .option [
+        .name f
+        .code 7
+    ]
+    .option [
+        .name e
+        .code 8
+    ]
+    .option [
+        .name g
+        .code 9
+    ]
+    .option [
+        .name ee
+        .code 10
+    ]
+    .option [
+        .name a
+        .code 11
+    ]
+    .option [
+        .name s
+        .code 12
+    ]
+    .option [
+        .name c
+        .code 13
+    ]
+    .option [
+        .name sb
+        .code 14
+    ]
+    .option [
+        .name p
+        .code 15
+    ]
+    .option [
+        .name n
+        .code 16
+    ]
+]

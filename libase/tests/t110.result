@@ -1,0 +1,8 @@
+[kernel:typing:implicit-function-declaration] t110.c:10: Warning: 
+  Calling undeclared function rand. Old style K&R code?
+[kernel:typing:implicit-function-declaration] t110.c:30: Warning: 
+  Calling undeclared function __VERIFIER_assume. Old style K&R code?
+[codex] Warning: Warning: no definition for rand
+[codex] compilation done
+[codex] Warning: No backpropagation for 'bextract'
+[codex] Proved 21/21 alarms (remaining: 0; by SMT: 0)

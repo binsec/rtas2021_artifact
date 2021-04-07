@@ -1,0 +1,3 @@
+[codex] compilation done
+[codex] simple411.c:8:svcomp: result is VALID (using abstract interpretation)
+[codex] Proved 3/3 alarms (remaining: 0; by SMT: 0)

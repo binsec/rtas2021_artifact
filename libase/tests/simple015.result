@@ -1,0 +1,10 @@
+[kernel:typing:implicit-function-declaration] simple015.c:4: Warning: 
+  Calling undeclared function rand. Old style K&R code?
+[codex] Warning: Warning: no definition for rand
+[codex] compilation done
+[codex] Finite_memory: show each:{19}
+                           {{ &c + 1 * [4..19]
+                              &i }}
+                           {{ &c + 1 * [4..19] }}
+                           [4..19]
+[codex] Proved 40/40 alarms (remaining: 0; by SMT: 0)

@@ -1,0 +1,10 @@
+[codex] compilation done
+[codex] simple400.c:9:svcomp: result is unknown (using abstract interpretation)
+[codex] After goal-orientation: status is **NOT** VALID
+[codex] simple400.c:9:svcomp: result is **NOT** VALID (using goal-oriented procedure)
+[codex] simple400.c:10:svcomp: result is unknown (using abstract interpretation)
+[codex] After goal-orientation: status is **NOT** VALID
+[codex] simple400.c:10:svcomp: result is **NOT** VALID (using goal-oriented procedure)
+[codex] simple400.c:11:svcomp: result is VALID (using abstract interpretation)
+[codex] simple400.c:12:svcomp: result is VALID (using abstract interpretation)
+[codex] Proved 6/6 alarms (remaining: 0; by SMT: 0)

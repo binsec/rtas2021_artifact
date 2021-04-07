@@ -1,0 +1,11 @@
+propag03.c:3:5: `i + 6 > 444' -> {0; 1}
+propag03.c:3:5: `i + 6' -> [-0x7FFFFFFA..0x7FFFFFFF]
+propag03.c:3:5: `i' -> [-0x80000000..0x7FFFFFF9]
+propag03.c:4:5: `i > 12' -> {0; 1}
+propag03.c:4:5: `i' -> [-0x80000000..438]
+propag03.c:5:23: `i + 5' -> [-0x7FFFFFFB..17]
+propag03.c:5:23: `i' -> [-0x80000000..12]
+propag03.c:5:27: `i + 6' -> [-0x7FFFFFFA..18]
+propag03.c:5:27: `i' -> [-0x80000000..12]
+propag03.c:5:31: `i + 7' -> [-0x7FFFFFF9..19]
+propag03.c:5:31: `i' -> [-0x80000000..12]

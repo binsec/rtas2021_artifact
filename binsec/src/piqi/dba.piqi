@@ -1,0 +1,692 @@
+.protobuf-package "dba"
+
+.record [
+    .name bitvector
+    .field [
+        .name bv
+        .type uint64
+        .code 1
+    ]
+    .field [
+        .name size
+        .type uint32
+        .code 2
+    ]
+]
+
+.record [
+    .name dbacodeaddress
+    .field [
+        .name bitvector
+        .type uint64
+        .code 1
+    ]
+    .field [
+        .name dbaoffset
+        .type uint32
+        .code 2
+    ]
+]
+
+.record [
+    .name codeaddress
+    .field [
+        .name typeid
+        .type codeaddress-typeid-codeaddress
+        .code 1
+    ]
+    .field [
+        .name offset
+        .type uint32
+        .optional
+        .code 2
+    ]
+    .field [
+        .name address
+        .type dbacodeaddress
+        .optional
+        .code 3
+    ]
+]
+
+.enum [
+    .name codeaddress-typeid-codeaddress
+    .option [
+        .name Local
+        .code 0
+        .protobuf-name "codeaddress_Local"
+    ]
+    .option [
+        .name NonLocal
+        .code 1
+        .protobuf-name "codeaddress_NonLocal"
+    ]
+]
+
+.record [
+    .name dbatag
+    .field [
+        .name typeid
+        .type dbatag-typeid-dbatag
+        .code 1
+    ]
+    .field [
+        .name address
+        .type dbacodeaddress
+        .optional
+        .code 2
+    ]
+]
+
+.enum [
+    .name dbatag-typeid-dbatag
+    .option [
+        .name DbaCall
+        .code 1
+        .protobuf-name "dbatag_DbaCall"
+    ]
+    .option [
+        .name DbaReturn
+        .code 2
+        .protobuf-name "dbatag_DbaReturn"
+    ]
+]
+
+.record [
+    .name dbastopstate
+    .field [
+        .name typeid
+        .type dbastopstate-typeid-dbastate
+        .code 1
+    ]
+    .field [
+        .name infos
+        .type string
+        .optional
+        .code 2
+    ]
+]
+
+.enum [
+    .name dbastopstate-typeid-dbastate
+    .option [
+        .name Ok
+        .code 1
+        .protobuf-name "dbastopstate_Ok"
+    ]
+    .option [
+        .name Ko
+        .code 2
+        .protobuf-name "dbastopstate_Ko"
+    ]
+    .option [
+        .name Undefined
+        .code 3
+        .protobuf-name "dbastopstate_Undefined"
+    ]
+    .option [
+        .name Unsupported
+        .code 4
+        .protobuf-name "dbastopstate_Unsupported"
+    ]
+]
+
+.record [
+    .name dbaexpr
+    .field [
+        .name typeid
+        .type dbaexpr-typeid-dbaexpr
+        .code 1
+    ]
+    .field [
+        .name name
+        .type string
+        .optional
+        .code 2
+    ]
+    .field [
+        .name size
+        .type uint32
+        .optional
+        .code 3
+    ]
+    .field [
+        .name endian
+        .type endianness
+        .optional
+        .code 4
+    ]
+    .field [
+        .name bitvector
+        .type bitvector
+        .optional
+        .code 5
+    ]
+    .field [
+        .name expr1
+        .type dbaexpr
+        .optional
+        .code 6
+    ]
+    .field [
+        .name expr2
+        .type dbaexpr
+        .optional
+        .code 7
+    ]
+    .field [
+        .name unaryop
+        .type dbaexpr-dbaunary
+        .optional
+        .code 9
+    ]
+    .field [
+        .name binaryop
+        .type dbaexpr-dbabinary
+        .optional
+        .code 10
+    ]
+    .field [
+        .name low
+        .type uint32
+        .optional
+        .code 11
+    ]
+    .field [
+        .name high
+        .type uint32
+        .optional
+        .code 12
+    ]
+    .field [
+        .name cond
+        .type dbacond
+        .optional
+        .code 13
+    ]
+]
+
+.enum [
+    .name dbaexpr-typeid-dbaexpr
+    .option [
+        .name DbaExprVar
+        .code 1
+        .protobuf-name "dbaexpr_DbaExprVar"
+    ]
+    .option [
+        .name DbaLoad
+        .code 2
+        .protobuf-name "dbaexpr_DbaLoad"
+    ]
+    .option [
+        .name DbaExprCst
+        .code 3
+        .protobuf-name "dbaexpr_DbaExprCst"
+    ]
+    .option [
+        .name DbaExprUnary
+        .code 4
+        .protobuf-name "dbaexpr_DbaExprUnary"
+    ]
+    .option [
+        .name DbaExprBinary
+        .code 5
+        .protobuf-name "dbaexpr_DbaExprBinary"
+    ]
+    .option [
+        .name DbaExprRestrict
+        .code 6
+        .protobuf-name "dbaexpr_DbaExprRestrict"
+    ]
+    .option [
+        .name DbaExprExtU
+        .code 7
+        .protobuf-name "dbaexpr_DbaExprExtU"
+    ]
+    .option [
+        .name DbaExprExtS
+        .code 8
+        .protobuf-name "dbaexpr_DbaExprExtS"
+    ]
+    .option [
+        .name DbaExprIte
+        .code 9
+        .protobuf-name "dbaexpr_DbaExprIte"
+    ]
+    .option [
+        .name DbaExprAlternative
+        .code 10
+        .protobuf-name "dbaexpr_DbaExprAlternative"
+    ]
+]
+
+.enum [
+    .name dbaexpr-dbaunary
+    .option [
+        .name DbaUnaryMinus
+        .code 1
+        .protobuf-name "dbaexpr_DbaUnaryMinus"
+    ]
+    .option [
+        .name DbaUnaryNot
+        .code 2
+        .protobuf-name "dbaexpr_DbaUnaryNot"
+    ]
+]
+
+.enum [
+    .name dbaexpr-dbabinary
+    .option [
+        .name DbaPlus
+        .code 1
+        .protobuf-name "dbaexpr_DbaPlus"
+    ]
+    .option [
+        .name DbaMinus
+        .code 2
+        .protobuf-name "dbaexpr_DbaMinus"
+    ]
+    .option [
+        .name DbaMultU
+        .code 3
+        .protobuf-name "dbaexpr_DbaMultU"
+    ]
+    .option [
+        .name DbaMultS
+        .code 4
+        .protobuf-name "dbaexpr_DbaMultS"
+    ]
+    .option [
+        .name DbaDivU
+        .code 6
+        .protobuf-name "dbaexpr_DbaDivU"
+    ]
+    .option [
+        .name DbaDivS
+        .code 7
+        .protobuf-name "dbaexpr_DbaDivS"
+    ]
+    .option [
+        .name DbaModU
+        .code 8
+        .protobuf-name "dbaexpr_DbaModU"
+    ]
+    .option [
+        .name DbaModS
+        .code 9
+        .protobuf-name "dbaexpr_DbaModS"
+    ]
+    .option [
+        .name DbaOr
+        .code 10
+        .protobuf-name "dbaexpr_DbaOr"
+    ]
+    .option [
+        .name DbaAnd
+        .code 11
+        .protobuf-name "dbaexpr_DbaAnd"
+    ]
+    .option [
+        .name DbaXor
+        .code 12
+        .protobuf-name "dbaexpr_DbaXor"
+    ]
+    .option [
+        .name DbaConcat
+        .code 13
+        .protobuf-name "dbaexpr_DbaConcat"
+    ]
+    .option [
+        .name DbaLShiftU
+        .code 14
+        .protobuf-name "dbaexpr_DbaLShiftU"
+    ]
+    .option [
+        .name DbaRShiftU
+        .code 15
+        .protobuf-name "dbaexpr_DbaRShiftU"
+    ]
+    .option [
+        .name DbaRShiftS
+        .code 16
+        .protobuf-name "dbaexpr_DbaRShiftS"
+    ]
+    .option [
+        .name DbaLeftRotate
+        .code 17
+        .protobuf-name "dbaexpr_DbaLeftRotate"
+    ]
+    .option [
+        .name DbaRightRotate
+        .code 18
+        .protobuf-name "dbaexpr_DbaRightRotate"
+    ]
+    .option [
+        .name DbaEq
+        .code 19
+        .protobuf-name "dbaexpr_DbaEq"
+    ]
+    .option [
+        .name DbaDiff
+        .code 20
+        .protobuf-name "dbaexpr_DbaDiff"
+    ]
+    .option [
+        .name DbaLeqU
+        .code 21
+        .protobuf-name "dbaexpr_DbaLeqU"
+    ]
+    .option [
+        .name DbaLtU
+        .code 22
+        .protobuf-name "dbaexpr_DbaLtU"
+    ]
+    .option [
+        .name DbaGeqU
+        .code 23
+        .protobuf-name "dbaexpr_DbaGeqU"
+    ]
+    .option [
+        .name DbaGtU
+        .code 24
+        .protobuf-name "dbaexpr_DbaGtU"
+    ]
+    .option [
+        .name DbaLeqS
+        .code 25
+        .protobuf-name "dbaexpr_DbaLeqS"
+    ]
+    .option [
+        .name DbaLtS
+        .code 26
+        .protobuf-name "dbaexpr_DbaLtS"
+    ]
+    .option [
+        .name DbaGeqS
+        .code 27
+        .protobuf-name "dbaexpr_DbaGeqS"
+    ]
+    .option [
+        .name DbaGtS
+        .code 28
+        .protobuf-name "dbaexpr_DbaGtS"
+    ]
+]
+
+.record [
+    .name dbacond
+    .field [
+        .name typeid
+        .type dbacond-typeid-dbacond
+        .code 1
+    ]
+    .field [
+        .name expr
+        .type dbaexpr
+        .optional
+        .code 2
+    ]
+    .field [
+        .name cond1
+        .type dbacond
+        .optional
+        .code 3
+    ]
+    .field [
+        .name cond2
+        .type dbacond
+        .optional
+        .code 4
+    ]
+]
+
+.enum [
+    .name dbacond-typeid-dbacond
+    .option [
+        .name DbaCondReif
+        .code 1
+        .protobuf-name "dbacond_DbaCondReif"
+    ]
+    .option [
+        .name DbaCondNot
+        .code 2
+        .protobuf-name "dbacond_DbaCondNot"
+    ]
+    .option [
+        .name DbaCondAnd
+        .code 3
+        .protobuf-name "dbacond_DbaCondAnd"
+    ]
+    .option [
+        .name DbaCondOr
+        .code 4
+        .protobuf-name "dbacond_DbaCondOr"
+    ]
+    .option [
+        .name DbaTrue
+        .code 5
+        .protobuf-name "dbacond_DbaTrue"
+    ]
+    .option [
+        .name DbaFalse
+        .code 6
+        .protobuf-name "dbacond_DbaFalse"
+    ]
+]
+
+.record [
+    .name dbaLhs
+    .field [
+        .name typeid
+        .type dbaLhs-typeid-dbalhs
+        .code 1
+    ]
+    .field [
+        .name name
+        .type string
+        .optional
+        .code 2
+    ]
+    .field [
+        .name size
+        .type uint32
+        .optional
+        .code 3
+    ]
+    .field [
+        .name low
+        .type uint32
+        .optional
+        .code 4
+    ]
+    .field [
+        .name high
+        .type uint32
+        .optional
+        .code 5
+    ]
+    .field [
+        .name endian
+        .type endianness
+        .optional
+        .code 6
+    ]
+    .field [
+        .name expr
+        .type dbaexpr
+        .optional
+        .code 7
+    ]
+]
+
+.enum [
+    .name dbaLhs-typeid-dbalhs
+    .option [
+        .name DbaLhsVar
+        .code 1
+        .protobuf-name "dbaLhs_DbaLhsVar"
+    ]
+    .option [
+        .name DbaLhsVarRestrict
+        .code 2
+        .protobuf-name "dbaLhs_DbaLhsVarRestrict"
+    ]
+    .option [
+        .name DbaStore
+        .code 3
+        .protobuf-name "dbaLhs_DbaStore"
+    ]
+]
+
+.record [
+    .name dbainstr
+    .field [
+        .name typeid
+        .type dbainstr-typeid-instrkind
+        .code 1
+    ]
+    .field [
+        .name location
+        .type dbacodeaddress
+        .code 2
+    ]
+    .field [
+        .name lhs
+        .type dbaLhs
+        .optional
+        .code 3
+    ]
+    .field [
+        .name expr
+        .type dbaexpr
+        .optional
+        .code 4
+    ]
+    .field [
+        .name offset
+        .type uint32
+        .optional
+        .code 5
+    ]
+    .field [
+        .name address
+        .type codeaddress
+        .optional
+        .code 6
+    ]
+    .field [
+        .name tags
+        .type dbatag
+        .optional
+        .code 7
+    ]
+    .field [
+        .name cond
+        .type dbacond
+        .optional
+        .code 8
+    ]
+    .field [
+        .name stopinfos
+        .type dbastopstate
+        .optional
+        .code 9
+    ]
+    .field [
+        .name exprs
+        .type dbaexpr
+        .repeated
+        .code 10
+    ]
+]
+
+.enum [
+    .name dbainstr-typeid-instrkind
+    .option [
+        .name DbaIkAssign
+        .code 1
+        .protobuf-name "dbainstr_DbaIkAssign"
+    ]
+    .option [
+        .name DbaIkSJump
+        .code 2
+        .protobuf-name "dbainstr_DbaIkSJump"
+    ]
+    .option [
+        .name DbaIkDJump
+        .code 3
+        .protobuf-name "dbainstr_DbaIkDJump"
+    ]
+    .option [
+        .name DbaIkIf
+        .code 4
+        .protobuf-name "dbainstr_DbaIkIf"
+    ]
+    .option [
+        .name DbaIkStop
+        .code 5
+        .protobuf-name "dbainstr_DbaIkStop"
+    ]
+    .option [
+        .name DbaIkAssert
+        .code 6
+        .protobuf-name "dbainstr_DbaIkAssert"
+    ]
+    .option [
+        .name DbaIkAssume
+        .code 7
+        .protobuf-name "dbainstr_DbaIkAssume"
+    ]
+    .option [
+        .name DbaIkNondetAssume
+        .code 8
+        .protobuf-name "dbainstr_DbaIkNondetAssume"
+    ]
+    .option [
+        .name DbaIkNondet
+        .code 9
+        .protobuf-name "dbainstr_DbaIkNondet"
+    ]
+    .option [
+        .name DbaIkUndef
+        .code 10
+        .protobuf-name "dbainstr_DbaIkUndef"
+    ]
+    .option [
+        .name DbaIkMalloc
+        .code 11
+        .protobuf-name "dbainstr_DbaIkMalloc"
+    ]
+    .option [
+        .name DbaIkFree
+        .code 12
+        .protobuf-name "dbainstr_DbaIkFree"
+    ]
+    .option [
+        .name DbaIkPrint
+        .code 13
+        .protobuf-name "dbainstr_DbaIkPrint"
+    ]
+]
+
+.record [
+    .name dba-list
+    .field [
+        .name instrs
+        .type dbainstr
+        .repeated
+        .code 1
+    ]
+]
+
+.enum [
+    .name endianness
+    .option [
+        .name Little
+        .code 1
+    ]
+    .option [
+        .name Big
+        .code 2
+    ]
+]

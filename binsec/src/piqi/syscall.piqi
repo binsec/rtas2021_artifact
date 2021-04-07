@@ -1,0 +1,202 @@
+.protobuf-package "syscall_types"
+
+.import [ .module common ]
+
+.record [
+    .name syscall-pol
+    .field [
+        .name id
+        .type uint32
+        .code 1
+    ]
+    .field [
+        .name name
+        .type string
+        .code 2
+    ]
+    .field [
+        .name ident
+        .type syscall-ident
+        .code 3
+    ]
+    .field [
+        .name action
+        .type common/tracing-action
+        .code 4
+    ]
+    .field [
+        .name restrict-addresses
+        .type uint64
+        .repeated
+        .code 5
+    ]
+    .field [
+        .name nr-read
+        .type nr-read-pol
+        .optional
+        .code 6
+    ]
+]
+
+.record [
+    .name syscall-t
+    .field [
+        .name id
+        .type uint32
+        .code 1
+    ]
+    .field [
+        .name ident
+        .type syscall-ident
+        .code 2
+    ]
+    .field [
+        .name open-syscall
+        .type nr-open-t
+        .optional
+        .code 3
+    ]
+    .field [
+        .name read-syscall
+        .type nr-read-t
+        .optional
+        .code 4
+    ]
+    .field [
+        .name write-sycall
+        .type nr-write-t
+        .optional
+        .code 5
+    ]
+    .field [
+        .name generic-sycall
+        .type sys-generic-t
+        .optional
+        .code 6
+    ]
+]
+
+.record [
+    .name nr-read-pol
+    .field [
+        .name name
+        .type string
+        .code 1
+    ]
+]
+
+.record [
+    .name nr-open-t
+    .field [
+        .name file-name
+        .type string
+        .code 1
+    ]
+    .field [
+        .name flags
+        .type int32
+        .code 2
+    ]
+    .field [
+        .name mode
+        .type uint32
+        .code 3
+    ]
+    .field [
+        .name file-descriptor
+        .type protobuf-int32
+        .code 4
+    ]
+]
+
+.record [
+    .name nr-read-t
+    .field [
+        .name file-descriptor
+        .type uint32
+        .code 1
+    ]
+    .field [
+        .name buffer-address
+        .type uint64
+        .code 2
+    ]
+    .field [
+        .name count
+        .type uint32
+        .code 3
+    ]
+    .field [
+        .name buffer-data
+        .type binary
+        .code 4
+    ]
+    .field [
+        .name count-effective
+        .type uint32
+        .code 5
+    ]
+]
+
+.record [
+    .name nr-write-t
+    .field [
+        .name file-descriptor
+        .type uint32
+        .code 1
+    ]
+    .field [
+        .name buffer-address
+        .type uint64
+        .code 2
+    ]
+    .field [
+        .name count
+        .type uint32
+        .code 3
+    ]
+    .field [
+        .name buffer-data
+        .type binary
+        .code 4
+    ]
+    .field [
+        .name count-effective
+        .type uint32
+        .code 5
+    ]
+]
+
+.record [
+    .name sys-generic-t
+    .field [
+        .name name
+        .type string
+        .code 1
+    ]
+    .field [
+        .name address
+        .type uint32
+        .code 2
+    ]
+]
+
+.enum [
+    .name syscall-ident
+    .option [
+        .name NR-READ
+        .code 0
+    ]
+    .option [
+        .name NR-WRITE
+        .code 1
+    ]
+    .option [
+        .name NR-OPEN
+        .code 2
+    ]
+    .option [
+        .name GENERIC
+        .code 3
+    ]
+]

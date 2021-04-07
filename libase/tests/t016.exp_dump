@@ -1,0 +1,3 @@
+t016.c:4:13: `0 / X' -> BottomMod
+t016.c:4:17: `X' -> {0}
+t016.c:4:20: `__retres' -> <bottom>

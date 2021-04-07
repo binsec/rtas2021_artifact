@@ -1,0 +1,6 @@
+[kernel:typing:no-proto] t202.c:11: Warning: 
+  Calling function u that is declared without prototype.
+  Its formals will be inferred from actual arguments
+[codex] Warning: Warning: no definition for u
+[codex] compilation done
+[codex] Proved 11/11 alarms (remaining: 0; by SMT: 0)

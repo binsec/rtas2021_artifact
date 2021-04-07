@@ -1,0 +1,6 @@
+[kernel:typing:implicit-function-declaration] t031.c:8: Warning: 
+  Calling undeclared function __VERIFIER_error. Old style K&R code?
+[codex] compilation done
+[codex] SVComp Unreachability (SMT): FALSE
+[codex] SVComp unreachability: FALSE
+[codex] Proved 3/3 alarms (remaining: 0; by SMT: 0)

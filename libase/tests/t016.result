@@ -1,0 +1,3 @@
+[codex] compilation done
+[codex] t016.c:4:alarm Division_by_zero(X): result is **NOT** VALID (using abstract interpretation)
+[codex] Proved 5/5 alarms (remaining: 0; by SMT: 0)

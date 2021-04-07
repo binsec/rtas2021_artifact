@@ -1,0 +1,21 @@
+[kernel:typing:implicit-function-declaration] t084.c:4: Warning: 
+  Calling undeclared function rand. Old style K&R code?
+[codex] Warning: Warning: no definition for rand
+[codex] compilation done
+[codex] t084.c:7:alarm Index_out_of_bound(e
+  >=
+  0): result is unknown (using abstract interpretation)
+[codex] t084.c:7:alarm Index_out_of_bound(e
+  <
+  4): result is unknown (using abstract interpretation)
+[codex] t084.c:7:alarm Memory_access(a[e],
+  read): result is unknown (using abstract interpretation)
+[codex] t084.c:9:alarm Index_out_of_bound(d
+  >=
+  0): result is unknown (using abstract interpretation)
+[codex] t084.c:9:alarm Index_out_of_bound(d
+  <
+  4): result is unknown (using abstract interpretation)
+[codex] t084.c:9:alarm Memory_access(b[d],
+  read): result is unknown (using abstract interpretation)
+[codex] Proved 8/14 alarms (remaining: 6; by SMT: 0)

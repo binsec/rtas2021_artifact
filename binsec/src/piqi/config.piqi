@@ -1,0 +1,290 @@
+.protobuf-package "configuration"
+
+.import [ .module common ]
+
+.import [ .module libcall ]
+
+.import [ .module syscall ]
+
+.import [ .module instruction ]
+
+.import [
+    .module analysis_config
+    .name analysis-config
+]
+
+.record [
+    .name call-name-t
+    .field [
+        .name address
+        .type uint64
+        .code 1
+    ]
+    .field [
+        .name name
+        .type string
+        .code 2
+    ]
+]
+
+.record [
+    .name configuration
+    .field [
+        .name start
+        .type uint64
+        .optional
+        .code 1
+    ]
+    .field [
+        .name stop
+        .type uint64
+        .optional
+        .code 2
+    ]
+    .field [
+        .name call-skips
+        .type uint64
+        .repeated
+        .code 3
+    ]
+    .field [
+        .name fun-skips
+        .type uint64
+        .repeated
+        .code 4
+    ]
+    .field [
+        .name libcalls
+        .type libcall/libcall-pol
+        .repeated
+        .code 5
+    ]
+    .field [
+        .name syscalls
+        .type syscall/syscall-pol
+        .repeated
+        .code 6
+    ]
+    .field [
+        .name instrs
+        .type instruction/instr-pol
+        .repeated
+        .code 7
+    ]
+    .field [
+        .name policy
+        .type string
+        .repeated
+        .code 8
+    ]
+    .field [
+        .name inputs
+        .type input-t
+        .repeated
+        .code 9
+    ]
+    .field [
+        .name call-map
+        .type call-name-t
+        .repeated
+        .code 10
+    ]
+    .field [
+        .name breakpoints
+        .type uint64
+        .repeated
+        .code 11
+    ]
+    .field [
+        .name initial-state
+        .type common/memory-t
+        .repeated
+        .code 12
+    ]
+    .field [
+        .name direction
+        .type common/analysis-direction-t
+        .optional
+        .default.FORWARD
+        .code 13
+    ]
+    .field [
+        .name ksteps
+        .type uint32
+        .optional
+        .default 0
+        .code 14
+    ]
+    .field [
+        .name analysis-name
+        .type string
+        .optional
+        .default ""
+        .code 15
+    ]
+    .field [
+        .name solver
+        .type common/solver-t
+        .optional
+        .default.Z3
+        .code 16
+    ]
+    .field [
+        .name incremental
+        .type bool
+        .optional
+        .default false
+        .code 17
+    ]
+    .field [
+        .name timeout
+        .type uint32
+        .optional
+        .default 0
+        .code 18
+    ]
+    .field [
+        .name optim-cstprop
+        .type bool
+        .optional
+        .default false
+        .code 19
+    ]
+    .field [
+        .name optim-rebase
+        .type bool
+        .optional
+        .default false
+        .code 20
+    ]
+    .field [
+        .name optim-row
+        .type bool
+        .optional
+        .default false
+        .code 21
+    ]
+    .field [
+        .name optim-rowplus
+        .type bool
+        .optional
+        .default false
+        .code 26
+    ]
+    .field [
+        .name optim-eqprop
+        .type bool
+        .optional
+        .default false
+        .code 27
+    ]
+    .field [
+        .name callcvt
+        .type common/call-convention-t
+        .optional
+        .default.CDECL
+        .code 22
+    ]
+    .field [
+        .name default-action
+        .type common/action
+        .optional
+        .default.SYMB
+        .code 23
+    ]
+    .field [
+        .name verbosity
+        .type uint32
+        .optional
+        .default 0
+        .code 24
+    ]
+    .field [
+        .name additional-parameters
+        .type analysis-config/specific-parameters-t
+        .optional
+        .code 25
+    ]
+]
+
+.record [
+    .name input-t
+    .field [
+        .name typeid
+        .type input-t-input-kind
+        .code 1
+    ]
+    .field [
+        .name address
+        .type uint64
+        .code 2
+    ]
+    .field [
+        .name when
+        .type input-t-when-t
+        .code 3
+    ]
+    .field [
+        .name action
+        .type common/action
+        .code 4
+    ]
+    .field [
+        .name iteration
+        .type uint32
+        .optional
+        .default 0
+        .code 100
+    ]
+    .field [
+        .name reg
+        .type common/register-t
+        .optional
+        .code 7
+    ]
+    .field [
+        .name mem
+        .type common/memory-t
+        .optional
+        .code 8
+    ]
+    .field [
+        .name indirect
+        .type common/indirect-register-t
+        .optional
+        .code 9
+    ]
+]
+
+.enum [
+    .name input-t-input-kind
+    .option [
+        .name REG
+        .code 0
+        .protobuf-name "input_t_REG"
+    ]
+    .option [
+        .name MEM
+        .code 1
+        .protobuf-name "input_t_MEM"
+    ]
+    .option [
+        .name INDIRECT
+        .code 2
+        .protobuf-name "input_t_INDIRECT"
+    ]
+]
+
+.enum [
+    .name input-t-when-t
+    .option [
+        .name BEFORE
+        .code 0
+        .protobuf-name "input_t_BEFORE"
+    ]
+    .option [
+        .name AFTER
+        .code 1
+        .protobuf-name "input_t_AFTER"
+    ]
+]

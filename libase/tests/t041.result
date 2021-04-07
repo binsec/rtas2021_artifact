@@ -1,0 +1,8 @@
+[codex] compilation done
+[codex] t041.c:9:alarm Memory_access(*c,
+  read): result is unknown (using abstract interpretation)
+[codex] t041.c:12:alarm Memory_access(*d,
+  read): result is unknown (using abstract interpretation)
+[codex] t041.c:12:alarm Memory_access(*tmp,
+  write): result is unknown (using abstract interpretation)
+[codex] Proved 16/19 alarms (remaining: 3; by SMT: 0)

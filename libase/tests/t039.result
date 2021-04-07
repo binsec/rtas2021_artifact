@@ -1,0 +1,9 @@
+[kernel:typing:implicit-function-declaration] t039.c:5: Warning: 
+  Calling undeclared function fn2. Old style K&R code?
+[kernel:typing:int-conversion] t039.c:10: Warning: 
+  Conversion from a pointer to an integer without an explicit cast
+[kernel:typing:incompatible-types-call] t039.c:10: Warning: 
+  expected 'int' but got argument of type 'int *': b
+[codex] Warning: Warning: no definition for fn2
+[codex] compilation done
+[codex] Proved 5/5 alarms (remaining: 0; by SMT: 0)

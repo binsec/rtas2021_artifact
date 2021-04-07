@@ -1,0 +1,4 @@
+[kernel:typing:incompatible-types-call] t300.c:11: Warning: 
+  expected 'int *' but got argument of type 'int': c
+[codex] compilation done
+[codex] Proved 13/13 alarms (remaining: 0; by SMT: 0)

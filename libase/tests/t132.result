@@ -1,0 +1,9 @@
+[kernel:typing:implicit-function-declaration] t132.c:6: Warning: 
+  Calling undeclared function d. Old style K&R code?
+[kernel:typing:implicit-function-declaration] t132.c:10: Warning: 
+  Calling undeclared function __VERIFIER_error. Old style K&R code?
+[codex] Warning: Warning: no definition for d
+[codex] compilation done
+[codex] SVComp Unreachability (SMT): FALSE
+[codex] SVComp unreachability: FALSE
+[codex] Proved 5/5 alarms (remaining: 0; by SMT: 0)

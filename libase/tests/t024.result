@@ -1,0 +1,7 @@
+[kernel:typing:no-proto] t024.c:5: Warning: 
+  Calling function __VERIFIER_error that is declared without prototype.
+  Its formals will be inferred from actual arguments
+[codex] compilation done
+[codex] SVComp Unreachability (SMT): UNKNOWN
+[codex] SVComp unreachability: UNKNOWN
+[codex] Proved 8/8 alarms (remaining: 0; by SMT: 0)

@@ -1,0 +1,39 @@
+simple070.c:7:8: `b % 16 == 3' -> {0; 1}
+simple070.c:7:8: `b % 16' -> [-15..15]
+simple070.c:7:8: `b' -> [--..--]
+simple070.c:7:25: `b < 1 << 18' -> {0; 1}
+simple070.c:7:25: `b' -> [3..0x7FFFFFF3],3%16
+simple070.c:8:12: `b' -> [3..0x3FFF3],3%16
+simple070.c:9:13: `(short *)(& b)' -> {{ &b }}
+simple070.c:10:14: `*p' -> [--..--]
+simple070.c:10:15: `p' -> {{ &b }}
+simple070.c:11:15: `*(p + 1)' -> [--..--]
+simple070.c:11:17: `p + 1' -> {{ &b + 2 * {1} }}
+simple070.c:11:17: `p' -> {{ &b }}
+simple070.c:15:6: `(short *)(& new)' -> {{ &new }}
+simple070.c:16:3: `p' -> {{ &new }}
+simple070.c:16:7: `low' -> [--..--]
+simple070.c:17:4: `p + 1' -> {{ &new + 2 * {1} }}
+simple070.c:17:4: `p' -> {{ &new }}
+simple070.c:17:11: `high' -> [--..--]
+simple070.c:18:17: `new' -> [--..--]
+simple070.c:20:13: `(short *)(& new2)' -> {{ &new2 }}
+simple070.c:21:3: `q' -> {{ &new2 }}
+simple070.c:21:7: `high' -> [--..--]
+simple070.c:22:4: `q + 1' -> {{ &new2 + 2 * {1} }}
+simple070.c:22:4: `q' -> {{ &new2 }}
+simple070.c:22:11: `low' -> [--..--]
+simple070.c:23:18: `new2' -> [--..--]
+simple070.c:24:20: `new == old' -> {0; 1}
+simple070.c:24:20: `new' -> [--..--]
+simple070.c:24:27: `old' -> [3..0x3FFF3],3%16
+simple070.c:25:20: `new2 >> 16 == (old & 0xFFFF)' -> {0; 1}
+simple070.c:25:21: `new2 >> 16' -> [-0x8000..0x7FFF]
+simple070.c:25:21: `new2' -> [--..--]
+simple070.c:25:37: `old & 0xFFFF' -> [3..0xFFF3],3%16
+simple070.c:25:37: `old' -> [3..0x3FFF3],3%16
+simple070.c:26:20: `(new2 & 0xFFFF) == old >> 16' -> {0; 1}
+simple070.c:26:21: `new2 & 0xFFFF' -> [0..0xFFFF]
+simple070.c:26:21: `new2' -> [--..--]
+simple070.c:26:40: `old >> 16' -> {0; 1; 2; 3}
+simple070.c:26:40: `old' -> [3..0x3FFF3],3%16

@@ -1,0 +1,5 @@
+[codex] Warning: Warning: no definition for rand
+[codex] compilation done
+[codex] t057.c:19:alarm Memory_access(*(state_2 + b),
+  read): result is unknown (using abstract interpretation)
+[codex] Proved 24/25 alarms (remaining: 1; by SMT: 0)

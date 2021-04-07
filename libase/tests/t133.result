@@ -1,0 +1,9 @@
+[kernel:typing:implicit-function-declaration] t133.c:10: Warning: 
+  Calling undeclared function __VERIFIER_error. Old style K&R code?
+[kernel:typing:implicit-function-declaration] t133.c:9: Warning: 
+  Calling undeclared function rand. Old style K&R code?
+[codex] Warning: Warning: no definition for rand
+[codex] compilation done
+[codex] SVComp Unreachability (SMT): FALSE
+[codex] SVComp unreachability: FALSE
+[codex] Proved 6/6 alarms (remaining: 0; by SMT: 0)

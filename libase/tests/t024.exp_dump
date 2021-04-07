@@ -1,0 +1,10 @@
+t024.c:4:6: `! cond' -> {1}
+t024.c:4:8: `cond' -> {0}
+t024.c:13:9: `x > (unsigned int)1' -> {0; 1}
+t024.c:13:9: `x' -> [1..0xFFFFFF1],1%2
+t024.c:14:4: `x - (unsigned int)2' -> [1..0xFFFFFEF],1%2
+t024.c:14:4: `x' -> [3..0xFFFFFF1],1%2
+t024.c:17:20: `! (x % (unsigned int)2)' -> {0}
+t024.c:17:22: `x % (unsigned int)2' -> {1}
+t024.c:17:22: `x' -> {1}
+t024.c:18:0: `__retres' -> <bottom>

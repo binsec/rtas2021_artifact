@@ -1,0 +1,5 @@
+[codex] compilation done
+[codex] Finite_memory: show each_f0:[-0x7FFFFFFB..17]
+                              [-0x7FFFFFFA..18]
+                              [-0x7FFFFFF9..19]
+[codex] Proved 5/5 alarms (remaining: 0; by SMT: 0)

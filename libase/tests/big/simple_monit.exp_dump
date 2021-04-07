@@ -1,0 +1,74 @@
+big/simple_monit.c:33:50: `(struct command_f0 *)(& command[i])' -> {{ &command + 1 * [0..93] }}
+big/simple_monit.c:33:50: `& command[i]' -> {{ &command + 1 * [0..93] }}
+big/simple_monit.c:33:59: `i' -> [0..93]
+big/simple_monit.c:34:5: `(unsigned int)len != sizeof(struct command_f0)' -> {0; 1}
+big/simple_monit.c:34:5: `(unsigned int)len' -> [1..99]
+big/simple_monit.c:34:5: `len' -> [1..99]
+big/simple_monit.c:37:13: `pCmd->arg1' -> [--..--]
+big/simple_monit.c:37:13: `pCmd' -> {{ &command + 1 * [0..93] }}
+big/simple_monit.c:38:13: `pCmd->arg2' -> [--..--]
+big/simple_monit.c:38:13: `pCmd' -> {{ &command + 1 * [0..90] }}
+big/simple_monit.c:40:8: `arg1 + arg2' -> [--..--]
+big/simple_monit.c:40:8: `arg1' -> [--..--]
+big/simple_monit.c:40:15: `arg2' -> [--..--]
+big/simple_monit.c:44:50: `(struct command_f1 *)(& command[i])' -> {{ &command + 1 * [0..93] }}
+big/simple_monit.c:44:50: `& command[i]' -> {{ &command + 1 * [0..93] }}
+big/simple_monit.c:44:59: `i' -> [0..93]
+big/simple_monit.c:46:14: `& pCmd->arg1' -> {{ &command + 1 * [0..93] + 6 }}
+big/simple_monit.c:46:15: `pCmd' -> {{ &command + 1 * [0..93] }}
+big/simple_monit.c:47:16: `& pCmd->arg2' -> {{ &command + 1 * [0..93] + 10 }}
+big/simple_monit.c:47:17: `pCmd' -> {{ &command + 1 * [0..93] }}
+big/simple_monit.c:48:14: `& pCmd->arg3' -> {{ &command + 1 * [0..93] + 12 }}
+big/simple_monit.c:48:15: `pCmd' -> {{ &command + 1 * [0..93] }}
+big/simple_monit.c:52:6: `(unsigned int)len != sizeof(struct command_f1)' -> {0; 1}
+big/simple_monit.c:52:6: `(unsigned int)len' -> [1..99]
+big/simple_monit.c:52:6: `len' -> [1..99]
+big/simple_monit.c:56:14: `*arg1' -> [--..--]
+big/simple_monit.c:56:15: `arg1' -> {{ &command + 1 * [0..93] + 6 }}
+big/simple_monit.c:57:14: `(int)*arg2' -> [-0x8000..0x7FFF]
+big/simple_monit.c:57:14: `*arg2' -> [--..--]
+big/simple_monit.c:57:15: `arg2' -> {{ &command + 1 * [0..90] + 10 }}
+big/simple_monit.c:58:14: `*arg3' -> [--..--]
+big/simple_monit.c:58:15: `arg3' -> {{ &command + 1 * [0..88] + 12 }}
+big/simple_monit.c:59:8: `(varg1 + varg2) + varg3' -> [--..--]
+big/simple_monit.c:59:8: `varg1 + varg2' -> [--..--]
+big/simple_monit.c:59:8: `varg1' -> [--..--]
+big/simple_monit.c:59:16: `varg2' -> [-0x8000..0x7FFF]
+big/simple_monit.c:59:24: `varg3' -> [--..--]
+big/simple_monit.c:69:13: `i < 100' -> {0; 1}
+big/simple_monit.c:69:13: `i' -> [0..100]
+big/simple_monit.c:69:37: `i' -> [0..99]
+big/simple_monit.c:69:22: `i + 1' -> [1..100]
+big/simple_monit.c:69:22: `i' -> [0..99]
+big/simple_monit.c:74:46: `(struct command *)(& command[i])' -> {{ &command + 1 * [0..99] }}
+big/simple_monit.c:74:46: `& command[i]' -> {{ &command + 1 * [0..99] }}
+big/simple_monit.c:74:55: `i' -> [0..99]
+big/simple_monit.c:79:7: `((unsigned int)i + sizeof(pCmd->len)) + sizeof(pCmd->tag) >= (unsigned int)100' -> {0; 1}
+big/simple_monit.c:79:7: `((unsigned int)i + sizeof(pCmd->len)) + sizeof(pCmd->tag)' -> [6..105]
+big/simple_monit.c:79:7: `(unsigned int)i + sizeof(pCmd->len)' -> [4..103]
+big/simple_monit.c:79:7: `(unsigned int)i' -> [0..99]
+big/simple_monit.c:79:7: `i' -> [0..99]
+big/simple_monit.c:82:22: `(unsigned int)i + sizeof(struct command) < (unsigned int)100' -> {1}
+big/simple_monit.c:82:22: `(unsigned int)i + sizeof(struct command)' -> [6..99]
+big/simple_monit.c:82:22: `(unsigned int)i' -> [0..93]
+big/simple_monit.c:82:22: `i' -> [0..93]
+big/simple_monit.c:86:14: `pCmd->len' -> [--..--]
+big/simple_monit.c:86:14: `pCmd' -> {{ &command + 1 * [0..93] }}
+big/simple_monit.c:89:7: `i + len >= 100' -> {0; 1}
+big/simple_monit.c:89:7: `i + len' -> [--..--]
+big/simple_monit.c:89:7: `i' -> [0..93]
+big/simple_monit.c:89:11: `len' -> [--..--]
+big/simple_monit.c:92:7: `len == 0' -> {0; 1}
+big/simple_monit.c:92:7: `len' -> [-0x80000000..99]
+big/simple_monit.c:95:7: `len < 0' -> {0; 1}
+big/simple_monit.c:95:7: `len' -> {signed: [-0x80000000..99]; unsigned: [1..0xFFFFFFFF]}
+big/simple_monit.c:97:11: `(int)pCmd->tag' -> [-0x8000..0x7FFF]
+big/simple_monit.c:97:11: `pCmd->tag' -> [--..--]
+big/simple_monit.c:97:11: `pCmd' -> {{ &command + 1 * [0..93] }}
+big/simple_monit.c:98:15: `i' -> [0..93]
+big/simple_monit.c:98:17: `len' -> [1..99]
+big/simple_monit.c:99:15: `i' -> [0..93]
+big/simple_monit.c:99:17: `len' -> [1..99]
+big/simple_monit.c:104:4: `i + len' -> [1..99]
+big/simple_monit.c:104:4: `i' -> [0..93]
+big/simple_monit.c:104:9: `len' -> [1..99]

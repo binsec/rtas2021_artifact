@@ -1,0 +1,313 @@
+##### PARAMETERIZED #####
+
+1:
+  1.51user 0.13system 0:01.72elapsed 95%CPU (0avgtext+0avgdata 184696maxresident)k
+  0inputs+104outputs (0major+101132minor)pagefaults 0swaps
+  post-initial computation time:
+   0.53 WALL ( 0.52 usr +  0.02 sys =  0.53 CPU)
+  runtime inductivity check time:
+   0.26 WALL ( 0.23 usr +  0.02 sys =  0.26 CPU)
+  concrete initialization time:
+   0.06 WALL ( 0.06 usr +  0.00 sys =  0.06 CPU)
+  param. typing time:
+   0.00 WALL ( 0.00 usr +  0.00 sys =  0.00 CPU)
+  inclusion checking time:
+   0.01 WALL ( 0.01 usr +  0.00 sys =  0.01 CPU)
+  Total time:
+   1.09 WALL ( 1.04 usr +  0.05 sys =  1.09 CPU)
+
+2:
+  1.55user 0.13system 0:01.76elapsed 95%CPU (0avgtext+0avgdata 186144maxresident)k
+  392inputs+104outputs (2major+101040minor)pagefaults 0swaps
+  post-initial computation time:
+   0.54 WALL ( 0.52 usr +  0.02 sys =  0.54 CPU)
+  runtime inductivity check time:
+   0.25 WALL ( 0.23 usr +  0.02 sys =  0.25 CPU)
+  concrete initialization time:
+   0.08 WALL ( 0.08 usr +  0.00 sys =  0.08 CPU)
+  param. typing time:
+   0.00 WALL ( 0.00 usr +  0.00 sys =  0.00 CPU)
+  inclusion checking time:
+   0.01 WALL ( 0.01 usr +  0.00 sys =  0.01 CPU)
+  Total time:
+   1.13 WALL ( 1.08 usr +  0.04 sys =  1.13 CPU)
+
+5:
+  1.66user 0.13system 0:01.87elapsed 96%CPU (0avgtext+0avgdata 191176maxresident)k
+  392inputs+104outputs (2major+103649minor)pagefaults 0swaps
+  post-initial computation time:
+   0.53 WALL ( 0.51 usr +  0.02 sys =  0.53 CPU)
+  runtime inductivity check time:
+   0.26 WALL ( 0.24 usr +  0.02 sys =  0.26 CPU)
+  concrete initialization time:
+   0.15 WALL ( 0.15 usr +  0.00 sys =  0.15 CPU)
+  param. typing time:
+   0.00 WALL ( 0.00 usr +  0.00 sys =  0.00 CPU)
+  inclusion checking time:
+   0.02 WALL ( 0.02 usr +  0.00 sys =  0.02 CPU)
+  Total time:
+   1.24 WALL ( 1.20 usr +  0.04 sys =  1.24 CPU)
+
+10:
+  1.84user 0.15system 0:02.07elapsed 96%CPU (0avgtext+0avgdata 203840maxresident)k
+  0inputs+104outputs (0major+106822minor)pagefaults 0swaps
+  post-initial computation time:
+   0.53 WALL ( 0.52 usr +  0.02 sys =  0.53 CPU)
+  runtime inductivity check time:
+   0.26 WALL ( 0.25 usr +  0.02 sys =  0.26 CPU)
+  concrete initialization time:
+   0.25 WALL ( 0.24 usr +  0.00 sys =  0.25 CPU)
+  param. typing time:
+   0.00 WALL ( 0.00 usr +  0.00 sys =  0.00 CPU)
+  inclusion checking time:
+   0.02 WALL ( 0.02 usr +  0.00 sys =  0.02 CPU)
+  Total time:
+   1.43 WALL ( 1.39 usr +  0.05 sys =  1.43 CPU)
+
+50:
+  3.42user 0.14system 0:03.65elapsed 97%CPU (0avgtext+0avgdata 318916maxresident)k
+  208inputs+104outputs (2major+135795minor)pagefaults 0swaps
+  post-initial computation time:
+   0.56 WALL ( 0.54 usr +  0.01 sys =  0.56 CPU)
+  runtime inductivity check time:
+   0.32 WALL ( 0.30 usr +  0.02 sys =  0.32 CPU)
+  concrete initialization time:
+   1.11 WALL ( 1.10 usr +  0.01 sys =  1.11 CPU)
+  param. typing time:
+   0.01 WALL ( 0.01 usr +  0.00 sys =  0.01 CPU)
+  inclusion checking time:
+   0.06 WALL ( 0.06 usr +  0.00 sys =  0.06 CPU)
+  Total time:
+   3.02 WALL ( 2.96 usr +  0.05 sys =  3.01 CPU)
+
+100:
+  5.36user 0.22system 0:05.66elapsed 98%CPU (0avgtext+0avgdata 460584maxresident)k
+  0inputs+104outputs (0major+171343minor)pagefaults 0swaps
+  post-initial computation time:
+   0.61 WALL ( 0.59 usr +  0.02 sys =  0.61 CPU)
+  runtime inductivity check time:
+   0.37 WALL ( 0.34 usr +  0.02 sys =  0.37 CPU)
+  concrete initialization time:
+   2.23 WALL ( 2.21 usr +  0.01 sys =  2.23 CPU)
+  param. typing time:
+   0.02 WALL ( 0.02 usr +  0.00 sys =  0.02 CPU)
+  inclusion checking time:
+   0.10 WALL ( 0.09 usr +  0.01 sys =  0.10 CPU)
+  Total time:
+   5.02 WALL ( 4.91 usr +  0.11 sys =  5.02 CPU)
+
+500:
+  21.07user 0.45system 0:21.60elapsed 99%CPU (0avgtext+0avgdata 1582904maxresident)k
+  3392inputs+104outputs (2major+452184minor)pagefaults 0swaps
+  post-initial computation time:
+   0.84 WALL ( 0.83 usr +  0.02 sys =  0.84 CPU)
+  runtime inductivity check time:
+   0.85 WALL ( 0.83 usr +  0.03 sys =  0.85 CPU)
+  concrete initialization time:
+  10.71 WALL (10.63 usr +  0.08 sys = 10.71 CPU)
+  param. typing time:
+   0.08 WALL ( 0.08 usr +  0.00 sys =  0.08 CPU)
+  inclusion checking time:
+   0.58 WALL ( 0.55 usr +  0.03 sys =  0.58 CPU)
+  Total time:
+  20.94 WALL (20.59 usr +  0.34 sys = 20.94 CPU)
+
+1000:
+  42.02user 0.74system 0:42.84elapsed 99%CPU (0avgtext+0avgdata 2756164maxresident)k
+  0inputs+104outputs (0major+746125minor)pagefaults 0swaps
+  post-initial computation time:
+   1.17 WALL ( 1.14 usr +  0.02 sys =  1.17 CPU)
+  runtime inductivity check time:
+   1.48 WALL ( 1.46 usr +  0.02 sys =  1.48 CPU)
+  concrete initialization time:
+  22.03 WALL (21.86 usr +  0.16 sys = 22.03 CPU)
+  param. typing time:
+   0.22 WALL ( 0.22 usr +  0.01 sys =  0.22 CPU)
+  inclusion checking time:
+   0.93 WALL ( 0.91 usr +  0.01 sys =  0.93 CPU)
+  Total time:
+  42.15 WALL (41.54 usr +  0.61 sys = 42.15 CPU)
+
+2000:
+  92.84user 1.35system 1:34.28elapsed 99%CPU (0avgtext+0avgdata 5360124maxresident)k
+  0inputs+104outputs (0major+1457548minor)pagefaults 0swaps
+  post-initial computation time:
+   1.83 WALL ( 1.81 usr +  0.02 sys =  1.83 CPU)
+  runtime inductivity check time:
+   2.75 WALL ( 2.74 usr +  0.01 sys =  2.75 CPU)
+  concrete initialization time:
+  45.97 WALL (45.61 usr +  0.37 sys = 45.97 CPU)
+  param. typing time:
+   0.51 WALL ( 0.48 usr +  0.02 sys =  0.51 CPU)
+  inclusion checking time:
+   4.64 WALL ( 4.52 usr +  0.12 sys =  4.64 CPU)
+  Total time:
+  93.52 WALL (92.36 usr +  1.15 sys = 93.52 CPU)
+
+5000:
+  275.97user 3.14system 4:39.21elapsed 99%CPU (0avgtext+0avgdata 12460500maxresident)k
+  0inputs+104outputs (0major+3437221minor)pagefaults 0swaps
+  post-initial computation time:
+   3.67 WALL ( 3.64 usr +  0.02 sys =  3.67 CPU)
+  runtime inductivity check time:
+   6.41 WALL ( 6.39 usr +  0.02 sys =  6.41 CPU)
+  concrete initialization time:
+  126.59 WALL (125.72 usr +  0.86 sys = 126.59 CPU)
+  param. typing time:
+   1.43 WALL ( 1.38 usr +  0.04 sys =  1.43 CPU)
+  inclusion checking time:
+   6.39 WALL ( 6.14 usr +  0.25 sys =  6.39 CPU)
+  Total time:
+  278.28 WALL (275.48 usr +  2.78 sys = 278.27 CPU)
+
+10000:
+  727.12user 6.28system 12:13.55elapsed 99%CPU (0avgtext+0avgdata 24866276maxresident)k
+  0inputs+104outputs (0major+6885031minor)pagefaults 0swaps
+  post-initial computation time:
+   6.96 WALL ( 6.89 usr +  0.02 sys =  6.92 CPU)
+  runtime inductivity check time:
+  12.49 WALL (12.45 usr +  0.03 sys = 12.49 CPU)
+  concrete initialization time:
+  296.40 WALL (294.40 usr +  1.99 sys = 296.39 CPU)
+  param. typing time:
+   4.19 WALL ( 4.12 usr +  0.08 sys =  4.19 CPU)
+  inclusion checking time:
+  13.88 WALL (13.37 usr +  0.51 sys = 13.88 CPU)
+  Total time:
+  732.38 WALL (726.61 usr +  5.69 sys = 732.31 CPU)
+
+10000:
+~/binsec/src/codex/ /nix/store/rwgzqmskmnvjrdi5pnriasciq6d2g75l-system-path/bin/time zsh verif_for.sh 10000 param rr                                                                            ~/binsec/src/codex
+./system_desc_gen 10000 > system_desc_10000tasks.c
+gcc -c -m32 -ffreestanding -O2 -Wall -Wextra -std=gnu11 -fno-pic -foptimize-sibling-calls  -fno-asynchronous-unwind-tables  -fno-stack-protector -g 			           -DROUND_ROBIN_SCHEDULING -fno-common system_desc_10000tasks.c
+sed -e s/system_desc/system_desc_10000tasks/g kernel.ld.tpl > kernel.ld
+gcc -m32 -nostdlib -ffreestanding -Wl,-Tkernel.ld -o system_10000tasks.exe -ffreestanding -O2 -Wall -Wextra -std=gnu11 -fno-pic -foptimize-sibling-calls  -fno-asynchronous-unwind-tables  -fno-stack-protector -g            -DROUND_ROBIN_SCHEDULING low_level.c error.c high_level.c terminal.c lib/fprint.c pit_timer.c per_cpu.c round_robin_scheduler.c system_desc_10000tasks.o -lgcc
+low_level.c:18:2: attention: #warning "Not using a cross-compiler" [-Wcpp]
+   18 | #warning "Not using a cross-compiler"
+      |  ^~~~~~~
+/nix/store/552xnfj8drkrcg0fw6kpyw1byprjymhk-binutils-2.31.1/bin/ld : escamotage incompatible /nix/store/hjbbp7zv893l5kgjapn1qiq9yn2l55g9-libgcc-9.2.0/lib/libgcc.a lors de la recherche de -lgcc
+/nix/store/552xnfj8drkrcg0fw6kpyw1byprjymhk-binutils-2.31.1/bin/ld : escamotage incompatible /nix/store/hjbbp7zv893l5kgjapn1qiq9yn2l55g9-libgcc-9.2.0/lib/libgcc.a lors de la recherche de -lgcc
+if grub-file --is-x86-multiboot system_10000tasks.exe; then echo multiboot confirmed; else  echo the file is not multiboot; fi
+/bin/sh: grub-file : commande introuvable
+the file is not multiboot
+#objdump -M intel -D system_10000tasks.exe > system_10000tasks.objdump
+rm system_desc_10000tasks.o system_desc_10000tasks.c
+709.27user 76.14system 13:06.45elapsed 99%CPU (0avgtext+0avgdata 24257668maxresident)k
+181312inputs+134976outputs (493major+6809224minor)pagefaults 0swaps
+
+20000:
+~/binsec/src/codex/ /nix/store/rwgzqmskmnvjrdi5pnriasciq6d2g75l-system-path/bin/time zsh verif_for.sh 20000 param rr                                                                            ~/binsec/src/codex
+./system_desc_gen 20000 > system_desc_20000tasks.c
+gcc -c -m32 -ffreestanding -O2 -Wall -Wextra -std=gnu11 -fno-pic -foptimize-sibling-calls  -fno-asynchronous-unwind-tables  -fno-stack-protector -g 			           -DROUND_ROBIN_SCHEDULING -fno-common system_desc_20000tasks.c
+sed -e s/system_desc/system_desc_20000tasks/g kernel.ld.tpl > kernel.ld
+gcc -m32 -nostdlib -ffreestanding -Wl,-Tkernel.ld -o system_20000tasks.exe -ffreestanding -O2 -Wall -Wextra -std=gnu11 -fno-pic -foptimize-sibling-calls  -fno-asynchronous-unwind-tables  -fno-stack-protector -g            -DROUND_ROBIN_SCHEDULING low_level.c error.c high_level.c terminal.c lib/fprint.c pit_timer.c per_cpu.c round_robin_scheduler.c system_desc_20000tasks.o -lgcc
+low_level.c:18:2: attention: #warning "Not using a cross-compiler" [-Wcpp]
+   18 | #warning "Not using a cross-compiler"
+      |  ^~~~~~~
+/nix/store/552xnfj8drkrcg0fw6kpyw1byprjymhk-binutils-2.31.1/bin/ld : escamotage incompatible /nix/store/hjbbp7zv893l5kgjapn1qiq9yn2l55g9-libgcc-9.2.0/lib/libgcc.a lors de la recherche de -lgcc
+/nix/store/552xnfj8drkrcg0fw6kpyw1byprjymhk-binutils-2.31.1/bin/ld : escamotage incompatible /nix/store/hjbbp7zv893l5kgjapn1qiq9yn2l55g9-libgcc-9.2.0/lib/libgcc.a lors de la recherche de -lgcc
+if grub-file --is-x86-multiboot system_20000tasks.exe; then echo multiboot confirmed; else  echo the file is not multiboot; fi
+/bin/sh: grub-file : commande introuvable
+the file is not multiboot
+#objdump -M intel -D system_20000tasks.exe > system_20000tasks.objdump
+rm system_desc_20000tasks.o system_desc_20000tasks.c
+1987.60user 287.09system 54:04.51elapsed 70%CPU (0avgtext+0avgdata 32091712maxresident)k
+192149112inputs+269616outputs (3972855major+60556094minor)pagefaults 0swaps
+
+20000 the day after:
+  2343.57user 345.66system 1:35:49elapsed 46%CPU (0avgtext+0avgdata 32118484maxresident)k
+  452494264inputs+104outputs (18724925major+105094587minor)pagefaults 0swaps
+  post-initial computation time:
+  12.85 WALL (12.82 usr +  0.03 sys = 12.85 CPU)
+  runtime inductivity check time:
+  25.26 WALL (25.22 usr +  0.04 sys = 25.26 CPU)
+  concrete initialization time:
+  3613.65 WALL (901.95 usr + 271.23 sys = 1173.18 CPU)
+  param. typing time:
+  129.77 WALL (22.26 usr +  9.79 sys = 32.05 CPU)
+  inclusion checking time:
+  635.28 WALL (56.93 usr + 56.23 sys = 113.16 CPU)
+  Total time:
+  5747.01 WALL (2343.03 usr + 343.56 sys = 2686.59 CPU)
+
+##### FIXED #####
+
+1:
+  1.15user 0.14system 0:01.37elapsed 94%CPU (0avgtext+0avgdata 178660maxresident)k
+  0inputs+72outputs (0major+94016minor)pagefaults 0swaps
+  post-initial computation time:
+   0.35 WALL ( 0.35 usr +  0.00 sys =  0.35 CPU)
+  runtime inductivity check time:
+   0.26 WALL ( 0.23 usr +  0.03 sys =  0.26 CPU)
+  Total time:
+   0.73 WALL ( 0.70 usr +  0.04 sys =  0.73 CPU)
+
+2:
+  1.23user 0.13system 0:01.44elapsed 94%CPU (0avgtext+0avgdata 179112maxresident)k
+  0inputs+72outputs (0major+95201minor)pagefaults 0swaps
+  post-initial computation time:
+   0.38 WALL ( 0.37 usr +  0.01 sys =  0.38 CPU)
+  runtime inductivity check time:
+   0.29 WALL ( 0.25 usr +  0.04 sys =  0.29 CPU)
+  Total time:
+   0.80 WALL ( 0.75 usr +  0.04 sys =  0.80 CPU)
+
+5:
+  1.34user 0.12system 0:01.54elapsed 95%CPU (0avgtext+0avgdata 182820maxresident)k
+  0inputs+72outputs (0major+96843minor)pagefaults 0swaps
+  post-initial computation time:
+   0.44 WALL ( 0.44 usr +  0.00 sys =  0.44 CPU)
+  runtime inductivity check time:
+   0.31 WALL ( 0.28 usr +  0.03 sys =  0.31 CPU)
+  Total time:
+   0.90 WALL ( 0.87 usr +  0.04 sys =  0.90 CPU)
+
+10:
+  1.58user 0.14system 0:01.80elapsed 95%CPU (0avgtext+0avgdata 187536maxresident)k
+  0inputs+72outputs (0major+100707minor)pagefaults 0swaps
+  post-initial computation time:
+   0.57 WALL ( 0.56 usr +  0.01 sys =  0.57 CPU)
+  runtime inductivity check time:
+   0.40 WALL ( 0.36 usr +  0.03 sys =  0.40 CPU)
+  Total time:
+   1.16 WALL ( 1.11 usr +  0.05 sys =  1.16 CPU)
+
+50:
+  4.57user 0.18system 0:04.82elapsed 98%CPU (0avgtext+0avgdata 337532maxresident)k
+  0inputs+72outputs (0major+140463minor)pagefaults 0swaps
+  post-initial computation time:
+   1.52 WALL ( 1.48 usr +  0.04 sys =  1.52 CPU)
+  runtime inductivity check time:
+   2.14 WALL ( 2.11 usr +  0.03 sys =  2.14 CPU)
+  Total time:
+   4.18 WALL ( 4.09 usr +  0.08 sys =  4.18 CPU)
+
+100:
+  10.25user 0.22system 0:10.56elapsed 99%CPU (0avgtext+0avgdata 558080maxresident)k
+  0inputs+72outputs (0major+195624minor)pagefaults 0swaps
+  post-initial computation time:
+   2.72 WALL ( 2.68 usr +  0.04 sys =  2.72 CPU)
+  runtime inductivity check time:
+   6.27 WALL ( 6.21 usr +  0.06 sys =  6.27 CPU)
+  Total time:
+   9.91 WALL ( 9.78 usr +  0.12 sys =  9.91 CPU)
+
+500:
+  140.70user 1.44system 2:22.22elapsed 99%CPU (0avgtext+0avgdata 4281408maxresident)k
+  0inputs+72outputs (0major+1439694minor)pagefaults 0swaps
+  post-initial computation time:
+  12.25 WALL (12.15 usr +  0.10 sys = 12.25 CPU)
+  runtime inductivity check time:
+  123.23 WALL (122.18 usr +  1.04 sys = 123.22 CPU)
+  Total time:
+  141.49 WALL (140.23 usr +  1.25 sys = 141.48 CPU)
+
+1000:
+  570.95user 4.38system 9:35.45elapsed 99%CPU (0avgtext+0avgdata 13173036maxresident)k
+  6368inputs+72outputs (2major+4628834minor)pagefaults 0swaps
+  post-initial computation time:
+  24.80 WALL (24.61 usr +  0.19 sys = 24.80 CPU)
+  runtime inductivity check time:
+  537.80 WALL (534.13 usr +  3.63 sys = 537.77 CPU)
+  Total time:
+  574.54 WALL (570.48 usr +  4.02 sys = 574.50 CPU)

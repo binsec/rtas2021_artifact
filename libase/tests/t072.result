@@ -1,0 +1,7 @@
+[codex] compilation done
+[codex] t072.c:5:alarm Index_out_of_bound(b
+  <
+  6): result is unknown (using abstract interpretation)
+[codex] t072.c:5:alarm Memory_access(a[b],
+  read): result is unknown (using abstract interpretation)
+[codex] Proved 5/7 alarms (remaining: 2; by SMT: 0)

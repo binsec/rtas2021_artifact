@@ -1,0 +1,6 @@
+[kernel:typing:implicit-function-declaration] t111.c:10: Warning: 
+  Calling undeclared function rand. Old style K&R code?
+[codex] Warning: Warning: no definition for rand
+[codex] compilation done
+[codex] Warning: No backpropagation for 'bextract'
+[codex] Proved 11/11 alarms (remaining: 0; by SMT: 0)

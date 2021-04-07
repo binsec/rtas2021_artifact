@@ -1,0 +1,323 @@
+.import [ .module common ]
+
+.import [ .module dba ]
+
+.import [ .module config ]
+
+.record [
+    .name message-start-exec
+    .field [
+        .name start
+        .type uint64
+        .code 1
+    ]
+    .field [
+        .name stop
+        .type uint64
+        .code 2
+    ]
+    .field [
+        .name size-chunks
+        .type uint32
+        .optional
+        .default 1000
+        .code 3
+    ]
+    .field [
+        .name breakpoints
+        .type uint64
+        .repeated
+        .code 4
+    ]
+    .field [
+        .name inputs
+        .type config/input-t
+        .repeated
+        .code 5
+    ]
+    .field [
+        .name skips
+        .type uint64
+        .repeated
+        .code 6
+    ]
+]
+
+.record [
+    .name message-bp-reached
+    .field [
+        .name addr
+        .type uint64
+        .code 1
+    ]
+]
+
+.record [
+    .name message-patch
+    .field [
+        .name patch
+        .type config/input-t
+        .repeated
+        .code 1
+    ]
+]
+
+.record [
+    .name message-infos
+    .field [
+        .name nb-workers
+        .type uint32
+        .code 1
+    ]
+    .field [
+        .name analyses
+        .type string
+        .repeated
+        .code 2
+    ]
+    .field [
+        .name solvers
+        .type string
+        .repeated
+        .code 3
+    ]
+]
+
+.record [
+    .name message-decode-instr
+    .field [
+        .name instrs
+        .type message-decode-instr-instr-entry
+        .repeated
+        .code 1
+    ]
+    .field [
+        .name kind
+        .type message-decode-instr-bin-kind
+        .optional
+        .default.BIN
+        .code 2
+    ]
+    .field [
+        .name irkind
+        .type common/ir-kind-t
+        .optional
+        .default.DBA
+        .code 3
+    ]
+]
+
+.record [
+    .name message-decode-instr-instr-entry
+    .field [
+        .name instr
+        .type string
+        .code 1
+    ]
+    .field [
+        .name base-addr
+        .type uint64
+        .optional
+        .default 0
+        .code 2
+    ]
+]
+
+.enum [
+    .name message-decode-instr-bin-kind
+    .option [
+        .name HEXA
+        .code 1
+        .protobuf-name "message_decode_instr_HEXA"
+    ]
+    .option [
+        .name BIN
+        .code 2
+        .protobuf-name "message_decode_instr_BIN"
+    ]
+]
+
+.record [
+    .name message-decode-instr-reply
+    .field [
+        .name instrs
+        .type message-decode-instr-reply-instr-entry
+        .repeated
+        .code 1
+    ]
+]
+
+.record [
+    .name message-decode-instr-reply-instr-entry
+    .field [
+        .name opcode
+        .type string
+        .code 1
+    ]
+    .field [
+        .name irkind
+        .type common/ir-kind-t
+        .code 2
+    ]
+    .field [
+        .name dba-instrs
+        .type dba/dba-list
+        .optional
+        .code 3
+    ]
+]
+
+.record [
+    .name message-start-symb-exec
+    .field [
+        .name trace-type
+        .type message-start-symb-exec-trace-kind
+        .code 1
+    ]
+    .field [
+        .name name
+        .type string
+        .code 2
+    ]
+    .field [
+        .name solver
+        .type common/solver-t
+        .optional
+        .default.Z3
+        .code 3
+    ]
+    .field [
+        .name config
+        .type config/configuration
+        .optional
+        .code 4
+    ]
+    .field [
+        .name irkind
+        .type common/ir-kind-t
+        .optional
+        .default.DBA
+        .code 5
+    ]
+    .field [
+        .name formula-optim-cstfold
+        .type bool
+        .optional
+        .code 6
+    ]
+    .field [
+        .name formula-optim-rebase
+        .type bool
+        .optional
+        .code 7
+    ]
+    .field [
+        .name formula-optim-row
+        .type bool
+        .optional
+        .code 8
+    ]
+    .field [
+        .name verbose
+        .type uint32
+        .code 9
+    ]
+    .field [
+        .name addr-predicate
+        .type uint64
+        .optional
+        .code 10
+    ]
+    .field [
+        .name predicate
+        .type string
+        .optional
+        .code 11
+    ]
+    .field [
+        .name trace-filename
+        .type string
+        .optional
+        .code 12
+    ]
+]
+
+.enum [
+    .name message-start-symb-exec-trace-kind
+    .option [
+        .name FILE
+        .code 1
+        .protobuf-name "message_start_symb_exec_FILE"
+    ]
+    .option [
+        .name STREAM
+        .code 2
+        .protobuf-name "message_start_symb_exec_STREAM"
+    ]
+]
+
+.record [
+    .name message-output
+    .field [
+        .name type
+        .type message-output-output-kind
+        .code 1
+    ]
+    .field [
+        .name message
+        .type string
+        .code 2
+    ]
+    .field [
+        .name ram-total
+        .type uint32
+        .optional
+        .code 3
+    ]
+    .field [
+        .name ram-free
+        .type uint32
+        .optional
+        .code 4
+    ]
+    .field [
+        .name ram-available
+        .type uint32
+        .optional
+        .code 5
+    ]
+]
+
+.enum [
+    .name message-output-output-kind
+    .option [
+        .name SUCCESS
+        .code 1
+        .protobuf-name "message_output_SUCCESS"
+    ]
+    .option [
+        .name RESULT
+        .code 2
+        .protobuf-name "message_output_RESULT"
+    ]
+    .option [
+        .name DEBUG
+        .code 3
+        .protobuf-name "message_output_DEBUG"
+    ]
+    .option [
+        .name WARNING
+        .code 4
+        .protobuf-name "message_output_WARNING"
+    ]
+    .option [
+        .name ERROR
+        .code 5
+        .protobuf-name "message_output_ERROR"
+    ]
+    .option [
+        .name FAILURE
+        .code 6
+        .protobuf-name "message_output_FAILURE"
+    ]
+]

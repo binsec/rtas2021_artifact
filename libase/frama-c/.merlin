@@ -1,0 +1,39 @@
+S .
+S ../.
+S ../ext
+S ../ext/framac_ival
+S ../basis
+S ../lattices
+S ../domains
+S ../domains/constraints
+S ../domains/memory
+S ../transfer_functions
+S ../single_value_abstraction
+S ../term
+S ../utils
+S ../smtbackend
+S ../graph
+S ../constraints
+S ../types
+
+B .
+B ../.
+B ../ext
+B ../ext/framac_ival
+B ../basis
+B ../lattices
+B ../domains
+B ../domains/constraints
+B ../domains/memory
+B ../transfer_functions
+B ../single_value_abstraction
+B ../term
+B ../utils
+B ../smtbackend
+B ../graph
+B ../constraints
+B ../types
+B /nix/store/vm7zgpm087c82h34hffcrxbsn0hg4078-frama-c-22.0/lib/frama-c
+
+PKG zarith cudd ocamlgraph
+# apron elina llvm

@@ -1,0 +1,11 @@
+[codex] Warning: Warning: no definition for fn2
+[codex] compilation done
+[codex] t108.c:14:alarm Index_out_of_bound(h
+  >=
+  0): result is unknown (using abstract interpretation)
+[codex] t108.c:14:alarm Index_out_of_bound(h
+  <
+  2): result is unknown (using abstract interpretation)
+[codex] t108.c:14:alarm Memory_access(ar[h],
+  read): result is unknown (using abstract interpretation)
+[codex] Proved 11/14 alarms (remaining: 3; by SMT: 0)

@@ -1,0 +1,10 @@
+[codex] compilation done
+[codex] simple408b.c:7:alarm Index_out_of_bound(i + j
+  >=
+  0): result is unknown (using abstract interpretation)
+[codex] simple408b.c:7:alarm Index_out_of_bound(i + j
+  <
+  3): result is unknown (using abstract interpretation)
+[codex] simple408b.c:7:alarm Memory_access(t[i + j],
+  write): result is unknown (using abstract interpretation)
+[codex] Proved 19/22 alarms (remaining: 3; by SMT: 0)

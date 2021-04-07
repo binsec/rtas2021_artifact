@@ -1,0 +1,5 @@
+[codex] compilation done
+[codex] simple402.c:14:svcomp: result is VALID (using abstract interpretation)
+[codex] simple402.c:20:svcomp: result is VALID (using abstract interpretation)
+[codex] simple402.c:21:svcomp: result is VALID (using abstract interpretation)
+[codex] Proved 15/15 alarms (remaining: 0; by SMT: 0)

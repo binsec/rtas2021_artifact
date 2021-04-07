@@ -1,0 +1,5 @@
+[kernel:typing:implicit-function-declaration] t48.c:5: Warning: 
+  Calling undeclared function rand. Old style K&R code?
+[codex] Warning: Warning: no definition for rand
+[codex] compilation done
+[codex] Proved 8/8 alarms (remaining: 0; by SMT: 0)

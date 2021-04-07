@@ -1,0 +1,12 @@
+digraph G {
+node[fillcolor=white style="filled,solid" shape=none margin=0];
+"080493e0" -> "080493e4";
+subgraph "cluster_list_item_next" {
+  style="filled,solid";
+  color=black;
+  fillcolor=lightgrey;
+  label="list_item_next";"080493e4" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0"><TR><TD>080493e4</TD></TR><HR/><TR><TD>080493ea</TD></TR></TABLE>> fillcolor=lightblue];
+  "080493e0" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0"><TR><TD>080493e0</TD></TR><HR/><TR><TD>080493e0</TD></TR></TABLE>>];
+  }
+
+}

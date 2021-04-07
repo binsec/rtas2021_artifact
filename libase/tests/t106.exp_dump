@@ -1,0 +1,5 @@
+t106.c:8:4: `a + 1' -> <bottom>
+t106.c:8:4: `a' -> <bottom>
+t106.c:9:4: `a + 1' -> <bottom>
+t106.c:9:4: `a' -> <bottom>
+t106.c:12:0: `__retres' -> {0}

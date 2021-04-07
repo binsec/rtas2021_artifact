@@ -1,0 +1,42 @@
+* EducRTOS -- A small separation kernel to learn the base of OS design and implementation
+
+EducRTOS is a small functional operating system whose main purpose is
+to be used as a template for teaching in operating system courses. In
+a 14+ hours of student times, a student can learn how to:
+
+- Boot the system, to allocate memory statically, and
+  write a small text printing utility
+- Perform context switching and cooperating multithreading
+- Program an interrupt timer and implement preemptive scheduling policies
+- Use memory protection offered by the hardware (segmentation or
+  pagination) to isolate the tasks from one another; how to separate
+  the code into privileged (supervisor) and unprivileged (user) mode.
+- Learn the basics of access control policies: ACL and capabilities
+
+The kernel is functional (works on QEMU and should on real hardware),
+and could be used in embedded projects (with no warranty).
+
+To get started, type make -B qemu on a x86 computer (requires to have
+a gcc and qemu); if the system has correctly booted, you can see the
+output of several tasks performing syscalls to print their messages.
+
+** Structure of the kernel
+
+- low-level.c: x86-specific code.
+- high_level.c: generic code.
+- error.c: helper library to handle errors.
+- terminal.c: VGA display driver
+- lib/fprint.c: helper function for formatting output.
+- pit_timer.c: driver for the x86 programmable interrupt controller.
+- per_cpu.c: description of data structures that are private to one CPU.
+- scheduler.h: common interface to all schedulers. This includes:
+  - round_robin_scheduler.c: the round-robin (non-realtime) scheduler.
+  - priority_scheduler.c: EDF and fixed-priority schedulers.
+
+** Structure of the user task image
+
+The user image is generated using the system_desc.c and the Makefile.
+
+Each task is compiled specially using a special linker script
+(user_tasks.ld), then made into a raw binary, so that it can be easily
+protected using the X86 segmentation mechanism.

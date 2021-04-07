@@ -1,0 +1,613 @@
+big/adpcm_no_unrolled.c:401:6: `x >= 0' -> {0; 1}
+big/adpcm_no_unrolled.c:401:6: `x' -> [-0x3FFFE..0x3FFFF]
+big/adpcm_no_unrolled.c:401:18: `x' -> [0..0x3FFFF]
+big/adpcm_no_unrolled.c:401:30: `- x' -> [1..0x3FFFE]
+big/adpcm_no_unrolled.c:401:32: `x' -> [-0x3FFFE..-1]
+big/adpcm_no_unrolled.c:402:9: `m' -> [0..0x3FFFF]
+big/adpcm_no_unrolled.c:428:10: `tqmf_ptr' -> {{ &tqmf + 4 * {0} }}
+big/adpcm_no_unrolled.c:429:4: `tqmf_ptr + 1' -> {{ &tqmf + 4 * {1} }}
+big/adpcm_no_unrolled.c:429:4: `tqmf_ptr' -> {{ &tqmf + 4 * {0} }}
+big/adpcm_no_unrolled.c:430:12: `h_ptr' -> {{ &h + 4 * {0} }}
+big/adpcm_no_unrolled.c:431:4: `h_ptr + 1' -> {{ &h + 4 * {1} }}
+big/adpcm_no_unrolled.c:431:4: `h_ptr' -> {{ &h + 4 * {0} }}
+big/adpcm_no_unrolled.c:432:9: `(long)*tmp * (long)*tmp_0' -> {0; 12}
+big/adpcm_no_unrolled.c:432:15: `(long)*tmp' -> {0; 1}
+big/adpcm_no_unrolled.c:432:15: `*tmp' -> {0; 1}
+big/adpcm_no_unrolled.c:432:16: `tmp' -> {{ &tqmf + 4 * {0} }}
+big/adpcm_no_unrolled.c:432:28: `(long)*tmp_0' -> {12}
+big/adpcm_no_unrolled.c:432:28: `*tmp_0' -> {12}
+big/adpcm_no_unrolled.c:432:29: `tmp_0' -> {{ &h + 4 * {0} }}
+big/adpcm_no_unrolled.c:435:12: `tqmf_ptr' -> {{ &tqmf + 4 * {1} }}
+big/adpcm_no_unrolled.c:436:4: `tqmf_ptr + 1' -> {{ &tqmf + 4 * {2} }}
+big/adpcm_no_unrolled.c:436:4: `tqmf_ptr' -> {{ &tqmf + 4 * {1} }}
+big/adpcm_no_unrolled.c:437:12: `h_ptr' -> {{ &h + 4 * {1} }}
+big/adpcm_no_unrolled.c:438:4: `h_ptr + 1' -> {{ &h + 4 * {2} }}
+big/adpcm_no_unrolled.c:438:4: `h_ptr' -> {{ &h + 4 * {1} }}
+big/adpcm_no_unrolled.c:439:9: `(long)*tmp_1 * (long)*tmp_2' -> {-44; 0}
+big/adpcm_no_unrolled.c:439:15: `(long)*tmp_1' -> {0; 1}
+big/adpcm_no_unrolled.c:439:15: `*tmp_1' -> {0; 1}
+big/adpcm_no_unrolled.c:439:16: `tmp_1' -> {{ &tqmf + 4 * {1} }}
+big/adpcm_no_unrolled.c:439:30: `(long)*tmp_2' -> {-44}
+big/adpcm_no_unrolled.c:439:30: `*tmp_2' -> {-44}
+big/adpcm_no_unrolled.c:439:31: `tmp_2' -> {{ &h + 4 * {1} }}
+big/adpcm_no_unrolled.c:442:9: `i < 10' -> {0; 1}
+big/adpcm_no_unrolled.c:442:9: `i' -> [0..10]
+big/adpcm_no_unrolled.c:449:16: `tqmf_ptr' -> {{ &tqmf + 4 * [2..0x7FFFFFFE],0%2 }}
+big/adpcm_no_unrolled.c:450:8: `tqmf_ptr + 1' -> {{ &tqmf + 4 * [3..0x7FFFFFFF],1%2 }}
+big/adpcm_no_unrolled.c:450:8: `tqmf_ptr' -> {{ &tqmf + 4 * [2..0x7FFFFFFE],0%2 }}
+big/adpcm_no_unrolled.c:451:16: `h_ptr' -> {{ &h + 4 * [2..0x7FFFFFFE],0%2 }}
+big/adpcm_no_unrolled.c:452:8: `h_ptr + 1' -> {{ &h + 4 * [3..0x7FFFFFFF],1%2 }}
+big/adpcm_no_unrolled.c:452:8: `h_ptr' -> {{ &h + 4 * [2..0x7FFFFFFE],0%2 }}
+big/adpcm_no_unrolled.c:453:8: `xa + (long)*tmp_3 * (long)*tmp_4' -> {signed: [-0x80000000..0x795C],0%4; unsigned: [0..0xFFFFFFFC],0%4}
+big/adpcm_no_unrolled.c:453:8: `xa' -> {signed: [-0x80000000..0x3CCC],0%4; unsigned: [0..0xFFFFFFFC],0%4}
+big/adpcm_no_unrolled.c:453:14: `(long)*tmp_3 * (long)*tmp_4' -> {signed: [-3220..0x3C90],0%4; unsigned: [0..0xFFFFFFD4],0%4}
+big/adpcm_no_unrolled.c:453:20: `(long)*tmp_3' -> {0; 1}
+big/adpcm_no_unrolled.c:453:20: `*tmp_3' -> {0; 1}
+big/adpcm_no_unrolled.c:453:21: `tmp_3' -> {{ &tqmf + 4 * [2..0x7FFFFFFE],0%2 }}
+big/adpcm_no_unrolled.c:453:35: `(long)*tmp_4' -> {signed: [-3220..0x3C90],0%4; unsigned: [48..0xFFFFFFD4],0%4}
+big/adpcm_no_unrolled.c:453:35: `*tmp_4' -> {signed: [-3220..0x3C90],0%4; unsigned: [48..0xFFFFFFD4],0%4}
+big/adpcm_no_unrolled.c:453:36: `tmp_4' -> {{ &h + 4 * [2..0x7FFFFFFE],0%2 }}
+big/adpcm_no_unrolled.c:456:16: `tqmf_ptr' -> {{ &tqmf + 4 * [3..0x7FFFFFFF],1%2 }}
+big/adpcm_no_unrolled.c:457:8: `tqmf_ptr + 1' -> {{ &tqmf + 4 * [4..0x7FFFFFFE],0%2 }}
+big/adpcm_no_unrolled.c:457:8: `tqmf_ptr' -> {{ &tqmf + 4 * [3..0x7FFFFFFF],1%2 }}
+big/adpcm_no_unrolled.c:458:16: `h_ptr' -> {{ &h + 4 * [3..0x7FFFFFFF],1%2 }}
+big/adpcm_no_unrolled.c:459:8: `h_ptr + 1' -> {{ &h + 4 * [4..0x7FFFFFFE],0%2 }}
+big/adpcm_no_unrolled.c:459:8: `h_ptr' -> {{ &h + 4 * [3..0x7FFFFFFF],1%2 }}
+big/adpcm_no_unrolled.c:460:8: `xb + (long)*tmp_5 * (long)*tmp_6' -> [-0x80000000..0x7FFFFFFC],0%4
+big/adpcm_no_unrolled.c:460:8: `xb' -> [-0x80000000..0x7FFFFFFC],0%4
+big/adpcm_no_unrolled.c:460:14: `(long)*tmp_5 * (long)*tmp_6' -> {signed: [-3220..0x3C90],0%4; unsigned: [0..0xFFFFFFD4],0%4}
+big/adpcm_no_unrolled.c:460:20: `(long)*tmp_5' -> {0; 1}
+big/adpcm_no_unrolled.c:460:20: `*tmp_5' -> {0; 1}
+big/adpcm_no_unrolled.c:460:21: `tmp_5' -> {{ &tqmf + 4 * [3..0x7FFFFFFF],1%2 }}
+big/adpcm_no_unrolled.c:460:35: `(long)*tmp_6' -> {signed: [-3220..0x3C90],0%4; unsigned: [12..0xFFFFFFD4],0%4}
+big/adpcm_no_unrolled.c:460:35: `*tmp_6' -> {signed: [-3220..0x3C90],0%4; unsigned: [12..0xFFFFFFD4],0%4}
+big/adpcm_no_unrolled.c:460:36: `tmp_6' -> {{ &h + 4 * [3..0x7FFFFFFF],1%2 }}
+big/adpcm_no_unrolled.c:463:4: `i + 1' -> [1..10]
+big/adpcm_no_unrolled.c:463:4: `i' -> [0..9]
+big/adpcm_no_unrolled.c:466:12: `tqmf_ptr' -> {{ &tqmf + 4 * [2..0x7FFFFFFE],0%2 }}
+big/adpcm_no_unrolled.c:467:4: `tqmf_ptr + 1' -> {{ &tqmf + 4 * [3..0x7FFFFFFF],1%2 }}
+big/adpcm_no_unrolled.c:467:4: `tqmf_ptr' -> {{ &tqmf + 4 * [2..0x7FFFFFFE],0%2 }}
+big/adpcm_no_unrolled.c:468:12: `h_ptr' -> {{ &h + 4 * [2..0x7FFFFFFE],0%2 }}
+big/adpcm_no_unrolled.c:469:4: `h_ptr + 1' -> {{ &h + 4 * [3..0x7FFFFFFF],1%2 }}
+big/adpcm_no_unrolled.c:469:4: `h_ptr' -> {{ &h + 4 * [2..0x7FFFFFFE],0%2 }}
+big/adpcm_no_unrolled.c:470:4: `xa + (long)*tmp_7 * (long)*tmp_8' -> {signed: [-0x80000000..0x795C],0%4; unsigned: [0..0xFFFFFFFC],0%4}
+big/adpcm_no_unrolled.c:470:4: `xa' -> {signed: [-0x80000000..0x3CCC],0%4; unsigned: [0..0xFFFFFFFC],0%4}
+big/adpcm_no_unrolled.c:470:10: `(long)*tmp_7 * (long)*tmp_8' -> {signed: [-3220..0x3C90],0%4; unsigned: [0..0xFFFFFFD4],0%4}
+big/adpcm_no_unrolled.c:470:16: `(long)*tmp_7' -> {0; 1}
+big/adpcm_no_unrolled.c:470:16: `*tmp_7' -> {0; 1}
+big/adpcm_no_unrolled.c:470:17: `tmp_7' -> {{ &tqmf + 4 * [2..0x7FFFFFFE],0%2 }}
+big/adpcm_no_unrolled.c:470:31: `(long)*tmp_8' -> {signed: [-3220..0x3C90],0%4; unsigned: [48..0xFFFFFFD4],0%4}
+big/adpcm_no_unrolled.c:470:31: `*tmp_8' -> {signed: [-3220..0x3C90],0%4; unsigned: [48..0xFFFFFFD4],0%4}
+big/adpcm_no_unrolled.c:470:32: `tmp_8' -> {{ &h + 4 * [2..0x7FFFFFFE],0%2 }}
+big/adpcm_no_unrolled.c:473:12: `h_ptr' -> {{ &h + 4 * [3..0x7FFFFFFF],1%2 }}
+big/adpcm_no_unrolled.c:474:4: `h_ptr + 1' -> {{ &h + 4 * [4..0x7FFFFFFE],0%2 }}
+big/adpcm_no_unrolled.c:474:4: `h_ptr' -> {{ &h + 4 * [3..0x7FFFFFFF],1%2 }}
+big/adpcm_no_unrolled.c:475:4: `xb + (long)*tqmf_ptr * (long)*tmp_9' -> [-0x80000000..0x7FFFFFFC],0%4
+big/adpcm_no_unrolled.c:475:4: `xb' -> [-0x80000000..0x7FFFFFFC],0%4
+big/adpcm_no_unrolled.c:475:10: `(long)*tqmf_ptr * (long)*tmp_9' -> {signed: [-3220..0x3C90],0%4; unsigned: [0..0xFFFFFFD4],0%4}
+big/adpcm_no_unrolled.c:475:16: `(long)*tqmf_ptr' -> {0; 1}
+big/adpcm_no_unrolled.c:475:16: `*tqmf_ptr' -> {0; 1}
+big/adpcm_no_unrolled.c:475:17: `tqmf_ptr' -> {{ &tqmf + 4 * [3..0x7FFFFFFF],1%2 }}
+big/adpcm_no_unrolled.c:475:34: `(long)*tmp_9' -> {signed: [-3220..0x3C90],0%4; unsigned: [12..0xFFFFFFD4],0%4}
+big/adpcm_no_unrolled.c:475:34: `*tmp_9' -> {signed: [-3220..0x3C90],0%4; unsigned: [12..0xFFFFFFD4],0%4}
+big/adpcm_no_unrolled.c:475:35: `tmp_9' -> {{ &h + 4 * [3..0x7FFFFFFF],1%2 }}
+big/adpcm_no_unrolled.c:477:14: `tqmf_ptr - 2' -> {{ &tqmf + 4 * [1..21],1%2 }}
+big/adpcm_no_unrolled.c:477:14: `tqmf_ptr' -> {{ &tqmf + 4 * [3..23],1%2 }}
+big/adpcm_no_unrolled.c:479:9: `i < 22' -> {0; 1}
+big/adpcm_no_unrolled.c:479:9: `i' -> [0..22]
+big/adpcm_no_unrolled.c:483:15: `tqmf_ptr' -> {{ &tqmf + 4 * [-2..23] }}
+big/adpcm_no_unrolled.c:484:6: `tqmf_ptr - 1' -> {{ &tqmf + 4 * [-3..22] }}
+big/adpcm_no_unrolled.c:484:6: `tqmf_ptr' -> {{ &tqmf + 4 * [-2..23] }}
+big/adpcm_no_unrolled.c:485:15: `tqmf_ptr1' -> {{ &tqmf + 4 * [-3..21] }}
+big/adpcm_no_unrolled.c:486:6: `tqmf_ptr1 - 1' -> {{ &tqmf + 4 * [-4..20] }}
+big/adpcm_no_unrolled.c:486:6: `tqmf_ptr1' -> {{ &tqmf + 4 * [-3..21] }}
+big/adpcm_no_unrolled.c:487:7: `tmp_10' -> {{ &tqmf + 4 * [-2..23] }}
+big/adpcm_no_unrolled.c:487:16: `*tmp_11' -> {0; 1}
+big/adpcm_no_unrolled.c:487:17: `tmp_11' -> {{ &tqmf + 4 * [-3..21] }}
+big/adpcm_no_unrolled.c:489:4: `i + 1' -> [1..22]
+big/adpcm_no_unrolled.c:489:4: `i' -> [0..21]
+big/adpcm_no_unrolled.c:492:13: `tqmf_ptr' -> {{ &tqmf + 4 * [-2..23] }}
+big/adpcm_no_unrolled.c:493:4: `tqmf_ptr - 1' -> {{ &tqmf + 4 * [-3..22] }}
+big/adpcm_no_unrolled.c:493:4: `tqmf_ptr' -> {{ &tqmf + 4 * [-2..23] }}
+big/adpcm_no_unrolled.c:494:5: `tmp_12' -> {{ &tqmf + 4 * [-2..23] }}
+big/adpcm_no_unrolled.c:494:14: `xin1' -> {1}
+big/adpcm_no_unrolled.c:496:3: `tqmf_ptr' -> {{ &tqmf + 4 * [-3..22] }}
+big/adpcm_no_unrolled.c:496:14: `xin2' -> {0; 1}
+big/adpcm_no_unrolled.c:497:13: `(int)((xa + xb) >> 15)' -> [-0x10000..0xFFFF]
+big/adpcm_no_unrolled.c:497:13: `(xa + xb) >> 15' -> [-0x10000..0xFFFF]
+big/adpcm_no_unrolled.c:497:14: `xa + xb' -> [-0x80000000..0x7FFFFFFC],0%4
+big/adpcm_no_unrolled.c:497:14: `xa' -> {signed: [-0x80000000..0x795C],0%4; unsigned: [0..0xFFFFFFFC],0%4}
+big/adpcm_no_unrolled.c:497:19: `xb' -> [-0x80000000..0x7FFFFFFC],0%4
+big/adpcm_no_unrolled.c:498:13: `(int)((xa - xb) >> 15)' -> [-0x10000..0xFFFF]
+big/adpcm_no_unrolled.c:498:13: `(xa - xb) >> 15' -> [-0x10000..0xFFFF]
+big/adpcm_no_unrolled.c:498:14: `xa - xb' -> [-0x80000000..0x7FFFFFFC],0%4
+big/adpcm_no_unrolled.c:498:14: `xa' -> {signed: [-0x80000000..0x795C],0%4; unsigned: [0..0xFFFFFFFC],0%4}
+big/adpcm_no_unrolled.c:498:19: `xb' -> [-0x80000000..0x7FFFFFFC],0%4
+big/adpcm_no_unrolled.c:500:15: `rlt1' -> [-0x34E31..0x34E2E]
+big/adpcm_no_unrolled.c:500:20: `al1' -> [-0x6C00..0x6C00]
+big/adpcm_no_unrolled.c:500:24: `rlt2' -> [-0x34E31..0x34E2E]
+big/adpcm_no_unrolled.c:500:29: `al2' -> [-0x3000..0x3000]
+big/adpcm_no_unrolled.c:501:7: `szl + spl' -> [-0x30000..0x2FFFE]
+big/adpcm_no_unrolled.c:501:7: `szl' -> [-0x20000..0x1FFFF]
+big/adpcm_no_unrolled.c:501:13: `spl' -> [-0x10000..0xFFFF]
+big/adpcm_no_unrolled.c:502:7: `xl - sl' -> [-0x3FFFE..0x3FFFF]
+big/adpcm_no_unrolled.c:502:7: `xl' -> [-0x10000..0xFFFF]
+big/adpcm_no_unrolled.c:502:12: `sl' -> [-0x30000..0x2FFFE]
+big/adpcm_no_unrolled.c:503:14: `el' -> [-0x3FFFE..0x3FFFF]
+big/adpcm_no_unrolled.c:503:17: `detl' -> [0..0x7D40],0%8
+big/adpcm_no_unrolled.c:504:14: `(int)((long)detl * (long)qq4_code4_table[il >> 2] >> 15)' -> [-0x4E31..0x4E30]
+big/adpcm_no_unrolled.c:504:14: `(long)detl * (long)qq4_code4_table[il >> 2] >> 15' -> [-0x4E31..0x4E30]
+big/adpcm_no_unrolled.c:504:14: `(long)detl * (long)qq4_code4_table[il >> 2]' -> {signed: [-0x27184200..0x27184200],0%64; unsigned: [0..0xFFFFFFC0],0%64}
+big/adpcm_no_unrolled.c:504:20: `(long)detl' -> [0..0x7D40],0%8
+big/adpcm_no_unrolled.c:504:20: `detl' -> [0..0x7D40],0%8
+big/adpcm_no_unrolled.c:504:33: `(long)qq4_code4_table[il >> 2]' -> {signed: [-0x4FE8..0x4FE8],0%8; unsigned: [0..0xFFFFFB50],0%8}
+big/adpcm_no_unrolled.c:504:33: `qq4_code4_table[il >> 2]' -> {signed: [-0x4FE8..0x4FE8],0%8; unsigned: [0..0xFFFFFB50],0%8}
+big/adpcm_no_unrolled.c:504:49: `il >> 2' -> [1..15]
+big/adpcm_no_unrolled.c:504:49: `il' -> [4..63]
+big/adpcm_no_unrolled.c:505:15: `il' -> [4..63]
+big/adpcm_no_unrolled.c:505:18: `nbl' -> [0..0x4800]
+big/adpcm_no_unrolled.c:506:16: `nbl' -> [0..0x4800]
+big/adpcm_no_unrolled.c:507:8: `dlt + szl' -> [-0x24E31..0x24E2F]
+big/adpcm_no_unrolled.c:507:8: `dlt' -> [-0x4E31..0x4E30]
+big/adpcm_no_unrolled.c:507:14: `szl' -> [-0x20000..0x1FFFF]
+big/adpcm_no_unrolled.c:508:9: `dlt' -> [-0x4E31..0x4E30]
+big/adpcm_no_unrolled.c:509:15: `al1' -> [-0x6C00..0x6C00]
+big/adpcm_no_unrolled.c:509:19: `al2' -> [-0x3000..0x3000]
+big/adpcm_no_unrolled.c:509:23: `plt' -> [-0x24E31..0x24E2F]
+big/adpcm_no_unrolled.c:509:27: `plt1' -> [-0x24E31..0x24E2F]
+big/adpcm_no_unrolled.c:509:32: `plt2' -> [-0x24E31..0x24E2F]
+big/adpcm_no_unrolled.c:510:15: `al1' -> [-0x6C00..0x6C00]
+big/adpcm_no_unrolled.c:510:19: `al2' -> [-0x3000..0x3000]
+big/adpcm_no_unrolled.c:510:23: `plt' -> [-0x24E31..0x24E2F]
+big/adpcm_no_unrolled.c:510:27: `plt1' -> [-0x24E31..0x24E2F]
+big/adpcm_no_unrolled.c:511:8: `sl + dlt' -> [-0x34E31..0x34E2E]
+big/adpcm_no_unrolled.c:511:8: `sl' -> [-0x30000..0x2FFFE]
+big/adpcm_no_unrolled.c:511:13: `dlt' -> [-0x4E31..0x4E30]
+big/adpcm_no_unrolled.c:512:9: `rlt1' -> [-0x34E31..0x34E2E]
+big/adpcm_no_unrolled.c:513:9: `rlt' -> [-0x34E31..0x34E2E]
+big/adpcm_no_unrolled.c:514:9: `plt1' -> [-0x24E31..0x24E2F]
+big/adpcm_no_unrolled.c:515:9: `plt' -> [-0x24E31..0x24E2F]
+big/adpcm_no_unrolled.c:517:15: `rh1' -> [-0x31C51..0x31C4E]
+big/adpcm_no_unrolled.c:517:19: `ah1' -> [-0x6C00..0x6C00]
+big/adpcm_no_unrolled.c:517:23: `rh2' -> [-0x31C51..0x31C4E]
+big/adpcm_no_unrolled.c:517:27: `ah2' -> [-0x3000..0x3000]
+big/adpcm_no_unrolled.c:518:7: `sph + szh' -> [-0x30000..0x2FFFE]
+big/adpcm_no_unrolled.c:518:7: `sph' -> [-0x10000..0xFFFF]
+big/adpcm_no_unrolled.c:518:13: `szh' -> [-0x20000..0x1FFFF]
+big/adpcm_no_unrolled.c:519:7: `xh - sh' -> [-0x3FFFE..0x3FFFF]
+big/adpcm_no_unrolled.c:519:7: `xh' -> [-0x10000..0xFFFF]
+big/adpcm_no_unrolled.c:519:12: `sh' -> [-0x30000..0x2FFFE]
+big/adpcm_no_unrolled.c:520:6: `eh >= 0' -> {0; 1}
+big/adpcm_no_unrolled.c:520:6: `eh' -> [-0x3FFFE..0x3FFFF]
+big/adpcm_no_unrolled.c:521:16: `(int)(564L * (long)deth >> 12L)' -> [0..4415]
+big/adpcm_no_unrolled.c:521:16: `564L * (long)deth >> 12L' -> [0..4415]
+big/adpcm_no_unrolled.c:521:16: `564L * (long)deth' -> [0..0x113F100],0%4512
+big/adpcm_no_unrolled.c:521:29: `(long)deth' -> [0..0x7D40],0%8
+big/adpcm_no_unrolled.c:521:29: `deth' -> [0..0x7D40],0%8
+big/adpcm_no_unrolled.c:523:17: `eh' -> [-0x3FFFE..0x3FFFF]
+big/adpcm_no_unrolled.c:526:6: `tmp_13 > decis' -> {0; 1}
+big/adpcm_no_unrolled.c:526:6: `tmp_13' -> [0..0x3FFFF]
+big/adpcm_no_unrolled.c:526:15: `decis' -> [0..4415]
+big/adpcm_no_unrolled.c:526:22: `ih - 1' -> {0; 2}
+big/adpcm_no_unrolled.c:526:22: `ih' -> {1; 3}
+big/adpcm_no_unrolled.c:527:13: `(int)((long)deth * (long)qq2_code2_table[ih] >> 15L)' -> [-7249..7248]
+big/adpcm_no_unrolled.c:527:13: `(long)deth * (long)qq2_code2_table[ih] >> 15L' -> [-7249..7248]
+big/adpcm_no_unrolled.c:527:13: `(long)deth * (long)qq2_code2_table[ih]' -> {signed: [-0xE286C00..0xE286C00],0%128; unsigned: [0..0xFFFFFF80],0%128}
+big/adpcm_no_unrolled.c:527:19: `(long)deth' -> [0..0x7D40],0%8
+big/adpcm_no_unrolled.c:527:19: `deth' -> [0..0x7D40],0%8
+big/adpcm_no_unrolled.c:527:32: `(long)qq2_code2_table[ih]' -> {-7408; -1616; 1616; 7408}
+big/adpcm_no_unrolled.c:527:32: `qq2_code2_table[ih]' -> {-7408; -1616; 1616; 7408}
+big/adpcm_no_unrolled.c:527:48: `ih' -> {0; 1; 2; 3}
+big/adpcm_no_unrolled.c:528:15: `ih' -> {0; 1; 2; 3}
+big/adpcm_no_unrolled.c:528:18: `nbh' -> [0..0x5800]
+big/adpcm_no_unrolled.c:529:16: `nbh' -> [0..0x5800]
+big/adpcm_no_unrolled.c:530:7: `dh + szh' -> [-0x21C51..0x21C4F]
+big/adpcm_no_unrolled.c:530:7: `dh' -> [-7249..7248]
+big/adpcm_no_unrolled.c:530:12: `szh' -> [-0x20000..0x1FFFF]
+big/adpcm_no_unrolled.c:531:9: `dh' -> [-7249..7248]
+big/adpcm_no_unrolled.c:532:15: `ah1' -> [-0x6C00..0x6C00]
+big/adpcm_no_unrolled.c:532:19: `ah2' -> [-0x3000..0x3000]
+big/adpcm_no_unrolled.c:532:23: `ph' -> [-0x21C51..0x21C4F]
+big/adpcm_no_unrolled.c:532:26: `ph1' -> [-0x21C51..0x21C4F]
+big/adpcm_no_unrolled.c:532:30: `ph2' -> [-0x21C51..0x21C4F]
+big/adpcm_no_unrolled.c:533:15: `ah1' -> [-0x6C00..0x6C00]
+big/adpcm_no_unrolled.c:533:19: `ah2' -> [-0x3000..0x3000]
+big/adpcm_no_unrolled.c:533:23: `ph' -> [-0x21C51..0x21C4F]
+big/adpcm_no_unrolled.c:533:26: `ph1' -> [-0x21C51..0x21C4F]
+big/adpcm_no_unrolled.c:534:7: `sh + dh' -> [-0x31C51..0x31C4E]
+big/adpcm_no_unrolled.c:534:7: `sh' -> [-0x30000..0x2FFFE]
+big/adpcm_no_unrolled.c:534:12: `dh' -> [-7249..7248]
+big/adpcm_no_unrolled.c:535:8: `rh1' -> [-0x31C51..0x31C4E]
+big/adpcm_no_unrolled.c:536:8: `yh' -> [-0x31C51..0x31C4E]
+big/adpcm_no_unrolled.c:537:8: `ph1' -> [-0x21C51..0x21C4F]
+big/adpcm_no_unrolled.c:538:8: `ph' -> [-0x21C51..0x21C4F]
+big/adpcm_no_unrolled.c:539:13: `il | (ih << 6)' -> [4..255]
+big/adpcm_no_unrolled.c:539:13: `il' -> [4..63]
+big/adpcm_no_unrolled.c:539:19: `ih << 6' -> {0; 64; 128; 192}
+big/adpcm_no_unrolled.c:539:19: `ih' -> {0; 1; 2; 3}
+big/adpcm_no_unrolled.c:540:9: `__retres' -> [4..255]
+big/adpcm_no_unrolled.c:551:10: `bpl' -> {{ &delay_bph + 4 * {0} }}
+                                         {{ &delay_bpl + 4 * {0} }}
+big/adpcm_no_unrolled.c:552:4: `bpl + 1' -> {{ &delay_bph + 4 * {1} }}
+                                            {{ &delay_bpl + 4 * {1} }}
+big/adpcm_no_unrolled.c:552:4: `bpl' -> {{ &delay_bph + 4 * {0} }}
+                                        {{ &delay_bpl + 4 * {0} }}
+big/adpcm_no_unrolled.c:553:12: `dlt_0' -> {{ &delay_dhx + 4 * {0} }}
+                                           {{ &delay_dltx + 4 * {0} }}
+big/adpcm_no_unrolled.c:554:4: `dlt_0 + 1' -> {{ &delay_dhx + 4 * {1} }}
+                                              {{ &delay_dltx + 4 * {1} }}
+big/adpcm_no_unrolled.c:554:4: `dlt_0' -> {{ &delay_dhx + 4 * {0} }}
+                                          {{ &delay_dltx + 4 * {0} }}
+big/adpcm_no_unrolled.c:555:9: `(long)*tmp * (long)*tmp_0' -> [--..--]
+big/adpcm_no_unrolled.c:555:15: `(long)*tmp' -> [--..--]
+big/adpcm_no_unrolled.c:555:15: `*tmp' -> [--..--]
+big/adpcm_no_unrolled.c:555:16: `tmp' -> {{ &delay_bph + 4 * {0} }}
+                                         {{ &delay_bpl + 4 * {0} }}
+big/adpcm_no_unrolled.c:555:28: `(long)*tmp_0' -> [-0x4E31..0x4E30]
+                                                  [-7249..7248]
+big/adpcm_no_unrolled.c:555:28: `*tmp_0' -> [-0x4E31..0x4E30]
+                                            [-7249..7248]
+big/adpcm_no_unrolled.c:555:29: `tmp_0' -> {{ &delay_dhx + 4 * {0} }}
+                                           {{ &delay_dltx + 4 * {0} }}
+big/adpcm_no_unrolled.c:558:9: `i < 6' -> {0; 1}
+big/adpcm_no_unrolled.c:558:9: `i' -> {1; 2; 3; 4; 5; 6}
+big/adpcm_no_unrolled.c:562:14: `bpl' -> {{ &delay_bph + 4 * [1..0x7FFFFFFF] }}
+                                         {{ &delay_bpl + 4 * [1..0x7FFFFFFF] }}
+big/adpcm_no_unrolled.c:563:6: `bpl + 1' -> {{ &delay_bph + 4 * [2..0x7FFFFFFF] }}
+                                            {{ &delay_bpl + 4 * [2..0x7FFFFFFF] }}
+big/adpcm_no_unrolled.c:563:6: `bpl' -> {{ &delay_bph + 4 * [1..0x7FFFFFFF] }}
+                                        {{ &delay_bpl + 4 * [1..0x7FFFFFFF] }}
+big/adpcm_no_unrolled.c:564:14: `dlt_0' -> {{ &delay_dhx + 4 * [1..0x7FFFFFFF] }}
+                                           {{ &delay_dltx + 4 * [1..0x7FFFFFFF] }}
+big/adpcm_no_unrolled.c:565:6: `dlt_0 + 1' -> {{ &delay_dhx + 4 * [2..0x7FFFFFFF] }}
+                                              {{ &delay_dltx + 4 * [2..0x7FFFFFFF] }}
+big/adpcm_no_unrolled.c:565:6: `dlt_0' -> {{ &delay_dhx + 4 * [1..0x7FFFFFFF] }}
+                                          {{ &delay_dltx + 4 * [1..0x7FFFFFFF] }}
+big/adpcm_no_unrolled.c:566:6: `zl + (long)*tmp_1 * (long)*tmp_2' -> [--..--]
+big/adpcm_no_unrolled.c:566:6: `zl' -> [--..--]
+big/adpcm_no_unrolled.c:566:12: `(long)*tmp_1 * (long)*tmp_2' -> [--..--]
+big/adpcm_no_unrolled.c:566:18: `(long)*tmp_1' -> [--..--]
+big/adpcm_no_unrolled.c:566:18: `*tmp_1' -> [--..--]
+big/adpcm_no_unrolled.c:566:19: `tmp_1' -> {{ &delay_bph + 4 * [1..0x7FFFFFFF] }}
+                                           {{ &delay_bpl + 4 * [1..0x7FFFFFFF] }}
+big/adpcm_no_unrolled.c:566:33: `(long)*tmp_2' -> [-0x4E31..0x4E30]
+                                                  [-7249..7248]
+big/adpcm_no_unrolled.c:566:33: `*tmp_2' -> [-0x4E31..0x4E30]
+                                            [-7249..7248]
+big/adpcm_no_unrolled.c:566:34: `tmp_2' -> {{ &delay_dhx + 4 * [1..0x7FFFFFFF] }}
+                                           {{ &delay_dltx + 4 * [1..0x7FFFFFFF] }}
+big/adpcm_no_unrolled.c:568:4: `i + 1' -> {2; 3; 4; 5; 6}
+big/adpcm_no_unrolled.c:568:4: `i' -> {1; 2; 3; 4; 5}
+big/adpcm_no_unrolled.c:570:19: `(int)(zl >> 14)' -> [-0x20000..0x1FFFF]
+big/adpcm_no_unrolled.c:570:19: `zl >> 14' -> [-0x20000..0x1FFFF]
+big/adpcm_no_unrolled.c:570:19: `zl' -> [--..--]
+big/adpcm_no_unrolled.c:571:9: `__retres' -> [-0x20000..0x1FFFF]
+big/adpcm_no_unrolled.c:579:14: `(long)(2 * rlt1_0)' -> {signed: [-0x638A2..0x6389C],0%2; unsigned: [0..0xFFFFFFFE],0%2}
+                                                        {signed: [-0x69C62..0x69C5C],0%2; unsigned: [0..0xFFFFFFFE],0%2}
+big/adpcm_no_unrolled.c:579:14: `2 * rlt1_0' -> {signed: [-0x638A2..0x6389C],0%2; unsigned: [0..0xFFFFFFFE],0%2}
+                                                {signed: [-0x69C62..0x69C5C],0%2; unsigned: [0..0xFFFFFFFE],0%2}
+big/adpcm_no_unrolled.c:579:18: `rlt1_0' -> [-0x31C51..0x31C4E]
+                                            [-0x34E31..0x34E2E]
+big/adpcm_no_unrolled.c:580:7: `(long)al1_0 * pl' -> [-0x80000000..0x7FFFFFFE],0%2
+big/adpcm_no_unrolled.c:580:13: `(long)al1_0' -> [-0x6C00..0x6C00]
+big/adpcm_no_unrolled.c:580:13: `al1_0' -> [-0x6C00..0x6C00]
+big/adpcm_no_unrolled.c:580:21: `pl' -> {signed: [-0x638A2..0x6389C],0%2; unsigned: [0..0xFFFFFFFE],0%2}
+                                        {signed: [-0x69C62..0x69C5C],0%2; unsigned: [0..0xFFFFFFFE],0%2}
+big/adpcm_no_unrolled.c:581:15: `(long)(2 * rlt2_0)' -> {signed: [-0x638A2..0x6389C],0%2; unsigned: [0..0xFFFFFFFE],0%2}
+                                                        {signed: [-0x69C62..0x69C5C],0%2; unsigned: [0..0xFFFFFFFE],0%2}
+big/adpcm_no_unrolled.c:581:15: `2 * rlt2_0' -> {signed: [-0x638A2..0x6389C],0%2; unsigned: [0..0xFFFFFFFE],0%2}
+                                                {signed: [-0x69C62..0x69C5C],0%2; unsigned: [0..0xFFFFFFFE],0%2}
+big/adpcm_no_unrolled.c:581:19: `rlt2_0' -> [-0x31C51..0x31C4E]
+                                            [-0x34E31..0x34E2E]
+big/adpcm_no_unrolled.c:582:2: `pl + (long)al2_0 * pl2' -> [-0x80000000..0x7FFFFFFE],0%2
+big/adpcm_no_unrolled.c:582:2: `pl' -> [-0x80000000..0x7FFFFFFE],0%2
+big/adpcm_no_unrolled.c:582:8: `(long)al2_0 * pl2' -> [-0x80000000..0x7FFFFFFE],0%2
+big/adpcm_no_unrolled.c:582:14: `(long)al2_0' -> [-0x3000..0x3000]
+big/adpcm_no_unrolled.c:582:14: `al2_0' -> [-0x3000..0x3000]
+big/adpcm_no_unrolled.c:582:22: `pl2' -> {signed: [-0x638A2..0x6389C],0%2; unsigned: [0..0xFFFFFFFE],0%2}
+                                         {signed: [-0x69C62..0x69C5C],0%2; unsigned: [0..0xFFFFFFFE],0%2}
+big/adpcm_no_unrolled.c:583:19: `(int)(pl >> 15)' -> [-0x10000..0xFFFF]
+big/adpcm_no_unrolled.c:583:19: `pl >> 15' -> [-0x10000..0xFFFF]
+big/adpcm_no_unrolled.c:583:19: `pl' -> [-0x80000000..0x7FFFFFFE],0%2
+big/adpcm_no_unrolled.c:584:9: `__retres' -> [-0x10000..0xFFFF]
+big/adpcm_no_unrolled.c:593:17: `el_0' -> [-0x3FFFE..0x3FFFF]
+big/adpcm_no_unrolled.c:595:10: `(long)decis_levl[mil] * (long)detl_0 >> 15L' -> [0..273]
+big/adpcm_no_unrolled.c:595:10: `(long)decis_levl[mil] * (long)detl_0' -> [0..0x88FE00],0%2240
+big/adpcm_no_unrolled.c:595:16: `(long)decis_levl[mil]' -> {280}
+big/adpcm_no_unrolled.c:595:16: `decis_levl[mil]' -> {280}
+big/adpcm_no_unrolled.c:595:27: `mil' -> {0}
+big/adpcm_no_unrolled.c:595:40: `(long)detl_0' -> [0..0x7D40],0%8
+big/adpcm_no_unrolled.c:595:40: `detl_0' -> [0..0x7D40],0%8
+big/adpcm_no_unrolled.c:597:8: `wd <= decis' -> {0; 1}
+big/adpcm_no_unrolled.c:597:8: `wd' -> [0..0x3FFFF]
+big/adpcm_no_unrolled.c:597:14: `decis' -> [0..0x7D3F]
+big/adpcm_no_unrolled.c:598:10: `! (mil < 29)' -> {0; 1}
+big/adpcm_no_unrolled.c:598:13: `mil < 29' -> {0; 1}
+big/adpcm_no_unrolled.c:598:13: `mil' -> [0..29]
+big/adpcm_no_unrolled.c:601:4: `mil + 1' -> [1..29]
+big/adpcm_no_unrolled.c:601:4: `mil' -> [0..28]
+big/adpcm_no_unrolled.c:602:12: `(long)decis_levl[mil] * (long)detl_0 >> 15L' -> [0..0x7D3F]
+big/adpcm_no_unrolled.c:602:12: `(long)decis_levl[mil] * (long)detl_0' -> [0..0x3E9F82C0],0%8
+big/adpcm_no_unrolled.c:602:18: `(long)decis_levl[mil]' -> [576..0x7FFF]
+big/adpcm_no_unrolled.c:602:18: `decis_levl[mil]' -> [576..0x7FFF]
+big/adpcm_no_unrolled.c:602:29: `mil' -> [1..29]
+big/adpcm_no_unrolled.c:602:42: `(long)detl_0' -> [0..0x7D40],0%8
+big/adpcm_no_unrolled.c:602:42: `detl_0' -> [0..0x7D40],0%8
+big/adpcm_no_unrolled.c:604:6: `el_0 >= 0' -> {0; 1}
+big/adpcm_no_unrolled.c:604:6: `el_0' -> [-0x3FFFE..0x3FFFF]
+big/adpcm_no_unrolled.c:604:23: `quant26bt_pos[mil]' -> [32..61]
+big/adpcm_no_unrolled.c:604:37: `mil' -> [0..29]
+big/adpcm_no_unrolled.c:604:54: `quant26bt_neg[mil]' -> [4..63]
+big/adpcm_no_unrolled.c:604:68: `mil' -> [0..29]
+big/adpcm_no_unrolled.c:605:9: `ril' -> [4..63]
+big/adpcm_no_unrolled.c:612:10: `(long)detl_0 * (long)*(code_table + (il_0 >> (mode - 1)))' -> <unknown>
+big/adpcm_no_unrolled.c:612:16: `(long)detl_0' -> <unknown>
+big/adpcm_no_unrolled.c:612:16: `detl_0' -> <unknown>
+big/adpcm_no_unrolled.c:612:31: `(long)*(code_table + (il_0 >> (mode - 1)))' -> <unknown>
+big/adpcm_no_unrolled.c:612:31: `*(code_table + (il_0 >> (mode - 1)))' -> <unknown>
+big/adpcm_no_unrolled.c:612:33: `code_table + (il_0 >> (mode - 1))' -> <unknown>
+big/adpcm_no_unrolled.c:612:33: `code_table' -> <unknown>
+big/adpcm_no_unrolled.c:612:47: `il_0 >> (mode - 1)' -> <unknown>
+big/adpcm_no_unrolled.c:612:47: `il_0' -> <unknown>
+big/adpcm_no_unrolled.c:612:56: `mode - 1' -> <unknown>
+big/adpcm_no_unrolled.c:612:56: `mode' -> <unknown>
+big/adpcm_no_unrolled.c:613:19: `(int)(dlt_0 >> 15)' -> <unknown>
+big/adpcm_no_unrolled.c:613:19: `dlt_0 >> 15' -> <unknown>
+big/adpcm_no_unrolled.c:613:19: `dlt_0' -> <unknown>
+big/adpcm_no_unrolled.c:614:9: `__retres' -> <unknown>
+big/adpcm_no_unrolled.c:620:7: `(long)nbl_0 * 127L >> 7L' -> [0..0x4770]
+big/adpcm_no_unrolled.c:620:7: `(long)nbl_0 * 127L' -> [0..0x23B800],0%127
+big/adpcm_no_unrolled.c:620:13: `(long)nbl_0' -> [0..0x4800]
+big/adpcm_no_unrolled.c:620:13: `nbl_0' -> [0..0x4800]
+big/adpcm_no_unrolled.c:621:10: `(int)wd + wl_code_table[il_0 >> 2]' -> [-60..0x5352]
+big/adpcm_no_unrolled.c:621:15: `(int)wd' -> [0..0x4770]
+big/adpcm_no_unrolled.c:621:15: `wd' -> [0..0x4770]
+big/adpcm_no_unrolled.c:621:20: `wl_code_table[il_0 >> 2]' -> {-60; -30; 58; 172; 334; 538; 1198; 3042}
+big/adpcm_no_unrolled.c:621:34: `il_0 >> 2' -> [1..15]
+big/adpcm_no_unrolled.c:621:34: `il_0' -> [4..63]
+big/adpcm_no_unrolled.c:622:6: `nbl_0 < 0' -> {0; 1}
+big/adpcm_no_unrolled.c:622:6: `nbl_0' -> [-60..0x5352]
+big/adpcm_no_unrolled.c:623:6: `nbl_0 > 18432' -> {0; 1}
+big/adpcm_no_unrolled.c:623:6: `nbl_0' -> [0..0x5352]
+big/adpcm_no_unrolled.c:624:9: `nbl_0' -> [0..0x4800]
+big/adpcm_no_unrolled.c:633:8: `(nbl_0 >> 6) & 31' -> [0..31]
+big/adpcm_no_unrolled.c:633:9: `nbl_0 >> 6' -> [0..288]
+                                               [0..352]
+big/adpcm_no_unrolled.c:633:9: `nbl_0' -> [0..0x4800]
+                                          [0..0x5800]
+big/adpcm_no_unrolled.c:634:8: `nbl_0 >> 11' -> [0..11]
+                                                [0..9]
+big/adpcm_no_unrolled.c:634:8: `nbl_0' -> [0..0x4800]
+                                          [0..0x5800]
+big/adpcm_no_unrolled.c:635:8: `ilb_table[wd1] >> ((shift_constant + 1) - wd2)' -> [1..4008]
+                                                                                   [4..4008]
+big/adpcm_no_unrolled.c:635:8: `ilb_table[wd1]' -> [2048..4008]
+big/adpcm_no_unrolled.c:635:18: `wd1' -> [0..31]
+big/adpcm_no_unrolled.c:635:27: `(shift_constant + 1) - wd2' -> [0..11]
+                                                                [0..9]
+big/adpcm_no_unrolled.c:635:28: `shift_constant + 1' -> {11}
+                                                        {9}
+big/adpcm_no_unrolled.c:635:28: `shift_constant' -> {10}
+                                                    {8}
+big/adpcm_no_unrolled.c:635:50: `wd2' -> [0..11]
+                                         [0..9]
+big/adpcm_no_unrolled.c:636:13: `wd3 << 3' -> [32..0x7D40],0%8
+                                              [8..0x7D40],0%8
+big/adpcm_no_unrolled.c:636:13: `wd3' -> [1..4008]
+                                         [4..4008]
+big/adpcm_no_unrolled.c:637:9: `__retres' -> [32..0x7D40],0%8
+                                             [8..0x7D40],0%8
+big/adpcm_no_unrolled.c:645:6: `dlt_0 == 0' -> {0; 1}
+big/adpcm_no_unrolled.c:645:6: `dlt_0' -> [-0x4E31..0x4E30]
+                                          [-7249..7248]
+big/adpcm_no_unrolled.c:647:11: `i < 6' -> {0; 1}
+big/adpcm_no_unrolled.c:647:11: `i' -> {0; 1; 2; 3; 4; 5; 6}
+big/adpcm_no_unrolled.c:648:8: `bli + i' -> {{ &delay_bph + 4 * {0; 1; 2; 3; 4; 5} }}
+                                            {{ &delay_bpl + 4 * {0; 1; 2; 3; 4; 5} }}
+big/adpcm_no_unrolled.c:648:8: `bli' -> {{ &delay_bph + 4 * {0} }}
+                                        {{ &delay_bpl + 4 * {0} }}
+big/adpcm_no_unrolled.c:648:14: `i' -> {0; 1; 2; 3; 4; 5}
+big/adpcm_no_unrolled.c:648:25: `(int)(255L * (long)*(bli + i) >> 8L)' -> [-0x800000..0x7FFFFF]
+big/adpcm_no_unrolled.c:648:25: `255L * (long)*(bli + i) >> 8L' -> [-0x800000..0x7FFFFF]
+big/adpcm_no_unrolled.c:648:25: `255L * (long)*(bli + i)' -> [-0x7FFFFF80..0x7FFFFF80],0%255
+big/adpcm_no_unrolled.c:648:38: `(long)*(bli + i)' -> [--..--]
+big/adpcm_no_unrolled.c:648:38: `*(bli + i)' -> [--..--]
+big/adpcm_no_unrolled.c:648:40: `bli + i' -> {{ &delay_bph + 4 * {0; 1; 2; 3; 4; 5} }}
+                                             {{ &delay_bpl + 4 * {0; 1; 2; 3; 4; 5} }}
+big/adpcm_no_unrolled.c:648:40: `bli' -> {{ &delay_bph + 4 * {0} }}
+                                         {{ &delay_bpl + 4 * {0} }}
+big/adpcm_no_unrolled.c:648:46: `i' -> {0; 1; 2; 3; 4; 5}
+big/adpcm_no_unrolled.c:649:6: `i + 1' -> {1; 2; 3; 4; 5; 6}
+big/adpcm_no_unrolled.c:649:6: `i' -> {0; 1; 2; 3; 4; 5}
+big/adpcm_no_unrolled.c:654:11: `i < 6' -> {0; 1}
+big/adpcm_no_unrolled.c:654:11: `i' -> {0; 1; 2; 3; 4; 5; 6}
+big/adpcm_no_unrolled.c:655:10: `(long)dlt_0 * (long)*(dlti + i) >= (long)0' -> {0; 1}
+big/adpcm_no_unrolled.c:655:10: `(long)dlt_0 * (long)*(dlti + i)' -> [-0x17E19730..0x17E1E561]
+                                                                     [-0x321B550..0x321D1A1]
+big/adpcm_no_unrolled.c:655:16: `(long)dlt_0' -> {signed: [-0x4E31..0x4E30]; unsigned: [1..0xFFFFFFFF]}
+                                                 {signed: [-7249..7248]; unsigned: [1..0xFFFFFFFF]}
+big/adpcm_no_unrolled.c:655:16: `dlt_0' -> {signed: [-0x4E31..0x4E30]; unsigned: [1..0xFFFFFFFF]}
+                                           {signed: [-7249..7248]; unsigned: [1..0xFFFFFFFF]}
+big/adpcm_no_unrolled.c:655:30: `(long)*(dlti + i)' -> [-0x4E31..0x4E30]
+                                                       [-7249..7248]
+big/adpcm_no_unrolled.c:655:30: `*(dlti + i)' -> [-0x4E31..0x4E30]
+                                                 [-7249..7248]
+big/adpcm_no_unrolled.c:655:32: `dlti + i' -> {{ &delay_dhx + 4 * {0; 1; 2; 3; 4; 5} }}
+                                              {{ &delay_dltx + 4 * {0; 1; 2; 3; 4; 5} }}
+big/adpcm_no_unrolled.c:655:32: `dlti' -> {{ &delay_dhx + 4 * {0} }}
+                                          {{ &delay_dltx + 4 * {0} }}
+big/adpcm_no_unrolled.c:655:39: `i' -> {0; 1; 2; 3; 4; 5}
+big/adpcm_no_unrolled.c:657:18: `(int)(255L * (long)*(bli + i) >> 8L)' -> [-0x800000..0x7FFFFF]
+big/adpcm_no_unrolled.c:657:18: `255L * (long)*(bli + i) >> 8L' -> [-0x800000..0x7FFFFF]
+big/adpcm_no_unrolled.c:657:18: `255L * (long)*(bli + i)' -> [-0x7FFFFF80..0x7FFFFF80],0%255
+big/adpcm_no_unrolled.c:657:31: `(long)*(bli + i)' -> [--..--]
+big/adpcm_no_unrolled.c:657:31: `*(bli + i)' -> [--..--]
+big/adpcm_no_unrolled.c:657:33: `bli + i' -> {{ &delay_bph + 4 * {0; 1; 2; 3; 4; 5} }}
+                                             {{ &delay_bpl + 4 * {0; 1; 2; 3; 4; 5} }}
+big/adpcm_no_unrolled.c:657:33: `bli' -> {{ &delay_bph + 4 * {0} }}
+                                         {{ &delay_bpl + 4 * {0} }}
+big/adpcm_no_unrolled.c:657:39: `i' -> {0; 1; 2; 3; 4; 5}
+big/adpcm_no_unrolled.c:658:8: `bli + i' -> {{ &delay_bph + 4 * {0; 1; 2; 3; 4; 5} }}
+                                            {{ &delay_bpl + 4 * {0; 1; 2; 3; 4; 5} }}
+big/adpcm_no_unrolled.c:658:8: `bli' -> {{ &delay_bph + 4 * {0} }}
+                                        {{ &delay_bpl + 4 * {0} }}
+big/adpcm_no_unrolled.c:658:14: `i' -> {0; 1; 2; 3; 4; 5}
+big/adpcm_no_unrolled.c:658:19: `wd2 + wd3' -> [-0x800080..0x80007F]
+big/adpcm_no_unrolled.c:658:19: `wd2' -> {-128; 128}
+big/adpcm_no_unrolled.c:658:25: `wd3' -> [-0x800000..0x7FFFFF]
+big/adpcm_no_unrolled.c:659:6: `i + 1' -> {1; 2; 3; 4; 5; 6}
+big/adpcm_no_unrolled.c:659:6: `i' -> {0; 1; 2; 3; 4; 5}
+big/adpcm_no_unrolled.c:662:4: `dlti + 5' -> {{ &delay_dhx + 4 * {5} }}
+                                             {{ &delay_dltx + 4 * {5} }}
+big/adpcm_no_unrolled.c:662:4: `dlti' -> {{ &delay_dhx + 4 * {0} }}
+                                         {{ &delay_dltx + 4 * {0} }}
+big/adpcm_no_unrolled.c:662:16: `*(dlti + 4)' -> {0}
+big/adpcm_no_unrolled.c:662:18: `dlti + 4' -> {{ &delay_dhx + 4 * {4} }}
+                                              {{ &delay_dltx + 4 * {4} }}
+big/adpcm_no_unrolled.c:662:18: `dlti' -> {{ &delay_dhx + 4 * {0} }}
+                                          {{ &delay_dltx + 4 * {0} }}
+big/adpcm_no_unrolled.c:663:4: `dlti + 4' -> {{ &delay_dhx + 4 * {4} }}
+                                             {{ &delay_dltx + 4 * {4} }}
+big/adpcm_no_unrolled.c:663:4: `dlti' -> {{ &delay_dhx + 4 * {0} }}
+                                         {{ &delay_dltx + 4 * {0} }}
+big/adpcm_no_unrolled.c:663:16: `*(dlti + 3)' -> {0}
+big/adpcm_no_unrolled.c:663:18: `dlti + 3' -> {{ &delay_dhx + 4 * {3} }}
+                                              {{ &delay_dltx + 4 * {3} }}
+big/adpcm_no_unrolled.c:663:18: `dlti' -> {{ &delay_dhx + 4 * {0} }}
+                                          {{ &delay_dltx + 4 * {0} }}
+big/adpcm_no_unrolled.c:664:4: `dlti + 3' -> {{ &delay_dhx + 4 * {3} }}
+                                             {{ &delay_dltx + 4 * {3} }}
+big/adpcm_no_unrolled.c:664:4: `dlti' -> {{ &delay_dhx + 4 * {0} }}
+                                         {{ &delay_dltx + 4 * {0} }}
+big/adpcm_no_unrolled.c:664:16: `*(dlti + 2)' -> {0}
+big/adpcm_no_unrolled.c:664:18: `dlti + 2' -> {{ &delay_dhx + 4 * {2} }}
+                                              {{ &delay_dltx + 4 * {2} }}
+big/adpcm_no_unrolled.c:664:18: `dlti' -> {{ &delay_dhx + 4 * {0} }}
+                                          {{ &delay_dltx + 4 * {0} }}
+big/adpcm_no_unrolled.c:665:4: `dlti + 1' -> {{ &delay_dhx + 4 * {1} }}
+                                             {{ &delay_dltx + 4 * {1} }}
+big/adpcm_no_unrolled.c:665:4: `dlti' -> {{ &delay_dhx + 4 * {0} }}
+                                         {{ &delay_dltx + 4 * {0} }}
+big/adpcm_no_unrolled.c:665:16: `*(dlti + 0)' -> [-0x4E31..0x4E30]
+                                                 [-7249..7248]
+big/adpcm_no_unrolled.c:665:18: `dlti + 0' -> {{ &delay_dhx + 4 * {0} }}
+                                              {{ &delay_dltx + 4 * {0} }}
+big/adpcm_no_unrolled.c:665:18: `dlti' -> {{ &delay_dhx + 4 * {0} }}
+                                          {{ &delay_dltx + 4 * {0} }}
+big/adpcm_no_unrolled.c:666:4: `dlti + 0' -> {{ &delay_dhx + 4 * {0} }}
+                                             {{ &delay_dltx + 4 * {0} }}
+big/adpcm_no_unrolled.c:666:4: `dlti' -> {{ &delay_dhx + 4 * {0} }}
+                                         {{ &delay_dltx + 4 * {0} }}
+big/adpcm_no_unrolled.c:666:16: `dlt_0' -> [-0x4E31..0x4E30]
+                                           [-7249..7248]
+big/adpcm_no_unrolled.c:675:8: `4L * (long)al1_0' -> {signed: [-0x1B000..0x1B000],0%4; unsigned: [0..0xFFFFFFFC],0%4}
+big/adpcm_no_unrolled.c:675:19: `(long)al1_0' -> [-0x6C00..0x6C00]
+big/adpcm_no_unrolled.c:675:19: `al1_0' -> [-0x6C00..0x6C00]
+big/adpcm_no_unrolled.c:676:6: `(long)plt_0 * (long)plt1_0 >= 0L' -> {0; 1}
+big/adpcm_no_unrolled.c:676:6: `(long)plt_0 * (long)plt1_0' -> [--..--]
+big/adpcm_no_unrolled.c:676:12: `(long)plt_0' -> [-0x21C51..0x21C4F]
+                                                 [-0x24E31..0x24E2F]
+big/adpcm_no_unrolled.c:676:12: `plt_0' -> [-0x21C51..0x21C4F]
+                                           [-0x24E31..0x24E2F]
+big/adpcm_no_unrolled.c:676:26: `(long)plt1_0' -> [-0x21C51..0x21C4F]
+                                                  [-0x24E31..0x24E2F]
+big/adpcm_no_unrolled.c:676:26: `plt1_0' -> [-0x21C51..0x21C4F]
+                                            [-0x24E31..0x24E2F]
+big/adpcm_no_unrolled.c:676:46: `- wd2' -> {signed: [-0x1B000..0x1B000],0%4; unsigned: [0..0xFFFFFFFC],0%4}
+big/adpcm_no_unrolled.c:676:48: `wd2' -> {signed: [-0x1B000..0x1B000],0%4; unsigned: [0..0xFFFFFFFC],0%4}
+big/adpcm_no_unrolled.c:677:2: `wd2 >> 7' -> [-864..864]
+big/adpcm_no_unrolled.c:677:2: `wd2' -> {signed: [-0x1B000..0x1B000],0%4; unsigned: [0..0xFFFFFFFC],0%4}
+big/adpcm_no_unrolled.c:678:6: `(long)plt_0 * (long)plt2_0 >= 0L' -> {0; 1}
+big/adpcm_no_unrolled.c:678:6: `(long)plt_0 * (long)plt2_0' -> [--..--]
+big/adpcm_no_unrolled.c:678:12: `(long)plt_0' -> [-0x21C51..0x21C4F]
+                                                 [-0x24E31..0x24E2F]
+big/adpcm_no_unrolled.c:678:12: `plt_0' -> [-0x21C51..0x21C4F]
+                                           [-0x24E31..0x24E2F]
+big/adpcm_no_unrolled.c:678:26: `(long)plt2_0' -> [-0x21C51..0x21C4F]
+                                                  [-0x24E31..0x24E2F]
+big/adpcm_no_unrolled.c:678:26: `plt2_0' -> [-0x21C51..0x21C4F]
+                                            [-0x24E31..0x24E2F]
+big/adpcm_no_unrolled.c:678:46: `wd2 + (long)128' -> [-736..992]
+big/adpcm_no_unrolled.c:678:46: `wd2' -> [-864..864]
+big/adpcm_no_unrolled.c:679:13: `wd2 - (long)128' -> [-992..736]
+big/adpcm_no_unrolled.c:679:13: `wd2' -> [-864..864]
+big/adpcm_no_unrolled.c:680:15: `(int)(wd4 + (127L * (long)al2_0 >> 7L))' -> [-0x3380..0x3380]
+big/adpcm_no_unrolled.c:680:15: `wd4 + (127L * (long)al2_0 >> 7L)' -> [-0x3380..0x3380]
+big/adpcm_no_unrolled.c:680:15: `wd4' -> [-992..992]
+big/adpcm_no_unrolled.c:680:22: `127L * (long)al2_0 >> 7L' -> [-0x2FA0..0x2FA0]
+big/adpcm_no_unrolled.c:680:22: `127L * (long)al2_0' -> [-0x17D000..0x17D000],0%127
+big/adpcm_no_unrolled.c:680:35: `(long)al2_0' -> [-0x3000..0x3000]
+big/adpcm_no_unrolled.c:680:35: `al2_0' -> [-0x3000..0x3000]
+big/adpcm_no_unrolled.c:681:6: `apl2 > 12288' -> {0; 1}
+big/adpcm_no_unrolled.c:681:6: `apl2' -> [-0x3380..0x3380]
+big/adpcm_no_unrolled.c:682:6: `apl2 < -12288' -> {0; 1}
+big/adpcm_no_unrolled.c:682:6: `apl2' -> [-0x3380..0x3000]
+big/adpcm_no_unrolled.c:683:9: `apl2' -> [-0x3000..0x3000]
+big/adpcm_no_unrolled.c:691:8: `(long)al1_0 * 255L >> 8L' -> [-0x6B94..0x6B94]
+big/adpcm_no_unrolled.c:691:8: `(long)al1_0 * 255L' -> [-0x6B9400..0x6B9400],0%255
+big/adpcm_no_unrolled.c:691:14: `(long)al1_0' -> [-0x6C00..0x6C00]
+big/adpcm_no_unrolled.c:691:14: `al1_0' -> [-0x6C00..0x6C00]
+big/adpcm_no_unrolled.c:692:6: `(long)plt_0 * (long)plt1_0 >= 0L' -> {0; 1}
+big/adpcm_no_unrolled.c:692:6: `(long)plt_0 * (long)plt1_0' -> [--..--]
+big/adpcm_no_unrolled.c:692:12: `(long)plt_0' -> [-0x21C51..0x21C4F]
+                                                 [-0x24E31..0x24E2F]
+big/adpcm_no_unrolled.c:692:12: `plt_0' -> [-0x21C51..0x21C4F]
+                                           [-0x24E31..0x24E2F]
+big/adpcm_no_unrolled.c:692:26: `(long)plt1_0' -> [-0x21C51..0x21C4F]
+                                                  [-0x24E31..0x24E2F]
+big/adpcm_no_unrolled.c:692:26: `plt1_0' -> [-0x21C51..0x21C4F]
+                                            [-0x24E31..0x24E2F]
+big/adpcm_no_unrolled.c:692:47: `(int)wd2 + 192' -> [-0x6AD4..0x6C54]
+big/adpcm_no_unrolled.c:692:52: `(int)wd2' -> [-0x6B94..0x6B94]
+big/adpcm_no_unrolled.c:692:52: `wd2' -> [-0x6B94..0x6B94]
+big/adpcm_no_unrolled.c:693:14: `(int)wd2 - 192' -> [-0x6C54..0x6AD4]
+big/adpcm_no_unrolled.c:693:19: `(int)wd2' -> [-0x6B94..0x6B94]
+big/adpcm_no_unrolled.c:693:19: `wd2' -> [-0x6B94..0x6B94]
+big/adpcm_no_unrolled.c:694:8: `15360 - apl2' -> [3072..0x6C00]
+big/adpcm_no_unrolled.c:694:16: `apl2' -> [-0x3000..0x3000]
+big/adpcm_no_unrolled.c:695:6: `apl1 > wd3' -> {0; 1}
+big/adpcm_no_unrolled.c:695:6: `apl1' -> [-0x6C54..0x6C54]
+big/adpcm_no_unrolled.c:695:13: `wd3' -> [3072..0x6C00]
+big/adpcm_no_unrolled.c:695:25: `wd3' -> [3072..0x6C00]
+big/adpcm_no_unrolled.c:696:6: `apl1 < - wd3' -> {0; 1}
+big/adpcm_no_unrolled.c:696:6: `apl1' -> [-0x6C54..0x6C00]
+big/adpcm_no_unrolled.c:696:13: `- wd3' -> [-0x6C00..-3072]
+big/adpcm_no_unrolled.c:696:15: `wd3' -> [3072..0x6C00]
+big/adpcm_no_unrolled.c:696:27: `- wd3' -> [-0x6C00..-3072]
+big/adpcm_no_unrolled.c:696:29: `wd3' -> [3072..0x6C00]
+big/adpcm_no_unrolled.c:697:9: `apl1' -> [-0x6C00..0x6C00]
+big/adpcm_no_unrolled.c:704:8: `(long)deth_0 * (long)qq2_code2_table[ih_0] >> 15L' -> <unknown>
+big/adpcm_no_unrolled.c:704:8: `(long)deth_0 * (long)qq2_code2_table[ih_0]' -> <unknown>
+big/adpcm_no_unrolled.c:704:14: `(long)deth_0' -> <unknown>
+big/adpcm_no_unrolled.c:704:14: `deth_0' -> <unknown>
+big/adpcm_no_unrolled.c:704:29: `(long)qq2_code2_table[ih_0]' -> <unknown>
+big/adpcm_no_unrolled.c:704:29: `qq2_code2_table[ih_0]' -> <unknown>
+big/adpcm_no_unrolled.c:704:45: `ih_0' -> <unknown>
+big/adpcm_no_unrolled.c:705:18: `(int)rdh' -> <unknown>
+big/adpcm_no_unrolled.c:705:18: `rdh' -> <unknown>
+big/adpcm_no_unrolled.c:706:9: `__retres' -> <unknown>
+big/adpcm_no_unrolled.c:712:13: `(int)((long)nbh_0 * 127L >> 7L)' -> [0..0x5750]
+big/adpcm_no_unrolled.c:712:13: `(long)nbh_0 * 127L >> 7L' -> [0..0x5750]
+big/adpcm_no_unrolled.c:712:13: `(long)nbh_0 * 127L' -> [0..0x2BA800],0%127
+big/adpcm_no_unrolled.c:712:19: `(long)nbh_0' -> [0..0x5800]
+big/adpcm_no_unrolled.c:712:19: `nbh_0' -> [0..0x5800]
+big/adpcm_no_unrolled.c:713:10: `wd + wh_code_table[ih_0]' -> [-214..0x5A6E]
+big/adpcm_no_unrolled.c:713:10: `wd' -> [0..0x5750]
+big/adpcm_no_unrolled.c:713:15: `wh_code_table[ih_0]' -> {-214; 798}
+big/adpcm_no_unrolled.c:713:29: `ih_0' -> {0; 1; 2; 3}
+big/adpcm_no_unrolled.c:714:6: `nbh_0 < 0' -> {0; 1}
+big/adpcm_no_unrolled.c:714:6: `nbh_0' -> [-214..0x5A6E]
+big/adpcm_no_unrolled.c:715:6: `nbh_0 > 22528' -> {0; 1}
+big/adpcm_no_unrolled.c:715:6: `nbh_0' -> [0..0x5A6E]
+big/adpcm_no_unrolled.c:716:9: `nbh_0' -> [0..0x5800]
+big/adpcm_no_unrolled.c:725:9: `i < 10' -> {0; 1}
+big/adpcm_no_unrolled.c:725:9: `i' -> {0; 2; 4; 6; 8; 10}
+big/adpcm_no_unrolled.c:726:15: `i / 2' -> {0; 1; 2; 3; 4}
+big/adpcm_no_unrolled.c:726:15: `i' -> {0; 2; 4; 6; 8}
+big/adpcm_no_unrolled.c:726:31: `test_data[i]' -> {1}
+big/adpcm_no_unrolled.c:726:41: `i' -> {0; 2; 4; 6; 8}
+big/adpcm_no_unrolled.c:726:44: `test_data[i + 1]' -> {0; 1}
+big/adpcm_no_unrolled.c:726:54: `i + 1' -> {1; 3; 5; 7; 9}
+big/adpcm_no_unrolled.c:726:54: `i' -> {0; 2; 4; 6; 8}
+big/adpcm_no_unrolled.c:727:4: `i + 2' -> {2; 4; 6; 8; 10}
+big/adpcm_no_unrolled.c:727:4: `i' -> {0; 2; 4; 6; 8}

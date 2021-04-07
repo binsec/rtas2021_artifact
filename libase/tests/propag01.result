@@ -1,0 +1,11 @@
+[codex] compilation done
+[codex] Finite_memory: show each_u1:[-0x7FFFFF9B..0x7FFFFFFF]
+                              [-0x7FFFFF9B..0x7FFFFFFF]
+                              {100}
+[codex] Finite_memory: show each_u2:[-0x7FFFFF9B..0x7FFFFFFF]
+                              {33}
+                              {100}
+[codex] propag01.c:13:svcomp: result is unknown (using abstract interpretation)
+[codex] After goal-orientation: status is VALID
+[codex] propag01.c:13:svcomp: result is VALID (using goal-oriented procedure)
+[codex] Proved 12/12 alarms (remaining: 0; by SMT: 0)

@@ -1,0 +1,10 @@
+simple408b.c:7:4: `i + j' -> [--..--]
+simple408b.c:7:4: `i' -> [--..--]
+simple408b.c:7:6: `j' -> [--..--]
+simple408b.c:8:4: `i + j' -> {0; 1; 2}
+simple408b.c:8:4: `i' -> [-0x7FFFFFFF..0x7FFFFFFF]
+simple408b.c:8:6: `j' -> [-0x7FFFFFFF..0x7FFFFFFF]
+simple408b.c:9:10: `i' -> [-0x7FFFFFFF..0x7FFFFFFF]
+simple408b.c:10:4: `k + j' -> {0; 1; 2}
+simple408b.c:10:4: `k' -> [-0x7FFFFFFF..0x7FFFFFFF]
+simple408b.c:10:6: `j' -> [-0x7FFFFFFF..0x7FFFFFFF]

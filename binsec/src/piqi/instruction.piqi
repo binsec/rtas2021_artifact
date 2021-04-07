@@ -1,0 +1,67 @@
+.protobuf-package "instruction_pol"
+
+.import [ .module common ]
+
+.record [
+    .name instr-pol
+    .field [
+        .name ident
+        .type instr-ident
+        .code 1
+    ]
+    .field [
+        .name opcode
+        .type string
+        .code 2
+    ]
+    .field [
+        .name cpuid
+        .type cpuid-pol
+        .optional
+        .code 3
+    ]
+]
+
+.record [
+    .name cpuid-pol
+    .field [
+        .name eax
+        .type common/action
+        .optional
+        .default.DEFAULT
+        .code 1
+    ]
+    .field [
+        .name ebx
+        .type common/action
+        .optional
+        .default.DEFAULT
+        .code 2
+    ]
+    .field [
+        .name ecx
+        .type common/action
+        .optional
+        .default.DEFAULT
+        .code 3
+    ]
+    .field [
+        .name edx
+        .type common/action
+        .optional
+        .default.DEFAULT
+        .code 4
+    ]
+]
+
+.enum [
+    .name instr-ident
+    .option [
+        .name INVALID-INST
+        .code 0
+    ]
+    .option [
+        .name CPUID
+        .code 1
+    ]
+]

@@ -1,0 +1,4 @@
+[codex] compilation done
+[codex] SVComp Unreachability (SMT): FALSE
+[codex] SVComp unreachability: FALSE
+[codex] Proved 5/5 alarms (remaining: 0; by SMT: 0)

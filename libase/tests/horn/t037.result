@@ -1,0 +1,9 @@
+[kernel:typing:implicit-function-declaration] horn/t037.c:3: Warning: 
+  Calling undeclared function u. Old style K&R code?
+[kernel:typing:implicit-function-declaration] horn/t037.c:16: Warning: 
+  Calling undeclared function __VERIFIER_error. Old style K&R code?
+[codex] Warning: Warning: no definition for u
+[codex] compilation done
+[codex] SVComp Unreachability (SMT): FALSE
+[codex] SVComp unreachability: FALSE
+[codex] Proved 2/2 alarms (remaining: 0; by SMT: 0)

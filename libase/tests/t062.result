@@ -1,0 +1,9 @@
+[kernel:typing:implicit-function-declaration] t062.c:4: Warning: 
+  Calling undeclared function rand. Old style K&R code?
+[codex] Warning: Warning: no definition for rand
+[codex] compilation done
+[codex] t062.c:6:alarm Memory_access(*(p + y),
+  write): result is unknown (using abstract interpretation)
+[codex] t062.c:24:alarm Memory_access(*(p2 + z),
+  read): result is unknown (using abstract interpretation)
+[codex] Proved 78/80 alarms (remaining: 2; by SMT: 0)

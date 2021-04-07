@@ -1,0 +1,1 @@
+simple012.c:8:34: `(unsigned char *)(sk)' -> {{ &sk + 1 * {0} }}

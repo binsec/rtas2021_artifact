@@ -1,0 +1,4 @@
+[codex] compilation done
+[codex] simple014.c:13:svcomp: result is VALID (using abstract interpretation)
+[codex] simple014.c:15:svcomp: result is VALID (using abstract interpretation)
+[codex] Proved 5/5 alarms (remaining: 0; by SMT: 0)

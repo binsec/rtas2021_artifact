@@ -1,0 +1,4 @@
+[codex] compilation done
+[codex] Finite_memory: show each33:[-0x80000000..33]
+[codex] Finite_memory: show each11:[11..33]
+[codex] Proved 4/4 alarms (remaining: 0; by SMT: 0)

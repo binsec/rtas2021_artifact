@@ -1,0 +1,5 @@
+[codex] compilation done
+[codex] simple102.c:11:svcomp: result is unknown (using abstract interpretation)
+[codex] After goal-orientation: status is VALID
+[codex] simple102.c:11:svcomp: result is VALID (using goal-oriented procedure)
+[codex] Proved 7/7 alarms (remaining: 0; by SMT: 0)

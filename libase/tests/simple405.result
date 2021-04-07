@@ -1,0 +1,4 @@
+[codex] compilation done
+[codex] simple405.c:9:svcomp: result is VALID (using abstract interpretation)
+[codex] simple405.c:14:svcomp: result is VALID (using abstract interpretation)
+[codex] Proved 12/12 alarms (remaining: 0; by SMT: 0)

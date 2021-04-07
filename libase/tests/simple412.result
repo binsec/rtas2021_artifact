@@ -1,0 +1,5 @@
+[codex] compilation done
+[codex] simple412.c:13:svcomp: result is VALID (using abstract interpretation)
+[codex] simple412.c:16:svcomp: result is VALID (using abstract interpretation)
+[codex] simple412.c:19:svcomp: result is VALID (using abstract interpretation)
+[codex] Proved 17/17 alarms (remaining: 0; by SMT: 0)

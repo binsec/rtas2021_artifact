@@ -1,0 +1,9 @@
+simple050.c:5:5: `c' -> [--..--]
+simple050.c:5:12: `3 * k + 1' -> [-0x7FFFFFFD..0x7FFFFFFF],1%3
+simple050.c:5:12: `3 * k' -> [-0x7FFFFFFE..0x7FFFFFFE],0%3
+simple050.c:5:14: `k' -> [--..--]
+simple050.c:5:28: `6 * k + 1' -> {signed: [-0x7FFFFFFD..0x7FFFFFFF],1%6; unsigned: [1..0xFFFFFFFF],1%2}
+simple050.c:5:28: `6 * k' -> {signed: [-0x7FFFFFFE..0x7FFFFFFE],0%6; unsigned: [0..0xFFFFFFFE],0%2}
+simple050.c:5:30: `k' -> [--..--]
+simple050.c:6:2: `i + 1' -> [-0x7FFFFFFC..0x7FFFFFFD],2%3
+simple050.c:6:2: `i' -> [-0x7FFFFFFD..0x7FFFFFFF],1%3

@@ -1,0 +1,10 @@
+[kernel:typing:implicit-function-declaration] t055.c:9: Warning: 
+  Calling undeclared function rand. Old style K&R code?
+[codex] Warning: Warning: no definition for rand
+[codex] Warning: Assignment of union or structure mayloose precision; we should use memcopy
+[codex] Warning: Assignment of union or structure mayloose precision; we should use memcopy
+[codex] compilation done
+[codex] Warning: I need to re-evaluate let B32 = var(1)
+  let B42 = (B32)[0:16]
+  B42 (whose computation was not saved)
+[codex] Proved 12/12 alarms (remaining: 0; by SMT: 0)

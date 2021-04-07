@@ -1,0 +1,79 @@
+Log file:  /tmp/tmp.LkRkwZWHq9
+CSV file: /tmp/tmp.nzYeqv15bc.csv
+/nix/store/jnfi3gjrxd3q6na5fb1wwps46s6b5i5b-system-path/bin/time
+Verifying configuration comp=gcc OPT_FLAGS=-O1 ntasks=10               param_or_fixed=param scheduling=rr dyn_threads=nodyn printing=noprint
+./verif_for.sh 10 param rr gcc nodyn noprint
+Failed.
+Total alarms: 2
+Total time: 2.32
+Verifying configuration comp=gcc OPT_FLAGS=-O1 ntasks=10               param_or_fixed=param scheduling=rr dyn_threads=dyn printing=noprint
+./verif_for.sh 10 param rr gcc dyn noprint
+Failed.
+Total alarms: 2
+Total time: 3.01
+Verifying configuration comp=gcc OPT_FLAGS=-O1 ntasks=10               param_or_fixed=param scheduling=fp dyn_threads=nodyn printing=noprint
+./verif_for.sh 10 param fp gcc nodyn noprint
+Failed.
+Total alarms: 1
+Total time: 5.27
+Verifying configuration comp=gcc OPT_FLAGS=-O1 ntasks=10               param_or_fixed=param scheduling=fp dyn_threads=dyn printing=noprint
+./verif_for.sh 10 param fp gcc dyn noprint
+Failed.
+Total alarms: 1
+Total time: 7.22
+Verifying configuration comp=clang OPT_FLAGS=-O1 ntasks=10               param_or_fixed=param scheduling=rr dyn_threads=nodyn printing=noprint
+./verif_for.sh 10 param rr clang nodyn noprint
+Failed.
+Total alarms: 2
+Total time: 2.70
+Verifying configuration comp=clang OPT_FLAGS=-O1 ntasks=10               param_or_fixed=param scheduling=rr dyn_threads=dyn printing=noprint
+./verif_for.sh 10 param rr clang dyn noprint
+Analysis crashed.
+Verifying configuration comp=clang OPT_FLAGS=-O1 ntasks=10               param_or_fixed=param scheduling=fp dyn_threads=nodyn printing=noprint
+./verif_for.sh 10 param fp clang nodyn noprint
+Failed.
+Total alarms: 3
+Total time: 4.32
+Verifying configuration comp=clang OPT_FLAGS=-O1 ntasks=10               param_or_fixed=param scheduling=fp dyn_threads=dyn printing=noprint
+./verif_for.sh 10 param fp clang dyn noprint
+Failed.
+Total alarms: 2
+Total time: 5.67
+Verifying configuration comp=gcc OPT_FLAGS=-O2 ntasks=10               param_or_fixed=param scheduling=rr dyn_threads=nodyn printing=noprint
+./verif_for.sh 10 param rr gcc nodyn noprint
+Failed.
+Total alarms: 2
+Total time: 2.62
+Verifying configuration comp=gcc OPT_FLAGS=-O2 ntasks=10               param_or_fixed=param scheduling=rr dyn_threads=dyn printing=noprint
+./verif_for.sh 10 param rr gcc dyn noprint
+Failed.
+Total alarms: 2
+Total time: 3.25
+Verifying configuration comp=gcc OPT_FLAGS=-O2 ntasks=10               param_or_fixed=param scheduling=fp dyn_threads=nodyn printing=noprint
+./verif_for.sh 10 param fp gcc nodyn noprint
+Failed.
+Total alarms: 1
+Total time: 5.59
+Verifying configuration comp=gcc OPT_FLAGS=-O2 ntasks=10               param_or_fixed=param scheduling=fp dyn_threads=dyn printing=noprint
+./verif_for.sh 10 param fp gcc dyn noprint
+Failed.
+Total alarms: 2
+Total time: 7.66
+Verifying configuration comp=clang OPT_FLAGS=-O2 ntasks=10               param_or_fixed=param scheduling=rr dyn_threads=nodyn printing=noprint
+./verif_for.sh 10 param rr clang nodyn noprint
+Failed.
+Total alarms: 2
+Total time: 2.46
+Verifying configuration comp=clang OPT_FLAGS=-O2 ntasks=10               param_or_fixed=param scheduling=rr dyn_threads=dyn printing=noprint
+./verif_for.sh 10 param rr clang dyn noprint
+Analysis crashed.
+Verifying configuration comp=clang OPT_FLAGS=-O2 ntasks=10               param_or_fixed=param scheduling=fp dyn_threads=nodyn printing=noprint
+./verif_for.sh 10 param fp clang nodyn noprint
+Failed.
+Total alarms: 3
+Total time: 4.00
+Verifying configuration comp=clang OPT_FLAGS=-O2 ntasks=10               param_or_fixed=param scheduling=fp dyn_threads=dyn printing=noprint
+./verif_for.sh 10 param fp clang dyn noprint
+Failed.
+Total alarms: 3
+Total time: 5.09

@@ -1,0 +1,15 @@
+[codex] compilation done
+[codex] simple060.c:10:alarm Index_out_of_bound(2
+  <
+  1): result is **NOT** VALID (using abstract interpretation)
+[codex] simple060.c:7:alarm Index_out_of_bound(2
+  <
+  1): result is **NOT** VALID (using abstract interpretation)
+[codex] simple060.c:10:alarm Memory_access(a[2],
+  write): result is **NOT** VALID (using abstract interpretation)
+[codex] simple060.c:7:alarm Memory_access(a[2],
+  read): result is **NOT** VALID (using abstract interpretation)
+[codex] simple060.c:13:alarm Index_out_of_bound(-1
+  >=
+  0): result is **NOT** VALID (using abstract interpretation)
+[codex] Proved 13/13 alarms (remaining: 0; by SMT: 0)

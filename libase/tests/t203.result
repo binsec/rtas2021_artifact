@@ -1,0 +1,8 @@
+[codex] Warning: Warning: no definition for u
+[codex] compilation done
+[codex] t203.c:27:alarm Index_out_of_bound(quantl_mil
+  >=
+  0): result is unknown (using abstract interpretation)
+[codex] t203.c:27:alarm Memory_access(quant26bt_neg[quantl_mil],
+  read): result is unknown (using abstract interpretation)
+[codex] Proved 84/86 alarms (remaining: 2; by SMT: 0)

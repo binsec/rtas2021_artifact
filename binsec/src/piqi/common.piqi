@@ -1,0 +1,280 @@
+.protobuf-package "common"
+
+.record [
+    .name register-value-t
+    .field [
+        .name typeid
+        .type proto-size-t
+        .code 1
+    ]
+    .field [
+        .name value-8
+        .type uint32
+        .optional
+        .code 2
+    ]
+    .field [
+        .name value-16
+        .type uint32
+        .optional
+        .code 3
+    ]
+    .field [
+        .name value-32
+        .type uint32
+        .optional
+        .code 4
+    ]
+    .field [
+        .name value-64
+        .type uint64
+        .optional
+        .code 5
+    ]
+    .field [
+        .name value-80
+        .type binary
+        .optional
+        .code 6
+    ]
+    .field [
+        .name value-128
+        .type binary
+        .optional
+        .code 7
+    ]
+    .field [
+        .name value-256
+        .type binary
+        .optional
+        .code 8
+    ]
+]
+
+.record [
+    .name register-t
+    .field [
+        .name name
+        .type string
+        .code 1
+    ]
+    .field [
+        .name value
+        .type register-value-t
+        .code 2
+    ]
+]
+
+.record [
+    .name memory-t
+    .field [
+        .name addr
+        .type uint64
+        .code 1
+    ]
+    .field [
+        .name value
+        .type binary
+        .code 2
+    ]
+]
+
+.record [
+    .name indirect-register-t
+    .field [
+        .name name
+        .type string
+        .code 1
+    ]
+    .field [
+        .name value
+        .type binary
+        .code 2
+    ]
+]
+
+.record [
+    .name memory-pol
+    .field [
+        .name addr
+        .type action
+        .optional
+        .default.DEFAULT
+        .code 1
+    ]
+    .field [
+        .name value
+        .type action
+        .optional
+        .default.DEFAULT
+        .code 2
+    ]
+]
+
+.enum [
+    .name smt-result
+    .option [
+        .name UNKNOWN
+        .code 0
+    ]
+    .option [
+        .name SAT
+        .code 1
+    ]
+    .option [
+        .name UNSAT
+        .code 2
+    ]
+    .option [
+        .name TIMEOUT
+        .code 3
+    ]
+]
+
+.enum [
+    .name tracing-action
+    .option [
+        .name SKIP
+        .code 0
+    ]
+    .option [
+        .name INTO
+        .code 1
+    ]
+]
+
+.enum [
+    .name action
+    .option [
+        .name DEFAULT
+        .code 0
+    ]
+    .option [
+        .name PATCH
+        .code 1
+    ]
+    .option [
+        .name CONC
+        .code 2
+    ]
+    .option [
+        .name SYMB
+        .code 3
+    ]
+    .option [
+        .name LOGIC
+        .code 4
+    ]
+    .option [
+        .name IGNORE
+        .code 5
+    ]
+]
+
+.enum [
+    .name call-convention-t
+    .option [
+        .name UNKNOWN-CVT
+        .code 0
+    ]
+    .option [
+        .name CDECL
+        .code 1
+    ]
+    .option [
+        .name FASTCALL
+        .code 2
+    ]
+    .option [
+        .name STDCALL
+        .code 3
+    ]
+    .option [
+        .name THISCALL
+        .code 4
+    ]
+]
+
+.enum [
+    .name ir-kind-t
+    .option [
+        .name DBA
+        .code 1
+    ]
+    .option [
+        .name BAP
+        .code 2
+    ]
+    .option [
+        .name MIASM
+        .code 3
+    ]
+]
+
+.enum [
+    .name solver-t
+    .option [
+        .name Z3
+        .code 1
+    ]
+    .option [
+        .name BOOLECTOR
+        .code 2
+    ]
+    .option [
+        .name CVC4
+        .code 3
+    ]
+    .option [
+        .name YICES
+        .code 4
+    ]
+]
+
+.enum [
+    .name analysis-direction-t
+    .option [
+        .name FORWARD
+        .code 1
+    ]
+    .option [
+        .name BACKWARD
+        .code 2
+    ]
+]
+
+.enum [
+    .name proto-size-t
+    .option [
+        .name INVALID-SIZE
+        .code 0
+    ]
+    .option [
+        .name BIT8
+        .code 1
+    ]
+    .option [
+        .name BIT16
+        .code 2
+    ]
+    .option [
+        .name BIT32
+        .code 3
+    ]
+    .option [
+        .name BIT64
+        .code 4
+    ]
+    .option [
+        .name BIT80
+        .code 5
+    ]
+    .option [
+        .name BIT128
+        .code 6
+    ]
+    .option [
+        .name BIT256
+        .code 7
+    ]
+]

@@ -1,0 +1,14 @@
+[codex] Warning: Warning: no definition for unknown
+[codex] compilation done
+[codex] simple404.c:11:svcomp: result is VALID (using abstract interpretation)
+[codex] simple404.c:15:svcomp: result is VALID (using abstract interpretation)
+[codex] simple404.c:19:svcomp: result is VALID (using abstract interpretation)
+[codex] simple404.c:23:svcomp: result is VALID (using abstract interpretation)
+[codex] simple404.c:34:svcomp: result is VALID (using abstract interpretation)
+[codex] simple404.c:35:svcomp: result is unknown (using abstract interpretation)
+[codex] After goal-orientation: status is **NOT** VALID
+[codex] simple404.c:35:svcomp: result is **NOT** VALID (using goal-oriented procedure)
+[codex] simple404.c:39:svcomp: result is VALID (using abstract interpretation)
+[codex] simple404.c:44:svcomp: result is VALID (using abstract interpretation)
+[codex] simple404.c:48:svcomp: result is VALID (using abstract interpretation)
+[codex] Proved 21/21 alarms (remaining: 0; by SMT: 0)

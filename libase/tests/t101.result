@@ -1,0 +1,4 @@
+[kernel:typing:int-conversion] t101.c:11: Warning: 
+  Conversion from a pointer to an integer without an explicit cast
+[codex] compilation done
+[codex] Proved 9/9 alarms (remaining: 0; by SMT: 0)

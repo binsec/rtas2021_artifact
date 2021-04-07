@@ -1,0 +1,19 @@
+[codex] compilation done
+[codex] Warning: out of bound in weak
+[codex] simple413.c:4:alarm Index_out_of_bound(i
+  >=
+  0): result is unknown (using abstract interpretation)
+[codex] simple413.c:4:alarm Index_out_of_bound(i
+  <
+  7): result is unknown (using abstract interpretation)
+[codex] simple413.c:5:alarm Memory_access(*p,
+  write): result is unknown (using abstract interpretation)
+[codex] simple413.c:13:alarm Index_out_of_bound(j
+  >=
+  0): result is unknown (using abstract interpretation)
+[codex] simple413.c:13:alarm Index_out_of_bound(j
+  <
+  7): result is unknown (using abstract interpretation)
+[codex] simple413.c:13:alarm Memory_access(a[j],
+  read): result is unknown (using abstract interpretation)
+[codex] Proved 38/44 alarms (remaining: 6; by SMT: 0)

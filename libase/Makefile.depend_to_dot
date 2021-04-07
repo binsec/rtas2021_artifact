@@ -1,0 +1,87 @@
+# -*- mode:Makefile -*-
+##########################################################################
+#                                                                        #
+#  This file is part of the Codex plug-in of Frama-C.                    #
+#                                                                        #
+#  Copyright (C) 2007-2015                                               #
+#    CEA (Commissariat a l'energie atomique et aux energies              #
+#         alternatives)                                                  #
+#                                                                        #
+#  you can redistribute it and/or modify it under the terms of the GNU   #
+#  Lesser General Public License as published by the Free Software       #
+#  Foundation, version 2.1.                                              #
+#                                                                        #
+#  It is distributed in the hope that it will be useful,                 #
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of        #
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         #
+#  GNU Lesser General Public License for more details.                   #
+#                                                                        #
+#  See the GNU Lesser General Public License version 2.1                 #
+#  for more details (enclosed in the file licenses/LGPLv2.1).            #
+#                                                                        #
+##########################################################################
+
+all: dot
+include .depend
+
+%.cmx:
+	@for i in $(basename $^); do echo "\"$*\" -> \"$$i\";"; done
+
+%.cmi:
+	@for i in $(basename $^); do echo "\"$*\" -> \"$$i\";"; done
+
+%.cmo:
+	@for i in $(basename $^); do echo "\"$*\" -> \"$$i\";"; done
+
+dirs := . ext basis lattices domains term
+
+
+# Style 1 : use subgraphs. But this changes the layout of the graph, which makes it harder to read.
+define subgraph_template2
+$(1).subgrph:
+	@echo "subgraph cluster$(1){"
+	@echo "style=filled;"
+	@echo "color=lightgray;"
+	@echo "label=\"$(1)\";"
+	@echo $$(patsubst %,\"%\", $$(basename $$(wildcard $$(addsuffix /*.cmi, $(1)) $$(addsuffix /*.cmo, $(1)))))
+	@echo "}"
+endef
+
+extcolor = red
+basiscolor = lightblue
+latticescolor = green
+domainscolor = yellow
+termcolor = orange
+
+# New style: use a different color for each directory.
+define subgraph_template
+$(1).subgrph:
+	@echo $$(patsubst %,\"%\" [style=filled], $$(basename $$(wildcard $$(addsuffix /*.cmi, $(1)) $$(addsuffix /*.cmo, $(1)))))
+	@echo $$(patsubst %,\"%\" [fillcolor=$$($(1)color)], $$(basename $$(wildcard $$(addsuffix /*.cmi, $(1)) $$(addsuffix /*.cmo, $(1)))))
+#	@echo \"$(1)_sig\" [style=filled,fillcolor=$$($(1)color)]
+endef
+
+
+$(foreach dir,$(dirs),$(eval $(call subgraph_template,$(dir))))
+
+begin:
+	@echo "digraph g {"
+
+end:
+	@echo "}"
+
+cmos := $(patsubst %.ml, %.cmo, $(wildcard $(addsuffix /*.ml, $(dirs))))
+cmos += $(patsubst %.ml, %.cmi, $(wildcard $(addsuffix /*.ml, $(dirs))))
+cmos += $(patsubst %.mli, %.cmi, $(wildcard $(addsuffix /*.mli, $(dirs))))
+# cmos := $(patsubst ./%, %, $(cmos))
+# cmos := codex_register.cmo
+
+#cmos := $(addsuffix /*.cmo, $(dirs)) $(addsuffix /*.cmi, $(dirs))
+
+subgraphs = ext.subgrph basis.subgrph lattices.subgrph domains.subgrph term.subgrph 
+
+dot: begin $(subgraphs) $(cmos) end
+
+
+.depend:
+	make .depend

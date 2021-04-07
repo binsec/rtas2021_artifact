@@ -1,0 +1,9 @@
+simple410.c:6:10: `2 + a' -> [-0x7FFFFFFE..0x7FFFFFFF]
+simple410.c:6:14: `a' -> [--..--]
+simple410.c:7:10: `b + 3' -> [-0x7FFFFFFD..0x7FFFFFFF]
+simple410.c:7:10: `b' -> [--..--]
+simple410.c:8:10: `c + d' -> [--..--]
+simple410.c:8:10: `c' -> [-0x7FFFFFFE..0x7FFFFFFF]
+simple410.c:8:14: `d' -> [-0x7FFFFFFD..0x7FFFFFFF]
+simple410.c:9:5: `e < 4' -> {0; 1}
+simple410.c:9:5: `e' -> [--..--]
