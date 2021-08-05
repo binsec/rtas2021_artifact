@@ -175,4 +175,4 @@ module Codex_logger : Codex.Codex_log.S = struct
   let feedback fmt = result fmt
 end
 
-include Quiet
+include Binsec_logger

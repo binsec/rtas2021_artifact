@@ -218,6 +218,7 @@ $(eval $(call defcunit,codex,\
 	heap_typing x86_arch \
 	tSetting dba2Codex record_cfg \
 	analysis_settings x86_settings \
+	other_settings \
 	analyze \
 	codex_main,arch_settings,CEA))
 

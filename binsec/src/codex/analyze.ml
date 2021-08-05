@@ -36,7 +36,7 @@ let m_settings =
   if Codex_options.AnalyzeKernel.get () then
     (module X86_settings.Make(Dba2CodexC.TSettingC)(Arch.Registers)(Dba2CState.State)(Record_cfg) : SETTINGS)
   else
-    assert false
+    (module Other_settings.Make(Dba2CodexC.TSettingC)(Arch.Registers)(Dba2CState.State)(Record_cfg) : SETTINGS)
 
 module Settings = (val m_settings)
 open Settings
@@ -1186,7 +1186,19 @@ let run () =
   myprint "@[<v>Total alarms: %d@.%!@]" total_alarms;
   if total_alarms <> 0 then exit 1
   end else begin
-    assert false
+    let t_begin = Benchmark.make 0L in
+    let img = Kernel_functions.get_img () in
+    let ctx = Domain.root_context_upcast @@ Domain.root_context () in
+    let init_state = State.initial_concrete img ctx in
+    let symbol_init = Kernel_options.Entry_point.get () in
+    Logger.result "=== Analyzing from symbol %s ===%!" symbol_init;
+    let entry = unoption @@ Loader_utils.address_of_symbol ~name:symbol_init img in
+    Logger.result "entry address: %x" entry;
+    Logger.switch_to_phase symbol_init;
+    ignore @@ analyze img entry ctx init_state "list_init.dot" None;
+    let t_end = Benchmark.make 0L in
+    Logger.(result "%a" (Alarm_record.pretty ~unique:true) (alarm_record ()));
+    Logger.result "Analysis time: %s" Benchmark.(to_string (sub t_end t_begin));
   end
 
 let run_codex () =
