@@ -1,0 +1,12 @@
+libc/errno
+libc/fcntl
+libc/inttypes
+libc/string
+libc/unistd
+m4/bsd_sockets
+m4/times
+std/iostream
+std/list
+std/sstream
+std/string
+sys/types

@@ -1,0 +1,57 @@
+   INSTALLATION INSTRUCTIONS
+
+   1. Unix
+   -------
+
+Compilers:
+ - G++
+ - clang
+
+Dependencies:
+ - Boost::Context (optional)
+ - Valgrind development files (optional)
+ 
+Coroutine systems available:
+ - ucontext
+ - Boost::Context (fcontext)
+ - POSIX threads
+
+The following commands configure, compile and install libieee1666:
+$ ./configure --prefix=<install directory>
+$ make
+$ make install
+
+   1.1 Debian package creation
+   ---------------------------
+
+The following command create the debian source package:
+$ make deb-source
+
+The following command create the debian binary packages:
+$ make deb-binary
+   
+   1.2 RPM package creation
+   ------------------------
+
+The following command create the RPM source package:
+$ make rpm-source
+
+The following command create the RPM binary packages:
+$ make rpm-binary
+
+   2. Windows
+   ----------
+
+Compilers:
+ - mingw32 (32 bits)
+ - mingw-w64 (32 and 64 bits)
+ 
+Coroutine systems available:
+ - Windows Fiber
+ - Boost::Context (fcontext)
+ - POSIX threads
+
+The following commands configure, compile and install libieee1666:
+$ ./configure --prefix=<install directory>
+$ make
+$ make install

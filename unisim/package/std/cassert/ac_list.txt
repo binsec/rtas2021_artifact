@@ -1,0 +1,1 @@
+AC_CHECK_HEADER([cassert],, AC_MSG_ERROR([cassert is missing]))

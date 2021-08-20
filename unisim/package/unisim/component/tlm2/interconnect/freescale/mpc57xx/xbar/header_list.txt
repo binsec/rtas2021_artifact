@@ -1,0 +1,2 @@
+unisim/component/tlm2/interconnect/freescale/mpc57xx/xbar/config.hh
+unisim/component/tlm2/interconnect/freescale/mpc57xx/xbar/xbar.hh

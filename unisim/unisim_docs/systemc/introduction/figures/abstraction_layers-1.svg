@@ -1,0 +1,276 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="638.34381"
+   height="428.26486"
+   id="svg2"
+   sodipodi:version="0.32"
+   inkscape:version="0.46"
+   sodipodi:docbase="/local/home/gracia/projects/SystemC TLM tutorial/introduction/figures"
+   sodipodi:docname="abstraction_layers-1.svg"
+   inkscape:output_extension="org.inkscape.output.svg.inkscape"
+   version="1.0">
+  <defs
+     id="defs4">
+    <inkscape:perspective
+       sodipodi:type="inkscape:persp3d"
+       inkscape:vp_x="0 : 526.18109 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_z="744.09448 : 526.18109 : 1"
+       inkscape:persp3d-origin="372.04724 : 350.78739 : 1"
+       id="perspective95" />
+    <linearGradient
+       id="linearGradient3222">
+      <stop
+         style="stop-color:#ff0000;stop-opacity:1;"
+         offset="0"
+         id="stop3224" />
+      <stop
+         style="stop-color:#00ff00;stop-opacity:1;"
+         offset="1"
+         id="stop3226" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient3194">
+      <stop
+         style="stop-color:#ff0000;stop-opacity:1;"
+         offset="0"
+         id="stop3196" />
+      <stop
+         style="stop-color:#ff0000;stop-opacity:0;"
+         offset="1"
+         id="stop3198" />
+    </linearGradient>
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient3222"
+       id="linearGradient3228"
+       x1="67.369766"
+       y1="459.97287"
+       x2="69.5"
+       y2="117.31631"
+       gradientUnits="userSpaceOnUse" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient3222"
+       id="linearGradient4352"
+       gradientUnits="userSpaceOnUse"
+       x1="67.369766"
+       y1="459.97287"
+       x2="69.5"
+       y2="117.31631" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient3222"
+       id="linearGradient4360"
+       gradientUnits="userSpaceOnUse"
+       x1="67.369766"
+       y1="459.97287"
+       x2="69.5"
+       y2="117.31631"
+       gradientTransform="translate(0,451.73514)" />
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     gridtolerance="10000"
+     guidetolerance="10"
+     objecttolerance="10"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.86092033"
+     inkscape:cx="372.04724"
+     inkscape:cy="522.13873"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     inkscape:window-width="1014"
+     inkscape:window-height="722"
+     inkscape:window-x="1"
+     inkscape:window-y="54"
+     showgrid="true" />
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-40,-524.09735)">
+    <g
+       id="g4395">
+      <rect
+         y="524.09735"
+         x="40"
+         height="428.26486"
+         width="638.34381"
+         id="rect4274"
+         style="fill:#ffffff;fill-opacity:0.989071;fill-rule:evenodd;stroke:none;stroke-width:1.58599997;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+      <g
+         transform="matrix(0.9463087,0,0,1,36.35878,451.73514)"
+         id="g4276">
+        <g
+           id="g4278">
+          <rect
+             y="84.792976"
+             x="74.33905"
+             height="70.854408"
+             width="602.84326"
+             id="rect4280"
+             style="fill:#00b100;fill-opacity:1" />
+          <flowRoot
+             transform="translate(-16.874084,-7.3333797)"
+             style="font-size:40px;text-align:center;text-anchor:middle"
+             id="flowRoot4282"
+             xml:space="preserve"><flowRegion
+               id="flowRegion4284"><rect
+                 style="font-size:40px;text-align:center;text-anchor:middle"
+                 y="98.731552"
+                 x="90.600716"
+                 height="54.592739"
+                 width="607.48944"
+                 id="rect4286" /></flowRegion><flowPara
+               id="flowPara4288">Algorithmic model</flowPara></flowRoot>        </g>
+        <g
+           transform="translate(-0.18589,85.6434)"
+           id="g4290">
+          <rect
+             y="84.792976"
+             x="74.33905"
+             height="70.854408"
+             width="602.84326"
+             id="rect4292"
+             style="fill:#00ffff;fill-opacity:1;stroke:none;stroke-opacity:1" />
+          <flowRoot
+             transform="translate(-18.680725,-3.4564266)"
+             style="font-size:40px;text-align:center;text-anchor:middle"
+             id="flowRoot4294"
+             xml:space="preserve"><flowRegion
+               id="flowRegion4296"><rect
+                 style="font-size:40px;text-align:center;text-anchor:middle"
+                 y="98.731552"
+                 x="90.600716"
+                 height="54.592739"
+                 width="607.48944"
+                 id="rect4298" /></flowRegion><flowPara
+               id="flowPara4300">Functional model</flowPara></flowRoot>        </g>
+        <g
+           transform="translate(599.93936,58.658159)"
+           id="g4302">
+          <rect
+             style="fill:#0000ff;fill-opacity:1"
+             id="rect4304"
+             width="602.84326"
+             height="70.854408"
+             x="-526.18109"
+             y="195.14" />
+          <flowRoot
+             xml:space="preserve"
+             id="flowRoot4306"
+             style="font-size:40px;text-align:center;text-anchor:middle"
+             transform="translate(-617.17938,106.8906)"><flowRegion
+               id="flowRegion4308"><rect
+                 id="rect4310"
+                 width="607.48944"
+                 height="54.592739"
+                 x="90.600716"
+                 y="98.731552"
+                 style="font-size:40px;text-align:center;text-anchor:middle" /></flowRegion><flowPara
+               id="flowPara4312">Timed functional model</flowPara></flowRoot>        </g>
+        <g
+           transform="translate(-2.90388,253.79817)"
+           id="g4314">
+          <g
+             id="g4316">
+            <rect
+               y="84.792976"
+               x="74.33905"
+               height="70.854408"
+               width="602.84326"
+               id="rect4318"
+               style="fill:#ff00ff;fill-opacity:1" />
+            <flowRoot
+               transform="translate(-16.874084,-7.3333797)"
+               style="font-size:40px;text-align:center;text-anchor:middle"
+               id="flowRoot4320"
+               xml:space="preserve"><flowRegion
+                 id="flowRegion4322"><rect
+                   style="font-size:40px;text-align:center;text-anchor:middle"
+                   y="98.731552"
+                   x="90.600716"
+                   height="54.592739"
+                   width="607.48944"
+                   id="rect4324" /></flowRegion><flowPara
+                 id="flowPara4326">Cycle-accurate model</flowPara></flowRoot>          </g>
+        </g>
+        <g
+           id="g4328">
+          <rect
+             style="fill:#ff0000;fill-opacity:1"
+             id="rect4330"
+             width="602.84326"
+             height="70.854408"
+             x="71.435173"
+             y="422.22256" />
+          <flowRoot
+             xml:space="preserve"
+             id="flowRoot4332"
+             style="font-size:40px;text-align:center;text-anchor:middle"
+             transform="translate(-19.77796,330.09622)"><flowRegion
+               id="flowRegion4334"><rect
+                 id="rect4336"
+                 width="607.48944"
+                 height="54.592739"
+                 x="90.600716"
+                 y="98.731552"
+                 style="font-size:40px;text-align:center;text-anchor:middle" /></flowRegion><flowPara
+               id="flowPara4338">Synthesizable (RTL) model</flowPara></flowRoot>        </g>
+      </g>
+      <path
+         id="path4340"
+         d="M 79.353516,585.94204 C 79.353516,892.2526 79.353516,892.2526 79.353516,892.2526 L 89.207031,892.2526 L 69.5,943.30435 L 49.792969,892.2526 L 59.646484,892.2526 L 59.646484,585.94204 L 49.792969,585.94204 L 69.5,534.89029 L 89.207031,585.94204 L 79.353516,585.94204 z"
+         style="fill:url(#linearGradient4360);fill-opacity:1;fill-rule:evenodd;stroke:#ff0000;stroke-width:1.58599997;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+      <text
+         sodipodi:linespacing="125%"
+         transform="matrix(0,-1,1,0,0,0)"
+         id="text4342"
+         y="78.464767"
+         x="-625.53748"
+         style="font-size:25.64741707px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         xml:space="preserve"><tspan
+           y="78.464767"
+           x="-625.53748"
+           id="tspan4344"
+           sodipodi:role="line">C++</tspan></text>
+      <text
+         sodipodi:linespacing="125%"
+         transform="matrix(0,-1,1,0,0,0)"
+         id="text4346"
+         y="78.464767"
+         x="-908.84644"
+         style="font-size:25.64741707px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         xml:space="preserve"><tspan
+           y="78.464767"
+           x="-908.84644"
+           id="tspan4348"
+           sodipodi:role="line">SystemC</tspan></text>
+    </g>
+  </g>
+</svg>

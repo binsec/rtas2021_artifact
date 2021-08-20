@@ -1,0 +1,113 @@
+/*
+ *  Copyright (c) 2008,
+ *  Commissariat a l'Energie Atomique (CEA)
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without modification,
+ *  are permitted provided that the following conditions are met:
+ *
+ *   - Redistributions of source code must retain the above copyright notice, this
+ *     list of conditions and the following disclaimer.
+ *
+ *   - Redistributions in binary form must reproduce the above copyright notice,
+ *     this list of conditions and the following disclaimer in the documentation
+ *     and/or other materials provided with the distribution.
+ *
+ *   - Neither the name of CEA nor the names of its contributors may be used to
+ *     endorse or promote products derived from this software without specific prior
+ *     written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ *  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *  DISCLAIMED.
+ *  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ *  INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ *  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+ *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ *  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Authors: Reda   Nouacer  (reda.nouacer@cea.fr)
+ */
+
+
+namespace unisim::component::cxx::processor::hcs12x
+
+/* instruction endian */
+// big_endian	
+set endianness big
+
+// decoder( cisc )
+set codetype buffer
+
+include "xb_sub.isa"
+subdecoder unisim::component::cxx::processor::hcs12x::XB XB
+
+// address {uint16_t}
+set addressclass {uint16_t}
+//set addressclass {uint32_t}
+
+decl {
+#include <unisim/component/cxx/processor/hcs12x/mmc.hh>
+#include <unisim/component/cxx/processor/hcs12x/cpu.hh>
+#include <unisim/component/cxx/processor/hcs12x/concatenated_register.hh>
+#include <iostream>
+#include <iosfwd>
+}
+
+impl {
+#include <unisim/component/cxx/processor/hcs12x/xb.hh>
+#include <stdlib.h>
+
+using unisim::component::cxx::processor::hcs12x::XB::XbModes;
+ 
+}
+
+action {uint8_t} execute({CPU *} {cpu}) {
+	std::cerr << "Unknown instruction" << std::endl;
+
+	cpu->Stop(-1);
+	
+	return getCycles();
+}
+
+action {string} disasm({ostream&} {sink}) {
+	sink << "?";
+
+	return "?";
+}
+
+action {void} pre_execute({ostream&} {sink}) {
+//	sink << "asm(\"NOP\");\n";
+}
+
+action {void} post_execute({ostream&} {sink}) {
+	
+//	sink << "asm(\"NOP\");\n";
+}
+
+action {uint8_t} getCycles () {
+/*
+ * if (indexed_addressing) then 
+ *   return XbModes::GetIDXCycles(xb->getXbMode(), <idx_cyles>, <idx1_cyles>, <idx2_cyles>, <idxd_ind_cyles>, <idx2_ind_cyles>);
+ *
+ */
+	return 0; 
+}
+
+include "load_store.isa"
+include "transfer_exchange.isa"
+include "move.isa"
+include "addition_substraction.isa"
+include "decrement_increment.isa"
+include "compare_test.isa"
+include "boolean-logic.isa"
+include "bit.isa"
+include "multiplication_division.isa"
+include "branch.isa"
+include "stacking.isa"
+include "fuzzy-logic.isa"
+include "others.isa"
+

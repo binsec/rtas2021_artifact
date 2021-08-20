@@ -1,0 +1,5 @@
+libc/inttypes
+std/cstdlib
+std/iosfwd
+std/iostream
+unisim/component/cxx/processor/sparc

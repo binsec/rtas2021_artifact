@@ -1,0 +1,2 @@
+unisim/component/tlm/fsb/snooping_bus/bus_addr32_size32_procs1.cc
+unisim/component/tlm/fsb/snooping_bus/bus_addr64_size32_procs1.cc

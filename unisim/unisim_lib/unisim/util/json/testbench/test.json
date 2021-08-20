@@ -1,0 +1,35 @@
+{
+	"name" : "HARDWAR\u0190\u007b1\u007d",
+	"verbose":true,
+	"childs":
+	[
+		{
+			"name" : "HARDWARE.CPU",
+			"verbose":false,
+			"num-irqs": 16,
+			"freq_mhz": 66.66,
+			"bus-mult": 35e-1,
+			"temp": -12,
+			"pressure": 1.015e+3,
+			"surface": 293e-3,
+			"listener":null
+		},
+		{
+			"name" : "\u001b[32mHARDWARE.MEM\u001b[0m",
+			"verbose":false,
+			"listener":
+			{
+				"event": "wakeup"
+			},
+			"files":"c:\\z.bin,/opt/bin\/foo.elf,http:\//www.cloud.z/bar.bin"
+		},
+		{
+			"name" : "HARDWARE.TERM",
+			"verbose":false,
+			"cr":"\r",
+			"lf":"\n",
+			"backspace":"\b",
+			"tab":"\t"
+		}
+	]
+}

@@ -1,0 +1,67 @@
+
+-----------------------------------------
+     HOW TO BUILD THE WEB SITE AND UPLOAD
+-----------------------------------------
+
+Requirements for upload.sh:
+- Requirements for build.sh
+- sshfs
+
+See HOW TO BUILD THE WEB SITE (without uploading)
+
+Just run upload.sh from a directory.
+
+The web site will built in a temporary in sub-directory 'site' using script 'build.sh' (see below)
+Script 'upload.sh' will search for differences since last upload, so that it only uploads things that really need to.
+What's has been uploaded is putted in sub-directory 'old', and the temporary created sub-directory 'site' is deleted.
+
+--------------------------------------------------
+     HOW TO BUILD THE WEB SITE (without uploading)
+---------------------------------------------------
+
+Requirements for build.sh:
+- bash
+- the GNU C preprocessor (cpp)
+- mplayer
+- ImageMagick
+
+The web site is generated in directory "site" using a bash script: build.sh
+Typically, you run this script from a directory, the sub-directory "site" is then created in place.
+The generated directory must be uploaded on web server at the right place.
+About videos: At the moment, only .avi files are searched in directory "videos".
+A video thumbnail is automatically generated using mplayer for the video gallery and the web pages.
+A "play" logo is added to the thumbnail using "composite" from ImageMagick
+About images: Each images are copied on the website as is. At the moment only .png and .jpg images are search in directory "images"
+A thumbnail is generated automatically for the screenshot gallery.
+About downloads: Each file is copied on the website as is.
+
+Content on the git repository:
+- Directory "content": Contains the web pages content and custom stylesheet
+  Each subdirectory corresponds to an individual web page. The name of the subdirectory is the name of the generated web page.
+    - content.html: the content of the web page (mandatory)
+    - title.txt: the title of the webpage (mandatory)
+    - style.css: the custom style of the web page (optional)
+    - description.txt: the description of the webpage (optional)
+    - keywords.txt: the keywords of the webpage (optional)
+
+- Directory "glyphes": Contains images that are not indexed in screenshot gallery
+  Each images are copied on the website as is.
+
+- Directory "images": Contains images captions
+  The image caption is named as the image file but with the file extension .txt
+
+- Directory "news": Contains news
+  This directory contains files named yyyy-mm-dd.html where yyyy-mm-dd is the day of the news.
+  All these files are used to generate content/news and template/whats_new.html
+  Once content/news is generated, the web page "news.html" is generated as other web pages.
+  template/whats_new.html is included in the aside of the web pages.
+
+- Directory "template": Contains the main structure of the web site pages and the base stylesheet
+  All these files are preprocessed by the C preprocessor to include the content of the web pages
+
+- Directory "themes": Contains themes (theme images + stylesheets)
+  There's one subdirectory per theme.
+
+- Directory "videos": Contains video files captions and codec hint
+  The video caption file is named as the video file but with the ".txt" suffix
+  The "codec hint" file is named as the video file but with the "_codec.txt" suffix.

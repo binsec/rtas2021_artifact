@@ -1,0 +1,13 @@
+UNISIM Tools is a set of tools providing facilities to create, assemble, debug, and control simulators.
+
+The source code tree is the following:
+
+    * unisim_tools
+          o genisslib.............. : Instruction Set Simulator Generator (GPL)
+          o mkinitrd............... : A bash script to build an initial ramdrive for ppcemu-system simulator
+
+UNISIM Tools is available for download at http://unisim.org/site/download/start
+
+See file README in each subdirectory for information on a particular tool
+See file COPYING for license information.
+For installation instructions, please read file INSTALL

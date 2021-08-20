@@ -1,0 +1,8 @@
+unisim/component/clm/pipeline/execute/address_generation_unit.hh
+unisim/component/clm/pipeline/execute/address_generation_unit_mc.hh
+unisim/component/clm/pipeline/execute/functional_unit.hh
+unisim/component/clm/pipeline/execute/functional_unit_mc.hh
+unisim/component/clm/pipeline/execute/load_store_queue.hh
+unisim/component/clm/pipeline/execute/load_store_queue_mc.hh
+unisim/component/clm/pipeline/execute/load_store_queue_nospec.hh
+unisim/component/clm/pipeline/execute/load_store_queue_perfspec.hh

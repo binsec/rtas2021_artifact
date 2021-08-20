@@ -1,0 +1,567 @@
+html { box-sizing:border-box; }
+*, *:before, *:after { box-sizing: inherit; }
+
+html { width:100%; height:100%; overflow:hidden; }
+
+body
+{
+	width:100%;
+	height:100%;
+	overflow:hidden;
+	margin:0;
+	font-family:Arial,Helvetica,sans-serif;
+	font-style:normal;
+	font-size:14px;
+	text-align:left;
+	font-weight:400;
+	color:#000;
+	background-color:white;
+}
+
+#toolbar-div
+{
+	position:fixed;
+	left:0px;
+	top:0px;
+	width:1156px;
+	height:40px;
+	border-width:0;
+	box-shadow:inset 0px -1px #ababac, inset 0px 1px white;
+	background-image:linear-gradient(#f9fafa, #eaebec);
+	background-image:-webkit-linear-gradient(#f9fafa, #eaebec); /* for old versions of Safari */
+}
+
+.toolbar
+{
+	position:absolute;
+	left:0px;
+	top:0px;
+	height:100%;
+	display:flex;
+}
+
+.toolbar-item
+{
+	position:relative;
+	left:2px;
+	top:2px;
+	width:44px;
+	height:36px;
+	border-width:0;
+	display:inline-block;
+}
+
+.toolbar-button
+{
+	width:42px;
+	height:36px;
+	margin:0;
+	padding:0;
+	border-radius:3px;
+	border-style:solid;
+	border-color:#918e8c;
+	border-width:1px;
+	background:linear-gradient(to bottom right, #fdfcfc, #e9e8e7);
+	box-shadow:inset -1px -1px 1px 0px #ababac, inset 1px 1px 1px 0px white;
+}
+
+.toolbar-button:hover
+{
+	background:#fdfcfc;
+}
+
+.toolbar-button:active
+{
+	background:#e9e8e7;
+	box-shadow:unset;
+}
+
+.toolbar-button a
+{
+	margin:0;
+	padding:0;
+	width:42px;
+	height:36px;
+	display:block;
+	cursor:default;
+	text-decoration:none;
+	outline:0;
+	user-drag:none; /* Safari only */
+	-webkit-touch-callout:none; /* iOS Safari */
+	-webkit-user-select:none;   /* Safari */
+	-khtml-user-select:none;    /* Konqueror HTML */
+	-moz-user-select:none;      /* Firefox */
+	-ms-user-select:none;       /* Internet Explorer/Edge */
+	user-select:none;           /* Non-prefixed version, currently
+                                    supported by Chrome and Opera */
+}
+
+.toolbar-button img
+{
+	margin:1px 4px 1px 4px;
+	width:32px;
+	height:32px;
+	pointer-events:none;
+	user-drag:none;              /* Safari only */
+	-webkit-touch-callout:none; /* iOS Safari */
+	-webkit-user-select:none;   /* Safari */
+	-khtml-user-select:none;    /* Konqueror HTML */
+	-moz-user-select:none;      /* Firefox */
+	-ms-user-select:none;       /* Internet Explorer/Edge */
+	user-select:none;           /* Non-prefixed version, currently
+                                    supported by Chrome and Opera */
+}
+
+.toolbar-button:active img
+{
+	margin-left:5px;
+	margin-top:2px;
+}
+
+#content-div { position:fixed; left:0px; top:40px; width:1156px; height:768px; }
+
+.tile
+{
+	position:relative;
+	left:0px;
+	top:0px;
+	border-style:solid;
+	border-width:0;
+	display:block;
+	overflow:hidden;
+	background-color:#eff0f1;
+}
+
+#left-tile-div { width:382px; height:768px; float:left; border-top-width:0; }
+
+#left-tab-headers-div { }
+
+.left-tab-header-div { }
+
+#left-tab-contents-div { width:382px; height:752px; }
+
+.left-tab-content-div { }
+
+#left-horiz-resizer-div { float:left; width:6px; height:768px; cursor:col-resize; border-width:0 1px 0 1px; border-style:solid; border-left-color:#c4c4c5; border-right-color:#b7b8b8; }
+
+#right-div { width:768px; height:768px; float:right; border-width:0; }
+
+#top-div { width:768px; height:382px; border-width:0; }
+
+#top-middle-tile-div { width:382px; height:382px; float:left; overflow:hidden; border-top-width:0; }
+
+#top-middle-tab-headers-div { }
+
+.top-middle-tab-header-div {  }
+
+#top-middle-tab-contents-div { width:382px; height:358px; }
+
+.top-middle-tab-content-iframe { }
+
+#right-horiz-resizer-div { float:left; width:6px; height:382px; cursor:col-resize; border-width:0 1px 0 1px; border-style:solid; border-left-color:#c4c4c5; border-right-color:#b7b8b8; }
+
+#top-right-tile-div { width:380px; height:382px; float:right; overflow:hidden; border-top-width:0; }
+
+#top-right-tab-headers-div { }
+
+.top-right-tab-header-div { }
+
+#top-right-tab-contents-div { width:382px; height:358px; }
+
+.top-right-tab-content-div { }
+
+#vert-resizer-div { width:768px; height:6px; cursor:row-resize; border-width:1px 0 1px 0; border-style:solid; border-top-color:#c4c4c5; border-bottom-color:#b7b8b8; }
+
+#bottom-tile-div { width:768px; height:380px; overflow:hidden; }
+
+#bottom-tab-headers-div { }
+
+.bottom-tab-header-div { }
+
+#bottom-tab-contents-div { width:768px; height:356px; }
+
+.bottom-tab-content-div { }
+
+.resizer { background-color:#eff0f1; display:block; }
+
+.tab-headers-history-shortcut
+{
+	display:block;
+	width:16px;
+	height:24px;
+	border-top:0;
+	border-right:1px;
+	border-bottom:0;
+	border-left:0;
+	border-style:solid;
+	border-color:#ababac;
+	z-index:1;
+	box-shadow:inset 0px -1px #ababac, inset 0px 1px white;
+	position:absolute;
+	left:0px;
+	top:0px;
+	background-position:center center;
+	background-size:cover;
+	background-repeat:no-repeat;
+	background-color:#eff0f1;
+	border-radius:2px 2px 0px 0px;
+}
+
+.tab-headers-history-shortcut.w-svg
+{
+	background-image:url('/unisim/service/http_server/history-shortcut.svg');
+}
+
+.tab-headers-history-shortcut.wo-svg
+{
+	background-image:url('/unisim/service/http_server/history-shortcut.png');
+}
+
+.tab-headers-history-shortcut.w-svg:hover
+{
+	background-image:url('/unisim/service/http_server/history-shortcut.svg');
+	background-color:#f9fafa;
+}
+
+.tab-headers-history-shortcut.wo-svg:hover
+{
+	background-image:url('/unisim/service/http_server/history-shortcut.png');
+	background-color:#f9fafa;
+}
+
+.tab-headers-history
+{
+	display:block;
+	margin:0;
+	z-index:3;
+	background-color:#eff0f1;
+	border-style:solid;
+	border-width:1px;
+	border-top-color:#b7b8b8;
+	border-right-color:#c4c4c5;
+	border-bottom-color:#c4c4c5;
+	border-left-color:#b7b8b8;
+	box-shadow: 1px 1px 1px #ababac;
+	cursor:default;
+}
+
+.tab-headers-history-item
+{
+	padding:4px 4px 4px 4px;
+	width:100%;
+	cursor:default;
+}
+
+.tab-headers-history-item:hover
+{
+	background-color:#f9fafa;
+}
+
+.tab-headers-scroller
+{
+	display:block;
+	width:16px;
+	height:24px;
+	border-top:0;
+	border-right:1px;
+	border-bottom:0;
+	border-left:0;
+	border-style:solid;
+	border-color:#ababac;
+	z-index:1;
+	box-shadow:inset 0px -1px #ababac, inset 0px 1px white;
+	background-position:center center;
+	background-size:cover;
+	background-repeat:no-repeat;
+	background-color:#eff0f1;
+	border-radius:2px 2px 0px 0px;
+}
+
+.tab-headers-scroller:hover
+{
+	background-color:#f9fafa;
+}
+
+.tab-headers-left-scroller
+{
+	position:absolute;
+	top:0px;
+	left:16px;
+}
+
+.tab-headers-left-scroller.w-svg
+{
+	background-image:url('/unisim/service/http_server/left-arrow.svg');
+}
+
+.tab-headers-left-scroller.wo-svg
+{
+	background-image:url('/unisim/service/http_server/left-arrow.png');
+}
+
+.tab-headers-left-scroller.w-svg:hover
+{
+	background-color:#f9fafa;
+}
+
+.tab-headers-left-scroller.wo-svg:hover
+{
+	background-color:#f9fafa;
+}
+
+.tab-headers-right-scroller
+{
+	position:absolute;
+	top:0px;
+	left:32px;
+}
+
+.tab-headers-right-scroller.w-svg
+{
+	background-image:url('/unisim/service/http_server/right-arrow.svg');
+}
+
+.tab-headers-right-scroller.wo-svg
+{
+	background-image:url('/unisim/service/http_server/right-arrow.png');
+}
+
+.tab-headers-right-scroller.w-svg:hover
+{
+	background-color:#f9fafa;
+}
+
+.tab-headers-right-scroller.wo-svg:hover
+{
+	background-color:#f9fafa;
+}
+
+.tab-headers
+{
+	position:absolute;
+	left:48px;
+	top:0px;
+	width:4096px;
+	height:24px;
+	overflow:hidden;
+	border-width:0;
+	box-shadow:inset 0px -1px #ababac, inset 0px 1px white;
+	background-image:linear-gradient(#f9fafa, #eaebec);
+	background-image:-webkit-linear-gradient(#f9fafa, #eaebec); /* for old versions of Safari */
+}
+
+.tab-header
+{
+	border-radius:3px 3px 0px 0px;
+	height:24px;
+	float:left;
+	cursor:default;
+	padding-left:4px;
+	padding-right:4px;
+	line-height:24px;
+	font-size:14px;
+	background-color:#eff0f1;
+	border-style:solid;
+	border-width:0px 1px 1px 1px;
+	border-color:#ababac;
+	box-shadow: 1px 1px 2px #ababac;
+	display:block;
+}
+
+.tab-header:not(.tab-header-active):hover
+{
+	background-color:#f9fafa;
+}
+
+.tab-header-active
+{
+	background-color:white;
+	border-width:0px 1px 0px 1px;
+}
+
+.tab-header span
+{
+	display:inline-block;
+	max-width:200px;
+	white-space:nowrap;
+	overflow:hidden;
+	text-overflow:ellipsis;
+}
+
+.tab-header-active span
+{
+	max-width:1024px;
+}
+
+.tab-contents { position:absolute; left:0px; top:24px; display:block; overflow:hidden; }
+
+.tab-content { position:absolute; left:0px; top:0px; width:100%; height:100%; display:block; visibility:hidden; border-width:0; overflow:hidden; }
+
+.tab-content:hover { overflow:auto; }
+
+.noselect {
+	user-drag:none; /* Safari only */
+	-webkit-touch-callout:none; /* iOS Safari */
+	-webkit-user-select:none;   /* Safari */
+	-khtml-user-select:none;    /* Konqueror HTML */
+	-moz-user-select:none;      /* Firefox */
+	-ms-user-select:none;       /* Internet Explorer/Edge */
+	user-select:none;           /* Non-prefixed version, currently
+                                    supported by Chrome and Opera */
+}
+
+.close-tab
+{
+	float:right;
+	width:11px;
+	height:11px;
+	margin-left:4px;
+	display:block;
+	top:50%;
+	transform:translate(0, 50%);
+	-webkit-transform:translate(0, 50%); /* for old versions of safari */
+	background-position:center center;
+	background-size:cover;
+	background-repeat:no-repeat;
+}
+
+.close-tab.w-svg
+{
+	background-image:url('/unisim/service/http_server/close-tab.svg');
+}
+
+.close-tab.wo-svg
+{
+	background-image:url('/unisim/service/http_server/close-tab.png');
+}
+
+.close-tab.w-svg:hover
+{
+	background-image:url('/unisim/service/http_server/close-tab-hover.svg');
+}
+
+.close-tab.wo-svg:hover
+{
+	background-image:url('/unisim/service/http_server/close-tab-hover.png');
+}
+
+#browser-tab-content
+{
+	background-color:white;
+}
+
+#browser { padding:8px 0 0 8px; margin:0 0 16px 0; background-color:white; }
+
+#browser .browser-item { white-space: nowrap; color:black; cursor:default; }
+
+#browser ul.tree,
+#browser ul.tree ul {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+#browser ul.tree ul {
+	margin-left: 1.0em;
+}
+
+#browser ul.tree li {
+	margin-left: 0.35em;
+	border-left: thin solid #000;
+	white-space: nowrap;
+}
+
+#browser ul.tree li:last-child {
+	border-left: none;
+}
+
+#browser ul.tree li:before {
+	width: 0.9em;
+	height: 0.6em;
+	margin-right: 0.1em;
+	vertical-align: top;
+	border-bottom: thin solid #000;
+	content: "";
+	display: inline-block;
+}
+
+#browser ul.tree li:last-child:before {
+	border-left: thin solid #000;
+}
+
+#browser abbr[title]
+{
+	border-bottom:none !important;
+	cursor:inherit !important;
+	text-decoration:none !important;
+}
+
+.context-menu
+{
+	z-index:3;
+	background-color:#eff0f1;
+	border-width:1px;
+	border-style:solid;
+	border-top-color:#b7b8b8;
+	border-right-color:#c4c4c5;
+	border-bottom-color:#c4c4c5;
+	border-left-color:#b7b8b8;
+	box-shadow: 1px 1px 1px #ababac;
+	cursor:default;
+	user-drag:none; /* Safari only */
+	-webkit-touch-callout:none; /* iOS Safari */
+	-webkit-user-select:none;   /* Safari */
+	-khtml-user-select:none;    /* Konqueror HTML */
+	-moz-user-select:none;      /* Firefox */
+	-ms-user-select:none;       /* Internet Explorer/Edge */
+	user-select:none;           /* Non-prefixed version, currently
+                                    supported by Chrome and Opera */
+}
+
+.context-menu-item
+{
+	padding:4px 4px 4px 4px;
+	width:100%;
+	cursor:default;
+}
+
+.context-menu-item:hover
+{
+	background-color:#f9fafa;
+}
+
+#statusbar-div
+{
+	position:fixed;
+	left:0px;
+	top:808px;
+	width:1156px;
+	height:24px;
+	border-width:0;
+	box-shadow:inset 0px 1px #ababac, inset 0px 1px white;
+	background-image:linear-gradient(#f9fafa, #eaebec);
+	background-image:-webkit-linear-gradient(#f9fafa, #eaebec); /* for old versions of Safari */
+}
+
+.statusbar
+{
+	position:absolute;
+	left:0px;
+	top:0px;
+	height:100%;
+	display:flex;
+	flex-direction:row;
+}
+
+.statusbar .statusbar-item
+{
+/* 	position:absolute; */
+/* 	left:6px; */
+/* 	top:0px; */
+	padding-left:6px;
+	padding-right:24px;
+	height:100%;
+	border-width:0;
+	display:flex;
+	flex-direction:row;
+}

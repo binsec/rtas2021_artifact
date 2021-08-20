@@ -1,0 +1,3 @@
+unisim/util/simfloat/floating.tcc
+unisim/util/simfloat/host_floating.tcc
+unisim/util/simfloat/integer.tcc

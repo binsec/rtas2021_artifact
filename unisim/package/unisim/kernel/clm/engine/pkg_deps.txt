@@ -1,0 +1,11 @@
+libc/limits
+libc/math
+libc/stdarg
+libc/stdio
+libc/stdlib
+libc/string
+m4/pthread
+std/fstream
+std/iomanip
+std/iostream
+std/sstream

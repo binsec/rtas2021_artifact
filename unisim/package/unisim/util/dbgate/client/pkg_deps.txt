@@ -1,0 +1,3 @@
+std/cstdio
+std/cstring
+std/ostream

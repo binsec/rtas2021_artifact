@@ -1,0 +1,91 @@
+\ProvidesPackageRCS $Header: /cvsroot/latex-beamer/latex-beamer/themes/outer/beamerouterthemecea.sty,v 0.1 2006/08/21 23:29:48 fgadaud Exp $
+
+% Copyright 2006 by Fabrice Gadaud
+% Copyright 2003 by Till Tantau <tantau@users.sourceforge.net>
+%
+% This program can be redistributed and/or modified under the terms
+% of the GNU Public License, version 2.
+
+
+\setlength\parskip{\medskipamount}
+\setlength\parindent{0pt}
+
+
+\mode<presentation>
+
+\setbeamercolor*{author in head/foot}{fg=beamer@ceatitle}
+\setbeamercolor*{title in head/foot}{fg=beamer@ceatitle}
+\setbeamercolor*{date in head/foot}{fg=beamer@ceatitle}
+
+\setbeamercolor*{section in head/foot}{fg=beamer@ceatitle}
+\setbeamercolor*{subsection in head/foot}{fg=beamer@ceatitle}
+
+\setbeamercolor{background sidebar}{bg=}
+
+
+\defbeamertemplate*{navigation symbols} {}
+
+\setbeamertemplate{sidebar canvas left}
+{%
+  \vspace*{52pt}\hspace*{7pt}%
+  {\includegraphics[height=28pt]{../theme/cea-list.pdf}}%
+}
+
+
+
+\defbeamertemplate*{footline}{infolines theme}
+{
+  \leavevmode%
+  \hskip.118\paperwidth%
+  \hbox{\color{beamer@ceagreen}\vrule width .882\paperwidth height1pt}
+
+  \hbox{%
+  \hspace*{.14\paperwidth}\begin{beamercolorbox}[wd=.42\paperwidth,ht=2.25ex,left]{title in head/foot}%
+    \usebeamerfont{title in head/foot}\insertshorttitle
+  \end{beamercolorbox}%
+  \begin{beamercolorbox}[wd=.32\paperwidth,ht=2.25ex,center]{date in head/foot}%
+    \usebeamerfont{date in head/foot}\insertshortdate{}
+  \end{beamercolorbox}
+  \begin{beamercolorbox}[wd=.10\paperwidth,ht=2.25ex,right]{date in head/foot}%
+    \insertframenumber{} / \inserttotalframenumber\hspace*{2ex} 
+  \end{beamercolorbox}}%
+ 
+  \vskip1pt%
+}
+
+
+\defbeamertemplate*{headline}{cea theme}{}
+
+
+\defbeamertemplate*{frametitle}{cea theme}
+{
+  \leavevmode%
+  \hbox{%
+  \begin{beamercolorbox}[wd=.86\paperwidth,dp=1ex,center]{frametitle}
+    \usebeamerfont{frametitle}%
+    \color{beamer@ceatitle}%
+    \strut\insertframetitle\strut\par%
+    {%
+      \ifx\insertframesubtitle\@empty%
+      \else%
+      {\usebeamerfont{framesubtitle}\color{beamer@ceatitle}\insertframesubtitle\strut\par}%
+      \fi
+    }%
+  \end{beamercolorbox}}%
+
+
+  \vskip-1em\vskip2pt
+   \hbox{\hskip-14pt\hskip-.118\paperwidth\hspace*{.118\paperwidth}\color{beamer@ceared}\vrule width .882\paperwidth height 1pt}%
+}
+
+
+
+
+\beamerdefaultoverlayspecification{<+->}
+
+\setbeamersize{text margin left=14pt,text margin right=10pt}
+
+
+
+\mode
+<all>

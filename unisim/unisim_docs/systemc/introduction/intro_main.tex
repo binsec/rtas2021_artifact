@@ -1,0 +1,55 @@
+\mode<article>{
+\chapter{Introduction}
+}
+
+\mode<presentation>{
+\part{Introduction}
+}
+
+\mode<presentation>{
+\begin{frame}
+	\frametitle{Introduction}
+	\begin{block}{From the \emph{``SystemC 2.0 User's Guide''}:}
+		\begin{center}
+			``A C++ class library and methodology that you can use to effectively create a cycle-accurate model of software algorithms, hardware architecture, and interfaces of your SoC (System On a Chip) and system-level designs.''
+		\end{center}
+	\end{block}
+	\begin{itemize}
+		\item<2-> Really, what's SystemC?
+		\begin{itemize}
+			\item<2-> The different abstraction levels
+		\end{itemize}
+		\item<2-> Technically speaking
+		\item<2->
+		\item<2-> Conclusion
+	\end{itemize}
+\end{frame}
+}
+
+\mode<article>{
+As stated in the \emph{``SystemC 2.0 User's Guide''} by the Accellera Consortium, we can define SystemC as:
+\begin{quote}
+	``A C++ class library and methodology that you can use to effectively create a cycle-accurate model of software algorithms, hardware architecture, and interfaces of your SoC (System On a Chip) and system-level designs.''
+\end{quote}
+Ok, this already says us what is the purpose of SystemC: create software models of SoCs and system-level designs. 
+For that purpose SystemC provides a C++ class library and methodology\footnote{Yes, it provides a methodology, but it is focused at the component model. Actually, you will need to extend the SystemC methodology to define how the system components communicate.}.
+
+The ``cycle-accurate'' part of the definition is a little bit outdated.
+Currently, SystemC allows you not only to create cycle-accurate models, but for example purely functional models.
+We will see in sligthly more detail which kind of models you can create with SystemC\footnote{Or at least the main ones. As we previously mentioned, SystemC is in constant evolution.}.
+
+In the following sections we will try to define a little bit more in detail what is SystemC, and a rough view of the models you can create with it.
+A more detailed description of those models  will be given in the following chapters.
+
+% \begin{figure}[!h]
+% 	\begin{center}
+% 		\includegraphics[page=6,height=6cm]{main_beamer.pdf}
+% 	\end{center}
+% 	\caption{SystemC definition.}
+% \end{figure}
+}
+
+\input{introduction/really}
+\input{introduction/technically}
+% \input{introduction/conclusion}
+

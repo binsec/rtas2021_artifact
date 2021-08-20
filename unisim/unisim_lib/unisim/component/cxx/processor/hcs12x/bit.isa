@@ -1,0 +1,2759 @@
+/*
+ *  Copyright (c) 2008,
+ *  Commissariat a l'Energie Atomique (CEA)
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without modification,
+ *  are permitted provided that the following conditions are met:
+ *
+ *   - Redistributions of source code must retain the above copyright notice, this
+ *     list of conditions and the following disclaimer.
+ *
+ *   - Redistributions in binary form must reproduce the above copyright notice,
+ *     this list of conditions and the following disclaimer in the documentation
+ *     and/or other materials provided with the distribution.
+ *
+ *   - Neither the name of CEA nor the names of its contributors may be used to
+ *     endorse or promote products derived from this software without specific prior
+ *     written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ *  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *  DISCLAIMED.
+ *  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ *  INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ *  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+ *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ *  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Authors: Reda   Nouacer  (reda.nouacer@cea.fr)
+ */
+
+
+/* ********** Clear, Complement, and Negate instructions ********* */
+
+// CLC: clear bit C
+op clc(0x10[8]:0xFE[8])
+
+clc.getCycles = { return 1; }
+
+clc.disasm = {
+	string mnem = "CLC";
+	
+	sink << mnem;
+	
+	return mnem;
+}
+
+clc.execute = {
+	cpu->ccr->clrC();
+	
+	return getCycles();
+}
+
+// CLI: clear bit I
+op cli(0x10[8]:0xEF[8])
+
+cli.getCycles = { return 1; }
+
+cli.disasm = {
+	string mnem = "CLI";
+	
+	sink << mnem;
+	
+	return  mnem;
+}
+
+cli.execute = {
+	cpu->ccr->clrI();
+	
+	return getCycles();
+}
+
+// CLV: clear bit V
+op clv(0x10[8]:0xFD[8])
+
+clv.getCycles = { return 1; }
+
+clv.disasm = {
+	string mnem = "CLV";
+	
+	sink << mnem;
+	
+	return mnem;
+}
+
+clv.execute = {
+	cpu->ccr->clrV();
+
+	return getCycles();
+}
+
+// clear Memory
+op clr_ext(0x79[8]:> <:opr16a[16])
+
+clr_ext.getCycles = { return 3; }
+
+clr_ext.disasm = {
+	string mnem = "CLR";
+	
+	sink << mnem << " 0x" << std::hex << opr16a;
+	
+	return mnem;
+}
+
+clr_ext.execute = {
+	physical_address_t addr = opr16a;	
+	cpu->memWrite8(addr, 0);
+	
+	cpu->ccr->clrN();
+	cpu->ccr->setZ();
+	cpu->ccr->clrV();
+	cpu->ccr->clrC();
+
+	return getCycles();
+}
+
+op clr_idx(0x69[8]:> <:*xb[XB])
+
+clr_idx.pre_execute = {
+	
+	xb->pre_execute(sink);
+	// after: other specific actions
+}
+
+clr_idx.post_execute = {
+
+	// before: other specific actions
+	xb->post_execute(sink);
+}
+
+
+clr_idx.getCycles = { return XbModes::GetIDXCycles(xb->getXbMode(), 2, 3, 3, 4, 4); }
+
+clr_idx.disasm = {
+	string mnem = "CLR";
+	
+	sink << mnem << " ";
+	xb->disasm(sink);
+	
+	return mnem;
+}
+
+clr_idx.execute = {
+	physical_address_t addr = xb->getEAddr(cpu);	
+	cpu->memWrite8(addr, 0);
+
+	cpu->ccr->clrN();
+	cpu->ccr->setZ();
+	cpu->ccr->clrV();
+	cpu->ccr->clrC();
+
+	return getCycles();
+}
+
+op clrw_ext(0x18[8]:0x79[8]:> <:opr16a[16])
+
+clrw_ext.getCycles = { return 4; }
+
+clrw_ext.disasm = {
+	string mnem = "CLRW";
+	
+	sink << mnem << " 0x" << std::hex << opr16a;
+	
+	return mnem;
+}
+
+clrw_ext.execute = {
+	physical_address_t addr = opr16a;	
+	cpu->memWrite16(addr, 0);
+	
+	cpu->ccr->clrN();
+	cpu->ccr->setZ();
+	cpu->ccr->clrV();
+	cpu->ccr->clrC();
+
+	return getCycles();
+}
+
+op clrw_idx(0x18[8]:0x69[8]:> <:*xb[XB])
+
+clrw_idx.pre_execute = {
+	
+	xb->pre_execute(sink);
+	// after: other specific actions
+}
+
+clrw_idx.post_execute = {
+
+	// before: other specific actions
+	xb->post_execute(sink);
+}
+
+
+clrw_idx.getCycles = { return XbModes::GetIDXCycles(xb->getXbMode(), 3, 4, 4, 5, 5); }
+
+clrw_idx.disasm = {
+	string mnem = "CLRW";
+	
+	sink << mnem << " ";
+	xb->disasm(sink);
+	
+	return mnem;
+}
+
+clrw_idx.execute = {
+	physical_address_t addr = xb->getEAddr(cpu);	
+	cpu->memWrite16(addr, 0);
+
+	cpu->ccr->clrN();
+	cpu->ccr->setZ();
+	cpu->ccr->clrV();
+	cpu->ccr->clrC();
+
+	return getCycles();
+}
+
+op clr_ab(0b1[1]:b[1]:0x07[6])
+
+clr_ab.getCycles = { return 1; }
+
+clr_ab.disasm = {
+	string mnem;
+	
+	if (b==0) {
+		mnem = "CLRA";
+	} else {
+		mnem = "CLRB";
+	}
+	
+	sink << mnem;
+	
+	return mnem;
+}
+
+clr_ab.execute = {
+
+	if (b==0) {
+		cpu->setRegA(0);
+	} else {
+		cpu->setRegB(0);
+	}
+	
+	cpu->ccr->clrN();
+	cpu->ccr->setZ();
+	cpu->ccr->clrV();
+	cpu->ccr->clrC();
+
+	return getCycles();
+}
+
+op clr_xy(0x18[8]:0b1[1]:b[1]:0x07[6])
+
+clr_xy.getCycles = { return 2; }
+
+clr_xy.disasm = {
+	string mnem;
+
+	if (b==0) {
+		mnem = "CLRX";
+	} else {
+		mnem = "CLRY";
+	}
+	
+	sink << mnem;
+	
+	return mnem;
+}
+
+clr_xy.execute = {
+
+	if (b==0) {
+		cpu->setRegX(0);
+	} else {
+		cpu->setRegY(0);
+	}
+	
+	cpu->ccr->clrN();
+	cpu->ccr->setZ();
+	cpu->ccr->clrV();
+	cpu->ccr->clrC();
+
+	return getCycles();
+}
+
+// COM: One's complement memory Location
+op com_ext(0x71[8]:> <:opr16a[16])
+
+com_ext.getCycles = { return 4; }
+
+com_ext.disasm = {
+	string mnem = "COM";
+	
+	sink << mnem << " 0x" << std::hex << opr16a;
+	
+	return mnem;
+}
+
+com_ext.execute = {
+	physical_address_t addr = opr16a;	
+	uint8_t val = ~cpu->memRead8(addr);
+	cpu->memWrite8(addr, val);
+	
+	cpu->ccr->setC();// C-flag is set (for M6800 compatibility)
+	cpu->ccr->clrV();
+	if (val == 0) { cpu->ccr->setZ();} else {cpu->ccr->clrZ();}
+	if ((val & 0x80) == 0x80) { cpu->ccr->setN(); } else {cpu->ccr->clrN();}
+
+	return getCycles();
+}
+
+op com_idx(0x61[8]:> <:*xb[XB])
+
+com_idx.pre_execute = {
+	
+	xb->pre_execute(sink);
+	// after: other specific actions
+}
+
+com_idx.post_execute = {
+
+	// before: other specific actions
+	xb->post_execute(sink);
+}
+
+
+com_idx.getCycles = { return XbModes::GetIDXCycles(xb->getXbMode(), 3, 4, 5, 6, 6); }
+
+com_idx.disasm = {
+	string mnem = "COM";
+	
+	sink << mnem << " ";
+	xb->disasm(sink);
+	
+	return mnem;
+}
+
+com_idx.execute = {
+
+	physical_address_t addr = xb->getEAddr(cpu);	
+	uint8_t val = ~cpu->memRead8(addr);
+	cpu->memWrite8(addr, val);
+	
+	cpu->ccr->setC(); // C-flag is set (for M6800 compatibility)
+	cpu->ccr->clrV();
+	if (val == 0) { cpu->ccr->setZ();} else {cpu->ccr->clrZ();}
+	if ((val & 0x80) == 0x80) { cpu->ccr->setN(); } else {cpu->ccr->clrN();}
+
+	return getCycles();
+}
+
+op com_ab(0b010[3]:b[1]:0x1[4])
+
+com_ab.getCycles = { return 1; }
+
+com_ab.disasm = {
+	string mnem;
+	
+	if (b==0) {
+		mnem = "COMA";
+	} else {
+		mnem = "COMB";
+	}
+	
+	sink << mnem;
+	
+	return mnem;
+}
+
+com_ab.execute = {
+	
+	uint8_t val;
+	if (b==0) {
+		val = cpu->getRegA();
+	} else {
+		val = cpu->getRegB();
+	}
+	
+	val = ~val;
+	
+	if (b==0) {
+		cpu->setRegA(val);
+	} else {
+		cpu->setRegB(val);
+	}
+
+	cpu->ccr->setC(); // C-flag is set (for M6800 compatibility)
+	cpu->ccr->clrV();
+	if (val == 0) { cpu->ccr->setZ();} else {cpu->ccr->clrZ();}
+	if ((val & 0x80) == 0x80) { cpu->ccr->setN(); } else {cpu->ccr->clrN();}
+
+	return getCycles();
+}
+
+op comw_ext(0x18[8]:0x71[8]:> <:opr16a[16])
+
+comw_ext.getCycles = { return 5; }
+
+comw_ext.disasm = {
+	string mnem = "COMW";
+	
+	sink << mnem << " 0x" << std::hex << opr16a;
+	
+	return mnem;
+}
+
+comw_ext.execute = {
+	physical_address_t addr = opr16a;	
+	uint16_t val = ~cpu->memRead16(addr);
+	cpu->memWrite16(addr, val);
+	
+	cpu->ccr->setC(); // C-flag is set (for M6800 compatibility)
+	cpu->ccr->clrV();
+	if (val == 0) { cpu->ccr->setZ();} else {cpu->ccr->clrZ();}
+	if ((val & 0x8000) == 0x8000) { cpu->ccr->setN(); } else {cpu->ccr->clrN();}
+
+	return getCycles();
+}
+
+op comw_idx(0x18[8]:0x61[8]:> <:*xb[XB])
+
+comw_idx.pre_execute = {
+	
+	xb->pre_execute(sink);
+	// after: other specific actions
+}
+
+comw_idx.post_execute = {
+
+	// before: other specific actions
+	xb->post_execute(sink);
+}
+
+comw_idx.getCycles = { return XbModes::GetIDXCycles(xb->getXbMode(), 4, 5, 6, 7, 7); }
+
+comw_idx.disasm = {
+	string mnem = "COMW";
+	
+	sink << mnem << " ";
+	xb->disasm(sink);
+	
+	return mnem;
+}
+
+comw_idx.execute = {
+
+	physical_address_t addr = xb->getEAddr(cpu);	
+	uint16_t val = ~cpu->memRead16(addr);
+	cpu->memWrite16(addr, val);
+	
+	cpu->ccr->setC(); // C-flag is set (for M6800 compatibility)
+	cpu->ccr->clrV();
+	if (val == 0) { cpu->ccr->setZ();} else {cpu->ccr->clrZ();}
+	if ((val & 0x8000) == 0x8000) { cpu->ccr->setN(); } else {cpu->ccr->clrN();}
+
+	return getCycles();
+}
+
+op com_xy(0x18[8]:0b010[3]:b[1]:0x1[4])
+
+com_xy.getCycles = { return 2; }
+
+com_xy.disasm = {
+	string mnem;
+	
+	if (b==0) {
+		mnem = "COMX";
+	} else {
+		mnem = "COMY";
+	}
+	
+	sink << mnem;
+	
+	return mnem;
+}
+
+com_xy.execute = {
+	
+	uint16_t val;
+	if (b==0) {
+		val = cpu->getRegX();
+	} else {
+		val = cpu->getRegY();
+	}
+	
+	val = ~val;
+	
+	if (b==0) {
+		cpu->setRegX(val);
+	} else {
+		cpu->setRegY(val);
+	}
+
+	cpu->ccr->setC(); // C-flag is set (for M6800 compatibility)
+	cpu->ccr->clrV();
+	if (val == 0) { cpu->ccr->setZ();} else {cpu->ccr->clrZ();}
+	if ((val & 0x8000) == 0x8000) { cpu->ccr->setN(); } else {cpu->ccr->clrN();}
+
+	return getCycles();
+}
+
+// NEG: Two's Complement Negate
+op neg_ext(0x70[8]:> <:opr16a[16])
+
+neg_ext.getCycles = { return 4; }
+
+neg_ext.disasm = {
+	string mnem = "NEG";
+	
+	sink << mnem << " 0x" << std::hex << opr16a;
+	
+	return mnem;
+}
+
+neg_ext.execute = {
+	uint8_t result, carry_out, overflow, sign;
+	physical_address_t addr = opr16a;		
+	SignedSub8(result, carry_out, overflow, sign, 0, cpu->memRead8(addr), 0);
+	cpu->memWrite8(addr, result);
+	
+	if (carry_out) { cpu->ccr->setC();} else { cpu->ccr->clrC();}
+	if (overflow) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+	if (result == 0) { cpu->ccr->setZ();} else { cpu->ccr->clrZ();}
+	if ((result & 0x80) == 0x80) {cpu->ccr->setN();} else { cpu->ccr->clrN();} 
+
+	return getCycles();
+}
+
+op neg_idx(0x60[8]:> <:*xb[XB])
+
+neg_idx.pre_execute = {
+	
+	xb->pre_execute(sink);
+	// after: other specific actions
+}
+
+neg_idx.post_execute = {
+
+	// before: other specific actions
+	xb->post_execute(sink);
+}
+
+neg_idx.getCycles = { return XbModes::GetIDXCycles(xb->getXbMode(), 3, 4, 5, 6, 6); }
+
+neg_idx.disasm = {
+	string mnem = "NEG";
+	
+	sink << mnem << " 0x";
+	xb->disasm(sink);
+	
+	return mnem;
+}
+
+neg_idx.execute = {
+
+	uint8_t result, carry_out, overflow, sign;
+	physical_address_t addr = xb->getEAddr(cpu);	
+		
+	SignedSub8(result, carry_out, overflow, sign, 0, cpu->memRead8(addr), 0);
+	cpu->memWrite8(addr, result);
+	
+	if (carry_out) { cpu->ccr->setC();} else { cpu->ccr->clrC();}
+	if (overflow) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+	if (result == 0) { cpu->ccr->setZ();} else { cpu->ccr->clrZ();}
+	if ((result & 0x80) == 0x80) {cpu->ccr->setN();} else { cpu->ccr->clrN();} 
+
+	return getCycles();
+}
+
+op neg_ab(0b010[3]:b[1]:0x0[4])
+
+neg_ab.getCycles = { return 1; }
+
+neg_ab.disasm = {
+	string mnem;
+	
+	if (b==0) {
+		mnem = "NEGA";
+	} else {
+		mnem = "NEGB";
+	}
+	
+	sink << mnem;
+	
+	return mnem;
+}
+
+neg_ab.execute = {
+	uint8_t val, result, carry_out, overflow, sign;
+	
+	if (b==0) {
+		val = cpu->getRegA();
+	} else {
+		val = cpu->getRegB();
+	}
+
+	SignedSub8(result, carry_out, overflow, sign, 0, val, 0);
+
+	if (b==0) {
+		cpu->setRegA(result);
+	} else {
+		cpu->setRegB(result);
+	}
+	
+	if (carry_out) { cpu->ccr->setC();} else { cpu->ccr->clrC();}
+	if (overflow) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+	if (result == 0) { cpu->ccr->setZ();} else { cpu->ccr->clrZ();}
+	if ((result & 0x80) == 0x80) {cpu->ccr->setN();} else { cpu->ccr->clrN();} 
+
+	return getCycles();
+}
+
+op negw_ext(0x18[8]:0x70[8]:> <:opr16a[16])
+
+negw_ext.getCycles = { return 5; }
+
+negw_ext.disasm = {
+	string mnem = "NEGW";
+	
+	sink << mnem << " 0x" << std::hex << opr16a;
+	
+	return mnem;
+}
+
+negw_ext.execute = {
+	uint8_t carry_out, overflow, sign;
+	uint16_t result;
+	
+	physical_address_t addr = opr16a;		
+	
+	SignedSub16(result, carry_out, overflow, sign, 0, cpu->memRead16(addr), 0);
+	cpu->memWrite16(addr, result);
+	
+	if (carry_out) { cpu->ccr->setC();} else { cpu->ccr->clrC();}
+	if (overflow) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+	if (result == 0) { cpu->ccr->setZ();} else { cpu->ccr->clrZ();}
+	if ((result & 0x8000) == 0x8000) {cpu->ccr->setN();} else { cpu->ccr->clrN();} 
+
+	return getCycles();
+}
+
+op negw_idx(0x18[8]:0x60[8]:> <:*xb[XB])
+
+negw_idx.pre_execute = {
+	
+	xb->pre_execute(sink);
+	// after: other specific actions
+}
+
+negw_idx.post_execute = {
+
+	// before: other specific actions
+	xb->post_execute(sink);
+}
+
+negw_idx.getCycles = { return XbModes::GetIDXCycles(xb->getXbMode(), 4, 5, 6, 7, 7); }
+
+negw_idx.disasm = {
+	string mnem = "NEGW";
+	
+	sink << mnem << " 0x";
+	xb->disasm(sink);
+	
+	return mnem;
+}
+
+negw_idx.execute = {
+
+	uint8_t carry_out, overflow, sign;
+	uint16_t result;
+	
+	physical_address_t addr = xb->getEAddr(cpu);	
+		
+	SignedSub16(result, carry_out, overflow, sign, 0, cpu->memRead16(addr), 0);
+	cpu->memWrite16(addr, result);
+	
+	if (carry_out) { cpu->ccr->setC();} else { cpu->ccr->clrC();}
+	if (overflow) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+	if (result == 0) { cpu->ccr->setZ();} else { cpu->ccr->clrZ();}
+	if ((result & 0x8000) == 0x8000) {cpu->ccr->setN();} else { cpu->ccr->clrN();} 
+
+	return getCycles();
+}
+
+op neg_xy(0x18[8]:0b010[3]:b[1]:0x0[4])
+
+neg_xy.getCycles = { return 2; }
+
+neg_xy.disasm = {
+	string mnem;
+	
+	if (b==0) {
+		mnem = "NEGX";
+	} else {
+		mnem = "NEGY";
+	}
+	
+	sink << mnem;
+	
+	return mnem;
+}
+
+neg_xy.execute = {
+	uint8_t carry_out, overflow, sign;
+	uint16_t val, result;
+	
+	if (b==0) {
+		val = cpu->getRegX();
+	} else {
+		val = cpu->getRegY();
+	}
+
+	SignedSub16(result, carry_out, overflow, sign, 0, val, 0);
+
+	if (b==0) {
+		cpu->setRegX(result);
+	} else {
+		cpu->setRegY(result);
+	}
+	
+	if (carry_out) { cpu->ccr->setC();} else { cpu->ccr->clrC();}
+	if (overflow) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+	if (result == 0) { cpu->ccr->setZ();} else { cpu->ccr->clrZ();}
+	if ((result & 0x8000) == 0x8000) {cpu->ccr->setN();} else { cpu->ccr->clrN();} 
+
+	return getCycles();
+}
+
+
+/* ********** Bit Test and Manipulation Instructions ************* */
+
+// BCLR: Clear bit(s) in memory
+op bclr_dir(0x4D[8]:> <:opr8a[8]:mm[8])
+
+bclr_dir.getCycles = { return 4; }
+
+bclr_dir.disasm = {
+	string mnem = "BCLR";
+	
+	sink << mnem << " 0x" << std::hex << opr8a << ", 0x" << std::hex << mm;
+	
+	return mnem;
+}
+
+bclr_dir.execute = {
+
+	uint8_t ddVal = cpu->memRead8(opr8a, ADDRESS::DIRECT, false);
+	uint8_t mmCom = ~mm;
+	
+	uint8_t val = ddVal & mmCom;
+	
+	cpu->memWrite8(opr8a, val, ADDRESS::DIRECT, false);
+	
+	cpu->ccr->clrV();
+	if (val == 0) { cpu->ccr->setZ(); } else { cpu->ccr->clrZ(); }
+	if ((val & 0x80) == 0x80) { cpu->ccr->setN(); } else { cpu->ccr->clrN(); }
+
+	return getCycles();
+}
+
+op bclr_ext(0x1D[8]:> <:opr16a[16]:> <:mm[8])
+
+bclr_ext.getCycles = { return 4; }
+
+bclr_ext.disasm = {
+	string mnem = "BCLR";
+	
+	sink << mnem << " 0x" << std::hex << opr16a << ", 0x" << std::hex << mm;
+	
+	return mnem;
+}
+
+bclr_ext.execute = {
+	physical_address_t addr = opr16a;	
+	uint8_t opr16aVal = cpu->memRead8(addr);
+	uint8_t mmCom = ~mm;
+	
+	uint8_t val = opr16aVal & mmCom;
+	
+	cpu->memWrite8(addr, val);
+	
+	cpu->ccr->clrV();
+	if (val == 0) { cpu->ccr->setZ(); } else { cpu->ccr->clrZ(); }
+	if ((val & 0x80) == 0x80) { cpu->ccr->setN(); } else { cpu->ccr->clrN(); }
+
+	return getCycles();
+}
+
+op bclr_idx(0x0D[8]:> <:*xb[XB]:> <:mm[8])
+
+bclr_idx.pre_execute = {
+	
+	xb->pre_execute(sink);
+	// after: other specific actions
+}
+
+bclr_idx.post_execute = {
+
+	// before: other specific actions
+	xb->post_execute(sink);
+}
+
+bclr_idx.getCycles = { return XbModes::GetIDXCycles(xb->getXbMode(), 4, 4, 6, 0, 0); }
+
+bclr_idx.disasm = {
+	string mnem = "BCLR";
+	
+	sink << mnem << " ";
+	xb->disasm(sink);
+	sink << ", 0x" << std::hex << mm;
+	
+	return mnem;
+}
+
+bclr_idx.execute = {
+
+	physical_address_t addr = xb->getEAddr(cpu);		
+	uint8_t xbVal = cpu->memRead8(addr);
+	uint8_t mmCom = ~mm;
+	
+	uint8_t val = xbVal & mmCom;
+	
+	cpu->memWrite8(addr, val);
+	
+	cpu->ccr->clrV();
+	if (val == 0) { cpu->ccr->setZ(); } else { cpu->ccr->clrZ(); }
+	if ((val & 0x80) == 0x80) { cpu->ccr->setN(); } else { cpu->ccr->clrN(); }
+
+	return getCycles();
+}
+
+// BITA or BITB: bit test A/B (Logical 'AND' A/B with Memory
+op bit_ab_imm(0b1[1]:b[1]:0x05[6]:ii[8])
+
+bit_ab_imm.getCycles = { return 1; }
+
+bit_ab_imm.disasm = {
+	string mnem;
+	
+	if (b==0) {
+		mnem = "BITA";
+	} else {
+		mnem = "BITB";
+	} 
+	sink << mnem << " #0x" << std::hex << ii;
+	
+	return mnem;
+}
+
+bit_ab_imm.execute = {
+	uint8_t val;
+	
+	if (b==0) {
+		val = cpu->getRegA() & ii;
+	} else {
+		val = cpu->getRegB() & ii;
+	}
+	
+	cpu->ccr->clrV();
+	
+	if (val == 0) { cpu->ccr->setZ();} else { cpu->ccr->clrZ();};
+	if ((val & 0x80) == 0x80) { cpu->ccr->setN();} else { cpu->ccr->clrN();};
+
+	return getCycles();
+}
+
+op bit_ab_dir(0b1[1]:b[1]:0x15[6]:opr8a[8])
+
+bit_ab_dir.getCycles = { return 3; }
+
+bit_ab_dir.disasm = {
+	string mnem;
+	
+	if (b==0) {
+		mnem = "BITA";
+	} else {
+		mnem = "BITB";
+	} 
+	sink << mnem << " 0x" << std::hex << opr8a;
+	
+	return mnem;
+}
+
+bit_ab_dir.execute = {
+
+	uint8_t val;
+	
+	if (b==0) {
+		val = cpu->getRegA() & cpu->memRead8(opr8a, ADDRESS::DIRECT, false);
+	} else {
+		val = cpu->getRegB() & cpu->memRead8(opr8a, ADDRESS::DIRECT, false);
+	}
+	
+	cpu->ccr->clrV();
+	
+	if (val == 0) { cpu->ccr->setZ();} else { cpu->ccr->clrZ();};
+	if ((val & 0x80) == 0x80) { cpu->ccr->setN();} else { cpu->ccr->clrN();};
+
+	return getCycles();
+}
+
+op bit_ab_ext(0b1[1]:b[1]:0x35[6]:> <:opr16a[16])
+
+bit_ab_ext.getCycles = { return 3; }
+
+bit_ab_ext.disasm = {
+	string mnem;
+	
+	if (b==0) {
+		mnem = "BITA";
+	} else {
+		mnem = "BITB";
+	} 
+	sink << mnem << " 0x" << std::hex << opr16a;
+	
+	return mnem;
+}
+
+bit_ab_ext.execute = {
+	physical_address_t addr = opr16a;	
+	uint8_t val;
+	
+	if (b==0) {
+		val = cpu->getRegA() & cpu->memRead8(addr);
+	} else {
+		val = cpu->getRegB() & cpu->memRead8(addr);
+	}
+	
+	cpu->ccr->clrV();
+	
+	if (val == 0) { cpu->ccr->setZ();} else { cpu->ccr->clrZ();};
+	if ((val & 0x80) == 0x80) { cpu->ccr->setN();} else { cpu->ccr->clrN();};
+
+	return getCycles();
+}
+
+op bit_ab_idx(0b1[1]:b[1]:0x25[6]:> <:*xb[XB])
+
+bit_ab_idx.pre_execute = {
+	
+	xb->pre_execute(sink);
+	// after: other specific actions
+}
+
+bit_ab_idx.post_execute = {
+
+	// before: other specific actions
+	xb->post_execute(sink);
+}
+
+bit_ab_idx.getCycles = { return XbModes::GetIDXCycles(xb->getXbMode(), 3, 3, 4, 6, 6); }
+
+bit_ab_idx.disasm = {
+	string mnem;
+	
+	if (b==0) {
+		mnem = "BITA";
+	} else {
+		mnem = "BITB";
+	} 
+	sink << mnem << " ";
+	xb->disasm(sink);
+	
+	return mnem;
+}
+
+bit_ab_idx.execute = {
+	physical_address_t addr = xb->getEAddr(cpu);	
+	uint8_t val;
+	
+	if (b==0) {
+		val = cpu->getRegA() & cpu->memRead8(addr);
+	} else {
+		val = cpu->getRegB() & cpu->memRead8(addr);
+	}
+	
+	cpu->ccr->clrV();
+	
+	if (val == 0) { cpu->ccr->setZ();} else { cpu->ccr->clrZ();};
+	if ((val & 0x80) == 0x80) { cpu->ccr->setN();} else { cpu->ccr->clrN();};
+
+	return getCycles();
+}
+
+// BITX or BITY: bit test X/Y (Logical 'AND' X/Y with Memory
+op bit_xy_imm(0x18[8]:0b1[1]:b[1]:0x05[6]:opr16i[16])
+
+bit_xy_imm.getCycles = { return 3; }
+
+bit_xy_imm.disasm = {
+	string mnem;
+	
+	if (b==0) {
+		mnem = "BITX";
+	} else {
+		mnem = "BITY";
+	} 
+	
+	sink << mnem << " #0x" << std::hex << opr16i;
+	
+	return mnem;
+}
+
+bit_xy_imm.execute = {
+	uint16_t val;
+	
+	if (b==0) {
+		val = cpu->getRegX() & opr16i;
+	} else {
+		val = cpu->getRegY() & opr16i;
+	}
+	
+	cpu->ccr->clrV();
+	
+	if (val == 0) { cpu->ccr->setZ();} else { cpu->ccr->clrZ();};
+	if ((val & 0x8000) == 0x8000) { cpu->ccr->setN();} else { cpu->ccr->clrN();};
+
+	return getCycles();
+}
+
+op bit_xy_dir(0x18[8]:> <:0b1[1]:b[1]:0x15[6]:opr8a[8])
+
+bit_xy_dir.getCycles = { return 4; }
+
+bit_xy_dir.disasm = {
+	string mnem;
+	
+	if (b==0) {
+		mnem = "BITA";
+	} else {
+		mnem = "BITB";
+	} 
+	sink << mnem << " 0x" << std::hex << opr8a;
+	
+	return mnem;
+}
+
+bit_xy_dir.execute = {
+
+	uint16_t val;
+	
+	if (b==0) {
+		val = cpu->getRegX() & cpu->memRead16(opr8a, ADDRESS::DIRECT, false);
+	} else {
+		val = cpu->getRegY() & cpu->memRead16(opr8a, ADDRESS::DIRECT, false);
+	}
+	
+	cpu->ccr->clrV();
+	
+	if (val == 0) { cpu->ccr->setZ();} else { cpu->ccr->clrZ();};
+	if ((val & 0x8000) == 0x8000) { cpu->ccr->setN();} else { cpu->ccr->clrN();};
+
+	return getCycles();
+}
+
+op bit_xy_ext(0x18[8]:0b1[1]:b[1]:0x35[6]:> <:opr16a[16])
+
+bit_xy_ext.getCycles = { return 4; }
+
+bit_xy_ext.disasm = {
+	string mnem;
+	
+	if (b==0) {
+		mnem = "BITX";
+	} else {
+		mnem = "BITY";
+	} 
+	sink << mnem << " 0x" << std::hex << opr16a;
+	
+	return mnem;
+}
+
+bit_xy_ext.execute = {
+	physical_address_t addr = opr16a;	
+	uint16_t val;
+	
+	if (b==0) {
+		val = cpu->getRegX() & cpu->memRead16(addr);
+	} else {
+		val = cpu->getRegY() & cpu->memRead16(addr);
+	}	
+	
+	cpu->ccr->clrV();
+	
+	if (val == 0) { cpu->ccr->setZ();} else { cpu->ccr->clrZ();};
+	if ((val & 0x8000) == 0x8000) { cpu->ccr->setN();} else { cpu->ccr->clrN();};
+
+	return getCycles();
+}
+
+op bit_xy_idx(0x18[8]:0b1[1]:b[1]:0x25[6]:> <:*xb[XB])
+
+bit_xy_idx.pre_execute = {
+	
+	xb->pre_execute(sink);
+	// after: other specific actions
+}
+
+bit_xy_idx.post_execute = {
+
+	// before: other specific actions
+	xb->post_execute(sink);
+}
+
+bit_xy_idx.getCycles = { return XbModes::GetIDXCycles(xb->getXbMode(), 4, 4, 5, 7, 7); }
+
+bit_xy_idx.disasm = {
+	string mnem;
+	
+	if (b==0) {
+		mnem = "BITX";
+	} else {
+		mnem = "BITY";
+	} 
+	
+	sink << mnem << " ";
+	xb->disasm(sink);
+	
+	return mnem;
+}
+
+bit_xy_idx.execute = {
+	physical_address_t addr = xb->getEAddr(cpu);	
+	uint16_t val;
+	
+	if (b==0) {
+		val = cpu->getRegX() & cpu->memRead16(addr);
+	} else {
+		val = cpu->getRegY() & cpu->memRead16(addr);
+	}	
+	
+	cpu->ccr->clrV();
+	
+	if (val == 0) { cpu->ccr->setZ();} else { cpu->ccr->clrZ();};
+	if ((val & 0x8000) == 0x8000) { cpu->ccr->setN();} else { cpu->ccr->clrN();};
+
+	return getCycles();
+}
+
+// BSET: Set bits in memory
+op bset_dir(0x4C[8]:> <:opr8a[8]:mm[8])
+
+bset_dir.getCycles = { return 4; }
+
+bset_dir.disasm = {
+	string mnem = "BSET";
+	
+	sink << mnem << " 0x" << std::hex << opr8a << ", 0x" << std::hex << mm;
+	
+	return mnem;
+}
+
+bset_dir.execute = {
+
+	uint8_t ddVal = cpu->memRead8(opr8a, ADDRESS::DIRECT, false);
+	
+	uint8_t val = ddVal | mm;
+	
+	cpu->memWrite8(opr8a, val, ADDRESS::DIRECT, false);
+	
+	cpu->ccr->clrV();
+	if (val == 0) { cpu->ccr->setZ(); } else { cpu->ccr->clrZ(); }
+	if ((val & 0x80) == 0x80) { cpu->ccr->setN(); } else { cpu->ccr->clrN(); }
+
+	return getCycles();
+}
+
+op bset_ext(0x1C[8]:> <:opr16a[16]:> <:mm[8])
+
+bset_ext.getCycles = { return 4; }
+
+bset_ext.disasm = {
+	string mnem = "BSET";
+	
+	sink << mnem << " 0x" << std::hex << opr16a << ", 0x" << std::hex << mm;
+	
+	return mnem;
+}
+
+bset_ext.execute = {
+	physical_address_t addr = opr16a;	
+	uint8_t opr16aVal = cpu->memRead8(addr);
+	
+	uint8_t val = opr16aVal | mm;
+	
+	cpu->memWrite8(addr, val);
+	
+	cpu->ccr->clrV();
+	if (val == 0) { cpu->ccr->setZ(); } else { cpu->ccr->clrZ(); }
+	if ((val & 0x80) == 0x80) { cpu->ccr->setN(); } else { cpu->ccr->clrN(); }
+
+	return getCycles();
+}
+
+op bset_idx(0x0C[8]:> <:*xb[XB]:> <:mm[8])
+
+bset_idx.pre_execute = {
+	
+	xb->pre_execute(sink);
+	// after: other specific actions
+}
+
+bset_idx.post_execute = {
+
+	// before: other specific actions
+	xb->post_execute(sink);
+}
+
+bset_idx.getCycles = { return XbModes::GetIDXCycles(xb->getXbMode(), 4, 4, 6, 0, 0); }
+
+bset_idx.disasm = {
+	string mnem = "BSET";
+	
+	sink << mnem << " ";
+	xb->disasm(sink);
+	sink << ", 0x" << std::hex << mm;
+	
+	return mnem;
+}
+
+bset_idx.execute = {
+
+	physical_address_t addr = xb->getEAddr(cpu);		
+	uint8_t xbVal = cpu->memRead8(addr);
+	
+	uint8_t val = xbVal | mm;
+	
+	cpu->memWrite8(addr, val);
+	
+	cpu->ccr->clrV();
+	if (val == 0) { cpu->ccr->setZ(); } else { cpu->ccr->clrZ(); }
+	if ((val & 0x80) == 0x80) { cpu->ccr->setN(); } else { cpu->ccr->clrN(); }
+
+	return getCycles();
+}
+
+/* ********** Shift and Rotate instructions ********************** */
+
+// LSL: Logical Shift Left
+// ASL: Arithmetic Shift Left
+op lsl_ext(0x78[8]:> <:opr16a[16])
+
+lsl_ext.getCycles = { return 4; }
+
+lsl_ext.disasm = {
+	string mnem = "LSL";
+	
+	sink << mnem << " 0x" << std::hex << opr16a;
+	
+	return mnem;
+}
+
+lsl_ext.execute = {
+	physical_address_t addr = opr16a;
+	uint8_t val = cpu->memRead8(addr);
+
+	if ((val & 0x80) == 0x80) { cpu->ccr->setC(); } else { cpu->ccr->clrC(); }
+	
+	val = val << 1;
+	cpu->memWrite8(addr, val);
+	
+	if (val == 0) { cpu->ccr->setZ(); } else { cpu->ccr->clrZ(); }
+	if ((val & 0x80) == 0x80) { cpu->ccr->setN(); } else { cpu->ccr->clrN(); } 
+
+	if (cpu->ccr->getN() ^ cpu->ccr->getC()) { cpu->ccr->setV(); } else { cpu->ccr->clrV(); }
+
+	return getCycles();
+}
+
+op lsl_idx(0x68[8]:> <:*xb[XB])
+
+lsl_idx.pre_execute = {
+	
+	xb->pre_execute(sink);
+	// after: other specific actions
+}
+
+lsl_idx.post_execute = {
+
+	// before: other specific actions
+	xb->post_execute(sink);
+}
+
+lsl_idx.getCycles = { return XbModes::GetIDXCycles(xb->getXbMode(), 3, 4, 5, 6, 6); }
+
+lsl_idx.disasm = {
+	string mnem = "LSL";
+	
+	sink << mnem << " ";
+	xb->disasm(sink);
+	
+	return mnem;
+}
+
+lsl_idx.execute = {
+
+	physical_address_t addr = xb->getEAddr(cpu);		
+	uint8_t val = cpu->memRead8(addr);
+
+	if ((val & 0x80) == 0x80) { cpu->ccr->setC();} else  { cpu->ccr->clrC();}
+
+	val = val << 1;
+	cpu->memWrite8(addr, val);
+	
+	if (val == 0) { cpu->ccr->setZ(); } else { cpu->ccr->clrZ(); }
+	if ((val & 0x80) == 0x80) { cpu->ccr->setN(); } else { cpu->ccr->clrN(); } 
+	
+	if (cpu->ccr->getN() ^ cpu->ccr->getC()) { cpu->ccr->setV(); } else { cpu->ccr->clrV(); }
+
+	return getCycles();
+}
+
+op lsla(0x48[8])
+
+lsla.getCycles = { return 1; }
+
+lsla.disasm = {
+	string mnem = "LSLA";
+	
+	sink << mnem;
+	
+	return mnem;
+}
+
+lsla.execute = {
+	uint8_t val = cpu->getRegA();
+
+	if ((val & 0x80) == 0x80) { cpu->ccr->setC();} else  { cpu->ccr->clrC();}
+
+	val = val << 1;
+	cpu->setRegA(val);
+
+	if (val == 0) { cpu->ccr->setZ(); } else { cpu->ccr->clrZ(); }
+	if ((val & 0x80) == 0x80) { cpu->ccr->setN(); } else { cpu->ccr->clrN(); } 
+
+	if (cpu->ccr->getN() ^ cpu->ccr->getC()) { cpu->ccr->setV(); } else { cpu->ccr->clrV(); }
+
+	return getCycles();
+}
+
+op lslb(0x58[8])
+
+lslb.getCycles = { return 1; }
+
+lslb.disasm = {
+	string mnem = "LSLB";
+	
+	sink << mnem;
+	
+	return mnem;
+}
+
+lslb.execute = {
+	uint8_t val = cpu->getRegB();
+
+	if ((val & 0x80) == 0x80) { cpu->ccr->setC();} else { cpu->ccr->clrC();}
+
+	val = val << 1;
+	cpu->setRegB(val);
+
+	if (val == 0) { cpu->ccr->setZ(); } else { cpu->ccr->clrZ(); }
+	if ((val & 0x80) == 0x80) { cpu->ccr->setN(); } else { cpu->ccr->clrN(); } 
+
+	if (cpu->ccr->getN() ^ cpu->ccr->getC()) { cpu->ccr->setV(); } else { cpu->ccr->clrV(); }
+
+	return getCycles();
+}
+
+op lsld(0x59[8])
+
+lsld.getCycles = { return 1; }
+
+lsld.disasm = {
+	string mnem = "LSLD";
+	
+	sink << mnem;
+	
+	return mnem;
+}
+
+lsld.execute = {
+	uint16_t val = cpu->getRegD();
+
+	if ((val & 0x8000) == 0x8000) { cpu->ccr->setC();} else  { cpu->ccr->clrC();}
+
+	val = val << 1;
+	cpu->setRegD(val);
+
+	if (val == 0) { cpu->ccr->setZ(); } else { cpu->ccr->clrZ(); }
+	if ((val & 0x8000) == 0x8000) { cpu->ccr->setN(); } else { cpu->ccr->clrN(); } 
+
+	if (cpu->ccr->getN() ^ cpu->ccr->getC()) { cpu->ccr->setV(); } else { cpu->ccr->clrV(); }
+
+	return getCycles();
+}
+
+
+// LSLW: Logical Shift Left
+// ASLW: Arithmetic Shift Left
+op lslw_ext(0x18[8]:0x78[8]:> <:opr16a[16])
+
+lslw_ext.getCycles = { return 5; }
+
+lslw_ext.disasm = {
+	string mnem = "LSLW";
+
+	sink << mnem << " 0x" << std::hex << opr16a;
+	
+	return mnem;
+}
+
+lslw_ext.execute = {
+	physical_address_t addr = opr16a;	
+	uint16_t val = cpu->memRead16(addr);
+
+	if ((val & 0x8000) == 0x8000) { cpu->ccr->setC(); } else { cpu->ccr->clrC(); }
+	
+	val = val << 1;
+	cpu->memWrite16(addr, val);
+	
+	if (val == 0) { cpu->ccr->setZ(); } else { cpu->ccr->clrZ(); }
+	if ((val & 0x8000) == 0x8000) { cpu->ccr->setN(); } else { cpu->ccr->clrN(); } 
+
+	if (cpu->ccr->getN() ^ cpu->ccr->getC()) { cpu->ccr->setV(); } else { cpu->ccr->clrV(); }
+
+	return getCycles();
+}
+
+op lslw_idx(0x18[8]:0x68[8]:> <:*xb[XB])
+
+lslw_idx.pre_execute = {
+	
+	xb->pre_execute(sink);
+	// after: other specific actions
+}
+
+lslw_idx.post_execute = {
+
+	// before: other specific actions
+	xb->post_execute(sink);
+}
+
+lslw_idx.getCycles = { return XbModes::GetIDXCycles(xb->getXbMode(), 4, 5, 6, 7, 7); }
+
+lslw_idx.disasm = {
+	string mnem = "LSLW";
+	
+	sink << mnem << " ";
+	xb->disasm(sink);
+	
+	return mnem;
+}
+
+lslw_idx.execute = {
+
+	physical_address_t addr = xb->getEAddr(cpu);		
+	uint16_t val = cpu->memRead16(addr);
+
+	if ((val & 0x8000) == 0x8000) { cpu->ccr->setC();} else  { cpu->ccr->clrC();}
+
+	val = val << 1;
+	cpu->memWrite16(addr, val);
+	
+	if (val == 0) { cpu->ccr->setZ(); } else { cpu->ccr->clrZ(); }
+	if ((val & 0x8000) == 0x8000) { cpu->ccr->setN(); } else { cpu->ccr->clrN(); } 
+
+	if (cpu->ccr->getN() ^ cpu->ccr->getC()) { cpu->ccr->setV(); } else { cpu->ccr->clrV(); }
+
+	return getCycles();
+}
+
+op lslx(0x18[8]:0x48[8])
+
+lslx.getCycles = { return 2; }
+
+lslx.disasm = {
+	string mnem = "LSLX";
+	
+	sink << mnem;
+	
+	return mnem;
+}
+
+lslx.execute = {
+	uint16_t val = cpu->getRegX();
+
+	if ((val & 0x8000) == 0x8000) { cpu->ccr->setC();} else  { cpu->ccr->clrC();}
+
+	val = val << 1;
+	cpu->setRegX(val);
+
+	if (val == 0) { cpu->ccr->setZ(); } else { cpu->ccr->clrZ(); }
+	if ((val & 0x8000) == 0x8000) { cpu->ccr->setN(); } else { cpu->ccr->clrN(); } 
+
+	if (cpu->ccr->getN() ^ cpu->ccr->getC()) { cpu->ccr->setV(); } else { cpu->ccr->clrV(); }
+
+	return getCycles();
+}
+
+op lsly(0x18[8]:0x58[8])
+
+lsly.getCycles = { return 2; }
+
+lsly.disasm = {
+	string mnem = "LSLY";
+	
+	sink << mnem;
+	
+	return mnem;
+}
+
+lsly.execute = {
+	uint16_t val = cpu->getRegY();
+
+	if ((val & 0x8000) == 0x8000) { cpu->ccr->setC();} else { cpu->ccr->clrC();}
+
+	val = val << 1;
+	cpu->setRegY(val);
+
+	if (val == 0) { cpu->ccr->setZ(); } else { cpu->ccr->clrZ(); }
+	if ((val & 0x8000) == 0x8000) { cpu->ccr->setN(); } else { cpu->ccr->clrN(); } 
+
+	if (cpu->ccr->getN() ^ cpu->ccr->getC()) { cpu->ccr->setV(); } else { cpu->ccr->clrV(); }
+
+	return getCycles();
+}
+
+// ROL: Rotate Memory/Accumulator Left through carry
+op rol_ext(0x75[8]:> <:opr16a[16])
+
+rol_ext.getCycles = { return 4; }
+
+rol_ext.disasm = {
+	string mnem = "ROL";
+	
+	sink << mnem << " 0x" << std::hex << opr16a;
+	
+	return mnem;
+}
+
+rol_ext.execute = {
+	physical_address_t addr = opr16a;	
+	uint8_t val = cpu->memRead8(addr);
+	uint8_t oldCarry = cpu->ccr->getC();
+	
+	uint8_t carry = 0;
+	if ((val & 0x80) == 0x80) { carry = 1; }	
+	val = (val << 1) | oldCarry;
+	cpu->memWrite8(addr, val);
+
+	if (carry) { cpu->ccr->setC();} else { cpu->ccr->clrC();} 
+	if (val == 0) { cpu->ccr->setZ(); } else { cpu->ccr->clrZ(); }
+	if ((val & 0x80) == 0x80) { cpu->ccr->setN(); } else { cpu->ccr->clrN(); } 
+
+	if (cpu->ccr->getN() ^ cpu->ccr->getC()) { cpu->ccr->setV(); } else { cpu->ccr->clrV(); }
+
+	return getCycles();
+}
+
+op rol_idx(0x65[8]:> <:*xb[XB])
+
+rol_idx.pre_execute = {
+	
+	xb->pre_execute(sink);
+	// after: other specific actions
+}
+
+rol_idx.post_execute = {
+
+	// before: other specific actions
+	xb->post_execute(sink);
+}
+
+rol_idx.getCycles = { return XbModes::GetIDXCycles(xb->getXbMode(), 3, 4, 5, 6, 6); }
+
+rol_idx.disasm = {
+	string mnem = "ROL";
+	
+	sink << mnem << " ";
+	xb->disasm(sink);
+	
+	return mnem;
+}
+
+rol_idx.execute = {
+
+	physical_address_t addr = xb->getEAddr(cpu);		
+	uint8_t val = cpu->memRead8(addr);
+	uint8_t oldCarry = cpu->ccr->getC();
+	
+	uint8_t carry = 0;
+	if ((val & 0x80) == 0x80) { carry = 1; }	
+	val = (val << 1) | oldCarry;
+	cpu->memWrite8(addr, val);
+
+	if (carry) { cpu->ccr->setC();} else { cpu->ccr->clrC();} 
+	if (val == 0) { cpu->ccr->setZ(); } else { cpu->ccr->clrZ(); }
+	if ((val & 0x80) == 0x80) { cpu->ccr->setN(); } else { cpu->ccr->clrN(); } 
+
+	if (cpu->ccr->getN() ^ cpu->ccr->getC()) { cpu->ccr->setV(); } else { cpu->ccr->clrV(); }
+
+	return getCycles();
+}
+
+op rola(0x45[8])
+
+rola.getCycles = { return 1; }
+
+rola.disasm = {
+	string mnem = "ROLA";
+	
+	sink << mnem;
+	
+	return mnem;
+}
+
+rola.execute = {
+	uint8_t val = cpu->getRegA();
+	uint8_t oldCarry = cpu->ccr->getC();
+	
+	uint8_t carry = 0;
+	if ((val & 0x80) == 0x80) { carry = 1; }	
+	val = (val << 1) | oldCarry;
+	cpu->setRegA(val);
+
+	if (carry) { cpu->ccr->setC();} else { cpu->ccr->clrC();} 	
+	if (val == 0) { cpu->ccr->setZ(); } else { cpu->ccr->clrZ(); }
+	if ((val & 0x80) == 0x80) { cpu->ccr->setN(); } else { cpu->ccr->clrN(); } 
+
+	if (cpu->ccr->getN() ^ cpu->ccr->getC()) { cpu->ccr->setV(); } else { cpu->ccr->clrV(); }
+
+	return getCycles();
+}
+
+op rolb(0x55[8])
+
+rolb.getCycles = { return 1; }
+
+rolb.disasm = {
+	string mnem = "ROLB";
+	
+	sink << mnem;
+	
+	return mnem;
+}
+
+rolb.execute = {
+	uint8_t val = cpu->getRegB();
+	uint8_t oldCarry = cpu->ccr->getC();
+	
+	uint8_t carry = 0;
+	if ((val & 0x80) == 0x80) { carry = 1; }
+	val = (val << 1) | oldCarry;
+	cpu->setRegB(val);
+
+	if (carry) { cpu->ccr->setC();} else { cpu->ccr->clrC();} 	
+	if (val == 0) { cpu->ccr->setZ(); } else { cpu->ccr->clrZ(); }
+	if ((val & 0x80) == 0x80) { cpu->ccr->setN(); } else { cpu->ccr->clrN(); } 
+
+	if (cpu->ccr->getN() ^ cpu->ccr->getC()) { cpu->ccr->setV(); } else { cpu->ccr->clrV(); }
+
+	return getCycles();
+}
+
+
+// ROLW: Rotate word Memory/Accumulator Left through carry
+op rolw_ext(0x18[8]:0x75[8]:> <:opr16a[16])
+
+rolw_ext.getCycles = { return 5; }
+
+rolw_ext.disasm = {
+	string mnem = "ROLW";
+	
+	sink <<  mnem << " 0x" << std::hex << opr16a;
+	
+	return mnem;
+}
+
+rolw_ext.execute = {
+	physical_address_t addr = opr16a;	
+	uint16_t val = cpu->memRead16(addr);
+	uint16_t oldCarry = cpu->ccr->getC();
+	
+	uint16_t carry = 0;
+	if ((val & 0x8000) == 0x8000) { carry = 1; }	
+	val = (val << 1) | oldCarry;
+	cpu->memWrite16(addr, val);
+
+	if (carry) { cpu->ccr->setC();} else { cpu->ccr->clrC();} 
+	if (val == 0) { cpu->ccr->setZ(); } else { cpu->ccr->clrZ(); }
+	if ((val & 0x8000) == 0x8000) { cpu->ccr->setN(); } else { cpu->ccr->clrN(); } 
+
+	if (cpu->ccr->getN() ^ cpu->ccr->getC()) { cpu->ccr->setV(); } else { cpu->ccr->clrV(); }
+
+	return getCycles();
+}
+
+op rolw_idx(0x18[8]:0x65[8]:> <:*xb[XB])
+
+rolw_idx.pre_execute = {
+	
+	xb->pre_execute(sink);
+	// after: other specific actions
+}
+
+rolw_idx.post_execute = {
+
+	// before: other specific actions
+	xb->post_execute(sink);
+}
+
+rolw_idx.getCycles = { return XbModes::GetIDXCycles(xb->getXbMode(), 4, 5, 6, 7, 7); }
+
+rolw_idx.disasm = {
+	string mnem = "ROLW";
+	
+	sink << mnem << " ";
+	xb->disasm(sink);
+	
+	return mnem;
+}
+
+rolw_idx.execute = {
+
+	physical_address_t addr = xb->getEAddr(cpu);		
+	uint16_t val = cpu->memRead16(addr);
+	uint16_t oldCarry = cpu->ccr->getC();
+	
+	uint16_t carry = 0;
+	if ((val & 0x8000) == 0x8000) { carry = 1; }	
+	val = (val << 1) | oldCarry;
+	cpu->memWrite16(addr, val);
+
+	if (carry) { cpu->ccr->setC();} else { cpu->ccr->clrC();} 
+	if (val == 0) { cpu->ccr->setZ(); } else { cpu->ccr->clrZ(); }
+	if ((val & 0x8000) == 0x8000) { cpu->ccr->setN(); } else { cpu->ccr->clrN(); } 
+
+	if (cpu->ccr->getN() ^ cpu->ccr->getC()) { cpu->ccr->setV(); } else { cpu->ccr->clrV(); }
+
+	return getCycles();
+}
+
+op rolx(0x18[8]:0x45[8])
+
+rolx.getCycles = { return 2; }
+
+rolx.disasm = {
+	string mnem = "ROLX";
+	
+	sink << mnem;
+	
+	return mnem;
+}
+
+rolx.execute = {
+	uint16_t val = cpu->getRegX();
+	uint16_t oldCarry = cpu->ccr->getC();
+	
+	uint16_t carry = 0;
+	if ((val & 0x8000) == 0x8000) { carry = 1; }	
+	val = (val << 1) | oldCarry;
+	cpu->setRegX(val);
+
+	if (carry) { cpu->ccr->setC();} else { cpu->ccr->clrC();} 	
+	if (val == 0) { cpu->ccr->setZ(); } else { cpu->ccr->clrZ(); }
+	if ((val & 0x8000) == 0x8000) { cpu->ccr->setN(); } else { cpu->ccr->clrN(); } 
+
+	if (cpu->ccr->getN() ^ cpu->ccr->getC()) { cpu->ccr->setV(); } else { cpu->ccr->clrV(); }
+
+	return getCycles();
+}
+
+op roly(0x18[8]:0x55[8])
+
+roly.getCycles = { return 2; }
+
+roly.disasm = {
+	string mnem = "ROLY";
+	
+	sink << mnem;
+	
+	return mnem;
+}
+
+roly.execute = {
+	uint16_t val = cpu->getRegY();
+	uint16_t oldCarry = cpu->ccr->getC();
+	
+	uint16_t carry = 0;
+	if ((val & 0x8000) == 0x8000) { carry = 1; }
+	val = (val << 1) | oldCarry;
+	cpu->setRegY(val);
+
+	if (carry) { cpu->ccr->setC();} else { cpu->ccr->clrC();} 	
+	if (val == 0) { cpu->ccr->setZ(); } else { cpu->ccr->clrZ(); }
+	if ((val & 0x8000) == 0x8000) { cpu->ccr->setN(); } else { cpu->ccr->clrN(); } 
+
+	if (cpu->ccr->getN() ^ cpu->ccr->getC()) { cpu->ccr->setV(); } else { cpu->ccr->clrV(); }
+
+	return getCycles();
+}
+
+// LSR: Logical Shift Right
+op lsr_ext(0x74[8]:> <:opr16a[16])
+
+lsr_ext.getCycles = { return 4; }
+
+lsr_ext.disasm = {
+	string mnem = "LSR";
+	
+	sink << mnem << " 0x" << std::hex << opr16a;
+	
+	return mnem;
+}
+
+lsr_ext.execute = {
+	physical_address_t addr = opr16a;	
+	uint8_t val = cpu->memRead8(addr);
+
+	if ((val & 0x01) == 0x01) { cpu->ccr->setC();}	else  { cpu->ccr->clrC();}	
+	
+	val = val >> 1;
+	cpu->memWrite8(addr, val);
+
+	if (val == 0) { cpu->ccr->setZ(); } else { cpu->ccr->clrZ(); }
+	cpu->ccr->clrN(); 
+
+	if (cpu->ccr->getN() ^ cpu->ccr->getC()) { cpu->ccr->setV(); } else { cpu->ccr->clrV(); }
+
+	return getCycles();
+}
+
+op lsr_idx(0x64[8]:> <:*xb[XB])
+
+lsr_idx.pre_execute = {
+	
+	xb->pre_execute(sink);
+	// after: other specific actions
+}
+
+lsr_idx.post_execute = {
+
+	// before: other specific actions
+	xb->post_execute(sink);
+}
+
+lsr_idx.getCycles = { return XbModes::GetIDXCycles(xb->getXbMode(), 3, 4, 5, 6, 6); }
+
+lsr_idx.disasm = {
+	string mnem = "LSR";
+	
+	sink << mnem << " ";
+	xb->disasm(sink);
+	
+	return mnem;
+}
+
+lsr_idx.execute = {
+
+	physical_address_t addr = xb->getEAddr(cpu);		
+	uint8_t val = cpu->memRead8(addr);
+
+	if ((val & 0x01) == 0x01) { cpu->ccr->setC();} else  { cpu->ccr->clrC();}
+
+	val = val >> 1;
+	cpu->memWrite8(addr, val);
+
+	if (val == 0) { cpu->ccr->setZ(); } else { cpu->ccr->clrZ(); }
+	cpu->ccr->clrN(); 
+
+	if (cpu->ccr->getN() ^ cpu->ccr->getC()) { cpu->ccr->setV(); } else { cpu->ccr->clrV(); }
+
+	return getCycles();
+}
+
+op lsra(0x44[8])
+
+lsra.getCycles = { return 1; }
+
+lsra.disasm = {
+	string mnem = "LSRA";
+	
+	sink << mnem;
+	
+	return mnem;
+}
+
+lsra.execute = {
+	uint8_t val = cpu->getRegA();
+
+	if ((val & 0x01) == 0x01) { cpu->ccr->setC();} else { cpu->ccr->clrC();}
+
+	val = val >> 1;
+	cpu->setRegA(val);
+
+	if (val == 0) { cpu->ccr->setZ(); } else { cpu->ccr->clrZ(); }
+	cpu->ccr->clrN(); 
+
+	if (cpu->ccr->getN() ^ cpu->ccr->getC()) { cpu->ccr->setV(); } else { cpu->ccr->clrV(); }
+
+	return getCycles();
+}
+
+op lsrb(0x54[8])
+
+lsrb.getCycles = { return 1; }
+
+lsrb.disasm = {
+	string mnem = "LSRB";
+	
+	sink << mnem;
+	
+	return mnem;
+}
+
+lsrb.execute = {
+	uint8_t val = cpu->getRegB();
+
+	if ((val & 0x01) == 0x01) { cpu->ccr->setC();} else { cpu->ccr->clrC();}
+
+	val = val >> 1;
+	cpu->setRegB(val);
+
+	if (val == 0) { cpu->ccr->setZ(); } else { cpu->ccr->clrZ(); }
+	cpu->ccr->clrN(); 
+
+	if (cpu->ccr->getN() ^ cpu->ccr->getC()) { cpu->ccr->setV(); } else { cpu->ccr->clrV(); }
+
+	return getCycles();
+}
+
+op lsrd(0x49[8])
+
+lsrd.getCycles = { return 1; }
+
+lsrd.disasm = {
+	string mnem = "LSRD";
+	
+	sink << mnem;
+	
+	return mnem;
+}
+
+lsrd.execute = {
+	uint16_t val = cpu->getRegD();
+
+	if ((val & 0x0001) == 0x0001) { cpu->ccr->setC();}	else { cpu->ccr->clrC();}	
+	
+	val = val >> 1;
+	cpu->setRegD(val);
+
+	if (val == 0) { cpu->ccr->setZ(); } else { cpu->ccr->clrZ(); }
+	cpu->ccr->clrN(); 
+
+	if (cpu->ccr->getN() ^ cpu->ccr->getC()) { cpu->ccr->setV(); } else { cpu->ccr->clrV(); }
+
+	return getCycles();
+}
+
+// LSRW: Logical Shift Right word
+op lsrw_ext(0x18[8]:0x74[8]:> <:opr16a[16])
+
+lsrw_ext.getCycles = { return 5; }
+
+lsrw_ext.disasm = {
+	string mnem = "LSRW";
+	
+	sink << mnem << " 0x" << std::hex << opr16a;
+	
+	return mnem;
+}
+
+lsrw_ext.execute = {
+	physical_address_t addr = opr16a;	
+	uint16_t val = cpu->memRead16(addr);
+
+	if ((val & 0x0001) == 0x0001) { cpu->ccr->setC();}	else  { cpu->ccr->clrC();}	
+	
+	val = val >> 1;
+	cpu->memWrite16(addr, val);
+
+	if (val == 0) { cpu->ccr->setZ(); } else { cpu->ccr->clrZ(); }
+	cpu->ccr->clrN(); 
+
+	if (cpu->ccr->getN() ^ cpu->ccr->getC()) { cpu->ccr->setV(); } else { cpu->ccr->clrV(); }
+
+	return getCycles();
+}
+
+op lsrw_idx(0x18[8]:0x64[8]:> <:*xb[XB])
+
+lsrw_idx.pre_execute = {
+	
+	xb->pre_execute(sink);
+	// after: other specific actions
+}
+
+lsrw_idx.post_execute = {
+
+	// before: other specific actions
+	xb->post_execute(sink);
+}
+
+lsrw_idx.getCycles = { return XbModes::GetIDXCycles(xb->getXbMode(), 4, 5, 6, 7, 7); }
+
+lsrw_idx.disasm = {
+	string mnem = "LSRW";
+	
+	sink << mnem << " ";
+	xb->disasm(sink);
+	
+	return mnem;
+}
+
+lsrw_idx.execute = {
+
+	physical_address_t addr = xb->getEAddr(cpu);		
+	uint16_t val = cpu->memRead16(addr);
+
+	if ((val & 0x0001) == 0x0001) { cpu->ccr->setC();} else  { cpu->ccr->clrC();}
+
+	val = val >> 1;
+	cpu->memWrite16(addr, val);
+
+	if (val == 0) { cpu->ccr->setZ(); } else { cpu->ccr->clrZ(); }
+	cpu->ccr->clrN(); 
+
+	if (cpu->ccr->getN() ^ cpu->ccr->getC()) { cpu->ccr->setV(); } else { cpu->ccr->clrV(); }
+
+	return getCycles();
+}
+
+op lsrx(0x18[8]:0x44[8])
+
+lsrx.getCycles = { return 2; }
+
+lsrx.disasm = {
+	string mnem = "LSRX";
+	
+	sink << mnem;
+	
+	return mnem;
+}
+
+lsrx.execute = {
+	uint16_t val = cpu->getRegX();
+
+	if ((val & 0x0001) == 0x0001) { cpu->ccr->setC();} else { cpu->ccr->clrC();}
+
+	val = val >> 1;
+	cpu->setRegX(val);
+
+	if (val == 0) { cpu->ccr->setZ(); } else { cpu->ccr->clrZ(); }
+	cpu->ccr->clrN(); 
+
+	if (cpu->ccr->getN() ^ cpu->ccr->getC()) { cpu->ccr->setV(); } else { cpu->ccr->clrV(); }
+
+	return getCycles();
+}
+
+op lsry(0x18[8]:0x54[8])
+
+lsry.getCycles = { return 2; }
+
+lsry.disasm = {
+	string mnem = "LSRY";
+	
+	sink << mnem;
+	
+	return mnem;
+}
+
+lsry.execute = {
+	uint16_t val = cpu->getRegY();
+
+	if ((val & 0x0001) == 0x0001) { cpu->ccr->setC();} else { cpu->ccr->clrC();}
+
+	val = val >> 1;
+	cpu->setRegY(val);
+
+	if (val == 0) { cpu->ccr->setZ(); } else { cpu->ccr->clrZ(); }
+	cpu->ccr->clrN(); 
+
+	if (cpu->ccr->getN() ^ cpu->ccr->getC()) { cpu->ccr->setV(); } else { cpu->ccr->clrV(); }
+
+	return getCycles();
+}
+
+// ROR: Rotate Memory/Accumulator Right through Carry
+op ror_ext(0x76[8]:> <:opr16a[16])
+
+ror_ext.getCycles = { return 4; }
+
+ror_ext.disasm = {
+	string mnem = "ROR";
+	
+	sink << mnem << " 0x" << std::hex << opr16a;
+	
+	return mnem;
+}
+
+ror_ext.execute = {
+	physical_address_t addr = opr16a;	
+	uint8_t val = cpu->memRead8(addr);
+	uint8_t oldCarry = cpu->ccr->getC();
+	
+	uint8_t carry = 0;
+	if ((val & 0x01) == 0x01) { carry = 1; }	
+	val = (oldCarry << 7) | (val >> 1);
+	cpu->memWrite8(addr, val);
+
+	if (carry) { cpu->ccr->setC();} else { cpu->ccr->clrC();}
+	if (val == 0) { cpu->ccr->setZ(); } else { cpu->ccr->clrZ(); }
+	cpu->ccr->clrN(); 
+
+	if (cpu->ccr->getN() ^ cpu->ccr->getC()) { cpu->ccr->setV(); } else { cpu->ccr->clrV(); }
+
+	return getCycles();
+}
+
+op ror_idx(0x66[8]:> <:*xb[XB])
+
+ror_idx.pre_execute = {
+	
+	xb->pre_execute(sink);
+	// after: other specific actions
+}
+
+ror_idx.post_execute = {
+
+	// before: other specific actions
+	xb->post_execute(sink);
+}
+
+ror_idx.getCycles = { return XbModes::GetIDXCycles(xb->getXbMode(), 3, 4, 5, 6, 6); }
+
+ror_idx.disasm = {
+	string mnem = "ROR";
+	
+	sink << mnem << " ";
+	xb->disasm(sink);
+	
+	return mnem;
+}
+
+ror_idx.execute = {
+
+	physical_address_t addr = xb->getEAddr(cpu);		
+	uint8_t val = cpu->memRead8(addr);
+	uint8_t oldCarry = cpu->ccr->getC();
+	
+	uint8_t carry = 0;
+	if ((val & 0x01) == 0x01) { carry = 1; }	
+	val = (oldCarry << 7) | (val >> 1);
+	cpu->memWrite8(addr, val);
+
+	if (carry) { cpu->ccr->setC();} else { cpu->ccr->clrC();}
+	if (val == 0) { cpu->ccr->setZ(); } else { cpu->ccr->clrZ(); }
+	if ((val & 0x80) == 0x80) { cpu->ccr->setN(); } else { cpu->ccr->clrN(); }
+
+	if (cpu->ccr->getN() ^ cpu->ccr->getC()) { cpu->ccr->setV(); } else { cpu->ccr->clrV(); }
+
+	return getCycles();
+}
+
+op rora(0x46[8])
+
+rora.getCycles = { return 1; }
+
+rora.disasm = {
+	string mnem = "RORA";
+	
+	sink << mnem;
+	
+	return mnem;
+}
+
+rora.execute = {
+	uint8_t val = cpu->getRegA();
+	uint8_t oldCarry = cpu->ccr->getC();
+	
+	uint8_t carry = 0;
+	if ((val & 0x01) == 0x01) { carry = 1; }	
+	val = (oldCarry << 7) | (val >> 1);
+	cpu->setRegA(val);
+
+	if (carry) { cpu->ccr->setC();} else { cpu->ccr->clrC();}
+	if (val == 0) { cpu->ccr->setZ(); } else { cpu->ccr->clrZ(); }
+	if ((val & 0x80) == 0x80) { cpu->ccr->setN(); } else { cpu->ccr->clrN(); }
+
+	if (cpu->ccr->getN() ^ cpu->ccr->getC()) { cpu->ccr->setV(); } else { cpu->ccr->clrV(); }
+
+	return getCycles();
+}
+
+op rorb(0x56[8])
+
+rorb.getCycles = { return 1; }
+
+rorb.disasm = {
+	string mnem = "RORB";
+	
+	sink << mnem;
+	
+	return mnem;
+}
+
+rorb.execute = {
+	uint8_t val = cpu->getRegB();
+	uint8_t oldCarry = cpu->ccr->getC();
+	
+	uint8_t carry = 0;
+	if ((val & 0x01) == 0x01) { carry = 1; }
+	val = (oldCarry << 7) | (val >> 1);
+	cpu->setRegB(val);
+
+	if (carry) { cpu->ccr->setC();} else { cpu->ccr->clrC();}
+	if (val == 0) { cpu->ccr->setZ(); } else { cpu->ccr->clrZ(); }
+	if ((val & 0x80) == 0x80) { cpu->ccr->setN(); } else { cpu->ccr->clrN(); }
+
+	if (cpu->ccr->getN() ^ cpu->ccr->getC()) { cpu->ccr->setV(); } else { cpu->ccr->clrV(); }
+
+	return getCycles();
+}
+
+
+// RORW: Rotate word Memory/Accumulator Right through Carry
+op rorw_ext(0x18[8]:0x76[8]:> <:opr16a[16])
+
+rorw_ext.getCycles = { return 5; }
+
+rorw_ext.disasm = {
+	string mnem = "RORW";
+	
+	sink << mnem << " 0x" << std::hex << opr16a;
+	
+	return mnem;
+}
+
+rorw_ext.execute = {
+	physical_address_t addr = opr16a;	
+	uint16_t val = cpu->memRead16(addr);
+	uint16_t oldCarry = cpu->ccr->getC();
+	
+	uint16_t carry = 0;
+	if ((val & 0x0001) == 0x0001) { carry = 1; }	
+	val = (oldCarry << 15) | (val >> 1);
+	cpu->memWrite16(addr, val);
+
+	if (carry) { cpu->ccr->setC();} else { cpu->ccr->clrC();}
+	if (val == 0) { cpu->ccr->setZ(); } else { cpu->ccr->clrZ(); }
+	if ((val & 0x8000) == 0x8000) { cpu->ccr->setN(); } else { cpu->ccr->clrN(); }
+
+	if (cpu->ccr->getN() ^ cpu->ccr->getC()) { cpu->ccr->setV(); } else { cpu->ccr->clrV(); }
+
+	return getCycles();
+}
+
+op rorw_idx(0x18[8]:0x66[8]:> <:*xb[XB])
+
+rorw_idx.pre_execute = {
+	
+	xb->pre_execute(sink);
+	// after: other specific actions
+}
+
+rorw_idx.post_execute = {
+
+	// before: other specific actions
+	xb->post_execute(sink);
+}
+
+rorw_idx.getCycles = { return XbModes::GetIDXCycles(xb->getXbMode(), 4, 5, 6, 7, 7); }
+
+rorw_idx.disasm = {
+	string mnem = "RORW";
+	
+	sink << mnem << " ";
+	xb->disasm(sink);
+	
+	return mnem;
+}
+
+rorw_idx.execute = {
+
+	physical_address_t addr = xb->getEAddr(cpu);		
+	uint16_t val = cpu->memRead16(addr);
+	uint16_t oldCarry = cpu->ccr->getC();
+	
+	uint16_t carry = 0;
+	if ((val & 0x0001) == 0x0001) { carry = 1; }	
+	val = (oldCarry << 15) | (val >> 1);
+	cpu->memWrite16(addr, val);
+
+	if (carry) { cpu->ccr->setC();} else { cpu->ccr->clrC();}
+	if (val == 0) { cpu->ccr->setZ(); } else { cpu->ccr->clrZ(); }
+	if ((val & 0x8000) == 0x8000) { cpu->ccr->setN(); } else { cpu->ccr->clrN(); }
+
+	if (cpu->ccr->getN() ^ cpu->ccr->getC()) { cpu->ccr->setV(); } else { cpu->ccr->clrV(); }
+
+	return getCycles();
+}
+
+op rorx(0x18[8]:0x46[8])
+
+rorx.getCycles = { return 2; }
+
+rorx.disasm = {
+	string mnem = "RORX";
+	
+	sink << mnem;
+	
+	return mnem;
+}
+
+rorx.execute = {
+	uint16_t val = cpu->getRegX();
+	uint16_t oldCarry = cpu->ccr->getC();
+	
+	uint16_t carry = 0;
+	if ((val & 0x0001) == 0x0001) { carry = 1; }	
+	val = (oldCarry << 15) | (val >> 1);
+	cpu->setRegX(val);
+
+	if (carry) { cpu->ccr->setC();} else { cpu->ccr->clrC();}
+	if (val == 0) { cpu->ccr->setZ(); } else { cpu->ccr->clrZ(); }
+	if ((val & 0x8000) == 0x8000) { cpu->ccr->setN(); } else { cpu->ccr->clrN(); }
+
+	if (cpu->ccr->getN() ^ cpu->ccr->getC()) { cpu->ccr->setV(); } else { cpu->ccr->clrV(); }
+
+	return getCycles();
+}
+
+op rory(0x18[8]:0x56[8])
+
+rory.getCycles = { return 2; }
+
+rory.disasm = {
+	string mnem = "RORY";
+	
+	sink << mnem;
+	
+	return mnem;
+}
+
+rory.execute = {
+	uint16_t val = cpu->getRegY();
+	uint16_t oldCarry = cpu->ccr->getC();
+	
+	uint16_t carry = 0;
+	if ((val & 0x0001) == 0x0001) { carry = 1; }
+	val = (oldCarry << 15) | (val >> 1);
+	cpu->setRegY(val);
+
+	if (carry) { cpu->ccr->setC();} else { cpu->ccr->clrC();}
+	if (val == 0) { cpu->ccr->setZ(); } else { cpu->ccr->clrZ(); }
+	if ((val & 0x8000) == 0x8000) { cpu->ccr->setN(); } else { cpu->ccr->clrN(); }
+
+	if (cpu->ccr->getN() ^ cpu->ccr->getC()) { cpu->ccr->setV(); } else { cpu->ccr->clrV(); }
+
+	return getCycles();
+}
+
+// ASR: Arithmetic Shift Right
+op asr_ext(0x77[8]:> <:opr16a[16])
+
+asr_ext.getCycles = { return 4; }
+
+asr_ext.disasm = {
+	string mnem = "ASR";
+	
+	sink << mnem << " 0x" << std::hex << opr16a;
+	
+	return mnem;
+}
+
+asr_ext.execute = {
+	physical_address_t addr = opr16a;	
+	uint8_t val = cpu->memRead8(addr);
+
+	uint8_t msb = val & 0x80;
+		
+	uint8_t carry = 0;
+	if ((val & 0x01) == 0x01) { carry = 1; }
+	
+	val = (val >> 1) | msb;
+	cpu->memWrite8(addr, val);
+
+	if (carry) { cpu->ccr->setC();} else { cpu->ccr->clrC();}
+	if (val == 0) { cpu->ccr->setZ(); } else { cpu->ccr->clrZ(); }
+	if ((val & 0x80) == 0x80) { cpu->ccr->setN(); } else { cpu->ccr->clrN(); } 
+
+	if (cpu->ccr->getN() ^ cpu->ccr->getC()) { cpu->ccr->setV(); } else { cpu->ccr->clrV(); }
+
+	return getCycles();
+}
+
+op asr_idx(0x67[8]:> <:*xb[XB])
+
+asr_idx.pre_execute = {
+	
+	xb->pre_execute(sink);
+	// after: other specific actions
+}
+
+asr_idx.post_execute = {
+
+	// before: other specific actions
+	xb->post_execute(sink);
+}
+
+asr_idx.getCycles = { return XbModes::GetIDXCycles(xb->getXbMode(), 3, 4, 5, 6, 6); }
+
+asr_idx.disasm = {
+	string mnem = "ASR";
+	
+	sink << mnem << " ";
+	xb->disasm(sink);
+	
+	return mnem;
+}
+
+asr_idx.execute = {
+
+	physical_address_t addr = xb->getEAddr(cpu);		
+	uint8_t val = cpu->memRead8(addr);
+
+	uint8_t msb = val & 0x80;
+	
+	uint8_t carry = 0;
+	if ((val & 0x01) == 0x01) { carry = 1; }	
+
+	val = (val >> 1) | msb;
+	cpu->memWrite8(addr, val);
+
+	if (carry) { cpu->ccr->setC();} else { cpu->ccr->clrC();}
+	if (val == 0) { cpu->ccr->setZ(); } else { cpu->ccr->clrZ(); }
+	if ((val & 0x80) == 0x80) { cpu->ccr->setN(); } else { cpu->ccr->clrN(); } 
+
+	if (cpu->ccr->getN() ^ cpu->ccr->getC()) { cpu->ccr->setV(); } else { cpu->ccr->clrV(); }
+
+	return getCycles();
+}
+
+op asra(0x47[8])
+
+asra.getCycles = { return 1; }
+
+asra.disasm = {
+	string mnem = "ASRA";
+	
+	sink << mnem;
+	
+	return mnem;
+}
+
+asra.execute = {
+	uint8_t val = cpu->getRegA();
+
+	uint8_t msb = val & 0x80;
+
+	uint8_t carry = 0;
+	if ((val & 0x01) == 0x01) { carry = 1; }	
+	
+	val = (val >> 1) | msb;
+	cpu->setRegA(val);
+
+	if (carry) { cpu->ccr->setC(); }	else { cpu->ccr->clrC(); }
+	if (val == 0) { cpu->ccr->setZ(); } else { cpu->ccr->clrZ(); }
+	if ((val & 0x80) == 0x80) { cpu->ccr->setN(); } else { cpu->ccr->clrN(); } 
+
+	if (cpu->ccr->getN() ^ cpu->ccr->getC()) { cpu->ccr->setV(); } else { cpu->ccr->clrV(); }
+
+	return getCycles();
+}
+
+op asrb(0x57[8])
+
+asrb.getCycles = { return 1; }
+
+asrb.disasm = {
+	string mnem = "ASRB";
+	
+	sink << mnem;
+	
+	return mnem;
+}
+
+asrb.execute = {
+	uint8_t val = cpu->getRegB();
+
+	uint8_t msb = val & 0x80;
+
+	uint8_t carry = 0;
+	if ((val & 0x01) == 0x01) { carry = 1; }	
+	
+	val = (val >> 1) | msb;
+	cpu->setRegB(val);
+
+	if (carry) { cpu->ccr->setC(); }	else { cpu->ccr->clrC(); }
+	if (val == 0) { cpu->ccr->setZ(); } else { cpu->ccr->clrZ(); }
+	if ((val & 0x80) == 0x80) { cpu->ccr->setN(); } else { cpu->ccr->clrN(); } 
+
+	if (cpu->ccr->getN() ^ cpu->ccr->getC()) { cpu->ccr->setV(); } else { cpu->ccr->clrV(); }
+
+	return getCycles();
+}
+
+// ASRW: Arithmetic Shift Right word
+op asrw_ext(0x18[8]:0x77[8]:> <:opr16a[16])
+
+asrw_ext.getCycles = { return 5; }
+
+asrw_ext.disasm = {
+	string mnem = "ASRW";
+	
+	sink << mnem << " 0x" << std::hex << opr16a;
+	
+	return mnem;
+}
+
+asrw_ext.execute = {
+	physical_address_t addr = opr16a;	
+	uint16_t val = cpu->memRead16(addr);
+
+	uint16_t msb = val & 0x8000;
+		
+	uint16_t carry = 0;
+	if ((val & 0x0001) == 0x0001) { carry = 1; }
+	
+	val = (val >> 1) | msb;
+	cpu->memWrite16(addr, val);
+
+	if (carry) { cpu->ccr->setC();} else { cpu->ccr->clrC();}
+	if (val == 0) { cpu->ccr->setZ(); } else { cpu->ccr->clrZ(); }
+	if ((val & 0x8000) == 0x8000) { cpu->ccr->setN(); } else { cpu->ccr->clrN(); } 
+
+	if (cpu->ccr->getN() ^ cpu->ccr->getC()) { cpu->ccr->setV(); } else { cpu->ccr->clrV(); }
+
+	return getCycles();
+}
+
+op asrw_idx(0x18[8]:0x67[8]:> <:*xb[XB])
+
+asrw_idx.pre_execute = {
+	
+	xb->pre_execute(sink);
+	// after: other specific actions
+}
+
+asrw_idx.post_execute = {
+
+	// before: other specific actions
+	xb->post_execute(sink);
+}
+
+asrw_idx.getCycles = { return XbModes::GetIDXCycles(xb->getXbMode(), 4, 5, 6, 7, 7); }
+
+asrw_idx.disasm = {
+	string mnem= "ASRW";
+	
+	sink << mnem << " ";
+	xb->disasm(sink);
+	
+	return mnem;
+}
+
+asrw_idx.execute = {
+
+	physical_address_t addr = xb->getEAddr(cpu);		
+	uint16_t val = cpu->memRead16(addr);
+
+	uint16_t msb = val & 0x8000;
+	
+	uint16_t carry = 0;
+	if ((val & 0x0001) == 0x0001) { carry = 1; }	
+
+	val = (val >> 1) | msb;
+	cpu->memWrite16(addr, val);
+
+	if (carry) { cpu->ccr->setC();} else { cpu->ccr->clrC();}
+	if (val == 0) { cpu->ccr->setZ(); } else { cpu->ccr->clrZ(); }
+	if ((val & 0x8000) == 0x8000) { cpu->ccr->setN(); } else { cpu->ccr->clrN(); } 
+
+	if (cpu->ccr->getN() ^ cpu->ccr->getC()) { cpu->ccr->setV(); } else { cpu->ccr->clrV(); }
+
+	return getCycles();
+}
+
+op asrx(0x18[8]:0x47[8])
+
+asrx.getCycles = { return 2; }
+
+asrx.disasm = {
+	string mnem = "ASRX";
+	
+	sink << mnem;
+	
+	return mnem;
+}
+
+asrx.execute = {
+	uint16_t val = cpu->getRegX();
+
+	uint16_t msb = val & 0x8000;
+
+	uint16_t carry = 0;
+	if ((val & 0x0001) == 0x0001) { carry = 1; }	
+	
+	val = (val >> 1) | msb;
+	cpu->setRegX(val);
+
+	if (carry) { cpu->ccr->setC(); }	else { cpu->ccr->clrC(); }
+	if (val == 0) { cpu->ccr->setZ(); } else { cpu->ccr->clrZ(); }
+	if ((val & 0x8000) == 0x8000) { cpu->ccr->setN(); } else { cpu->ccr->clrN(); } 
+
+	if (cpu->ccr->getN() ^ cpu->ccr->getC()) { cpu->ccr->setV(); } else { cpu->ccr->clrV(); }
+
+	return getCycles();
+}
+
+op asry(0x18[8]:0x57[8])
+
+asry.getCycles = { return 2; }
+
+asry.disasm = {
+	string mnem = "ASRY";
+	
+	sink << mnem;
+	
+	return mnem;
+}
+
+asry.execute = {
+	uint16_t val = cpu->getRegY();
+
+	uint16_t msb = val & 0x8000;
+
+	uint16_t carry = 0;
+	if ((val & 0x0001) == 0x0001) { carry = 1; }	
+	
+	val = (val >> 1) | msb;
+	cpu->setRegY(val);
+
+	if (carry) { cpu->ccr->setC(); }	else { cpu->ccr->clrC(); }
+	if (val == 0) { cpu->ccr->setZ(); } else { cpu->ccr->clrZ(); }
+	if ((val & 0x8000) == 0x8000) { cpu->ccr->setN(); } else { cpu->ccr->clrN(); } 
+
+	if (cpu->ccr->getN() ^ cpu->ccr->getC()) { cpu->ccr->setV(); } else { cpu->ccr->clrV(); }
+
+	return getCycles();
+}
+
+// BTAS: Bit(s) Test and Set in Memory
+
+op btas_dir(0x18[8]:0x35[8]:opr8a[8]:msk8[8])
+
+btas_dir.getCycles = { return 5; }
+
+btas_dir.disasm = {
+	string mnem = "BTAS";
+	
+	sink << mnem << " 0x" << std::hex << opr8a << ", 0x" << std::hex << msk8;
+	
+	return mnem;
+}
+
+btas_dir.execute = {
+/*
+If (M) & (Mask) = 0, then set Z, else clear Z
+(M) | (Mask) => M
+
+N: Set if MSB of test is set; cleared otherwise
+Z: Set if test is 0x00; cleared otherwise
+V: 0; cleared
+*/
+	
+	uint8_t opr8aVal = cpu->memRead8(opr8a, ADDRESS::DIRECT, false);
+	
+	uint8_t test = opr8aVal & msk8;
+	if (test == 0) { cpu->ccr->setZ();} else { cpu->ccr->clrZ();}
+	if ((test & 0x80) == 0x80) { cpu->ccr->setN();} else { cpu->ccr->clrN();}
+	cpu->ccr->clrV();
+	
+	cpu->memWrite8(opr8a, opr8aVal | msk8, ADDRESS::DIRECT, false);
+
+	return getCycles();
+}
+
+op btas_ext(0x18[8]:> <:0x36[8]:opr16a[16]:msk8[8])
+
+btas_ext.getCycles = { return 5; }
+
+btas_ext.disasm = {
+	string mnem = "BTAS";
+	
+	sink << mnem << " 0x" << std::hex << opr16a << ", 0x" << std::hex << msk8;
+	
+	return mnem;
+}
+
+btas_ext.execute = {
+
+	physical_address_t addr = opr16a;	
+	uint8_t opr16aVal = cpu->memRead8(addr);
+	
+	uint8_t test = opr16aVal & msk8;
+	if (test == 0) { cpu->ccr->setZ();} else { cpu->ccr->clrZ();}
+	if ((test & 0x80) == 0x80) { cpu->ccr->setN();} else { cpu->ccr->clrN();}
+	cpu->ccr->clrV();
+	
+	cpu->memWrite8(addr, opr16aVal | msk8);
+
+	return getCycles();
+}
+
+op btas_idx(0x18[8]:0x37[8]:> <:*xb[XB]:> <:msk8[8])
+
+btas_idx.pre_execute = {
+	
+	xb->pre_execute(sink);
+	// after: other specific actions
+}
+
+btas_idx.post_execute = {
+
+	// before: other specific actions
+	xb->post_execute(sink);
+}
+
+btas_idx.getCycles = { return XbModes::GetIDXCycles(xb->getXbMode(), 5, 5, 7, 0, 0); }
+
+btas_idx.disasm = {
+	string mnem = "BTAS";
+	
+	sink << mnem << " ";
+	xb->disasm(sink);
+	sink << ", 0x" << std::hex << msk8;
+	
+	return mnem;
+}
+
+btas_idx.execute = {
+
+	physical_address_t addr = xb->getEAddr(cpu);	
+	uint8_t xbVal = cpu->memRead8(addr);
+	
+	uint8_t test = xbVal & msk8;
+	if (test == 0) { cpu->ccr->setZ();} else { cpu->ccr->clrZ();}
+	if ((test & 0x80) == 0x80) { cpu->ccr->setN();} else { cpu->ccr->clrN();}
+	cpu->ccr->clrV();
+	
+	cpu->memWrite8(addr, xbVal | msk8);
+
+	return getCycles();
+}
+

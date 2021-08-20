@@ -1,0 +1,53 @@
+<architecture name="tms320c3x" endian="little">
+	<program_counter name="PC"/>
+	<feature name="tms320c3x">
+		<register name="R0L" bitsize="32"/>
+		<register name="R1L" bitsize="32"/>
+		<register name="R2L" bitsize="32"/>
+		<register name="R3L" bitsize="32"/>
+		<register name="R4L" bitsize="32"/>
+		<register name="R5L" bitsize="32"/>
+		<register name="R6L" bitsize="32"/>
+		<register name="R7L" bitsize="32"/>
+		<register name="AR0" bitsize="32"/>
+		<register name="AR1" bitsize="32"/>
+		<register name="AR2" bitsize="32"/>
+		<register name="AR3" bitsize="32"/>
+		<register name="AR4" bitsize="32"/>
+		<register name="AR5" bitsize="32"/>
+		<register name="AR6" bitsize="32"/>
+		<register name="AR7" bitsize="32"/>
+		<register name="DP" bitsize="32"/>
+		<register name="IR0" bitsize="32"/>
+		<register name="IR1" bitsize="32"/>
+		<register name="BK" bitsize="32"/>
+		<register name="SP" bitsize="32"/>
+		<register name="ST" bitsize="32"/>
+		<register name="IE" bitsize="32"/>
+		<register name="IF" bitsize="32"/>
+		<register name="IOF" bitsize="32"/>
+		<register name="RS" bitsize="32"/>
+		<register name="RE" bitsize="32"/>
+		<register name="RC" bitsize="32"/>
+		<register name="R8" bitsize="32"/>
+		<register name="R9" bitsize="32"/>
+		<register name="R10" bitsize="32"/>
+		<register name="R11" bitsize="32"/>
+		<register name="TVTP" bitsize="32"/>
+		<register name="IVTP" bitsize="32"/>
+		<register name="PC" bitsize="32"/>
+		<register name="R0H" bitsize="32"/>
+		<register name="R1H" bitsize="32"/>
+		<register name="R2H" bitsize="32"/>
+		<register name="R3H" bitsize="32"/>
+		<register name="R4H" bitsize="32"/>
+		<register name="R5H" bitsize="32"/>
+		<register name="R6H" bitsize="32"/>
+		<register name="R7H" bitsize="32"/>
+		<register name="R8H" bitsize="32"/>
+		<register name="R9H" bitsize="32"/>
+		<register name="R10H" bitsize="32"/>
+		<register name="R11H" bitsize="32"/>
+		<register name="CLK" bitsize="32"/>
+	</feature>
+</architecture>

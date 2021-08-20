@@ -1,0 +1,2 @@
+unisim/component/cxx/processor/avr32/avr32a/avr32uc/config.hh
+unisim/component/cxx/processor/avr32/avr32a/avr32uc/cpu.hh

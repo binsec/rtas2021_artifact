@@ -1,0 +1,1305 @@
+/*
+ *  Copyright (c) 2007-2016,
+ *  Commissariat a l'Energie Atomique (CEA)
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without modification,
+ *  are permitted provided that the following conditions are met:
+ *
+ *   - Redistributions of source code must retain the above copyright notice, this
+ *     list of conditions and the following disclaimer.
+ *
+ *   - Redistributions in binary form must reproduce the above copyright notice,
+ *     this list of conditions and the following disclaimer in the documentation
+ *     and/or other materials provided with the distribution.
+ *
+ *   - Neither the name of CEA nor the names of its contributors may be used to
+ *     endorse or promote products derived from this software without specific prior
+ *     written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ *  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *  DISCLAIMED.
+ *  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ *  INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ *  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+ *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ *  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Authors: Yves Lhuillier (yves.lhuillier@cea.fr), Daniel Gracia Perez (daniel.gracia-perez@cea.fr), 
+ */
+ 
+/**********************************************
+
+        DATA PROCESSING INSTRUCTIONS
+
+**********************************************/
+
+/*******************************************************************
+ * and instruction
+ */
+
+op and_32imm( cond[4]: 0b00[2]: 0b1[1]: 0b0000[4]: s[1]: rn[4]: rd[4]: shl<1> imr[4]: imb[8] );
+and_32imm.var imm : {uint32_t} = {unisim::util::arithmetic::RotateRight( uint32_t( imb ), imr )};
+
+and_32imm.disasm = {
+  buffer << "and" << (s?"s":"") << DisasmCondition(cond) << '\t'
+         << DisasmRegister(rd) << ", " << DisasmRegister(rn) << ", " << DisasmI(imm);
+};
+
+and_32imm.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+
+  typedef typename ARCH::U32 U32;
+  typedef typename ARCH::S32 S32;
+  U32 op1 = cpu.GetGPR( rn ), op2 = U32(imm), res = op1 & op2;
+  cpu.SetGPR( rd, res );
+  if (s)
+    {
+      cpu.CPSR().Set( N, S32(res) < S32(0) );
+      cpu.CPSR().Set( Z,     res == U32(0) );
+      if (imr)
+        cpu.CPSR().Set( C, S32(imm) < S32(0) );
+    }
+};
+
+op and_imm_shift( cond[4]: 0b00[2]: 0b0[1]: 0b0000[4]: s[1]: rn[4]: rd[4]: imm[5]: shift[2]: 0b0[1]: rm[4] );
+
+and_imm_shift.disasm = {
+  buffer << "and" << (s?"s":"") << DisasmCondition(cond) << '\t'
+         << DisasmRegister(rd) << ", " << DisasmRegister(rn) << ", "
+         << DisasmRegister(rm) << DisasmShImm( shift, imm );
+};
+
+and_imm_shift.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+
+  typedef typename ARCH::U32 U32;
+  U32 rmval = cpu.GetGPR( rm ),
+      op1 = cpu.GetGPR( rn ), op2 = ComputeImmShift( cpu, rmval, shift, imm ),
+      res = op1 & op2;
+  cpu.SetGPR( rd, res );
+  if (s) UpdateStatusImmShift( cpu, res, rmval, shift, imm );
+};
+
+op and_reg_shift( cond[4]: 0b00[2]: 0b0[1]: 0b0000[4]: s[1]: rn[4]: rd[4]: rs[4]: 0b0[1]: shift[2]: 0b1[1]: rm[4] );
+and_reg_shift.var reject : {Reject} = {(rd == 15) or (rn == 15) or (rm == 15) or (rs == 15)};
+
+and_reg_shift.disasm = {
+  buffer << "and" << (s?"s":"") << DisasmCondition(cond) << '\t'
+         << DisasmRegister(rd) << ", " << DisasmRegister(rn) << ", " << DisasmRegister(rm) << ", " << DisasmShReg( shift, rs );
+};
+
+and_reg_shift.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+
+  typedef typename ARCH::U32 U32;
+  U32 rmval = cpu.GetGPR( rm ), rsval = cpu.GetGPR( rs ),
+      op1 = cpu.GetGPR( rn ), op2 = ComputeRegShift( cpu, rmval, shift, rsval ),
+      res = op1 & op2;
+  cpu.SetGPR( rd, res );
+  if (s) UpdateStatusRegShift( cpu, res, rmval, shift, rsval );
+};
+
+/*
+ * end of and instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * eor instruction
+ */
+
+op eor_32imm( cond[4]: 0b00[2]: 0b1[1]: 0b0001[4]: s[1]: rn[4]: rd[4]: shl<1> imr[4]: imb[8] );
+eor_32imm.var imm : {uint32_t} = {unisim::util::arithmetic::RotateRight( uint32_t( imb ), imr )};
+
+eor_32imm.disasm = {
+  buffer << "eor" << (s?"s":"") << DisasmCondition(cond) << '\t'
+         << DisasmRegister(rd) << ", " << DisasmRegister(rn) << ", " << DisasmI(imm);
+};
+
+eor_32imm.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  typedef typename ARCH::S32 S32;
+  U32 op1 = cpu.GetGPR( rn ), op2 = U32(imm), res = op1 ^ op2;
+  cpu.SetGPR( rd, res );
+  if (s)
+    {
+      cpu.CPSR().Set( N, S32(res) < S32(0) );
+      cpu.CPSR().Set( Z,     res == U32(0) );
+      if (imr)
+        cpu.CPSR().Set( C, S32(imm) < S32(0) );
+    }
+};
+
+op eor_imm_shift( cond[4]: 0b00[2]: 0b0[1]: 0b0001[4]: s[1]: rn[4]: rd[4]: imm[5]: shift[2]: 0b0[1]: rm[4] );
+
+eor_imm_shift.disasm = {
+  buffer << "eor" << (s?"s":"") << DisasmCondition(cond) << '\t'
+         << DisasmRegister(rd) << ", " << DisasmRegister(rn) << ", " << DisasmRegister(rm) << DisasmShImm( shift, imm );
+};
+
+eor_imm_shift.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+
+  typedef typename ARCH::U32 U32;
+  U32 rmval = cpu.GetGPR( rm ),
+           op1 = cpu.GetGPR( rn ), op2 = ComputeImmShift( cpu, rmval, shift, imm ),
+           res = op1 ^ op2;
+  cpu.SetGPR( rd, res );
+  if (s) UpdateStatusImmShift( cpu, res, rmval, shift, imm );
+};
+
+op eor_reg_shift( cond[4]: 0b00[2]: 0b0[1]: 0b0001[4]: s[1]: rn[4]: rd[4]: rs[4]: 0b0[1]: shift[2]: 0b1[1]: rm[4] );
+eor_reg_shift.var reject : {Reject} = {(rd == 15) or (rn == 15) or (rm == 15) or (rs == 15)};
+
+eor_reg_shift.disasm = {
+  buffer << "eor" << (s?"s":"") << DisasmCondition(cond) << '\t'
+         << DisasmRegister(rd) << ", " << DisasmRegister(rn) << ", " << DisasmRegister(rm) << ", " << DisasmShReg( shift, rs );
+};
+
+eor_reg_shift.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+
+  typedef typename ARCH::U32 U32;
+  U32 rmval = cpu.GetGPR( rm ), rsval = cpu.GetGPR( rs ),
+           op1 = cpu.GetGPR( rn ), op2 = ComputeRegShift( cpu, rmval, shift, rsval ),
+           res = op1 ^ op2;
+  cpu.SetGPR( rd, res );
+  if (s) UpdateStatusRegShift( cpu, res, rmval, shift, rsval );
+};
+
+/*
+ * end of eor instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * sub instruction
+ */
+
+op sub_32imm( cond[4]: 0b00[2]: 0b1[1]: 0b0010[4]: s[1]: rn[4]: rd[4]: shl<1> imr[4]: imb[8] );
+sub_32imm.var imm : {uint32_t} = {unisim::util::arithmetic::RotateRight( uint32_t( imb ), imr )};
+
+sub_32imm.disasm = {
+  buffer << "sub" << (s?"s":"") << DisasmCondition(cond) << '\t'
+         << DisasmRegister(rd) << ", " << DisasmRegister(rn) << ", " << DisasmI(imm);
+};
+
+sub_32imm.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+
+  typedef typename ARCH::U32 U32;
+  U32 op1 = cpu.GetGPR( rn ), op2 = U32(imm), res = op1 - op2;
+  cpu.SetGPR( rd, res );
+  if (s) UpdateStatusSub( cpu, res, op1, op2 );
+};
+
+op sub_imm_shift( cond[4]: 0b00[2]: 0b0[1]: 0b0010[4]: s[1]: rn[4]: rd[4]: imm[5]: shift[2]: 0b0[1]: rm[4] );
+
+sub_imm_shift.disasm = {
+  buffer << "sub" << (s?"s":"") << DisasmCondition(cond) << '\t'
+         << DisasmRegister(rd) << ", " << DisasmRegister(rn) << ", " << DisasmRegister(rm) << DisasmShImm( shift, imm );
+};
+
+sub_imm_shift.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+
+  typedef typename ARCH::U32 U32;
+  U32 rmval = cpu.GetGPR( rm ),
+           op1 = cpu.GetGPR( rn ), op2 = ComputeImmShift( cpu, rmval, shift, imm ),
+           res = op1 - op2;
+  cpu.SetGPR( rd, res );
+  if (s) UpdateStatusSub( cpu, res, op1, op2 );
+};
+
+op sub_reg_shift( cond[4]: 0b00[2]: 0b0[1]: 0b0010[4]: s[1]: rn[4]: rd[4]: rs[4]: 0b0[1]: shift[2]: 0b1[1]: rm[4] );
+sub_reg_shift.var reject : {Reject} = {(rd == 15) or (rn == 15) or (rm == 15) or (rs == 15)};
+
+sub_reg_shift.disasm = {
+  buffer << "sub" << (s?"s":"") << DisasmCondition(cond) << '\t'
+         << DisasmRegister(rd) << ", " << DisasmRegister(rn) << ", " << DisasmRegister(rm) << ", " << DisasmShReg( shift, rs );
+};
+
+sub_reg_shift.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+
+  typedef typename ARCH::U32 U32;
+  U32 rmval = cpu.GetGPR( rm ), rsval = cpu.GetGPR( rs ),
+           op1 = cpu.GetGPR( rn ), op2 = ComputeRegShift( cpu, rmval, shift, rsval ),
+           res = op1 - op2;
+  cpu.SetGPR( rd, res );
+  if (s) UpdateStatusSub( cpu, res, op1, op2 );
+};
+
+/*
+ * end of sub instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * rsb instruction
+ */
+
+op rsb_32imm( cond[4]: 0b00[2]: 0b1[1]: 0b0011[4]: s[1]: rn[4]: rd[4]: shl<1> imr[4]: imb[8] );
+rsb_32imm.var imm : {uint32_t} = {unisim::util::arithmetic::RotateRight( uint32_t( imb ), imr )};
+
+rsb_32imm.disasm = {
+  buffer << "rsb" << (s?"s":"") << DisasmCondition(cond) << '\t'
+         << DisasmRegister(rd) << ", " << DisasmRegister(rn) << ", " << DisasmI(imm);
+};
+
+rsb_32imm.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+
+  typedef typename ARCH::U32 U32;
+  U32 op1 = U32(imm), op2 = cpu.GetGPR( rn ), res = op1 - op2;
+  cpu.SetGPR( rd, res );
+  if (s) UpdateStatusSub( cpu, res, op1, op2 );
+};
+
+op rsb_imm_shift( cond[4]: 0b00[2]: 0b0[1]: 0b0011[4]: s[1]: rn[4]: rd[4]: imm[5]: shift[2]: 0b0[1]: rm[4] );
+
+rsb_imm_shift.disasm = {
+  buffer << "rsb" << (s?"s":"") << DisasmCondition(cond) << '\t'
+         << DisasmRegister(rd) << ", " << DisasmRegister(rn) << ", "
+         << DisasmRegister(rm) << DisasmShImm( shift, imm );
+};
+
+rsb_imm_shift.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+
+  typedef typename ARCH::U32 U32;
+  U32 rmval = cpu.GetGPR( rm ),
+           op1 = ComputeImmShift( cpu, rmval, shift, imm ), op2 = cpu.GetGPR( rn ),
+           res = op1 - op2;
+  cpu.SetGPR( rd, res );
+  if (s) UpdateStatusSub( cpu, res, op1, op2 );
+};
+
+op rsb_reg_shift( cond[4]: 0b00[2]: 0b0[1]: 0b0011[4]: s[1]: rn[4]: rd[4]: rs[4]: 0b0[1]: shift[2]: 0b1[1]: rm[4] );
+rsb_reg_shift.var reject : {Reject} = {(rd == 15) or (rn == 15) or (rm == 15) or (rs == 15)};
+
+rsb_reg_shift.disasm = {
+  buffer << "rsb" << (s?"s":"") << DisasmCondition(cond) << '\t'
+         << DisasmRegister(rd) << ", " << DisasmRegister(rn) << ", " << DisasmRegister(rm) << ", " << DisasmShReg( shift, rs );
+};
+
+rsb_reg_shift.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+
+  typedef typename ARCH::U32 U32;
+  U32 rmval = cpu.GetGPR( rm ), rsval = cpu.GetGPR( rs ),
+           op1 = ComputeRegShift( cpu, rmval, shift, rsval ), op2 = cpu.GetGPR( rn ),
+           res = op1 - op2;
+  cpu.SetGPR( rd, res );
+  if (s) UpdateStatusSub( cpu, res, op1, op2 );
+};
+
+/*
+ * end of rsb instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * add instruction
+ */
+
+op add_32imm( cond[4]: 0b00[2]: 0b1[1]: 0b0100[4]: s[1]: rn[4]: rd[4]: shl<1> imr[4]: imb[8] );
+add_32imm.var imm : {uint32_t} = {unisim::util::arithmetic::RotateRight( uint32_t( imb ), imr )};
+
+add_32imm.disasm = {
+  buffer << "add" << (s?"s":"") << DisasmCondition(cond) << '\t'
+         << DisasmRegister(rd) << ", " << DisasmRegister(rn) << ", " << DisasmI(imm);
+};
+
+add_32imm.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+
+  typedef typename ARCH::U32 U32;
+  U32 op1 = cpu.GetGPR( rn ), op2 = U32(imm), res = op1 + op2;
+  cpu.SetGPR( rd, res );
+  if (s) UpdateStatusAdd( cpu, res, op1, op2 );
+};
+
+op add_imm_shift( cond[4]: 0b00[2]: 0b0[1]: 0b0100[4]: s[1]: rn[4]: rd[4]: imm[5]: shift[2]: 0b0[1]: rm[4] );
+
+add_imm_shift.disasm = {
+  buffer << "add" << (s?"s":"") << DisasmCondition(cond) << '\t'
+         << DisasmRegister(rd) << ", " << DisasmRegister(rn) << ", "
+         << DisasmRegister(rm) << DisasmShImm( shift, imm );
+};
+
+add_imm_shift.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+
+  typedef typename ARCH::U32 U32;
+  U32 rmval = cpu.GetGPR( rm ),
+           op1 = cpu.GetGPR( rn ), op2 = ComputeImmShift( cpu, rmval, shift, imm ),
+           res = op1 + op2;
+  cpu.SetGPR( rd, res );
+  if (s) UpdateStatusAdd( cpu, res, op1, op2 );
+};
+
+op add_reg_shift( cond[4]: 0b00[2]: 0b0[1]: 0b0100[4]: s[1]: rn[4]: rd[4]: rs[4]: 0b0[1]: shift[2]: 0b1[1]: rm[4] );
+add_reg_shift.var reject : {Reject} = {(rd == 15) or (rn == 15) or (rm == 15) or (rs == 15)};
+
+add_reg_shift.disasm = {
+  buffer << "add" << (s?"s":"") << DisasmCondition(cond) << '\t'
+         << DisasmRegister(rd) << ", " << DisasmRegister(rn) << ", " << DisasmRegister(rm) << ", " << DisasmShReg( shift, rs );
+};
+
+add_reg_shift.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+
+  typedef typename ARCH::U32 U32;
+  U32 rmval = cpu.GetGPR( rm ), rsval = cpu.GetGPR( rs ),
+           op1 = cpu.GetGPR( rn ), op2 = ComputeRegShift( cpu, rmval, shift, rsval ),
+           res = op1 + op2;
+  cpu.SetGPR( rd, res );
+  if (s) UpdateStatusAdd( cpu, res, op1, op2 );
+};
+
+/*
+ * end of add instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * adc instruction
+ */
+
+op adc_32imm( cond[4]: 0b00[2]: 0b1[1]: 0b0101[4]: s[1]: rn[4]: rd[4]: shl<1> imr[4]: imb[8] );
+adc_32imm.var imm : {uint32_t} = {unisim::util::arithmetic::RotateRight( uint32_t( imb ), imr )};
+
+adc_32imm.disasm = {
+  buffer << "adc" << (s?"s":"") << DisasmCondition(cond) << '\t'
+         << DisasmRegister(rd) << ", " << DisasmRegister(rn) << ", " << DisasmI(imm);
+};
+
+adc_32imm.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+
+  typedef typename ARCH::U32 U32;
+  U32 op1 = cpu.GetGPR( rn ), op2 = U32(imm), carry = cpu.CPSR().Get( C ), res = op1 + op2 + carry;
+  cpu.SetGPR( rd, res );
+  if (s) UpdateStatusAddWithCarry( cpu, res, op1, op2, carry );
+};
+
+op adc_imm_shift( cond[4]: 0b00[2]: 0b0[1]: 0b0101[4]: s[1]: rn[4]: rd[4]: imm[5]: shift[2]: 0b0[1]: rm[4] );
+
+adc_imm_shift.disasm = {
+  buffer << "adc" << (s?"s":"") << DisasmCondition(cond) << '\t'
+         << DisasmRegister(rd) << ", " << DisasmRegister(rn) << ", "
+         << DisasmRegister(rm) << DisasmShImm( shift, imm );
+};
+
+adc_imm_shift.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+
+  typedef typename ARCH::U32 U32;
+  U32 rmval = cpu.GetGPR( rm ),
+    op1 = cpu.GetGPR( rn ), op2 = ComputeImmShift( cpu, rmval, shift, imm ), carry = cpu.CPSR().Get( C ),
+    res = op1 + op2 + carry;
+  cpu.SetGPR( rd, res );
+  if (s) UpdateStatusAddWithCarry( cpu, res, op1, op2, carry );
+};
+
+op adc_reg_shift( cond[4]: 0b00[2]: 0b0[1]: 0b0101[4]: s[1]: rn[4]: rd[4]: rs[4]: 0b0[1]: shift[2]: 0b1[1]: rm[4] );
+adc_reg_shift.var reject : {Reject} = {((rd == 15) or (rn == 15) or (rm == 15) or (rs == 15))};
+
+adc_reg_shift.disasm = {
+  buffer << "adc" << (s?"s":"") << DisasmCondition(cond) << '\t'
+         << DisasmRegister(rd) << ", " << DisasmRegister(rn) << ", " << DisasmRegister(rm) << ", " << DisasmShReg( shift, rs );
+};
+
+adc_reg_shift.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+
+  typedef typename ARCH::U32 U32;
+  U32 rmval = cpu.GetGPR( rm ), rsval = cpu.GetGPR( rs ),
+    op1 = cpu.GetGPR( rn ), op2 = ComputeRegShift( cpu, rmval, shift, rsval ), carry = cpu.CPSR().Get( C ),
+    res = op1 + op2 + carry;
+  cpu.SetGPR( rd, res );
+  if (s) UpdateStatusAddWithCarry( cpu, res, op1, op2, carry );
+};
+
+/*
+ * end of adc instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * sbc instruction
+ */
+
+op sbc_32imm( cond[4]: 0b00[2]: 0b1[1]: 0b0110[4]: s[1]: rn[4]: rd[4]: shl<1> imr[4]: imb[8] );
+sbc_32imm.var imm : {uint32_t} = {unisim::util::arithmetic::RotateRight( uint32_t( imb ), imr )};
+
+sbc_32imm.disasm = {
+  buffer << "sbc" << (s?"s":"") << DisasmCondition(cond) << '\t'
+         << DisasmRegister(rd) << ", " << DisasmRegister(rn) << ", " << DisasmI(imm);
+};
+
+sbc_32imm.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+
+  typedef typename ARCH::U32 U32;
+  U32 op1 = cpu.GetGPR( rn ), op2 = U32(imm), borrow = cpu.CPSR().Get( C ) ^ U32(1), res = op1 - op2 - borrow;
+  cpu.SetGPR( rd, res );
+  if (s) UpdateStatusSubWithBorrow( cpu, res, op1, op2, borrow );
+};
+
+op sbc_imm_shift( cond[4]: 0b00[2]: 0b0[1]: 0b0110[4]: s[1]: rn[4]: rd[4]: imm[5]: shift[2]: 0b0[1]: rm[4] );
+
+sbc_imm_shift.disasm = {
+  buffer << "sbc" << (s?"s":"") << DisasmCondition(cond) << '\t'
+         << DisasmRegister(rd) << ", " << DisasmRegister(rn) << ", "
+         << DisasmRegister(rm) << DisasmShImm( shift, imm );
+};
+
+sbc_imm_shift.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+
+  typedef typename ARCH::U32 U32;
+  U32 rmval = cpu.GetGPR( rm ),
+    op1 = cpu.GetGPR( rn ), op2 = ComputeImmShift( cpu, rmval, shift, imm ), borrow = cpu.CPSR().Get( C ) ^ U32(1),
+    res = op1 - op2 - borrow;
+  cpu.SetGPR( rd, res );
+  if (s) UpdateStatusSubWithBorrow( cpu, res, op1, op2, borrow );
+};
+
+op sbc_reg_shift( cond[4]: 0b00[2]: 0b0[1]: 0b0110[4]: s[1]: rn[4]: rd[4]: rs[4]: 0b0[1]: shift[2]: 0b1[1]: rm[4] );
+sbc_reg_shift.var reject : {Reject} = {(rd == 15) or (rn == 15) or (rm == 15) or (rs == 15)};
+
+sbc_reg_shift.disasm = {
+  buffer << "sbc" << (s?"s":"") << DisasmCondition(cond) << '\t'
+         << DisasmRegister(rd) << ", " << DisasmRegister(rn) << ", " << DisasmRegister(rm) << ", " << DisasmShReg( shift, rs );
+};
+
+sbc_reg_shift.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+
+  typedef typename ARCH::U32 U32;
+  U32 rmval = cpu.GetGPR( rm ), rsval = cpu.GetGPR( rs ),
+    op1 = cpu.GetGPR( rn ), op2 = ComputeRegShift( cpu, rmval, shift, rsval ), borrow = cpu.CPSR().Get( C ) ^ U32(1),
+    res = op1 - op2 - borrow;
+  cpu.SetGPR( rd, res );
+  if (s) UpdateStatusSubWithBorrow( cpu, res, op1, op2, borrow );
+};
+
+/*
+ * end of sbc instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * rsc instruction
+ */
+
+op rsc_32imm( cond[4]: 0b00[2]: 0b1[1]: 0b0111[4]: s[1]: rn[4]: rd[4]: shl<1> imr[4]: imb[8] );
+rsc_32imm.var imm : {uint32_t} = {unisim::util::arithmetic::RotateRight( uint32_t( imb ), imr )};
+
+rsc_32imm.disasm = {
+  buffer << "rsc" << (s?"s":"") << DisasmCondition(cond) << '\t'
+         << DisasmRegister(rd) << ", " << DisasmRegister(rn) << ", " << DisasmI(imm);
+};
+
+rsc_32imm.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+
+  typedef typename ARCH::U32 U32;
+  U32 op1 = U32(imm), op2 = cpu.GetGPR( rn ), borrow = cpu.CPSR().Get( C ) ^ U32(1), res = op1 - op2 - borrow;
+  cpu.SetGPR( rd, res );
+  if (s) UpdateStatusSubWithBorrow( cpu, res, op1, op2, borrow );
+};
+
+op rsc_imm_shift( cond[4]: 0b00[2]: 0b0[1]: 0b0111[4]: s[1]: rn[4]: rd[4]: imm[5]: shift[2]: 0b0[1]: rm[4] );
+
+rsc_imm_shift.disasm = {
+  buffer << "rsc" << (s?"s":"") << DisasmCondition(cond) << '\t'
+         << DisasmRegister(rd) << ", " << DisasmRegister(rn) << ", " << DisasmRegister(rm) << DisasmShImm( shift, imm );
+};
+
+rsc_imm_shift.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+
+  typedef typename ARCH::U32 U32;
+  U32 rmval = cpu.GetGPR( rm ),
+    op1 = ComputeImmShift( cpu, rmval, shift, imm ), op2 = cpu.GetGPR( rn ), borrow = cpu.CPSR().Get( C ) ^ U32(1),
+    res = op1 - op2 - borrow;
+  cpu.SetGPR( rd, res );
+  if (s) UpdateStatusSubWithBorrow( cpu, res, op1, op2, borrow );
+};
+
+op rsc_reg_shift( cond[4]: 0b00[2]: 0b0[1]: 0b0111[4]: s[1]: rn[4]: rd[4]: rs[4]: 0b0[1]: shift[2]: 0b1[1]: rm[4] );
+rsc_reg_shift.var reject : {Reject} = {(rd == 15) or (rn == 15) or (rm == 15) or (rs == 15)};
+
+rsc_reg_shift.disasm = {
+  buffer << "rsc" << (s?"s":"") << DisasmCondition(cond) << '\t'
+         << DisasmRegister(rd) << ", " << DisasmRegister(rn) << ", " << DisasmRegister(rm) << ", " << DisasmShReg( shift, rs );
+};
+
+rsc_reg_shift.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+
+  typedef typename ARCH::U32 U32;
+  U32 rmval = cpu.GetGPR( rm ), rsval = cpu.GetGPR( rs ),
+    op1 = ComputeRegShift( cpu, rmval, shift, rsval ), op2 = cpu.GetGPR( rn ), borrow = cpu.CPSR().Get( C ) ^ U32(1),
+    res = op1 - op2 - borrow;
+  cpu.SetGPR( rd, res );
+  if (s) UpdateStatusSubWithBorrow( cpu, res, op1, op2, borrow );
+};
+
+/*
+ * end of rsc instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * orr instruction
+ */
+
+op orr_32imm( cond[4]: 0b00[2]: 0b1[1]: 0b1100[4]: s[1]: rn[4]: rd[4]: shl<1> imr[4]: imb[8] );
+orr_32imm.var imm : {uint32_t} = {unisim::util::arithmetic::RotateRight( uint32_t( imb ), imr )};
+
+orr_32imm.disasm = {
+  buffer << "orr" << (s?"s":"") << DisasmCondition(cond) << '\t'
+         << DisasmRegister(rd) << ", " << DisasmRegister(rn) << ", " << DisasmI(imm);
+};
+
+orr_32imm.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+
+  typedef typename ARCH::U32 U32;
+  typedef typename ARCH::S32 S32;
+  U32 op1 = cpu.GetGPR( rn ), op2 = U32(imm), res = op1 | op2;
+  cpu.SetGPR( rd, res );
+  if (s)
+    {
+      cpu.CPSR().Set( N, S32(res) < S32(0) );
+      cpu.CPSR().Set( Z,     res == U32(0) );
+      if (imr)
+        cpu.CPSR().Set( C, S32(imm) < S32(0) );
+    }
+};
+
+op orr_imm_shift( cond[4]: 0b00[2]: 0b0[1]: 0b1100[4]: s[1]: rn[4]: rd[4]: imm[5]: shift[2]: 0b0[1]: rm[4] );
+
+orr_imm_shift.disasm = {
+  buffer << "orr" << (s?"s":"") << DisasmCondition(cond) << '\t'
+         << DisasmRegister(rd) << ", " << DisasmRegister(rn) << ", " << DisasmRegister(rm) << DisasmShImm( shift, imm );
+};
+
+orr_imm_shift.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+
+  typedef typename ARCH::U32 U32;
+  U32 rmval = cpu.GetGPR( rm ),
+           op1 = cpu.GetGPR( rn ), op2 = ComputeImmShift( cpu, rmval, shift, imm ),
+           res = op1 | op2;
+  cpu.SetGPR( rd, res );
+  if (s) UpdateStatusImmShift( cpu, res, rmval, shift, imm );
+};
+
+op orr_reg_shift( cond[4]: 0b00[2]: 0b0[1]: 0b1100[4]: s[1]: rn[4]: rd[4]: rs[4]: 0b0[1]: shift[2]: 0b1[1]: rm[4] );
+orr_reg_shift.var reject : {Reject} = {(rd == 15) or (rn == 15) or (rm == 15) or (rs == 15)};
+
+orr_reg_shift.disasm = {
+  buffer << "orr" << (s?"s":"") << DisasmCondition(cond) << '\t'
+         << DisasmRegister(rd) << ", " << DisasmRegister(rn) << ", " << DisasmRegister(rm) << ", " << DisasmShReg( shift, rs );
+};
+
+orr_reg_shift.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+
+  typedef typename ARCH::U32 U32;
+  U32 rmval = cpu.GetGPR( rm ), rsval = cpu.GetGPR( rs ),
+           op1 = cpu.GetGPR( rn ), op2 = ComputeRegShift( cpu, rmval, shift, rsval ),
+           res = op1 | op2;
+  cpu.SetGPR( rd, res );
+  if (s) UpdateStatusRegShift( cpu, res, rmval, shift, rsval );
+};
+
+/*
+ * end of orr instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * bic instruction
+ */
+
+op bic_32imm( cond[4]: 0b00[2]: 0b1[1]: 0b1110[4]: s[1]: rn[4]: rd[4]: shl<1> imr[4]: imb[8] );
+bic_32imm.var imm : {uint32_t} = {unisim::util::arithmetic::RotateRight( uint32_t( imb ), imr )};
+
+bic_32imm.disasm = {
+  buffer << "bic" << (s?"s":"") << DisasmCondition(cond) << '\t'
+         << DisasmRegister(rd) << ", " << DisasmRegister(rn) << ", " << DisasmI(imm);
+};
+
+bic_32imm.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+
+  typedef typename ARCH::U32 U32;
+  typedef typename ARCH::S32 S32;
+  U32 op1 = cpu.GetGPR( rn ), op2 = U32(imm), res = op1 & ~op2;
+  cpu.SetGPR( rd, res );
+  if (s)
+    {
+      cpu.CPSR().Set( N, S32(res) < S32(0) );
+      cpu.CPSR().Set( Z,     res == U32(0) );
+      if (imr)
+        cpu.CPSR().Set( C, S32(imm) < S32(0) );
+    }
+};
+
+op bic_imm_shift( cond[4]: 0b00[2]: 0b0[1]: 0b1110[4]: s[1]: rn[4]: rd[4]: imm[5]: shift[2]: 0b0[1]: rm[4] );
+
+bic_imm_shift.disasm = {
+  buffer << "bic" << (s?"s":"") << DisasmCondition(cond) << '\t'
+         << DisasmRegister(rd) << ", " << DisasmRegister(rn) << ", " << DisasmRegister(rm) << DisasmShImm( shift, imm );
+};
+
+bic_imm_shift.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+
+  typedef typename ARCH::U32 U32;
+  U32 rmval = cpu.GetGPR( rm ),
+           op1 = cpu.GetGPR( rn ), op2 = ComputeImmShift( cpu, rmval, shift, imm ),
+           res = op1 & ~op2;
+  cpu.SetGPR( rd, res );
+  if (s) UpdateStatusImmShift( cpu, res, rmval, shift, imm );
+};
+
+op bic_reg_shift( cond[4]: 0b00[2]: 0b0[1]: 0b1110[4]: s[1]: rn[4]: rd[4]: rs[4]: 0b0[1]: shift[2]: 0b1[1]: rm[4] );
+bic_reg_shift.var reject : {Reject} = {(rd == 15) or (rn == 15) or (rm == 15) or (rs == 15)};
+
+bic_reg_shift.disasm = {
+  buffer << "bic" << (s?"s":"") << DisasmCondition(cond) << '\t'
+         << DisasmRegister(rd) << ", " << DisasmRegister(rn) << ", " << DisasmRegister(rm) << ", " << DisasmShReg( shift, rs );
+};
+
+bic_reg_shift.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+
+  typedef typename ARCH::U32 U32;
+  U32 rmval = cpu.GetGPR( rm ), rsval = cpu.GetGPR( rs ),
+           op1 = cpu.GetGPR( rn ), op2 = ComputeRegShift( cpu, rmval, shift, rsval ),
+           res = op1 & ~op2;
+  cpu.SetGPR( rd, res );
+  if (s) UpdateStatusRegShift( cpu, res, rmval, shift, rsval );
+};
+
+/*
+ * end of bic instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * tst (Test) instruction
+ *
+ * TST performs a bitwise AND operation on two operands.  It updates
+ * the condition flags based on the result, and discards the result.
+ */
+
+op tst_32imm( cond[4]: 0b00[2]: 0b1[1]: 0b1000[4]: 0b1[1]: rn[4]: 0b0000[4]: shl<1> imr[4]: imb[8] );
+tst_32imm.var imm : {uint32_t} = {unisim::util::arithmetic::RotateRight( uint32_t( imb ), imr )};
+
+tst_32imm.disasm = {
+  buffer << "tst" << DisasmCondition(cond) << '\t'
+         << DisasmRegister(rn) << ", " << DisasmI(imm);
+};
+
+tst_32imm.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+
+  typedef typename ARCH::U32 U32;
+  typedef typename ARCH::S32 S32;
+  U32 op1 = cpu.GetGPR( rn ), op2 = U32(imm), res = op1 & op2;
+  cpu.CPSR().Set( N, S32(res) < S32(0) );
+  cpu.CPSR().Set( Z,     res == U32(0) );
+  if (imr)
+    cpu.CPSR().Set( C, S32(imm) < S32(0) );
+};
+
+op tst_imm_shift( cond[4]: 0b00[2]: 0b0[1]: 0b1000[4]: 0b1[1]: rn[4]: 0b0000[4]: imm[5]: shift[2]: 0b0[1]: rm[4] );
+
+tst_imm_shift.disasm = {
+  buffer << "tst" << DisasmCondition(cond) << '\t'
+         << DisasmRegister(rn) << ", " << DisasmRegister(rm) << DisasmShImm( shift, imm );
+};
+
+tst_imm_shift.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+
+  typedef typename ARCH::U32 U32;
+  U32 op1 = cpu.GetGPR( rn ), rmval = cpu.GetGPR( rm ),
+      op2 = ComputeImmShift( cpu, rmval, shift, imm ),
+      res = op1 & op2;
+  UpdateStatusImmShift( cpu, res, rmval, shift, imm );
+};
+
+op tst_reg_shift( cond[4]: 0b00[2]: 0b0[1]: 0b1000[4]: 0b1[1]: rn[4]: 0b0000[4]: rs[4]: 0b0[1]: shift[2]: 0b1[1]: rm[4] );
+tst_reg_shift.var reject : {Reject} = {(rn == 15) or (rm == 15) or (rs == 15)};
+
+tst_reg_shift.disasm = {
+  buffer << "tst" << DisasmCondition(cond) << '\t'
+         << DisasmRegister(rn) << ", " << DisasmRegister(rm) << ", " << DisasmShReg( shift, rs );
+};
+
+tst_reg_shift.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  U32 rmval = cpu.GetGPR( rm ), rsval = cpu.GetGPR( rs ),
+           op1 = cpu.GetGPR( rn ), op2 = ComputeRegShift( cpu, rmval, shift, rsval ),
+           res = op1 & op2;
+  UpdateStatusRegShift( cpu, res, rmval, shift, rsval );
+};
+
+/*
+ * end of tst instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * teq (Test Equivalence) instruction
+ *
+ * TEQ performs a bitwise exclusive OR operation on two operands.  It
+ * updates the condition flags based on the result, and discards the
+ * result.
+ */
+
+op teq_32imm( cond[4]: 0b00[2]: 0b1[1]: 0b1001[4]: 0b1[1]: rn[4]: 0b0000[4]: shl<1> imr[4]: imb[8] );
+teq_32imm.var imm : {uint32_t} = {unisim::util::arithmetic::RotateRight( uint32_t( imb ), imr )};
+
+teq_32imm.disasm = {
+  buffer << "teq" << DisasmCondition(cond) << '\t'
+         << DisasmRegister(rn) << ", " << DisasmI(imm);
+};
+
+teq_32imm.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+
+  typedef typename ARCH::U32 U32;
+  typedef typename ARCH::S32 S32;
+  
+  U32 op1 = cpu.GetGPR( rn ), op2 = U32(imm), res = op1 ^ op2;
+  
+  cpu.CPSR().Set( N, S32(res) < S32(0) );
+  cpu.CPSR().Set( Z,     res == U32(0) );
+  if (imr)
+    cpu.CPSR().Set( C, S32(imm) < S32(0) );
+};
+
+op teq_imm_shift( cond[4]: 0b00[2]: 0b0[1]: 0b1001[4]: 0b1[1]: rn[4]: 0b0000[4]: imm[5]: shift[2]: 0b0[1]: rm[4] );
+
+teq_imm_shift.disasm = {
+  buffer << "teq" << DisasmCondition(cond) << '\t'
+         << DisasmRegister(rn) << ", " << DisasmRegister(rm) << DisasmShImm( shift, imm );
+};
+
+teq_imm_shift.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+
+  typedef typename ARCH::U32 U32;
+  U32 rmval = cpu.GetGPR( rm ),
+           op1 = cpu.GetGPR( rn ), op2 = ComputeImmShift( cpu, rmval, shift, imm ),
+           res = op1 ^ op2;
+  UpdateStatusImmShift( cpu, res, rmval, shift, imm );
+};
+
+op teq_reg_shift( cond[4]: 0b00[2]: 0b0[1]: 0b1001[4]: 0b1[1]: rn[4]: 0b0000[4]: rs[4]: 0b0[1]: shift[2]: 0b1[1]: rm[4] );
+teq_reg_shift.var reject : {Reject} = {(rn == 15) or (rm == 15) or (rs == 15)};
+
+teq_reg_shift.disasm = {
+  buffer << "teq" << DisasmCondition(cond) << '\t'
+         << DisasmRegister(rn) << ", " << DisasmRegister(rm) << ", " << DisasmShReg( shift, rs );
+};
+
+teq_reg_shift.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+
+  typedef typename ARCH::U32 U32;
+  U32 rmval = cpu.GetGPR( rm ), rsval = cpu.GetGPR( rs ),
+           op1 = cpu.GetGPR( rn ), op2 = ComputeRegShift( cpu, rmval, shift, rsval ),
+           res = op1 ^ op2;
+  UpdateStatusRegShift( cpu, res, rmval, shift, rsval );
+};
+
+/*
+ * end of teq instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * cmp instruction
+ */
+
+op cmp_32imm( cond[4]: 0b00[2]: 0b1[1]: 0b1010[4]: 0b1[1]: rn[4]: 0b0000[4]: shl<1> imr[4]: imb[8] );
+cmp_32imm.var imm : {uint32_t} = {unisim::util::arithmetic::RotateRight( uint32_t( imb ), imr )};
+
+cmp_32imm.disasm = {
+  buffer << "cmp" << DisasmCondition(cond) << '\t'
+         << DisasmRegister(rn) << ", " << DisasmI(imm);
+};
+
+cmp_32imm.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+
+  typedef typename ARCH::U32 U32;
+  U32 op1 = cpu.GetGPR( rn ), op2 = U32(imm), res = op1 - op2;
+  UpdateStatusSub( cpu, res, op1, op2 );
+};
+
+op cmp_imm_shift( cond[4]: 0b00[2]: 0b0[1]: 0b1010[4]: 0b1[1]: rn[4]: 0b0000[4]: imm[5]: shift[2]: 0b0[1]: rm[4] );
+
+cmp_imm_shift.disasm = {
+  buffer << "cmp" << DisasmCondition(cond) << '\t'
+         << DisasmRegister(rn) << ", " << DisasmRegister(rm) << DisasmShImm( shift, imm );
+};
+
+cmp_imm_shift.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+
+  typedef typename ARCH::U32 U32;
+  U32 rmval = cpu.GetGPR( rm ),
+           op1 = cpu.GetGPR( rn ), op2 = ComputeImmShift( cpu, rmval, shift, imm ),
+           res = op1 - op2;
+  UpdateStatusSub( cpu, res, op1, op2 );
+};
+
+op cmp_reg_shift( cond[4]: 0b00[2]: 0b0[1]: 0b1010[4]: 0b1[1]: rn[4]: 0b0000[4]: rs[4]: 0b0[1]: shift[2]: 0b1[1]: rm[4] );
+cmp_reg_shift.var reject : {Reject} = {(rn == 15) or (rm == 15) or (rs == 15)};
+
+cmp_reg_shift.disasm = {
+  buffer << "cmp" << DisasmCondition(cond) << '\t'
+         << DisasmRegister(rn) << ", " << DisasmRegister(rm) << ", " << DisasmShReg( shift, rs );
+};
+
+cmp_reg_shift.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+
+  typedef typename ARCH::U32 U32;
+  U32 rmval = cpu.GetGPR( rm ), rsval = cpu.GetGPR( rs ),
+           op1 = cpu.GetGPR( rn ), op2 = ComputeRegShift( cpu, rmval, shift, rsval ),
+           res = op1 - op2;
+  UpdateStatusSub( cpu, res, op1, op2 );
+};
+
+/*
+ * end of cmp instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * cmn instruction
+ */
+
+op cmn_32imm( cond[4]: 0b00[2]: 0b1[1]: 0b1011[4]: 0b1[1]: rn[4]: 0b0000[4]: shl<1> imr[4]: imb[8] );
+cmn_32imm.var imm : {uint32_t} = {unisim::util::arithmetic::RotateRight( uint32_t( imb ), imr )};
+
+cmn_32imm.disasm = {
+  buffer << "cmn" << DisasmCondition(cond) << '\t' << DisasmRegister(rn) << ", " << DisasmI(imm);
+};
+
+cmn_32imm.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  U32 op1 = cpu.GetGPR( rn ), op2 = U32(imm), res = op1 + op2;
+  UpdateStatusAdd( cpu, res, op1, op2 );
+};
+
+op cmn_imm_shift( cond[4]: 0b00[2]: 0b0[1]: 0b1011[4]: 0b1[1]: rn[4]: 0b0000[4]: imm[5]: shift[2]: 0b0[1]: rm[4] );
+
+cmn_imm_shift.disasm = {
+  buffer << "cmn" << DisasmCondition(cond) << '\t'
+         << DisasmRegister(rn) << ", " << DisasmRegister(rm) << DisasmShImm( shift, imm );
+};
+
+cmn_imm_shift.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  U32 rmval = cpu.GetGPR( rm ),
+           op1 = cpu.GetGPR( rn ), op2 = ComputeImmShift( cpu, rmval, shift, imm ),
+           res = op1 + op2;
+  UpdateStatusAdd( cpu, res, op1, op2 );
+};
+
+op cmn_reg_shift( cond[4]: 0b00[2]: 0b0[1]: 0b1011[4]: 0b1[1]: rn[4]: 0b0000[4]: rs[4]: 0b0[1]: shift[2]: 0b1[1]: rm[4] );
+cmn_reg_shift.var reject : {Reject} = {(rn == 15) or (rm == 15) or (rs == 15)};
+
+cmn_reg_shift.disasm = {
+  buffer << "cmn" << DisasmCondition(cond) << '\t'
+         << DisasmRegister(rn) << ", " << DisasmRegister(rm) << ", " << DisasmShReg( shift, rs );
+};
+
+cmn_reg_shift.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+
+  typedef typename ARCH::U32 U32;
+  U32 rmval = cpu.GetGPR( rm ), rsval = cpu.GetGPR( rs ),
+           op1 = cpu.GetGPR( rn ), op2 = ComputeRegShift( cpu, rmval, shift, rsval ),
+           res = op1 + op2;
+  UpdateStatusAdd( cpu, res, op1, op2 );
+};
+
+/*
+ * end of cmn instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * mov instruction
+ */
+
+op mov_32imm( cond[4]: 0b00[2]: 0b1[1]: 0b1101[4]: s[1]: 0b0000[4]: rd[4]: shl<1> imr[4]: imb[8] );
+mov_32imm.var imm : {uint32_t} = {unisim::util::arithmetic::RotateRight( uint32_t( imb ), imr )};
+
+mov_32imm.disasm = {
+  buffer << "mov" << (s?"s":"") << DisasmCondition(cond) << '\t'
+         << DisasmRegister(rd) << ", " << DisasmI(imm);
+};
+
+mov_32imm.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+
+  typedef typename ARCH::U32 U32;
+  typedef typename ARCH::S32 S32;
+  
+  U32 res = U32(imm);
+  cpu.SetGPR( rd, res );
+  
+  if (s)
+    {
+      cpu.CPSR().Set( N, S32(res) < S32(0) );
+      cpu.CPSR().Set( Z,     res == U32(0) );
+      if (imr)
+        cpu.CPSR().Set( C, S32(imm) < S32(0) );
+    }
+};
+
+op mov_imm_shift( cond[4]: 0b00[2]: 0b0[1]: 0b1101[4]: s[1]: 0b0000[4]: rd[4]: imm[5]: shift[2]: 0b0[1]: rm[4] );
+
+mov_imm_shift.disasm = {
+  uint32_t shift_value = imm;
+  
+  if (imm == 0) {
+    if (shift == 0 or shift == 3) {
+      buffer << (shift ? "rrx" : "mov") << (s?"s":"") << DisasmCondition(cond) << '\t' << DisasmRegister(rd) << ", " << DisasmRegister(rm);
+      return;
+    }
+    shift_value = 32;
+  }
+  buffer << DisasmShift(shift) << (s?"s":"") << DisasmCondition(cond) << '\t' << DisasmRegister(rd)
+         << ", " << DisasmRegister(rm) << ", " << DisasmI(shift_value);
+};
+
+mov_imm_shift.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  U32 rmval = cpu.GetGPR( rm ), res = ComputeImmShift( cpu, rmval, shift, imm );
+  cpu.SetGPR( rd, res );
+  if (s) UpdateStatusImmShift( cpu, res, rmval, shift, imm );
+};
+
+op mov_reg_shift( cond[4]: 0b00[2]: 0b0[1]: 0b1101[4]: s[1]: 0b0000[4]: rd[4]: rm[4]: 0b0[1]: shift[2]: 0b1[1]: rn[4] );
+mov_reg_shift.var reject : {Reject} = {(rd == 15) or (rn == 15) or (rm == 15)};
+
+mov_reg_shift.disasm = {
+  buffer << DisasmShift(shift) << (s?"s":"") << DisasmCondition(cond) << '\t'
+         << DisasmRegister(rd) << ", " << DisasmRegister(rn) << ", " << DisasmRegister(rm);
+};
+
+mov_reg_shift.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  U32
+    rnval = cpu.GetGPR( rn ), rmval = cpu.GetGPR( rm ),
+    res = ComputeRegShift( cpu, rnval, shift, rmval );
+  cpu.SetGPR( rd, res );
+  if (s) UpdateStatusRegShift( cpu, res, rnval, shift, rmval );
+};
+
+/*
+ * end of mov instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * mvn instruction
+ */
+
+op mvn_32imm( cond[4]: 0b00[2]: 0b1[1]: 0b1111[4]: s[1]: 0b0000[4]: rd[4]: shl<1> imr[4]: imb[8] );
+mvn_32imm.var imm : {uint32_t} = {unisim::util::arithmetic::RotateRight( uint32_t( imb ), imr )};
+
+mvn_32imm.disasm = {
+  buffer << "mvn" << (s?"s":"") << DisasmCondition(cond) << '\t' << DisasmRegister(rd) << ", " << DisasmI(imm);
+};
+
+mvn_32imm.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+
+  typedef typename ARCH::U32 U32;
+  typedef typename ARCH::S32 S32;
+  
+  U32 res = U32(~imm);
+  cpu.SetGPR( rd, res );
+  
+  if (s)
+    {
+      cpu.CPSR().Set( N, S32(res) < S32(0) );
+      cpu.CPSR().Set( Z,     res == U32(0) );
+      if (imr)
+        cpu.CPSR().Set( C, S32(imm) < S32(0) );
+    }
+};
+
+op mvn_imm_shift( cond[4]: 0b00[2]: 0b0[1]: 0b1111[4]: s[1]: 0b0000[4]: rd[4]: imm[5]: shift[2]: 0b0[1]: rm[4] );
+
+mvn_imm_shift.disasm = {
+  buffer << "mvn" << (s?"s":"") << DisasmCondition(cond) << '\t' << DisasmRegister(rd) << ", " << DisasmRegister(rm) << DisasmShImm( shift, imm );
+};
+
+mvn_imm_shift.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  U32 rmval = cpu.GetGPR( rm ), res = ~(ComputeImmShift( cpu, rmval, shift, imm ));
+  cpu.SetGPR( rd, res );
+  if (s) UpdateStatusImmShift( cpu, res, rmval, shift, imm );
+};
+
+op mvn_reg_shift( cond[4]: 0b00[2]: 0b0[1]: 0b1111[4]: s[1]: 0b0000[4]: rd[4]: rm[4]: 0b0[1]: shift[2]: 0b1[1]: rn[4] );
+mvn_reg_shift.var reject : {Reject} = {(rd == 15) or (rn == 15) or (rm == 15)};
+
+mvn_reg_shift.disasm = {
+  buffer << "mvn" << (s?"s":"") << DisasmCondition(cond) << '\t' << DisasmRegister(rd) << ", " << DisasmRegister(rn) << ", " << DisasmShReg( shift, rm );
+};
+
+mvn_reg_shift.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  U32
+    rnval = cpu.GetGPR( rn ), rmval = cpu.GetGPR( rm ),
+  res = ~(ComputeRegShift( cpu, rnval, shift, rmval ));
+  cpu.SetGPR( rd, res );
+  if (s) UpdateStatusRegShift( cpu, res, rnval, shift, rmval );
+};
+
+/*
+ * end of mvn instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * clz (count leading zero) instruction
+ */
+
+{ ARCH::Config::insns5T }: \
+op clz( cond[4]: 0b00010110[8]: 0b1111[4]: rd[4]: 0b1111[4]: 0b0001[4]: rm[4] );
+
+clz.disasm = {
+  buffer << "clz" << DisasmCondition(cond) << '\t' << DisasmRegister(rd) << ", " << DisasmRegister(rm);
+};
+
+clz.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  U32 val = cpu.GetGPR( rm );
+  if (unlikely( cpu.Test(val == U32(0)) ))
+    val = U32(32);
+  else
+    val = U32(31) - BitScanReverse( cpu.GetGPR( rm ) );
+  
+  cpu.SetGPR( rd, val );
+};
+
+/*
+ * end of clz (count leading zero) instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * rbit instruction
+ */
+
+{ ARCH::Config::insnsT2 }:                      \
+op rbit( cond[4]: 0b011011111111[12]: rd[4]: 0b11110011[8]: rm[4] );
+rbit.var reject : {Reject} = {(rd == 15) or (rm == 15)};
+
+rbit.disasm = {
+  buffer << "rbit" << DisasmCondition(cond) << '\t' << DisasmRegister(rd) << ", " << DisasmRegister(rm);
+};
+
+rbit.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+
+  typedef typename ARCH::U32 U32;
+  U32 src = cpu.GetGPR( rm ), dst(0);
+  for (int idx = 0; idx < 32; ++idx) { dst = (dst << 1) | (src & U32(1)); src >>= 1; }
+  cpu.SetGPR( rd, dst );
+};
+
+/*
+ * end of rbit instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * rev (Byte-Reverse Word) instruction
+ *
+ * REV reverses the byte order in a 32-bit register.
+ */
+
+{ ARCH::Config::insns6 }:                                       \
+op rev( cond[4]: 0b01101[5]: 0b0[1]: 0b11[2]: 0b1111[4]: rd[4]: 0b1111[4]: 0b0011[4]: rm[4] );
+rev.var reject : {Reject} = {(rd == 15) or (rm == 15)};
+
+rev.disasm = {
+  buffer << "rev" << DisasmCondition(cond) << '\t'
+         << DisasmRegister(rd) << ", " << DisasmRegister(rm);
+};
+
+rev.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+
+  typedef typename ARCH::U32 U32;
+  U32 rmval = cpu.GetGPR(rm), rdval = ByteSwap( rmval );
+
+  cpu.SetGPR( rd, rdval );
+};
+
+/*
+ * end of rev instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * rev16 (Byte-Reverse Packed Halfword) instruction
+ *
+ * REV16 reverses the byte order in each16-bit halfword of a 32-bit
+ * register.
+ */
+
+{ ARCH::Config::insns6 }:                                       \
+op rev16( cond[4]: 0b01101[5]: 0b0[1]: 0b11[2]: 0b1111[4]: rd[4]: 0b1111[4]: 0b1011[4]: rm[4] );
+rev16.var reject : {Reject} = {(rd == 15) or (rm == 15)};
+
+rev16.disasm = {
+  buffer << "rev16" << DisasmCondition(cond) << '\t' << DisasmRegister(rd) << ", " << DisasmRegister(rm);
+};
+
+rev16.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  U32 rmval = cpu.GetGPR( rm ), rdval = ByteSwap( RotateRight( rmval, 16 ) );
+  cpu.SetGPR( rd, rdval );
+};
+
+/*
+ * end of rev16 instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * revsh (Byte-Reverse Signed Halfword) instruction
+ *
+ * REVSH reverses the byte order in the lower 16-bit halfword of a
+ * 32-bit register, and sign-extends the result to 32 bits.
+ */
+
+{ ARCH::Config::insns6 }:                                       \
+op revsh( cond[4]: 0b01101[5]: 0b1[1]: 0b11[2]: 0b1111[4]: rd[4]: 0b1111[4]: 0b1011[4]: rm[4] );
+revsh.var reject : {Reject} = {(rd == 15) or (rm == 15)};
+
+revsh.disasm = {
+  buffer << "revsh" << DisasmCondition(cond) << '\t'
+         << DisasmRegister(rd) << ", " << DisasmRegister(rm);
+};
+
+revsh.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  typedef typename ARCH::S32 S32;
+  typedef typename ARCH::S16 S16;
+  typedef typename ARCH::U16 U16;
+  
+  U16 src( cpu.GetGPR(rm) );
+  cpu.SetGPR( rd, U32(S32(S16((src >> 8) | (src << 8)))) );
+};
+
+/*
+ * end of revsh instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * movw (Move Wide) instruction
+ *
+ * MOVW writes a zero-extended 16-bits immediate value to a
+ * destination register. In combination with MOVW, this instruction
+ * allows to load a 32-bits constants in a destination register.
+ */
+
+{ ARCH::Config::insnsT2 }:                              \
+op movw( cond[4]: 0b00110000[8]: shl<12> imm1[4]: rd[4]: imm0[12] );
+movw.var imm : {uint32_t} = {imm1|imm0};
+
+movw.disasm = {
+  buffer << "movw" << DisasmCondition(cond) << '\t'
+         << DisasmRegister(rd) << ", " << DisasmI(imm);
+};
+
+movw.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+
+  typedef typename ARCH::U32 U32;
+  cpu.SetGPR( rd, U32(imm) );
+};
+
+/*
+ * end of movw instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * movt (Move Top) instruction
+ *
+ * MOVT writes an immediate value to the top halfword of the
+ * destination register. It does not affect the contents of the bottom
+ * halfword.
+ */
+
+{ ARCH::Config::insnsT2 }:                              \
+op movt( cond[4]: 0b00110100[8]: shl<12> imm1[4]: rd[4]: imm0[12] );
+movt.var imm : {uint32_t} = {imm1|imm0};
+
+movt.disasm = {
+  buffer << "movt" << DisasmCondition(cond) << '\t'
+         << DisasmRegister(rd) << ", " << DisasmI(imm);
+};
+
+movt.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+
+  typedef typename ARCH::U32 U32;
+  cpu.SetGPR( rd, (cpu.GetGPR( rd ) & U32(0xffff)) | U32(imm << 16) );
+};
+
+/*
+ * end of movt (Move Top) instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * setend (Set Endianness) instruction
+ *
+ * SETEND writes a new value to ENDIANSTATE.
+ */
+
+{ ARCH::Config::insns6 }:                               \
+op setend( 0b1111[4]: 0b00010000[8]: 0b0001[4]: 0b000000[6]: endianness[1]: 0b0[1]: 0b0000[4]: 0b0000[4] );
+
+setend.disasm = {
+  buffer << "setend\t" << (endianness ? "be":"le");
+};
+
+setend.execute = {
+  cpu.CPSR().Set( E, typename ARCH::U32(endianness) );
+};
+
+/*
+ * end of setend instruction
+ *******************************************************************/

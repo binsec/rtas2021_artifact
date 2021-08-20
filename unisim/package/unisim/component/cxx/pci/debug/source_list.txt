@@ -1,0 +1,2 @@
+unisim/component/cxx/pci/debug/pci_stub_64.cc
+unisim/component/cxx/pci/debug/pci_stub.cc

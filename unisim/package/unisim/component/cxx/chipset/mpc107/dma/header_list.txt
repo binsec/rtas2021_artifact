@@ -1,0 +1,4 @@
+unisim/component/cxx/chipset/mpc107/dma/buffer.hh
+unisim/component/cxx/chipset/mpc107/dma/dma_client_interface.hh
+unisim/component/cxx/chipset/mpc107/dma/dma.hh
+unisim/component/cxx/chipset/mpc107/dma/register.hh

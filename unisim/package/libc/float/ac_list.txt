@@ -1,0 +1,1 @@
+AC_CHECK_HEADER([float.h],, AC_MSG_ERROR([float.h is missing]))

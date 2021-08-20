@@ -1,0 +1,1 @@
+AC_CHECK_HEADER([signal.h],, AC_MSG_ERROR([signal.h is missing]))

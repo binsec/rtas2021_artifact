@@ -1,0 +1,31 @@
+* More stats: coalesced memory, branch divergence, jumps
+* Fixed local memory address calculation bug in multithreaded simulation
+* New instructions (addc, ldp, stp...), bug fixes
+
+Version 0.3, 16 June 2009
+* Various instructions: call, not, cvt.i*.abs
+* 1D textures from linear memory with integer addresses
+* Uses SSE (packed) on platforms that supports it
+
+Version 0.2, 04 May 2009
+* Statistics collection infrastructure
+* New control flow instructions: breakaddr, break
+* Rewritten floating-point implementation, more accurate and faster
+* Rewritten branching algorithm, closer to NVIDIA implementation
+* Traces of reset, kernel parsing and loading can be disabled
+* 64-bit and 128-bit memory access
+* Float to float conversions (round/truncate...)
+* Handling of 16-bit condition codes
+* Various bug fixes
+* Improved instruction decoder
+
+Version 0.1, 09 April 2009
+* Initial release
+* Support of most integer arithmetic, floating-point arithmetic, logical instructions
+* Memory scatter/gather instructions from/to global and local memory up to
+  32-bit
+* Basic control flow instructions
+* Reciprocal, reciprocal square root and transcendental instructions (not
+  bit-accurate)
+* Synchronization barrier instruction
+

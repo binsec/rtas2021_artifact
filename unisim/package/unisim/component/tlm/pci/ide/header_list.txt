@@ -1,0 +1,2 @@
+unisim/component/tlm/pci/ide/pci_dev.hh
+unisim/component/tlm/pci/ide/pci_ide_module.hh

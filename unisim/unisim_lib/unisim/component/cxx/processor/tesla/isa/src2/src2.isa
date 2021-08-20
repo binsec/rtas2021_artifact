@@ -1,0 +1,242 @@
+/*
+ *  Copyright (c) 2009,
+ *  University of Perpignan (UPVD),
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without modification,
+ *  are permitted provided that the following conditions are met:
+ *
+ *   - Redistributions of source code must retain the above copyright notice, this
+ *     list of conditions and the following disclaimer.
+ *
+ *   - Redistributions in binary form must reproduce the above copyright notice,
+ *     this list of conditions and the following disclaimer in the documentation
+ *     and/or other materials provided with the distribution.
+ *
+ *   - Neither the name of UPVD nor the names of its contributors may be used to
+ *     endorse or promote products derived from this software without specific prior
+ *     written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ *  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *  DISCLAIMED.
+ *  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ *  INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ *  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+ *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ *  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Authors: Sylvain Collange (sylvain.collange@univ-perp.fr)
+ */
+
+namespace unisim::component::cxx::processor::tesla::isa::src2
+set endianness little
+set addressclass {typename CONFIG::address_t}
+template <{class} {CONFIG}>
+
+decl {
+#include <unisim/component/cxx/processor/tesla/cpu.hh>
+#include <unisim/component/cxx/processor/tesla/exec.hh>
+#include <unisim/component/cxx/processor/tesla/disasm.hh>
+#include <unisim/component/cxx/processor/tesla/flags.hh>
+//#include <unisim/component/cxx/processor/tesla/operation.hh>
+#include <iomanip>
+
+
+namespace unisim {
+namespace component {
+namespace cxx {
+namespace processor {
+namespace tesla {
+
+template<class CONFIG>
+class CPU;
+
+template<class CONFIG>
+class Instruction;
+
+namespace isa {
+namespace src2 {
+using namespace unisim::component::cxx::processor::tesla;
+}
+}
+
+} // end of namespace tesla 
+} // end of namespace processor
+} // end of namespace cxx
+} // end of namespace component
+} // end of namespace unisim
+
+}
+
+impl {
+#include <unisim/component/cxx/processor/tesla/instruction.hh>
+}
+
+constructor action initialize() {
+}
+
+action {void} read({CPU<CONFIG> *} {cpu}, {Instruction<CONFIG> *} {insn}) {
+	throw IllegalInstructionException<CONFIG>();
+}
+
+action {void} disasm({CPU<CONFIG> *} {cpu}, {Instruction<CONFIG> const *} {insn}, {ostream&} {os}) {
+	os << "???";
+}
+
+action {void} classify({typename CONFIG::operationstats_t &} {stats}, \
+	{DataType} {dt}) {
+}
+
+// Reg
+
+op alu_full_normal_reg(/*subop*/?[3]:/*?*/?[1]:/*src3_neg*/?[1]:/*src1_neg*/?[1]:/*addr_inc*/?[1]:/*src2_imm??*/?[1]:/*rounding_mode*/?[2]:/*src1_sh*/?[1]:/*src3*/?[7]\
+	:/*pred_reg*/?[2]:/*pred_cond*/?[5]:/*set_pred*/?[1]:/*set_pred_reg*/?[2]:/*ignore_output*/?[1]:/*addr_hi*/?[1]:/*marker*/0[2]:\
+	/*op*/?[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src3_cm*/?[1]:/*src2_cm*/0[1]:src2[7]:/*src1*/?[7]:\
+	/*dest*/?[7]:/*flow*/0[1]:/*long*/1[1])
+
+op alu_full_end_reg(/*subop*/?[3]:/*?*/?[1]:/*src3_neg*/?[1]:/*src1_neg*/?[1]:/*addr_inc*/?[1]:/*src2_imm*/?[1]:/*rounding_mode*/?[2]:/*src1_sh*/?[1]:/*src3*/?[7]\
+	:/*pred_reg*/?[2]:/*pred_cond*/?[5]:?[5]:/*marker*/1[2]:\
+	/*op*/?[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src3_cm*/?[1]:/*src2_cm*/0[1]:src2[7]:/*src1*/?[7]:\
+	/*dest*/?[7]:/*flow*/0[1]:/*long*/1[1])
+
+op alu_full_join_reg(/*subop*/?[3]:/*?*/?[1]:/*src3_neg*/?[1]:/*src1_neg*/?[1]:/*addr_inc*/?[1]:/*src2_imm*/?[1]:/*rounding_mode*/?[2]:/*src1_sh*/?[1]:/*src3*/?[7]\
+	:/*pred_reg*/?[2]:/*pred_cond*/?[5]:?[5]:/*marker*/2[2]:\
+	/*op*/?[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src3_cm*/?[1]:/*src2_cm*/0[1]:src2[7]:/*src1*/?[7]:\
+	/*dest*/?[7]:/*flow*/0[1]:/*long*/1[1])
+
+
+op alu_half_reg(\
+	/*op*/?[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src1_sh*/?[1]:/*src2_cm*/0[1]:/*src2_neg*/?[1]:src2[6]:/*src1_n*/?[7]:\
+	/*dest*/?[7]:/*flow*/0[1]:/*long*/0[1])
+
+
+group alu_reg(alu_full_normal_reg, alu_full_end_reg, alu_full_join_reg, alu_half_reg)
+
+alu_reg.read = {
+	typedef Instruction<CONFIG> Insn;
+	insn->ReadReg(src2, Insn::TempSrc2, insn->OperandRegType(OpSrc2));
+}
+
+alu_reg.disasm = {
+	RegType rt = insn->OperandRegType(OpSrc2);
+	DisasmReg(src2, rt, os);
+}
+
+alu_reg.classify = {
+	stats.SetRegNum(src2, dt, OpSrc2);
+}
+
+
+// Constant memory
+
+op alu_full_normal_const(/*subop*/?[3]:/*?*/?[1]:/*src3_neg*/?[1]:/*src1_neg*/?[1]:addr_inc[1]:/*src2_imm??*/?[1]:constseg[2]:src1_sh[1]:/*src3*/?[7]\
+	:/*pred_reg*/?[2]:/*pred_cond*/?[5]:/*set_pred*/?[1]:/*set_pred_reg*/?[2]:/*ignore_output*/?[1]:addr_hi[1]:/*marker*/0[2]:\
+	/*op*/?[4]:addr_lo[2]:addr_imm[1]:/*src3_cm*/?[1]:/*src2_cm*/1[1]:src2[7]:/*src1*/?[7]:\
+	/*dest*/?[7]:/*flow*/0[1]:/*long*/1[1])
+
+op alu_full_end_const(/*subop*/?[3]:/*?*/?[1]:/*src3_neg*/?[1]:/*src1_neg*/?[1]:addr_inc[1]:/*src2_imm??*/?[1]:constseg[2]:src1_sh[1]:/*src3*/?[7]\
+	:/*pred_reg*/?[2]:/*pred_cond*/?[5]:/*set_pred*/?[1]:/*set_pred_reg*/?[2]:/*ignore_output*/?[1]:addr_hi[1]:/*marker*/1[2]:\
+	/*op*/?[4]:addr_lo[2]:addr_imm[1]:/*src3_cm*/?[1]:/*src2_cm*/1[1]:src2[7]:/*src1*/?[7]:\
+	/*dest*/?[7]:/*flow*/0[1]:/*long*/1[1])
+	
+op alu_full_join_const(/*subop*/?[3]:/*?*/?[1]:/*src3_neg*/?[1]:/*src1_neg*/?[1]:addr_inc[1]:/*src2_imm??*/?[1]:constseg[2]:src1_sh[1]:/*src3*/?[7]\
+	:/*pred_reg*/?[2]:/*pred_cond*/?[5]:/*set_pred*/?[1]:/*set_pred_reg*/?[2]:/*ignore_output*/?[1]:addr_hi[1]:/*marker*/2[2]:\
+	/*op*/?[4]:addr_lo[2]:addr_imm[1]:/*src3_cm*/?[1]:/*src2_cm*/1[1]:src2[7]:/*src1*/?[7]:\
+	/*dest*/?[7]:/*flow*/0[1]:/*long*/1[1])
+	
+
+op alu_half_const(\
+	/*op*/?[4]:addr_lo[2]:addr_imm[1]:src1_sh[1]:/*src2_cm*/1[1]:/*src2_neg*/?[1]:src2[6]:/*src1_n*/?[7]:\
+	/*dest*/?[7]:/*flow*/0[1]:/*long*/0[1])
+
+// Invalid op?
+//op alu_full_imm_const(/*subop*/?[3]:/*?*/?[1]:/*src3_neg*/?[1]:/*imm*/?[25]:/*marker*/3[2]:\
+//	/*op*/?[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src3_cm*/?[1]:/*src2_cm*/1[1]:/*src2*/?[7]:src1[7]:\
+//	/*dest*/?[7]:/*flow*/0[1]:/*long*/1[1])
+
+
+group alu_const(alu_full_normal_const, alu_full_end_const, alu_full_join_const)
+
+alu_const.read = {
+	typedef Instruction<CONFIG> Insn;
+
+	// Disallow segment for mad?
+	// NO. Const seg has priority over rounding mode, it is already taken care of in fp32.isa
+	unsigned int ar = (addr_hi << 2) | addr_lo;
+	
+	// Indirect addressing on src1 (shared) has priority
+	if(ar == 0 || src1_sh) {
+		insn->Temp(Insn::TempSrc2) = cpu->ReadConstant(src2 * insn->OperandSize(OpSrc2), constseg);
+	}
+	else {
+		assert(!addr_imm);	// Is this allowed?
+		assert(!addr_inc);
+		cpu->GatherConstant(insn->Temp(Insn::TempSrc2), src2, addr_lo, addr_hi, 1, constseg,
+			insn->Mask(), insn->OperandSMType(OpSrc2));
+	}
+}
+
+alu_const.disasm = {
+	if((addr_hi == 0 && addr_lo == 0) || src1_sh) {
+		os << "c" << constseg << "[" << src2 * insn->OperandSize(OpSrc2) << "]";
+	}
+	else {
+		DisasmConstant(src2, addr_lo, addr_hi, 1, constseg, insn->OperandSMType(OpSrc2), os);
+		if(addr_inc || addr_imm) {
+			os << "??+=?";
+		}
+	}
+}
+
+alu_const.classify = {
+	stats.SetInputConst();
+}
+
+alu_half_const.read = {
+	typedef Instruction<CONFIG> Insn;
+	// Default segment = 0??
+	if(addr_lo == 0 || src1_sh) {
+		insn->Temp(Insn::TempSrc2) = cpu->ReadConstant(src2 * insn->OperandSize(OpSrc2), 0);
+	}
+	else {
+		assert(!addr_imm);
+		cpu->GatherConstant(insn->Temp(Insn::TempSrc2), src2, addr_lo, 0, 1, 0,
+			insn->Mask(), insn->OperandSMType(OpSrc2));
+	}
+}
+
+alu_half_const.disasm = {
+	if(addr_lo == 0 || src1_sh) {
+		os << "c" << 0 << "[" << src2 * insn->OperandSize(OpSrc2) << "]";
+	}
+	else {
+		DisasmConstant(src2, addr_lo, 0, 1, 0, insn->OperandSMType(OpSrc2), os);
+		if(addr_imm) {
+			os << "??+?";
+		}
+	}
+}
+
+alu_half_const.classify = {
+	stats.SetInputConst();
+}
+
+
+op alu_imm(/*subop*/?[3]:/*?*/?[1]:imm_hi[26]:/*marker*/3[2]:\
+	/*op*/?[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src3_cm*/?[1]:/*src2_cm*/0[1]:/*src2_neg*/?[1]:src2[6]:/*src1_neg*/?[1]:/*src1*/?[6]:\
+	/*dest*/?[7]:/*flow*/0[1]:/*long*/1[1])
+
+alu_imm.read = {
+	typedef Instruction<CONFIG> Insn;
+	insn->Temp(Insn::TempSrc2) = VectorRegister<CONFIG>((imm_hi << 6) | src2);
+}
+
+alu_imm.disasm = {
+	os << "0x" << std::setfill('0') << std::setw(8) << std::hex << ((imm_hi << 6) | src2);
+	os << std::dec;
+}
+

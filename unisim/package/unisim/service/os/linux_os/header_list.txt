@@ -1,0 +1,4 @@
+unisim/service/os/linux_os/arm_linux32.hh
+unisim/service/os/linux_os/arm_linux64.hh
+unisim/service/os/linux_os/linux.hh
+unisim/service/os/linux_os/powerpc_linux32.hh

@@ -1,0 +1,223 @@
+/*
+ *  Copyright (c) 2007-2015,
+ *  Commissariat a l'Energie Atomique (CEA)
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without modification,
+ *  are permitted provided that the following conditions are met:
+ *
+ *   - Redistributions of source code must retain the above copyright notice, this
+ *     list of conditions and the following disclaimer.
+ *
+ *   - Redistributions in binary form must reproduce the above copyright notice,
+ *     this list of conditions and the following disclaimer in the documentation
+ *     and/or other materials provided with the distribution.
+ *
+ *   - Neither the name of CEA nor the names of its contributors may be used to
+ *     endorse or promote products derived from this software without specific prior
+ *     written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ *  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *  DISCLAIMED.
+ *  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ *  INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ *  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+ *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ *  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Authors: Réda Nouacer (reda.nouacer@cea.fr)
+ *          Gilles Mouchard (gilles.mouchard@cea.fr)
+ */
+
+
+// **************risc16 instruction set description***************
+
+set addressclass {uint16_t}
+set endianness big
+namespace unisim::component::cxx::processor::risc16
+
+decl {
+
+namespace unisim {
+namespace component {
+namespace cxx {
+namespace processor {
+namespace risc16 {
+class CPU;
+} // end of namespace risc16
+} // end of namespace processor
+} // end of namespace cxx
+} // end of namespace component
+} // end of namespace unisim
+
+}
+
+impl {
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <unisim/component/cxx/processor/risc16/cpu.hh>
+
+}
+
+/****** action prototypes & default implementations*********/
+
+/**** execute*****/
+action {void} execute({CPU*} {cpu}){
+	printf("unknown instruction\n");
+	exit (-1);
+}
+
+/****disasm*****/
+
+action{void} disasm({uint16_t} {pc}, {char*} {s}) {
+	sprintf(s, "?");
+}
+
+/*******Operations implementation*******/
+
+/*****add instruction******/
+
+op add (0b0000[4]:rd[4]:rs1[4]:rs2[4])
+
+add.execute = {
+	cpu->gpr[rd] = cpu->gpr[rs1] + cpu->gpr[rs2];
+}
+
+add.disasm = {
+	sprintf(s, "add r%d, r%d, r%d", rd, rs1, rs2);
+}
+
+/*****sub instruction******/
+
+op sub(0b0001[4]:rd[4]:rs1[4]:rs2[4])
+
+sub.execute = {
+	cpu->gpr[rd] = cpu->gpr[rs1] - cpu->gpr[rs2];
+}
+
+sub.disasm = {
+	sprintf(s, "sub r%d, r%d, r%d", rd, rs1, rs2);
+}
+
+/*****or instruction******/
+
+op or(0b0010[4]:rd[4]:rs1[4]:rs2[4])
+
+or.execute = {
+	cpu->gpr[rd] = cpu->gpr[rs1] | cpu->gpr[rs2];
+}
+or.disasm = {
+	sprintf(s, "or r%d, r%d, r%d", rd, rs1, rs2);
+}
+
+/*****and instruction******/
+
+op and(0b0011[4]:rd[4]:rs1[4]:rs2[4])
+
+and.execute = {
+	cpu->gpr[rd] = cpu->gpr[rs1] & cpu->gpr[rs2];
+}
+
+and.disasm = {
+	sprintf(s, "and r%d, r%d, r%d", rd, rs1, rs2);
+}
+
+/*****not instruction******/
+
+op not(0b0100[4]:rd[4]:rs[4]:?[4])
+
+not.execute = {
+	cpu->gpr[rd] = ~cpu->gpr[rs];
+}
+
+not.disasm = {
+	sprintf(s, "not r%d, r%d", rd, rs);
+}
+
+/*****shl instruction******/
+
+op shlx(0b0101[4]:rd[4]:rs[4]:shamt[4]) // shl is a GenISSLib keyword !
+
+shlx.execute = {
+	cpu->gpr[rd] = cpu->gpr[rs] << shamt;
+}
+
+shlx.disasm = {
+	sprintf(s, "shl r%d, r%d, %d", rd, rs, shamt);
+}
+
+/*****shr instruction******/
+
+op shrx(0b0110[4]:rd[4]:rs[4]:shamt[4]) // shr is a GenISSLib keyword !
+
+shrx.execute = {
+	cpu->gpr[rd] = cpu->gpr[rs] >> shamt;
+}
+shrx.disasm = {
+	sprintf(s, "shr r%d, r%d, %d", rd, rs, shamt);
+}
+
+/*****load instruction******/
+
+op load(0b0111[4]:rd[4]:base[4]:sext<16> index[4])
+
+load.execute = {
+	cpu->gpr[rd] = cpu->mem_read(cpu->gpr[base] + index);
+}
+
+load.disasm = {
+	sprintf(s, "load  r%d, r%d, %d", rd, base, index);
+}
+
+/*****store instruction******/
+
+op store(0b1000[4]:rd[4]:base[4]:sext<16> index[4])
+
+store.execute = {
+	cpu->mem_write(cpu->gpr[base] + index, cpu->gpr[rd]);
+}
+
+store.disasm = {
+	sprintf(s, "store  r%d, r%d, %d", rd, base, index);
+}
+
+/*****branch instruction******/
+
+op branch(0b1001[4]:_addr[12])
+
+branch.execute = {
+	cpu->nia = _addr;
+}
+
+branch.disasm = {
+	sprintf(s, "branch 0x%04x", _addr);
+}
+
+/*****bne instruction******/
+
+op bne(0b1010[4]:rs[4]:sext<16> offset[8])
+
+bne.execute = {
+	if(cpu->gpr[rs] != 0)
+		cpu->nia = cpu->cia + offset;
+}
+
+bne.disasm = {
+	sprintf(s, "bne  r%d, %d", rs, offset);
+}
+
+/*****li instruction******/
+
+op li(0b1011[4]:rd[4]:sext<16> immed[8])
+
+li.execute = {
+	cpu->gpr[rd] = immed;
+}
+li.disasm = {
+	sprintf(s, "li  r%d, %d", rd, immed);
+}

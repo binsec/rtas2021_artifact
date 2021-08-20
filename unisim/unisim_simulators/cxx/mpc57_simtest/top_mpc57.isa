@@ -1,0 +1,730 @@
+/*
+ *  Copyright (c) 2017,
+ *  Commissariat a l'Energie Atomique (CEA)
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without modification,
+ *  are permitted provided that the following conditions are met:
+ *
+ *   - Redistributions of source code must retain the above copyright notice, this
+ *     list of conditions and the following disclaimer.
+ *
+ *   - Redistributions in binary form must reproduce the above copyright notice,
+ *     this list of conditions and the following disclaimer in the documentation
+ *     and/or other materials provided with the distribution.
+ *
+ *   - Neither the name of CEA nor the names of its contributors may be used to
+ *     endorse or promote products derived from this software without specific prior
+ *     written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ *  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *  DISCLAIMED.
+ *  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ *  INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ *  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+ *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ *  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Authors: Yves Lhuillier (yves.lhuillier@cea.fr)
+ */
+ 
+namespace mpc57
+
+set addressclass {uint32_t}
+set codetype scalar;
+
+decl {
+#include <iosfwd>
+#include <inttypes.h>
+
+namespace ut { struct CPU; }
+
+namespace mpc57
+{
+  using ut::CPU;
+
+  struct DASMPrint
+  {
+    virtual void Print( std::ostream& sink ) const = 0;
+    friend std::ostream& operator << (std::ostream& sink, DASMPrint const& dap)
+    {
+      dap.Print(sink);
+      return sink;
+    }
+  };
+
+  struct GPRPrint : public DASMPrint
+  {
+    GPRPrint(unsigned _reg) : reg(_reg) {} unsigned reg;
+    void Print( std::ostream& sink ) const;
+  };
+  
+  struct HexPrint : public DASMPrint
+  {
+    HexPrint(uint32_t _num) : num(_num) {} unsigned num;
+    void Print( std::ostream& sink ) const;
+  };
+  
+}
+}
+
+impl {
+  /* PPC specifics ? */
+#include <unisim/util/likely/likely.hh>
+#include <arch.hh>
+#include <testutils.hh>
+#include <iostream>
+#include <unisim/component/cxx/processor/powerpc/isa/lsp/lsp.hh>
+#include <unisim/component/cxx/processor/powerpc/isa/book_i/fixed_point/integer.hh>
+
+namespace mpc57
+{
+  typedef ut::BOOL  BOOL;
+  typedef ut::U8    U8;
+  typedef ut::U16   U16;
+  typedef ut::U32   U32;
+  typedef ut::U64   U64;
+  typedef ut::S8    S8;
+  typedef ut::S16   S16;
+  typedef ut::S32   S32;
+  typedef ut::S64   S64;
+
+  typedef ut::UINT UINT;
+  typedef ut::SINT SINT;
+  typedef ut::ADDRESS ADDRESS;
+  
+  using ut::CPU;
+  //  using ut::SignedAdd32;
+  using ut::XER;
+  using ut::LR;
+  using ut::CTR;
+  using ut::CR;
+  using ut::ADDRESS;
+  using ut::Flags;
+  using ut::RN_NEAREST;
+  using ut::RN_ZERO;
+  using ut::RN_UP;
+  using ut::RN_DOWN;
+  using ut::SoftFloat;
+  using ut::SoftHalfFloat;
+
+
+  using ut::GenSPEFSCR_FINV;
+  using ut::GenSPEFSCR_FOVF;
+  using ut::GenSPEFSCR_FUNF;
+  using ut::GenSPEFSCR_FINXS;
+  using ut::HasSPEFSCR_InvalidInput;
+  using ut::GenSPEFSCR_FG;
+  using ut::GenSPEFSCR_FX;
+  using ut::DoesSPEFSCR_TriggerException;
+  using ut::GenSPEFSCR_FG;
+
+  inline char const* LSP_HS_EVEN_ODD( unsigned n ) { return "<?>"; }
+  inline char const* LSP_TY( unsigned n ) { return "<?>"; }
+  inline char const* LSP_ACC( unsigned n ) { return "<?>"; }
+
+  void GPRPrint::Print( std::ostream& sink ) const { sink << "r" << std::dec << reg; }
+
+  void HexPrint::Print( std::ostream& sink ) const { sink << "0x" << std::hex << num << std::dec; }
+  
+  struct CRPrint : public DASMPrint
+  {
+    CRPrint(unsigned _reg) : reg(_reg) {} unsigned reg;
+    void Print( std::ostream& sink ) const { sink << "cr" << std::dec << reg; }
+  };
+  
+  struct CondPrint : public DASMPrint
+  {
+    CondPrint(unsigned _crb, bool _expect = true) : crb(_crb), expect(_expect) {} unsigned crb; bool expect;
+    void Print( std::ostream& sink ) const
+    {
+      char const* condnames[] = {"ge","le","ne","ns","lt","gt","eq","so"};
+      char const* condname = condnames[(crb&3)|(expect?4:0)];
+      if (crb >= 4)
+        sink << "4*" << CRPrint(crb>>2) << '+';
+      sink << condname;
+    }
+  };
+  
+  struct EAPrint : public DASMPrint
+  {
+    EAPrint(int32_t _idx, unsigned _reg) : idx(_idx), reg(_reg) {} int32_t idx; unsigned reg;
+    void Print( std::ostream& sink ) const
+    {
+      sink << std::dec << idx << '(';
+      if (reg)
+        sink << GPRPrint(reg);
+      else
+        sink << '0';
+      sink << ')';
+    }
+  };
+  
+  template <typename T>
+  int32_t scaled_immediate( T s11 )
+  {
+    int scale = (s11 >> 5) & 24;
+    int32_t msk = (s11 << 21) >> 31;
+    return (((s11 ^ msk) & 255) << scale) ^ msk;
+  }
+
+  inline uint32_t Mask(uint32_t mb, uint32_t me)
+  {
+    return (mb > me) ? ~(((uint32_t) -1 >> mb) ^ ((me >= 31) ? 0 : (uint32_t) -1 >> (me + 1))) : (((uint32_t)-1 >> mb) ^ ((me >= 31) ? 0 : (uint32_t) -1 >> (me + 1)));
+  }
+  
+  using unisim::component::cxx::processor::powerpc::LSP_HS_UPPER_LOWER_EXCHANGED;
+  using unisim::component::cxx::processor::powerpc::Mask64;
+}
+
+#if defined(__GNUC__) && ((__GNUC__ >= 2 && __GNUC_MINOR__ >= 96) || __GNUC__ >= 3)
+#if defined(likely)
+#undef likely
+#endif
+
+#if defined(unlikely)
+#undef unlikely
+#endif
+
+#define likely(x)       __builtin_expect(cpu->Cond(x),1)
+#define evenly(x)       (cpu->Cond(x))
+#define unlikely(x)     __builtin_expect(cpu->Cond(x),0)
+#else
+#define likely(x)       (cpu->Cond(x))
+#define evenly(x)       (cpu->Cond(x))
+#define unlikely(x)     (cpu->Cond(x))
+#endif
+
+}
+
+action {bool} execute({CPU *} {cpu}) {
+  throw ut::Untestable("not implemented");
+  return false;
+}
+
+action {void} disasm({CPU *} {cpu}, {std::ostream&} {os}) {
+	os << "???";
+}
+
+action {void} update_esr_st({CPU *} {cpu}) {
+}
+
+action {void} update_esr_spv({CPU *} {cpu}) {
+}
+
+action {bool} donttest() const {
+  return false;
+}
+
+/* Book I: Power ISA User Instruction Set Architecture */
+/* Fixed-point */
+include "unisim/component/cxx/processor/powerpc/isa/book_i/fixed_point/add.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_i/fixed_point/addc.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_i/fixed_point/adde.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_i/fixed_point/addme.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_i/fixed_point/addze.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_i/fixed_point/and.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_i/fixed_point/andc.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_i/fixed_point/cmp.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_i/fixed_point/cmpl.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_i/fixed_point/cntlzw.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_i/fixed_point/divw_sat.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_i/fixed_point/divwu_sat.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_i/fixed_point/eqv.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_i/fixed_point/extsb.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_i/fixed_point/extsh.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_i/fixed_point/isel.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_i/fixed_point/lbzux.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_i/fixed_point/lbzx.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_i/fixed_point/lhaux.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_i/fixed_point/lhax.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_i/fixed_point/lhbrx.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_i/fixed_point/lhzux.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_i/fixed_point/lhzx.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_i/fixed_point/lwbrx.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_i/fixed_point/lwzux.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_i/fixed_point/lwzx.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_i/fixed_point/mcrxr.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_i/fixed_point/mfcr.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_i/fixed_point/mtcrf.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_i/fixed_point/mulhw.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_i/fixed_point/mulhwu.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_i/fixed_point/mullw.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_i/fixed_point/nand.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_i/fixed_point/neg.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_i/fixed_point/nor.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_i/fixed_point/or.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_i/fixed_point/orc.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_i/fixed_point/slw.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_i/fixed_point/sraw.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_i/fixed_point/srawi.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_i/fixed_point/srw.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_i/fixed_point/stbux.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_i/fixed_point/stbx.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_i/fixed_point/sthbrx.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_i/fixed_point/sthux.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_i/fixed_point/sthx.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_i/fixed_point/stwbrx.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_i/fixed_point/stwux.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_i/fixed_point/stwx.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_i/fixed_point/subf.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_i/fixed_point/subfc.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_i/fixed_point/subfe.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_i/fixed_point/subfme.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_i/fixed_point/subfze.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_i/fixed_point/tw.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_i/fixed_point/xor.isa"
+/* Embedded floating-point */
+include "unisim/component/cxx/processor/powerpc/isa/book_i/efp/efs/efsabs.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_i/efp/efs/efsadd.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_i/efp/efs/efscfh.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_i/efp/efs/efscfsf.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_i/efp/efs/efscfsi.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_i/efp/efs/efscfuf.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_i/efp/efs/efscfui.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_i/efp/efs/efscmpeq.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_i/efp/efs/efscmpgt.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_i/efp/efs/efscmplt.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_i/efp/efs/efscth.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_i/efp/efs/efsctsf.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_i/efp/efs/efsctsi.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_i/efp/efs/efsctsiz.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_i/efp/efs/efsctuf.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_i/efp/efs/efsctui.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_i/efp/efs/efsctuiz.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_i/efp/efs/efsdiv.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_i/efp/efs/efsmadd.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_i/efp/efs/efsmsub.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_i/efp/efs/efsmax.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_i/efp/efs/efsmin.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_i/efp/efs/efsmul.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_i/efp/efs/efsnabs.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_i/efp/efs/efsneg.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_i/efp/efs/efsnmadd.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_i/efp/efs/efsnmsub.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_i/efp/efs/efssqrt.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_i/efp/efs/efssub.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_i/efp/efs/efststeq.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_i/efp/efs/efststgt.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_i/efp/efs/efststlt.isa"
+
+/* Book II: Power ISA Virtual Environment Architecture */
+include "unisim/component/cxx/processor/powerpc/isa/book_ii/dcba.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_ii/dcbf.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_ii/dcbst.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_ii/dcbt.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_ii/dcbtst.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_ii/dcbz.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_ii/icbi.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_ii/icbt.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_ii/lbarx.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_ii/lharx.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_ii/lwarx.isa"
+//include "unisim/component/cxx/processor/powerpc/isa/book_ii/mbar.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_ii/mtmsr.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_ii/stbcx_.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_ii/sthcx_.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_ii/stwcx_.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_ii/wait.isa"
+
+/* Book III-E: Power ISA Operating Environment Architecture - Embedded Environment */
+include "unisim/component/cxx/processor/powerpc/isa/book_iii_e/dcbi.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_iii_e/mfdcr.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_iii_e/mfmsr.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_iii_e/mfspr.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_iii_e/mtspr.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_iii_e/wrtee.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_iii_e/wrteei.isa"
+
+/* Book E : Enhanced PowerPC Architecture */
+include "unisim/component/cxx/processor/powerpc/isa/book_e/msync.isa"
+
+/* Book VLE: Power ISA Operating Environment Architecture - Variable Length Encoding (VLE) Environment */
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/se_add.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/se_addi.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/se_and.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/se_andc.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/se_andi.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/se_bc.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/se_bclri.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/se_bctr.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/se_bgeni.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/se_b.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/se_blr.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/se_bmaski.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/se_bseti.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/se_btsti.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/se_cmp.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/se_cmph.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/se_cmphl.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/se_cmpi.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/se_cmpl.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/se_cmpli.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/se_dnh.isa"
+// se_dni is undocumented
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/se_extsb.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/se_extsh.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/se_extzb.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/se_extzh.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/se_illegal.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/se_isync.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/se_lbz.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/se_lhz.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/se_li.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/se_lwz.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/se_mfar.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/se_mfctr.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/se_mflr.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/se_mr.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/se_mtar.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/se_mtctr.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/se_mtlr.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/se_mullw.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/se_neg.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/se_not.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/se_or.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/se_rfci.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/se_rfdi.isa"
+// se_rfgi is not supported by e200z7
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/se_rfi.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/se_rfmci.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/se_sc.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/se_slw.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/se_slwi.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/se_sraw.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/se_srawi.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/se_srw.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/se_srwi.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/se_stb.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/se_sth.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/se_stw.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/se_sub.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/se_subf.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/se_subi.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/e_add16i.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/e_add2i_.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/e_add2is.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/e_addi.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/e_addic.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/e_and2i_.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/e_and2is_.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/e_andi.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/e_b.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/e_bc.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/e_cmp16i.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/e_cmph.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/e_cmph16i.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/e_cmphl.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/e_cmphl16i.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/e_cmpi.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/e_cmpl16i.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/e_cmpli.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/e_crand.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/e_crandc.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/e_creqv.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/e_crnand.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/e_crnor.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/e_cror.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/e_crorc.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/e_crxor.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/e_dnh.isa"
+// e_dni instruction is undocumented
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/e_lbz.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/e_lbzu.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/e_lha.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/e_lhau.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/e_lhz.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/e_lhzu.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/e_li.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/e_lis.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/e_lmw.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/e_lwz.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/e_lwzu.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/e_mcrf.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/e_mull2i.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/e_mulli.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/e_or2i.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/e_or2is.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/e_ori.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/e_rlw.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/e_rlwi.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/e_rlwimi.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/e_rlwinm.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/e_sc.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/e_slwi.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/e_srwi.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/e_stb.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/e_stbu.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/e_sth.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/e_sthu.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/e_stmw.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/e_stw.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/e_stwu.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/e_subfic.isa"
+include "unisim/component/cxx/processor/powerpc/isa/book_vle/e_xori.isa"
+
+/* Lightweight Signal Processing APU (LSP APU) */
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zabsw.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zabsws.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zaddd.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zadddss.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zadddus.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zaddhesw.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zaddheuw.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zaddhosw.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zaddhouw.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zaddwgsf.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zaddwgsi.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zaddwgui.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zaddwss.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zaddwus.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zbrminc.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zcircinc.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zcntlsw.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zdivwsf.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zldd.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zlddx.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zldh.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zldhx.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zldw.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zldwx.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zlhgwsf.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zlhgwsfx.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zlhhe.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zlhhex.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zlhhos.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zlhhosx.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zlhhou.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zlhhoux.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zlhhsplat.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zlhhsplatx.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zlwgsfd.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zlwgsfdx.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zlwhed.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zlwhedx.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zlwhgwsfd.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zlwhgwsfdx.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zlwh.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zlwhosd.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zlwhosdx.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zlwhoud.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zlwhoudx.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zlwhsplatd.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zlwhsplatdx.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zlwhsplatwd.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zlwhsplatwdx.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zlwhx.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zlww.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zlwwosd.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zlwwosdx.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zlwwx.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zmhg.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zmheogwsmf.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zmhegwsmf.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zmhogwsmf.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zmhias.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zmhi.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zmheosfras.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zmhesfras.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zmhosfras.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zmhsfas.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zmheosfr.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zmhesfr.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zmhosfr.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zmhsf.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zmwgias.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zmwgi.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zmwgsmfr.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zmwgsmf.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zmwlsuis.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zmwlsis.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zmwluia.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zmwluis.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zmwsfras.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zmwsfas.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zmwsfr.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zmwsf.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/znegws.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zpkswgshfrs.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zpkswgswfrs.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zrndwh.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zrndwhss.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zsatsdsw.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zsatsduw.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zsatswsh.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zsatswuh.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zsatswuw.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zsatuduw.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zsatuwsh.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zsatuwsw.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zsatuwuh.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zslwiss.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zslwius.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zslwss.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zslwus.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zstdd.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zstddx.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zstdh.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zstdhx.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zstdw.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zstdwx.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zsthe.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zsthex.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zstho.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zsthox.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zstwhed.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zstwhedx.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zstwh.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zstwhod.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zstwhodx.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zstwhx.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zstww.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zstwwx.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zsubfd.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zsubfdss.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zsubfdus.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zsubfhesw.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zsubfheuw.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zsubfhosw.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zsubfhouw.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zsubfwgsf.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zsubfwgsi.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zsubfwgui.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zsubfwss.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zsubfwus.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zunpkwgsf.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvabsh.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvabshs.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvaddh.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvaddhss.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvaddhus.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvaddhx.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvaddhxss.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvaddih.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvaddsubfh.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvaddsubfhss.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvaddsubfhx.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvaddsubfhxss.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvaddsubfw.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvaddsubfwss.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvaddw.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvaddwss.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvaddwus.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvcmpeqh.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvcmpgths.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvcmpgthu.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvcmplths.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvcmplthu.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvcntlsh.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvcntlzh.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvdotphg.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvdotphgwasmf.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvdotphgwssmf.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvdotphi.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvdotphsfrs.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvdotphsfs.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvdotphxgwasmf.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvmergehih.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvmergehiloh.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvmergelohih.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvmergeloh.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvmhias.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvmhi.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvmhllgwsmf.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvmhsfraahs.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvmhsfranhs.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvmhsfaahs.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvmhsfanhs.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvmhsfras.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvmhsfas.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvmhsfrh.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvmhsfh.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvmhsfr.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvmhsf.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvmhsihs.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvmhuihs.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvmhuih.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvmhulgwsmf.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvmhuugwsmf.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvmhxlgwsmf.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvnegh.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvnegho.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvneghos.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvneghs.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvpkshgwshfrs.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvpkswshfrs.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvpkswshs.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvpkswuhs.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvpkuwuhs.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvrlhi.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvrlh.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvsatshuh.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvsatuhsh.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvselh.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvslhi.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvslh.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvslhiss.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvslhius.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvslhss.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvslhus.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvsplatfih.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvsplatih.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvsrhis.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvsrhiu.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvsrhs.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvsrhu.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvsubfaddh.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvsubfaddhss.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvsubfaddhx.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvsubfaddhxss.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvsubfaddw.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvsubfaddwss.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvsubfh.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvsubfhss.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvsubfhus.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvsubfhx.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvsubfhxss.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvsubfw.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvsubfwss.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvsubfwus.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvsubifh.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvunpkhgwsf.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvunpkhsf.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvunpkhsi.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zvunpkhui.isa"
+include "unisim/component/cxx/processor/powerpc/isa/lsp/zxtrw.isa"
+
+/* Memory Protection Unit (MPU) */
+include "unisim/component/cxx/processor/powerpc/isa/mpu/mpure.isa"
+include "unisim/component/cxx/processor/powerpc/isa/mpu/mpusync.isa"
+include "unisim/component/cxx/processor/powerpc/isa/mpu/mpuwe.isa"
+
+group esr_st(stbux, stbx, sthbrx, sthux, sthx, stwbrx, stwux, stwx, stbcx_, \
+             sthcx_, stwcx_, e_stb, e_stbu, e_sth, e_sthu, e_stmw, e_stw, \
+             e_stwu, se_stb, se_sth, se_stw);
+
+esr_st.update_esr_st = {
+	// CPU::ESR& esr = cpu->GetESR();
+	// esr.Set<CPU::ESR::ST>(1);
+};
+
+group esr_spv(efsabs,efsadd, efscfh, efscfsf, efscfsi, efscfuf, efscfui, \
+             efscmpeq, efscmpgt, efscmplt, efscth, efsctsf, efsctsi, \
+             efsctsiz, efsctuf, efsctui, efsctuiz, efsdiv, efsmadd, \
+             efsmsub, efsmax, efsmin, efsmul, efsnabs, efsneg, efsnmadd, \
+             efsnmsub, efssqrt, efssub, efststeq, efststgt, efststlt);
+
+esr_spv.update_esr_spv = {
+	// CPU::ESR& esr = cpu->GetESR();
+	// esr.Set<CPU::ESR::SPV>(1);
+};
+
+efsmadd.donttest = { return true; };
+efsmsub.donttest = { return true; };
+efsnmadd.donttest = { return true; };
+efsnmsub.donttest = { return true; };
+efssqrt.donttest = { return true; };

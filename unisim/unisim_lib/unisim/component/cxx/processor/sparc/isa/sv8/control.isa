@@ -1,0 +1,1019 @@
+/*
+ *  Copyright (c) 2007-2020,
+ *  Commissariat a l'Energie Atomique (CEA)
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without 
+ *  modification, are permitted provided that the following conditions are met:
+ *
+ *   - Redistributions of source code must retain the above copyright notice, 
+ *     this list of conditions and the following disclaimer.
+ *
+ *   - Redistributions in binary form must reproduce the above copyright notice,
+ *     this list of conditions and the following disclaimer in the documentation
+ *     and/or other materials provided with the distribution.
+ *
+ *   - Neither the name of CEA nor the names of its contributors may be used to
+ *     endorse or promote products derived from this software without specific 
+ *     prior written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
+ *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
+ *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
+ *  ARE DISCLAIMED.
+ *  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY 
+ *  DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES 
+ *  (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; 
+ *  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND 
+ *  ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT 
+ *  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF 
+ *  THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Authors: Yves Lhuillier (yves.lhuillier@cea.fr)
+ */
+
+/* SAVE and RESTORE Instructions */
+
+op save( 0b10[2]:rd[5]:0b111100[6]:rs1[5]:0b0[1]:?[8]:rs2[5] )
+
+save.disasm = {
+  os << "save %r" << rs1 << ", %r" << rs2 << ", %r" << rd;
+}
+
+save.execute = {
+  if( sparcv8.invalidwindow( -1 ) ) { sparcv8.hwtrap( Trap_t::window_overflow ); return; }   
+  uint32_t result = sparcv8.m_gpr[rs1] + sparcv8.m_gpr[rs2];
+  sparcv8.rotate( -1 );
+  sparcv8.m_gpr[rd] = result;
+}
+
+op savei( 0b10[2]:rd[5]:0b111100[6]:rs1[5]:0b1[1]:sext<32> simm13[13] )
+
+savei.disasm = {
+  if( simm13 >= 0 ) os << "save %r" << rs1 << ", " << "0x" << hex << simm13 << ", %r" << rd;
+  else              os << "save %r" << rs1 << ", -" << "0x" << hex << -simm13 << ", %r" << rd;
+}
+
+savei.execute = {
+  if( sparcv8.invalidwindow( -1 ) ) { sparcv8.hwtrap( Trap_t::window_overflow ); return; }   
+  uint32_t result = sparcv8.m_gpr[rs1] + simm13;
+  sparcv8.rotate( -1 );
+  sparcv8.m_gpr[rd] = result;
+}
+
+op restore( 0b10[2]:rd[5]:0b111101[6]:rs1[5]:0b0[1]:?[8]:rs2[5] )
+
+restore.disasm = {
+  os << "restore %r" << rs1 << ", %r" << rs2 << ", %r" << rd;
+}
+
+restore.execute = {
+  if( sparcv8.invalidwindow( +1 ) ) { sparcv8.hwtrap( Trap_t::window_underflow ); return; }
+  uint32_t result = sparcv8.m_gpr[rs1] + sparcv8.m_gpr[rs2];
+  sparcv8.rotate( +1 );
+  sparcv8.m_gpr[rd] = result;
+}
+
+op restorei( 0b10[2]:rd[5]:0b111101[6]:rs1[5]:0b1[1]:sext<32> simm13[13] )
+
+restorei.disasm = {
+  if( simm13 >= 0 ) os << "restore %r" << rs1 << ", " << "0x" << hex << simm13 << ", %r" << rd;
+  else              os << "restore %r" << rs1 << ", -" << "0x" << hex << -simm13 << ", %r" << rd;
+}
+
+restorei.execute = {
+  if( sparcv8.invalidwindow( +1 ) ) { sparcv8.hwtrap( Trap_t::window_underflow ); return; }
+  uint32_t result = sparcv8.m_gpr[rs1] + simm13;
+  sparcv8.rotate( +1 );
+  sparcv8.m_gpr[rd] = result;
+}
+
+/* Branch on Integer Condition Codes Instructions */
+
+op ba( 0b00[2]:annul[1]:0b1000[4]:0b010[3]:shl<2> sext<32> disp22[22] )
+
+ba.disasm = {
+  os << "ba" << (annul ? ",a" : "") << " " << "0x" << hex << pc + disp22;
+}
+
+ba.execute = {
+  sparcv8.m_nnpc = sparcv8.m_pc + disp22;
+  sparcv8.m_annul = annul;
+}
+
+op bn( 0b00[2]:annul[1]:0b0000[4]:0b010[3]:shl<2> sext<32> disp22[22] )
+
+bn.disasm = {
+  os << "bn" << (annul ? ",a" : "") << " " << "0x" << hex << pc + disp22;
+}
+
+bn.execute = {
+  sparcv8.m_annul = annul;
+}
+
+op bne( 0b00[2]:annul[1]:0b1001[4]:0b010[3]:shl<2> sext<32> disp22[22] )
+
+bne.disasm = {
+  os << "bne" << (annul ? ",a" : "") << " " << "0x" << hex << pc + disp22;
+}
+
+bne.execute = {
+  if( sparcv8.condne() )
+  { sparcv8.m_nnpc = sparcv8.m_pc + disp22; }
+  else
+  { sparcv8.m_annul = annul; }
+}
+
+op be( 0b00[2]:annul[1]:0b0001[4]:0b010[3]:shl<2> sext<32> disp22[22] )
+
+be.disasm = {
+  os << "be" << (annul ? ",a" : "") << " " << "0x" << hex << pc + disp22;
+}
+
+be.execute = {
+  if( sparcv8.conde() )
+  { sparcv8.m_nnpc = sparcv8.m_pc + disp22; }
+  else
+  { sparcv8.m_annul = annul; }
+}
+
+op bg( 0b00[2]:annul[1]:0b1010[4]:0b010[3]:shl<2> sext<32> disp22[22] )
+
+bg.disasm = {
+  os << "bg" << (annul ? ",a" : "") << " " << "0x" << hex << pc + disp22;
+}
+
+bg.execute = {
+  if( sparcv8.condg() )
+  { sparcv8.m_nnpc = sparcv8.m_pc + disp22; }
+  else
+  { sparcv8.m_annul = annul; }
+}
+
+op ble( 0b00[2]:annul[1]:0b0010[4]:0b010[3]:shl<2> sext<32> disp22[22] )
+
+ble.disasm = {
+  os << "ble" << (annul ? ",a" : "") << " " << "0x" << hex << pc + disp22;
+}
+
+ble.execute = {
+  if( sparcv8.condle() )
+  { sparcv8.m_nnpc = sparcv8.m_pc + disp22; }
+  else
+  { sparcv8.m_annul = annul; }
+}
+
+op bge( 0b00[2]:annul[1]:0b1011[4]:0b010[3]:shl<2> sext<32> disp22[22] )
+
+bge.disasm = {
+  os << "bge" << (annul ? ",a" : "") << " " << "0x" << hex << pc + disp22;
+}
+
+bge.execute = {
+  if( sparcv8.condge() )
+  { sparcv8.m_nnpc = sparcv8.m_pc + disp22; }
+  else
+  { sparcv8.m_annul = annul; }
+}
+
+op bl( 0b00[2]:annul[1]:0b0011[4]:0b010[3]:shl<2> sext<32> disp22[22] )
+
+bl.disasm = {
+  os << "bl" << (annul ? ",a" : "") << " " << "0x" << hex << pc + disp22;
+}
+
+bl.execute = {
+  if( sparcv8.condl() )
+  { sparcv8.m_nnpc = sparcv8.m_pc + disp22; }
+  else
+  { sparcv8.m_annul = annul; }
+}
+
+op bgu( 0b00[2]:annul[1]:0b1100[4]:0b010[3]:shl<2> sext<32> disp22[22] )
+
+bgu.disasm = {
+  os << "bgu" << (annul ? ",a" : "") << " " << "0x" << hex << pc + disp22;
+}
+
+bgu.execute = {
+  if( sparcv8.condgu() )
+  { sparcv8.m_nnpc = sparcv8.m_pc + disp22; }
+  else
+  { sparcv8.m_annul = annul; }
+}
+
+op bleu( 0b00[2]:annul[1]:0b0100[4]:0b010[3]:shl<2> sext<32> disp22[22] )
+
+bleu.disasm = {
+  os << "bleu" << (annul ? ",a" : "") << " " << "0x" << hex << pc + disp22;
+}
+
+bleu.execute = {
+  if( sparcv8.condleu() )
+  { sparcv8.m_nnpc = sparcv8.m_pc + disp22; }
+  else
+  { sparcv8.m_annul = annul; }
+}
+
+op bcc( 0b00[2]:annul[1]:0b1101[4]:0b010[3]:shl<2> sext<32> disp22[22] )
+
+bcc.disasm = {
+  os << "bcc" << (annul ? ",a" : "") << " " << "0x" << hex << pc + disp22;
+}
+
+bcc.execute = {
+  if( sparcv8.condcc() )
+  { sparcv8.m_nnpc = sparcv8.m_pc + disp22; }
+  else
+  { sparcv8.m_annul = annul; }
+}
+
+op bcs( 0b00[2]:annul[1]:0b0101[4]:0b010[3]:shl<2> sext<32> disp22[22] )
+
+bcs.disasm = {
+  os << "bcs" << (annul ? ",a" : "") << " " << "0x" << hex << pc + disp22;
+}
+
+bcs.execute = {
+  if( sparcv8.condcs() )
+  { sparcv8.m_nnpc = sparcv8.m_pc + disp22; }
+  else
+  { sparcv8.m_annul = annul; }
+}
+
+op bpos( 0b00[2]:annul[1]:0b1110[4]:0b010[3]:shl<2> sext<32> disp22[22] )
+
+bpos.disasm = {
+  os << "bpos" << (annul ? ",a" : "") << " " << "0x" << hex << pc + disp22;
+}
+
+bpos.execute = {
+  if( sparcv8.condpos() )
+  { sparcv8.m_nnpc = sparcv8.m_pc + disp22; }
+  else
+  { sparcv8.m_annul = annul; }
+}
+
+op bneg( 0b00[2]:annul[1]:0b0110[4]:0b010[3]:shl<2> sext<32> disp22[22] )
+
+bneg.disasm = {
+  os << "bneg" << (annul ? ",a" : "") << " " << "0x" << hex << pc + disp22;
+}
+
+bneg.execute = {
+  if( sparcv8.condneg() )
+  { sparcv8.m_nnpc = sparcv8.m_pc + disp22; }
+  else
+  { sparcv8.m_annul = annul; }
+}
+
+op bvc( 0b00[2]:annul[1]:0b1111[4]:0b010[3]:shl<2> sext<32> disp22[22] )
+
+bvc.disasm = {
+  os << "bvc" << (annul ? ",a" : "") << " " << "0x" << hex << pc + disp22;
+}
+
+bvc.execute = {
+  if( sparcv8.condvc() )
+  { sparcv8.m_nnpc = sparcv8.m_pc + disp22; }
+  else
+  { sparcv8.m_annul = annul; }
+}
+
+op bvs( 0b00[2]:annul[1]:0b0111[4]:0b010[3]:shl<2> sext<32> disp22[22] )
+
+bvs.disasm = {
+  os << "bvs" << (annul ? ",a" : "") << " " << "0x" << hex << pc + disp22;
+}
+
+bvs.execute = {
+  if( sparcv8.condvs() )
+  { sparcv8.m_nnpc = sparcv8.m_pc + disp22; }
+  else
+  { sparcv8.m_annul = annul; }
+}
+
+/* Branch on Floating-point Condition Codes Instructions */
+
+op fba( 0b00[2]:annul[1]:0b1000[4]:0b110[3]:shl<2> sext<32> disp22[22] )
+
+fba.disasm = {
+  os << "fba" << (annul ? ",a" : "") << " " << "0x" << hex << pc + disp22;
+}
+
+fba.execute = {
+  sparcv8.m_nnpc = sparcv8.m_pc + disp22;
+  sparcv8.m_annul = annul;
+}
+
+op fbn( 0b00[2]:annul[1]:0b0000[4]:0b110[3]:shl<2> sext<32> disp22[22] )
+
+fbn.disasm = {
+  os << "fbn" << (annul ? ",a" : "") << " " << "0x" << hex << pc + disp22;
+}
+
+fbn.execute = {
+  sparcv8.m_annul = annul;
+}
+
+op fbu( 0b00[2]:annul[1]:0b0111[4]:0b110[3]:shl<2> sext<32> disp22[22] )
+
+fbu.disasm = {
+  os << "fbu" << (annul ? ",a" : "") << " " << "0x" << hex << pc + disp22;
+}
+
+fbu.execute = {
+  if( sparcv8.fcondu() )
+  { sparcv8.m_nnpc = sparcv8.m_pc + disp22; }
+  else
+  { sparcv8.m_annul = annul; }
+}
+
+op fbg( 0b00[2]:annul[1]:0b0110[4]:0b110[3]:shl<2> sext<32> disp22[22] )
+
+fbg.disasm = {
+  os << "fbg" << (annul ? ",a" : "") << " " << "0x" << hex << pc + disp22;
+}
+
+fbg.execute = {
+  if( sparcv8.fcondg() )
+  { sparcv8.m_nnpc = sparcv8.m_pc + disp22; }
+  else
+  { sparcv8.m_annul = annul; }
+}
+
+op fbug( 0b00[2]:annul[1]:0b0101[4]:0b110[3]:shl<2> sext<32> disp22[22] )
+
+fbug.disasm = {
+  os << "fbug" << (annul ? ",a" : "") << " " << "0x" << hex << pc + disp22;
+}
+
+fbug.execute = {
+  if( sparcv8.fcondug() )
+  { sparcv8.m_nnpc = sparcv8.m_pc + disp22; }
+  else
+  { sparcv8.m_annul = annul; }
+}
+
+op fbl( 0b00[2]:annul[1]:0b0100[4]:0b110[3]:shl<2> sext<32> disp22[22] )
+
+fbl.disasm = {
+  os << "fbl" << (annul ? ",a" : "") << " " << "0x" << hex << pc + disp22;
+}
+
+fbl.execute = {
+  if( sparcv8.fcondl() )
+  { sparcv8.m_nnpc = sparcv8.m_pc + disp22; }
+  else
+  { sparcv8.m_annul = annul; }
+}
+
+op fbul( 0b00[2]:annul[1]:0b0011[4]:0b110[3]:shl<2> sext<32> disp22[22] )
+
+fbul.disasm = {
+  os << "fbul" << (annul ? ",a" : "") << " " << "0x" << hex << pc + disp22;
+}
+
+fbul.execute = {
+  if( sparcv8.fcondul() )
+  { sparcv8.m_nnpc = sparcv8.m_pc + disp22; }
+  else
+  { sparcv8.m_annul = annul; }
+}
+
+op fblg( 0b00[2]:annul[1]:0b0010[4]:0b110[3]:shl<2> sext<32> disp22[22] )
+
+fblg.disasm = {
+  os << "fblg" << (annul ? ",a" : "") << " " << "0x" << hex << pc + disp22;
+}
+
+fblg.execute = {
+  if( sparcv8.fcondlg() )
+  { sparcv8.m_nnpc = sparcv8.m_pc + disp22; }
+  else
+  { sparcv8.m_annul = annul; }
+}
+
+op fbne( 0b00[2]:annul[1]:0b0001[4]:0b110[3]:shl<2> sext<32> disp22[22] )
+
+fbne.disasm = {
+  os << "fbne" << (annul ? ",a" : "") << " " << "0x" << hex << pc + disp22;
+}
+
+fbne.execute = {
+  if( sparcv8.fcondne() )
+  { sparcv8.m_nnpc = sparcv8.m_pc + disp22; }
+  else
+  { sparcv8.m_annul = annul; }
+}
+
+op fbe( 0b00[2]:annul[1]:0b1001[4]:0b110[3]:shl<2> sext<32> disp22[22] )
+
+fbe.disasm = {
+  os << "fbe" << (annul ? ",a" : "") << " " << "0x" << hex << pc + disp22;
+}
+
+fbe.execute = {
+  if( sparcv8.fconde() )
+  { sparcv8.m_nnpc = sparcv8.m_pc + disp22; }
+  else
+  { sparcv8.m_annul = annul; }
+}
+
+op fbue( 0b00[2]:annul[1]:0b1010[4]:0b110[3]:shl<2> sext<32> disp22[22] )
+
+fbue.disasm = {
+  os << "fbue" << (annul ? ",a" : "") << " " << "0x" << hex << pc + disp22;
+}
+
+fbue.execute = {
+  if( sparcv8.fcondue() )
+  { sparcv8.m_nnpc = sparcv8.m_pc + disp22; }
+  else
+  { sparcv8.m_annul = annul; }
+}
+
+op fbge( 0b00[2]:annul[1]:0b1011[4]:0b110[3]:shl<2> sext<32> disp22[22] )
+
+fbge.disasm = {
+  os << "fbge" << (annul ? ",a" : "") << " " << "0x" << hex << pc + disp22;
+}
+
+fbge.execute = {
+  if( sparcv8.fcondge() )
+  { sparcv8.m_nnpc = sparcv8.m_pc + disp22; }
+  else
+  { sparcv8.m_annul = annul; }
+}
+
+op fbuge( 0b00[2]:annul[1]:0b1100[4]:0b110[3]:shl<2> sext<32> disp22[22] )
+
+fbuge.disasm = {
+  os << "fbuge" << (annul ? ",a" : "") << " " << "0x" << hex << pc + disp22;
+}
+
+fbuge.execute = {
+  if( sparcv8.fconduge() )
+  { sparcv8.m_nnpc = sparcv8.m_pc + disp22; }
+  else
+  { sparcv8.m_annul = annul; }
+}
+
+op fble( 0b00[2]:annul[1]:0b1101[4]:0b110[3]:shl<2> sext<32> disp22[22] )
+
+fble.disasm = {
+  os << "fble" << (annul ? ",a" : "") << " " << "0x" << hex << pc + disp22;
+}
+
+fble.execute = {
+  if( sparcv8.fcondle() )
+  { sparcv8.m_nnpc = sparcv8.m_pc + disp22; }
+  else
+  { sparcv8.m_annul = annul; }
+}
+
+op fbule( 0b00[2]:annul[1]:0b1110[4]:0b110[3]:shl<2> sext<32> disp22[22] )
+
+fbule.disasm = {
+  os << "fbule" << (annul ? ",a" : "") << " " << "0x" << hex << pc + disp22;
+}
+
+fbule.execute = {
+  if( sparcv8.fcondule() )
+  { sparcv8.m_nnpc = sparcv8.m_pc + disp22; }
+  else
+  { sparcv8.m_annul = annul; }
+}
+
+op fbo( 0b00[2]:annul[1]:0b1111[4]:0b110[3]:shl<2> sext<32> disp22[22] )
+
+fbo.disasm = {
+  os << "fbo" << (annul ? ",a" : "") << " " << "0x" << hex << pc + disp22;
+}
+
+fbo.execute = {
+  if( sparcv8.fcondo() )
+  { sparcv8.m_nnpc = sparcv8.m_pc + disp22; }
+  else
+  { sparcv8.m_annul = annul; }
+}
+
+/* Branch on Coprocessor Condition Codes Instructions */
+
+op cba( 0b00[2]:annul[1]:0b1000[4]:0b111[3]:shl<2> sext<32> disp22[22] )
+
+cba.disasm = {
+  os << "cba" << (annul ? ",a" : "") << " " << "0x" << hex << pc + disp22;
+}
+
+op cbn( 0b00[2]:annul[1]:0b0000[4]:0b111[3]:shl<2> sext<32> disp22[22] )
+
+cbn.disasm = {
+  os << "cbn" << (annul ? ",a" : "") << " " << "0x" << hex << pc + disp22;
+}
+
+op cb3( 0b00[2]:annul[1]:0b0111[4]:0b111[3]:shl<2> sext<32> disp22[22] )
+
+cb3.disasm = {
+  os << "cb3" << (annul ? ",a" : "") << " " << "0x" << hex << pc + disp22;
+}
+
+op cb2( 0b00[2]:annul[1]:0b0110[4]:0b111[3]:shl<2> sext<32> disp22[22] )
+
+cb2.disasm = {
+  os << "cb2" << (annul ? ",a" : "") << " " << "0x" << hex << pc + disp22;
+}
+
+op cb23( 0b00[2]:annul[1]:0b0101[4]:0b111[3]:shl<2> sext<32> disp22[22] )
+
+cb23.disasm = {
+  os << "cb23" << (annul ? ",a" : "") << " " << "0x" << hex << pc + disp22;
+}
+
+op cb1( 0b00[2]:annul[1]:0b0100[4]:0b111[3]:shl<2> sext<32> disp22[22] )
+
+cb1.disasm = {
+  os << "cb1" << (annul ? ",a" : "") << " " << "0x" << hex << pc + disp22;
+}
+
+op cb13( 0b00[2]:annul[1]:0b0011[4]:0b111[3]:shl<2> sext<32> disp22[22] )
+
+cb13.disasm = {
+  os << "cb13" << (annul ? ",a" : "") << " " << "0x" << hex << pc + disp22;
+}
+
+op cb12( 0b00[2]:annul[1]:0b0010[4]:0b111[3]:shl<2> sext<32> disp22[22] )
+
+cb12.disasm = {
+  os << "cb12" << (annul ? ",a" : "") << " " << "0x" << hex << pc + disp22;
+}
+
+op cb123( 0b00[2]:annul[1]:0b0001[4]:0b111[3]:shl<2> sext<32> disp22[22] )
+
+cb123.disasm = {
+  os << "cb123" << (annul ? ",a" : "") << " " << "0x" << hex << pc + disp22;
+}
+
+op cb0( 0b00[2]:annul[1]:0b1001[4]:0b111[3]:shl<2> sext<32> disp22[22] )
+
+cb0.disasm = {
+  os << "cb0" << (annul ? ",a" : "") << " " << "0x" << hex << pc + disp22;
+}
+
+op cb03( 0b00[2]:annul[1]:0b1010[4]:0b111[3]:shl<2> sext<32> disp22[22] )
+
+cb03.disasm = {
+  os << "cb03" << (annul ? ",a" : "") << " " << "0x" << hex << pc + disp22;
+}
+
+op cb02( 0b00[2]:annul[1]:0b1011[4]:0b111[3]:shl<2> sext<32> disp22[22] )
+
+cb02.disasm = {
+  os << "cb02" << (annul ? ",a" : "") << " " << "0x" << hex << pc + disp22;
+}
+
+op cb023( 0b00[2]:annul[1]:0b1100[4]:0b111[3]:shl<2> sext<32> disp22[22] )
+
+cb023.disasm = {
+  os << "cb023" << (annul ? ",a" : "") << " " << "0x" << hex << pc + disp22;
+}
+
+op cb01( 0b00[2]:annul[1]:0b1101[4]:0b111[3]:shl<2> sext<32> disp22[22] )
+
+cb01.disasm = {
+  os << "cb01" << (annul ? ",a" : "") << " " << "0x" << hex << pc + disp22;
+}
+
+op cb013( 0b00[2]:annul[1]:0b1110[4]:0b111[3]:shl<2> sext<32> disp22[22] )
+
+cb013.disasm = {
+  os << "cb013" << (annul ? ",a" : "") << " " << "0x" << hex << pc + disp22;
+}
+
+op cb012( 0b00[2]:annul[1]:0b1111[4]:0b111[3]:shl<2> sext<32> disp22[22] )
+
+cb012.disasm = {
+  os << "cb012" << (annul ? ",a" : "") << " " << "0x" << hex << pc + disp22;
+}
+
+/* Call and Link Instructions */
+
+op call( 0b01[2]:disp30[30] )
+
+call.disasm = {
+  os << "call " << "0x" << hex << 4*disp30;
+}
+
+call.execute = {
+  uint32_t address = sparcv8.m_pc + 4*disp30;
+  sparcv8.jmp( address, 15 );
+}
+
+/* Jump and Link Instructions */
+
+op jmpl( 0b10[2]:rd[5]:0b111000[6]:rs1[5]:0b0[1]:asi[8]:rs2[5] )
+
+jmpl.disasm = {
+  os << "jmpl %r" << rs1 << " + %r" << rs2 << ", %r" << rd;
+}
+
+jmpl.execute = {
+  sparcv8.jmp( sparcv8.m_gpr[rs1] + sparcv8.m_gpr[rs2], rd );
+}
+
+op jmpli( 0b10[2]:rd[5]:0b111000[6]:rs1[5]:0b1[1]:sext<32> simm13[13] )
+
+jmpli.disasm = {
+  if( simm13 >= 0 ) os << "jmpl %r" << rs1 << " + " << "0x" << hex << simm13 << ", %r" << rd;
+  else              os << "jmpl %r" << rs1 << " - " << "0x" << hex << -simm13 << ", %r" << rd;
+}
+
+jmpli.execute = {
+  sparcv8.jmp( sparcv8.m_gpr[rs1] + simm13, rd );
+}
+
+/* Return from Trap Instructions */
+
+op rett( 0b10[2]:?[5]:0b111001[6]:rs1[5]:0b0[1]:asi[8]:rs2[5] )
+
+rett.disasm = {
+  os << "rett %r" << rs1 << " + %r" << rs2;
+}
+
+rett.execute = {
+  if( sparcv8.et() ) {
+    if( sparcv8.super() ) { sparcv8.hwtrap( Trap_t::illegal_instruction ); return; }
+    else                  { sparcv8.hwtrap( Trap_t::privileged_instruction ); return; }
+  } else if( not sparcv8.super() ) {
+    sparcv8.hwtrap( Trap_t::privileged_instruction );
+    sparcv8.m_execute_mode = 0;
+    return;
+  } else if( sparcv8.invalidwindow( +1 ) ) {
+    sparcv8.hwtrap( Trap_t::window_underflow );
+    sparcv8.m_execute_mode = 0;
+    return;
+  }
+  uint32_t address = sparcv8.m_gpr[rs1] + sparcv8.m_gpr[rs2];
+  if( address & 0x3 ) {
+    sparcv8.hwtrap( Trap_t::mem_address_not_aligned );
+    sparcv8.m_execute_mode = 0;
+    return;
+  }
+  sparcv8.et() = 1;
+  sparcv8.m_nnpc = address;
+  sparcv8.rotate( +1 );
+  sparcv8.s() = uint32_t( sparcv8.ps() );
+}
+
+op retti( 0b10[2]:?[5]:0b111001[6]:rs1[5]:0b1[1]:sext<32> simm13[13] )
+
+retti.disasm = {
+  if( simm13 >= 0 ) os << "rett %r" << rs1 << " + " << "0x" << hex << simm13;
+  else              os << "rett %r" << rs1 << " - " << "0x" << hex << -simm13;
+}
+
+retti.execute = {
+  if( sparcv8.et() ) {
+    if( sparcv8.super() ) { sparcv8.hwtrap( Trap_t::illegal_instruction ); return; }
+    else                  { sparcv8.hwtrap( Trap_t::privileged_instruction ); return; }
+  } else if( not sparcv8.super() ) {
+    sparcv8.hwtrap( Trap_t::privileged_instruction );
+    sparcv8.m_execute_mode = 0;
+    return;
+  } else if( sparcv8.invalidwindow( +1 ) ) {
+    sparcv8.hwtrap( Trap_t::window_underflow );
+    sparcv8.m_execute_mode = 0;
+    return;
+  }
+  uint32_t address = sparcv8.m_gpr[rs1] + simm13;
+  if( address & 0x3 ) {
+    sparcv8.hwtrap( Trap_t::mem_address_not_aligned );
+    sparcv8.m_execute_mode = 0;
+    return;
+  }
+  sparcv8.et() = 1;
+  sparcv8.m_nnpc = address;
+  sparcv8.rotate( +1 );
+  sparcv8.s() = uint32_t( sparcv8.ps() );
+}
+
+/* Trap on Integer Condition Codes Instructions */
+
+op ta( 0b10[2]:?[1]:0b1000[4]:0b111010[6]:rs1[5]:0b0[1]:?[8]:rs2[5] )
+
+ta.disasm = {
+  os << "ta %r" << rs1 << " + %r" << rs2;
+}
+
+ta.execute = {
+  sparcv8.swtrap( sparcv8.m_gpr[rs1] + sparcv8.m_gpr[rs2] );
+}
+
+op tai( 0b10[2]:?[1]:0b1000[4]:0b111010[6]:rs1[5]:0b1[1]:?[6]:imm7[7] )
+
+tai.disasm = {
+  os << "ta %r" << rs1 << " + " << "0x" << hex << imm7;
+}
+
+tai.execute = {
+  sparcv8.swtrap( sparcv8.m_gpr[rs1] + imm7 );
+}
+
+op tn( 0b10[2]:?[1]:0b0000[4]:0b111010[6]:rs1[5]:0b0[1]:?[8]:rs2[5] )
+
+tn.disasm = {
+  os << "tn %r" << rs1 << " + %r" << rs2;
+}
+
+tn.execute = {
+}
+
+op tni( 0b10[2]:?[1]:0b0000[4]:0b111010[6]:rs1[5]:0b1[1]:?[6]:imm7[7] )
+
+tni.disasm = {
+  os << "tn %r" << rs1 << " + " << "0x" << hex << imm7;
+}
+
+tni.execute = {
+}
+
+op tne( 0b10[2]:?[1]:0b1001[4]:0b111010[6]:rs1[5]:0b0[1]:?[8]:rs2[5] )
+
+tne.disasm = {
+  os << "tne %r" << rs1 << " + %r" << rs2;
+}
+
+tne.execute = {
+  if( sparcv8.condne() ) sparcv8.swtrap( sparcv8.m_gpr[rs1] + sparcv8.m_gpr[rs2] );
+}
+
+op tnei( 0b10[2]:?[1]:0b1001[4]:0b111010[6]:rs1[5]:0b1[1]:?[6]:imm7[7] )
+
+tnei.disasm = {
+  os << "tne %r" << rs1 << " + " << "0x" << hex << imm7;
+}
+
+tnei.execute = {
+  if( sparcv8.condne() ) sparcv8.swtrap( sparcv8.m_gpr[rs1] + imm7 );
+}
+
+op te( 0b10[2]:?[1]:0b0001[4]:0b111010[6]:rs1[5]:0b0[1]:?[8]:rs2[5] )
+
+te.disasm = {
+  os << "te %r" << rs1 << " + %r" << rs2;
+}
+
+te.execute = {
+  if( sparcv8.conde() ) sparcv8.swtrap( sparcv8.m_gpr[rs1] + sparcv8.m_gpr[rs2] );
+}
+
+op tei( 0b10[2]:?[1]:0b0001[4]:0b111010[6]:rs1[5]:0b1[1]:?[6]:imm7[7] )
+
+tei.disasm = {
+  os << "te %r" << rs1 << " + " << "0x" << hex << imm7;
+}
+
+tei.execute = {
+  if( sparcv8.conde() ) sparcv8.swtrap( sparcv8.m_gpr[rs1] + imm7 );
+}
+
+op tg( 0b10[2]:?[1]:0b1010[4]:0b111010[6]:rs1[5]:0b0[1]:?[8]:rs2[5] )
+
+tg.disasm = {
+  os << "tg %r" << rs1 << " + %r" << rs2;
+}
+
+tg.execute = {
+  if( sparcv8.condg() ) sparcv8.swtrap( sparcv8.m_gpr[rs1] + sparcv8.m_gpr[rs2] );
+}
+
+op tgi( 0b10[2]:?[1]:0b1010[4]:0b111010[6]:rs1[5]:0b1[1]:?[6]:imm7[7] )
+
+tgi.disasm = {
+  os << "tg %r" << rs1 << " + " << "0x" << hex << imm7;
+}
+
+tgi.execute = {
+  if( sparcv8.condg() ) sparcv8.swtrap( sparcv8.m_gpr[rs1] + imm7 );
+}
+
+op tle( 0b10[2]:?[1]:0b0010[4]:0b111010[6]:rs1[5]:0b0[1]:?[8]:rs2[5] )
+
+tle.disasm = {
+  os << "tle %r" << rs1 << " + %r" << rs2;
+}
+
+tle.execute = {
+  if( sparcv8.condle() ) sparcv8.swtrap( sparcv8.m_gpr[rs1] + sparcv8.m_gpr[rs2] );
+}
+
+op tlei( 0b10[2]:?[1]:0b0010[4]:0b111010[6]:rs1[5]:0b1[1]:?[6]:imm7[7] )
+
+tlei.disasm = {
+  os << "tle %r" << rs1 << " + " << "0x" << hex << imm7;
+}
+
+tlei.execute = {
+  if( sparcv8.condle() ) sparcv8.swtrap( sparcv8.m_gpr[rs1] + imm7 );
+}
+
+op tge( 0b10[2]:?[1]:0b1011[4]:0b111010[6]:rs1[5]:0b0[1]:?[8]:rs2[5] )
+
+tge.disasm = {
+  os << "tge %r" << rs1 << " + %r" << rs2;
+}
+
+tge.execute = {
+  if( sparcv8.condge() ) sparcv8.swtrap( sparcv8.m_gpr[rs1] + sparcv8.m_gpr[rs2] );
+}
+
+op tgei( 0b10[2]:?[1]:0b1011[4]:0b111010[6]:rs1[5]:0b1[1]:?[6]:imm7[7] )
+
+tgei.disasm = {
+  os << "tge %r" << rs1 << " + " << "0x" << hex << imm7;
+}
+
+tgei.execute = {
+  if( sparcv8.condge() ) sparcv8.swtrap( sparcv8.m_gpr[rs1] + imm7 );
+}
+
+op tl( 0b10[2]:?[1]:0b0011[4]:0b111010[6]:rs1[5]:0b0[1]:?[8]:rs2[5] )
+
+tl.disasm = {
+  os << "tl %r" << rs1 << " + %r" << rs2;
+}
+
+tl.execute = {
+  if( sparcv8.condl() ) sparcv8.swtrap( sparcv8.m_gpr[rs1] + sparcv8.m_gpr[rs2] );
+}
+
+op tli( 0b10[2]:?[1]:0b0011[4]:0b111010[6]:rs1[5]:0b1[1]:?[6]:imm7[7] )
+
+tli.disasm = {
+  os << "tl %r" << rs1 << " + " << "0x" << hex << imm7;
+}
+
+tli.execute = {
+  if( sparcv8.condl() ) sparcv8.swtrap( sparcv8.m_gpr[rs1] + imm7 );
+}
+
+op tgu( 0b10[2]:?[1]:0b1100[4]:0b111010[6]:rs1[5]:0b0[1]:?[8]:rs2[5] )
+
+tgu.disasm = {
+  os << "tgu %r" << rs1 << " + %r" << rs2;
+}
+
+tgu.execute = {
+  if( sparcv8.condgu() ) sparcv8.swtrap( sparcv8.m_gpr[rs1] + sparcv8.m_gpr[rs2] );
+}
+
+op tgui( 0b10[2]:?[1]:0b1100[4]:0b111010[6]:rs1[5]:0b1[1]:?[6]:imm7[7] )
+
+tgui.disasm = {
+  os << "tgu %r" << rs1 << " + " << "0x" << hex << imm7;
+}
+
+tgui.execute = {
+  if( sparcv8.condgu() ) sparcv8.swtrap( sparcv8.m_gpr[rs1] + imm7 );
+}
+
+op tleu( 0b10[2]:?[1]:0b0100[4]:0b111010[6]:rs1[5]:0b0[1]:?[8]:rs2[5] )
+
+tleu.disasm = {
+  os << "tleu %r" << rs1 << " + %r" << rs2;
+}
+
+tleu.execute = {
+  if( sparcv8.condleu() ) sparcv8.swtrap( sparcv8.m_gpr[rs1] + sparcv8.m_gpr[rs2] );
+}
+
+op tleui( 0b10[2]:?[1]:0b0100[4]:0b111010[6]:rs1[5]:0b1[1]:?[6]:imm7[7] )
+
+tleui.disasm = {
+  os << "tleu %r" << rs1 << " + " << "0x" << hex << imm7;
+}
+
+tleui.execute = {
+  if( sparcv8.condleu() ) sparcv8.swtrap( sparcv8.m_gpr[rs1] + imm7 );
+}
+
+op tcc( 0b10[2]:?[1]:0b1101[4]:0b111010[6]:rs1[5]:0b0[1]:?[8]:rs2[5] )
+
+tcc.disasm = {
+  os << "tcc %r" << rs1 << " + %r" << rs2;
+}
+
+tcc.execute = {
+  if( sparcv8.condcc() ) sparcv8.swtrap( sparcv8.m_gpr[rs1] + sparcv8.m_gpr[rs2] );
+}
+
+op tcci( 0b10[2]:?[1]:0b1101[4]:0b111010[6]:rs1[5]:0b1[1]:?[6]:imm7[7] )
+
+tcci.disasm = {
+  os << "tcc %r" << rs1 << " + " << "0x" << hex << imm7;
+}
+
+tcci.execute = {
+  if( sparcv8.condcc() ) sparcv8.swtrap( sparcv8.m_gpr[rs1] + imm7 );
+}
+
+op tcs( 0b10[2]:?[1]:0b0101[4]:0b111010[6]:rs1[5]:0b0[1]:?[8]:rs2[5] )
+
+tcs.disasm = {
+  os << "tcs %r" << rs1 << " + %r" << rs2;
+}
+
+tcs.execute = {
+  if( sparcv8.condcs() ) sparcv8.swtrap( sparcv8.m_gpr[rs1] + sparcv8.m_gpr[rs2] );
+}
+
+op tcsi( 0b10[2]:?[1]:0b0101[4]:0b111010[6]:rs1[5]:0b1[1]:?[6]:imm7[7] )
+
+tcsi.disasm = {
+  os << "tcs %r" << rs1 << " + " << "0x" << hex << imm7;
+}
+
+tcsi.execute = {
+  if( sparcv8.condcs() ) sparcv8.swtrap( sparcv8.m_gpr[rs1] + imm7 );
+}
+
+op tpos( 0b10[2]:?[1]:0b1110[4]:0b111010[6]:rs1[5]:0b0[1]:?[8]:rs2[5] )
+
+tpos.disasm = {
+  os << "tpos %r" << rs1 << " + %r" << rs2;
+}
+
+tpos.execute = {
+  if( sparcv8.condpos() ) sparcv8.swtrap( sparcv8.m_gpr[rs1] + sparcv8.m_gpr[rs2] );
+}
+
+op tposi( 0b10[2]:?[1]:0b1110[4]:0b111010[6]:rs1[5]:0b1[1]:?[6]:imm7[7] )
+
+tposi.disasm = {
+  os << "tpos %r" << rs1 << " + " << "0x" << hex << imm7;
+}
+
+tposi.execute = {
+  if( sparcv8.condpos() ) sparcv8.swtrap( sparcv8.m_gpr[rs1] + imm7 );
+}
+
+op tneg( 0b10[2]:?[1]:0b0110[4]:0b111010[6]:rs1[5]:0b0[1]:?[8]:rs2[5] )
+
+tneg.disasm = {
+  os << "tneg %r" << rs1 << " + %r" << rs2;
+}
+
+tneg.execute = {
+  if( sparcv8.condneg() ) sparcv8.swtrap( sparcv8.m_gpr[rs1] + sparcv8.m_gpr[rs2] );
+}
+
+op tnegi( 0b10[2]:?[1]:0b0110[4]:0b111010[6]:rs1[5]:0b1[1]:?[6]:imm7[7] )
+
+tnegi.disasm = {
+  os << "tneg %r" << rs1 << " + " << "0x" << hex << imm7;
+}
+
+tnegi.execute = {
+  if( sparcv8.condneg() ) sparcv8.swtrap( sparcv8.m_gpr[rs1] + imm7 );
+}
+
+op tvc( 0b10[2]:?[1]:0b1111[4]:0b111010[6]:rs1[5]:0b0[1]:?[8]:rs2[5] )
+
+tvc.disasm = {
+  os << "tvc %r" << rs1 << " + %r" << rs2;
+}
+
+tvc.execute = {
+  if( sparcv8.condvc() ) sparcv8.swtrap( sparcv8.m_gpr[rs1] + sparcv8.m_gpr[rs2] );
+}
+
+op tvci( 0b10[2]:?[1]:0b1111[4]:0b111010[6]:rs1[5]:0b1[1]:?[6]:imm7[7] )
+
+tvci.disasm = {
+  os << "tvc %r" << rs1 << " + " << "0x" << hex << imm7;
+}
+
+tvci.execute = {
+  if( sparcv8.condvc() ) sparcv8.swtrap( sparcv8.m_gpr[rs1] + imm7 );
+}
+
+op tvs( 0b10[2]:?[1]:0b0111[4]:0b111010[6]:rs1[5]:0b0[1]:?[8]:rs2[5] )
+
+tvs.disasm = {
+  os << "tvs %r" << rs1 << " + %r" << rs2;
+}
+
+tvs.execute = {
+  if( sparcv8.condvs() ) sparcv8.swtrap( sparcv8.m_gpr[rs1] + sparcv8.m_gpr[rs2] );
+}
+
+op tvsi( 0b10[2]:?[1]:0b0111[4]:0b111010[6]:rs1[5]:0b1[1]:?[6]:imm7[7] )
+
+tvsi.disasm = {
+  os << "tvs %r" << rs1 << " + " << "0x" << hex << imm7;
+}
+
+tvsi.execute = {
+  if( sparcv8.condvs() ) sparcv8.swtrap( sparcv8.m_gpr[rs1] + imm7 );
+}
+

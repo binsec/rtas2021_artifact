@@ -1,0 +1,12 @@
+libc/inttypes
+libc/stdio
+libc/stdlib
+libc/time
+std/sstream
+unisim/component/clm/debug
+unisim/component/clm/interfaces
+unisim/component/clm/memory
+unisim/component/clm/utility
+unisim/kernel
+unisim/kernel/clm/engine
+unisim/service/interfaces/memory_injection

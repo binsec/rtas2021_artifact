@@ -1,0 +1,91 @@
+LICENSES:
+---------
+Please read file COPYING
+
+REQUIREMENTS:
+-------------
+external Libraries/tools:
+- g++ (>= 3.x)
+- automake (>= 1.9.6 recommended)
+- autoconf (>= 2.59 recommended)
+- bison (2.3 recommended) or berkeley YACC (1.9 recommended)
+- flex (2.5.4 recommended)
+- libncurses (5.5 recommended)
+- libSDL (1.2.8 recommended)
+- boost (1.34.0 recommended)
+- readline
+- SystemC (>= 2.1)
+	available at http://www.systemc.org
+
+other Unisim packages:
+- unisim-lib
+
+INSTALLATION (Linux/Unix/cygwin):
+---------------------------------
+$ ./configure --with-unisim-tools=path-to-unisim-tools \
+              --with-systemc=path-to-systemc-2.2.0
+$ make
+$ make install
+
+INSTALLATION (Win32):
+---------------------
+
+1) Building SystemC with mingw under Ubuntu 7.04 (it should be similar within windows and mingw)
+------------------------------------------------------------------------------------------------
+
+First install a win32 crosscompiler for ubuntu with the following command:
+$ sudo apt-get install mingw32
+
+Second, patch you SystemC 2.2.0 with https://unisim.org/svn/projects/SystemC/patch-system-2.2.0-i586-mingw32msvc-g++
+running the following command into SystemC root directory:
+$ cat path-to-patch-system-2.2.0-i586-mingw32msvc-g++ | patch -p1
+
+Third, build the SystemC library using a win32 gcc compiler
+$ mkdir objdir
+$ cd objdir
+$ mkdir path-to-install-directory
+$ ../configure --prefix=path-to-install-directory CXX=i586-mingw32msvc-g++ RANLIB=i586-mingw32msvc-ranlib
+$ make
+$ make install
+
+2) Getting external librairies needed to compile for target win32 (i.e. readline, zlib, SDL, boost)
+Take a look at GnuWin32, boost and libsdl using google.
+Here there some useful links for download runtime libraries and development libraries:
+SDL runtime library:
+$ wget http://www.libsdl.org/release/SDL-1.2.11-win32.zip
+SDL development library:
+$ wget http://www.libsdl.org/release/SDL-devel-1.2.11-mingw32.tar.gz
+boost source (only header files are needed to compile FullSystem, you don't need to compile any .lib or .dll file):
+$ wget "http://downloads.sourceforge.net/boost/boost_1_34_0.tar.bz2?modtime=1178933561&big_mirror=0"
+readline runtime library:
+$ wget http://gnuwin32.sourceforge.net/downlinks/readline-bin-zip.php
+readline development library:
+$ wget http://gnuwin32.sourceforge.net/downlinks/readline-lib-zip.php
+zlib runtime+development library:
+$ wget "http://prdownloads.sourceforge.net/libpng/zlib123-dll.zip?download"
+
+3) Compiling unisim-lib for win32
+
+$ ./configure \
+    --build=i686-pc-linux-gnu
+    --host=i586-mingw32msvc
+    --prefix=path-to-install-directory \
+    --with-unisim-lib=path-to-unisim-lib-install-directory \
+    --with-zlib=path-to-zlib-win32 \
+    --with-readline=path-to-readline-win32 \
+    --with-boost=path-to-boost-win32 \
+    --with-sdl=path-to-sdl-win32 \
+    --with-systemc=path-to-systemc-root-install-directory
+    CXXFLAGS="-m32 -O3 -g3"
+$ make
+$ make install
+
+Note: Linux system call translation is disabled for win32. ppcemu and armemu are not built at all.
+
+4) Running a simulator using FullSystem on Win32
+The following dynamic libraries must be present either in the directory where the simulator .exe file is located or in your \Windows\System32:
+- readline5.dll
+- SDL.dll
+- zlib1.dll
+
+See 2) to get these runtime libraries.

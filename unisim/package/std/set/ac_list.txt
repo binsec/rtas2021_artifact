@@ -1,0 +1,1 @@
+AC_CHECK_HEADER([set],, AC_MSG_ERROR([set is missing]))

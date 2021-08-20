@@ -1,0 +1,12 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+
+Name: libieee1666
+Description: A free implementation (BSD license) of IEEE Standard for Standard SystemC(R) Language Reference Manual (IEEE 1666-2011)
+URL: @PACKAGE_URL@
+Version: @PACKAGE_VERSION@
+Requires:
+Libs: -L${libdir} -lieee1666 @LIBS@
+Cflags: -I${includedir}/libieee1666 @LIBIEEE1666_PKG_CONFIG_CXXFLAGS@

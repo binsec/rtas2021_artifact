@@ -1,0 +1,7 @@
+std/iostream
+unisim/component/clm/memory
+unisim/component/clm/processor/ooosim
+unisim/component/clm/utility
+unisim/component/cxx/processor/powerpc
+unisim/kernel/clm/engine
+unisim/kernel/clm/engine/include/unisim

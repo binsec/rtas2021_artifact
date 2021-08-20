@@ -1,0 +1,166 @@
+/*
+ *  Copyright (c) 2009,
+ *  University of Perpignan (UPVD),
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without modification,
+ *  are permitted provided that the following conditions are met:
+ *
+ *   - Redistributions of source code must retain the above copyright notice, this
+ *     list of conditions and the following disclaimer.
+ *
+ *   - Redistributions in binary form must reproduce the above copyright notice,
+ *     this list of conditions and the following disclaimer in the documentation
+ *     and/or other materials provided with the distribution.
+ *
+ *   - Neither the name of UPVD nor the names of its contributors may be used to
+ *     endorse or promote products derived from this software without specific prior
+ *     written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ *  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *  DISCLAIMED.
+ *  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ *  INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ *  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+ *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ *  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Authors: Sylvain Collange (sylvain.collange@univ-perp.fr)
+ */
+
+
+/***************************************************
+
+	BRANCH INSTRUCTIONS
+
+****************************************************/
+
+
+op br( \
+	/*subop*/?[3]:/*?*/?[1]:?[26]:/*marker*/?[2]: \
+	0x1[4]:target_addr[19]:/*dest*/0[7]:/*flow*/1[1]:/*IWidth*/1[1] \
+)
+
+//group br(br_full_normal)
+
+br.disasm = {
+	buffer << "br ";
+	buffer << "0x" << std::setfill('0') << std::setw(6) << std::hex << target_addr << std::dec;
+}
+
+br.execute = {
+	cpu->Branch(target_addr, insn->Mask());
+}
+
+
+op join( \
+	/*subop*/?[3]:/*?*/?[1]:?[26]:/*marker*/?[2]: \
+	0xa[4]:target_addr[19]:/*dest*/0[7]:/*flow*/1[1]:/*IWidth*/1[1] \
+)
+
+//group br(br_full_normal)
+
+join.disasm = {
+	buffer << "join ";
+	buffer << "0x" << std::setfill('0') << std::setw(6) << std::hex << target_addr << std::dec;
+}
+
+join.execute = {
+	assert((target_addr & 3) == 0);	// 64-bit-aligned targets
+	cpu->Meet(target_addr);
+}
+
+
+op prebreak( \
+	/*subop*/?[3]:/*?*/?[1]:?[26]:/*marker*/?[2]: \
+	0x4[4]:target_addr[19]:/*dest*/0[7]:/*flow*/1[1]:/*IWidth*/1[1] \
+)
+
+prebreak.disasm = {
+	buffer << "breakaddr ";
+	buffer << "0x" << std::setfill('0') << std::setw(6) << std::hex << target_addr << std::dec;
+}
+
+prebreak.execute = {
+	cpu->PreBreak(target_addr);	// Never predicated
+}
+
+op fence( \
+	/*?*/0[32]: \
+	0x8[4]:ope[3]:bar[4]:arg[12]:/*dest*/0[7]:/*flow*/1[1]:/*IWidth*/1[1] \
+)
+
+fence.disasm = {
+	buffer << "bar.sync";
+	if(ope != 3 || arg != 0xfff) {
+		buffer << ".???";
+	}
+	buffer << " " << bar;
+}
+
+fence.execute = {
+	cpu->Fence();
+}
+
+
+op ret( \
+	/*subop*/?[3]:/*?*/?[1]:?[26]:/*marker*/?[2]: \
+	0x3[4]:/*target_addr*/0[19]:/*dest*/0[7]:/*flow*/1[1]:/*IWidth*/1[1] \
+)
+
+
+ret.disasm = {
+	buffer << "return";
+}
+
+ret.execute = {
+	cpu->Return(insn->Mask());
+}
+
+op break( \
+	/*subop*/?[3]:/*?*/?[1]:?[26]:/*marker*/?[2]: \
+	0x5[4]:/*target_addr*/0[19]:/*dest*/0[7]:/*flow*/1[1]:/*IWidth*/1[1] \
+)
+
+
+break.disasm = {
+	buffer << "break";
+}
+
+break.execute = {
+	cpu->Break(insn->Mask());
+}
+
+op call( \
+	/*subop*/?[3]:/*?*/?[1]:?[26]:/*marker*/?[2]: \
+	0x2[4]:target_addr[19]:/*dest*/0[7]:/*flow*/1[1]:/*IWidth*/1[1] \
+)
+
+call.disasm = {
+	buffer << "call ";
+	buffer << "0x" << std::setfill('0') << std::setw(6) << std::hex << target_addr << std::dec;
+}
+
+call.execute = {
+	cpu->Call(target_addr);
+}
+
+
+group flow(br, join, prebreak, fence, ret, break, call)
+
+flow.init = {
+	typedef Operation<CONFIG> inherited;
+	inherited::op_type[OpDest] = DT_NONE;
+	inherited::op_type[OpSrc1] = DT_NONE;
+	inherited::op_type[OpSrc2] = DT_NONE;
+	inherited::op_type[OpSrc3] = DT_NONE;
+}
+
+flow.classify = {
+	stats->SetFlow();
+}
+

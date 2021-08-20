@@ -1,0 +1,1 @@
+AC_CHECK_HEADER([istream],, AC_MSG_ERROR([istream is missing]))

@@ -1,0 +1,12 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+
+Name: systemc
+Description: Dependency package for SystemC support in libieee1666
+URL: http://www.unisim-vp.org
+Version: 2.3.1
+Requires: libieee1666
+Libs:
+Cflags:

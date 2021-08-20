@@ -1,0 +1,91 @@
+diff -Naur a/configure b/configure
+--- a/configure	2018-10-13 10:19:07.000000000 +0200
++++ b/configure	2019-08-28 11:05:40.385149964 +0200
+@@ -5022,7 +5022,12 @@
+ EXTRA_CXXFLAGS="-Wall"
+ EXTRA_CFLAGS="-xc"
+ EXTRA_ASFLAGS=""
+-EXTRA_LDFLAGS=""
++case $target in #(
++  *mingw*) :
++    EXTRA_LDFLAGS="-no-undefined" ;; #(
++  *) :
++    EXTRA_LDFLAGS="" ;;
++esac
+ DEBUG_CXXFLAGS="-g"
+ OPT_CXXFLAGS="-O3"
+ EXPLICIT_LPTHREAD="-lpthread"
+diff -Naur a/configure.ac b/configure.ac
+--- a/configure.ac	2018-10-13 10:19:07.000000000 +0200
++++ b/configure.ac	2019-08-28 11:06:20.213147391 +0200
+@@ -125,7 +125,7 @@
+ EXTRA_CXXFLAGS="-Wall"
+ EXTRA_CFLAGS="-xc"
+ EXTRA_ASFLAGS=""
+-EXTRA_LDFLAGS=""
++AS_CASE([$target], [*mingw*], [EXTRA_LDFLAGS="-no-undefined"], [EXTRA_LDFLAGS=""])
+ DEBUG_CXXFLAGS="-g"
+ OPT_CXXFLAGS="-O3"
+ EXPLICIT_LPTHREAD="-lpthread"
+diff -Naur a/src/sysc/kernel/sc_cmnhdr.h b/src/sysc/kernel/sc_cmnhdr.h
+--- a/src/sysc/kernel/sc_cmnhdr.h	2018-10-13 10:19:07.000000000 +0200
++++ b/src/sysc/kernel/sc_cmnhdr.h	2019-08-28 11:07:32.766142704 +0200
+@@ -199,7 +199,7 @@
+ // (deliberately outside of include guards to enable later effect)
+ #if defined(SC_HAS_WINDOWS_H_) && defined(SC_INCLUDE_WINDOWS_H)
+ #  undef SC_HAS_WINDOWS_H_
+-#  include <Windows.h>
++#  include <windows.h>
+ #endif
+ 
+ // $Log: sc_cmnhdr.h,v $
+diff -Naur a/src/sysc/kernel/sc_kernel_ids.h b/src/sysc/kernel/sc_kernel_ids.h
+--- a/src/sysc/kernel/sc_kernel_ids.h	2018-10-13 10:19:07.000000000 +0200
++++ b/src/sysc/kernel/sc_kernel_ids.h	2019-08-28 11:08:08.414140402 +0200
+@@ -200,6 +200,8 @@
+         "a process may not be asynchronously reset while the simulation is not running" )
+ SC_DEFINE_MESSAGE(SC_ID_THROW_IT_WHILE_NOT_RUNNING_  , 574,
+         "throw_it not allowed unless simulation is running " )
++SC_DEFINE_MESSAGE(SC_ID_SC_MAIN_NOT_AVAILABLE_  , 575,
++        "sc_main is not available" )
+ 
+ 
+ /*****************************************************************************
+diff -Naur a/src/sysc/kernel/sc_main_main.cpp b/src/sysc/kernel/sc_main_main.cpp
+--- a/src/sysc/kernel/sc_main_main.cpp	2018-10-13 10:19:07.000000000 +0200
++++ b/src/sysc/kernel/sc_main_main.cpp	2019-08-28 11:09:40.366134461 +0200
+@@ -28,6 +28,7 @@
+ 
+ #define SC_DISABLE_API_VERSION_CHECK // for in-library sc_ver.h inclusion
+ 
++#define SC_INCLUDE_WINDOWS_H
+ #include "sysc/kernel/sc_cmnhdr.h"
+ #include "sysc/kernel/sc_externs.h"
+ #include "sysc/kernel/sc_except.h"
+@@ -41,6 +42,10 @@
+ #include <sstream>
+ #include <vector>
+ 
++#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
++typedef int (*sc_main_type)(int, char **);
++#endif
++
+ namespace sc_core {
+ 
+ extern void pln();
+@@ -86,6 +91,15 @@
+ 
+         // copy array of pointers to keep allocated pointers for later release
+         std::vector<char*> argv_call = argv_copy;
++#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
++        sc_main_type sc_main = (sc_main_type) GetProcAddress(GetModuleHandle(NULL), "sc_main");
++
++        if(!sc_main)
++        {
++            SC_REPORT_ERROR( SC_ID_SC_MAIN_NOT_AVAILABLE_, "" );
++        }
++#endif
++
+         status = sc_main( argc, &argv_call[0] );
+ 
+         // Perform cleanup here

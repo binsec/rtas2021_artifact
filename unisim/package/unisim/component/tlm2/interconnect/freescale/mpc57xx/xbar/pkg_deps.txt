@@ -1,0 +1,3 @@
+unisim/component/tlm2/interconnect/freescale/mpc57xx/xbar/smpu
+unisim/component/tlm2/interconnect/programmable_router
+unisim/util/debug

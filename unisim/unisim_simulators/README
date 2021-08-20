@@ -1,0 +1,19 @@
+UNISIM Simulators is a set of simulators which rely on the UNISIM Library.
+UNISIM Simulators are available for download at http://unisim.org/site/download/start
+
+The source tree is the following:
+
+    * clm: ......................... : The Cycle Level simulators source code is there
+          o ooosim: ................ : A parameterizable Out-of-Order Superscalar processor simulator
+    * tlm: ......................... : The Transactional Level simulators source code is there
+          o armemu: ................ : An ARMv5 instruction set simulator with Linux system call translation capability
+          o arm7tdmi: .............. : A full system simulator of an ARM7TDMI
+          o arm966e_s: ............. : A full system simulator of an ARM966ES
+          o ppcemu: ................ : A 32-bit PowerPC instruction set simulator with Linux system call translation capability
+          o ppcemu_system: ......... : A full system simulator of an MPC7447A/MPC107 (PowerPC) based board with Linux boot capability
+          o embedded_ppc_g4_board .. : A full system simulator of an MPC7447A/MPC107 (PowerPC) based embedded board
+          o hcs12xemu: ............. : A full system 68HCS12X instruction set simulator
+
+See file README in each subdirectory for information on a particular simulator
+See file COPYING for license information.
+For installation instructions, please read file INSTALL

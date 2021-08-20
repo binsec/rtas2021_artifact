@@ -1,0 +1,2 @@
+unisim/component/cxx/com/xilinx/xps_gpio/config.cc
+unisim/component/cxx/com/xilinx/xps_gpio/xps_gpio.cc

@@ -1,0 +1,10 @@
+libc/fcntl
+libc/stdio
+libc/stdlib
+libc/string
+libc/unistd
+m4/bsd_sockets
+m4/times
+std/fstream
+std/sstream
+unisim/util/converter

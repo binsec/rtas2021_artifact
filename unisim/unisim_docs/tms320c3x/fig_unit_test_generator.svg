@@ -1,0 +1,300 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="740"
+   height="611.42853"
+   id="svg2"
+   sodipodi:version="0.32"
+   inkscape:version="0.46"
+   version="1.0"
+   sodipodi:docname="fig_unit_test_generator.svg"
+   inkscape:output_extension="org.inkscape.output.svg.inkscape">
+  <defs
+     id="defs4">
+    <marker
+       inkscape:stockid="Arrow2Lend"
+       orient="auto"
+       refY="0"
+       refX="0"
+       id="Arrow2Lend"
+       style="overflow:visible">
+      <path
+         id="path3218"
+         style="font-size:12px;fill-rule:evenodd;stroke-width:0.625;stroke-linejoin:round"
+         d="M 8.7185878,4.0337352 L -2.2072895,0.016013256 L 8.7185884,-4.0017078 C 6.97309,-1.6296469 6.9831476,1.6157441 8.7185878,4.0337352 z"
+         transform="matrix(-1.1,0,0,-1.1,-1.1,0)" />
+    </marker>
+    <marker
+       inkscape:stockid="Arrow1Lend"
+       orient="auto"
+       refY="0"
+       refX="0"
+       id="Arrow1Lend"
+       style="overflow:visible">
+      <path
+         id="path3200"
+         d="M 0,0 L 5,-5 L -12.5,0 L 5,5 L 0,0 z"
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1pt;marker-start:none"
+         transform="matrix(-0.8,0,0,-0.8,-10,0)" />
+    </marker>
+    <inkscape:perspective
+       sodipodi:type="inkscape:persp3d"
+       inkscape:vp_x="0 : 526.18109 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_z="744.09448 : 526.18109 : 1"
+       inkscape:persp3d-origin="372.04724 : 350.78739 : 1"
+       id="perspective10" />
+    <inkscape:perspective
+       id="perspective3186"
+       inkscape:persp3d-origin="372.04724 : 350.78739 : 1"
+       inkscape:vp_z="744.09448 : 526.18109 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_x="0 : 526.18109 : 1"
+       sodipodi:type="inkscape:persp3d" />
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     gridtolerance="10000"
+     guidetolerance="10"
+     objecttolerance="10"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.7"
+     inkscape:cx="348.8965"
+     inkscape:cy="452.37101"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="true"
+     inkscape:snap-global="false"
+     inkscape:window-width="1600"
+     inkscape:window-height="1141"
+     inkscape:window-x="-4"
+     inkscape:window-y="-4">
+    <inkscape:grid
+       type="xygrid"
+       id="grid4499"
+       visible="true"
+       enabled="true" />
+  </sodipodi:namedview>
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-5.7142816,107.63781)">
+    <rect
+       style="opacity:1;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:0.96078431"
+       id="rect4593"
+       width="740"
+       height="611.42853"
+       x="5.7142816"
+       y="-107.63781" />
+    <g
+       id="g4561"
+       transform="matrix(0.8518519,0,0,0.8333333,3.7407093,-11.27296)">
+      <rect
+         ry="0"
+         y="239.80469"
+         x="242"
+         height="132.5575"
+         width="209.70035"
+         id="rect2383"
+         style="opacity:1;fill:#d7d7d7;fill-opacity:0.96078431;stroke:#000000;stroke-width:3.43346453;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:0.96078431" />
+      <text
+         id="text3155"
+         y="312.36218"
+         x="262"
+         style="font-size:34.42278671px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Courier 10 Pitch"
+         xml:space="preserve"><tspan
+           y="312.36218"
+           x="262"
+           id="tspan3157"
+           sodipodi:role="line">generator</tspan></text>
+      <image
+         xlink:href="pastedpic_09112009_133530.png"
+         sodipodi:absref="/local/home/gmouchard/unisim/svn/devel/unisim_docs/tms320c3x/pastedpic_09112009_133530.png"
+         width="93"
+         height="138"
+         id="image3188"
+         x="53"
+         y="234.36218" />
+      <path
+         sodipodi:nodetypes="cc"
+         id="path3192"
+         d="M 140,312.36218 L 240,312.36218"
+         style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:3.83385825;stroke-linecap:butt;stroke-linejoin:miter;marker-end:url(#Arrow2Lend);stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+      <text
+         id="text4495"
+         y="172.36218"
+         x="102.96429"
+         style="font-size:34.42278671px;font-style:normal;font-weight:normal;text-align:center;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Courier 10 Pitch"
+         xml:space="preserve"><tspan
+           y="172.36218"
+           x="102.96429"
+           id="tspan4497"
+           sodipodi:role="line">Assembly</tspan><tspan
+           id="tspan4521"
+           y="215.39067"
+           x="102.96429"
+           sodipodi:role="line">pattern</tspan></text>
+      <image
+         xlink:href="pastedpic_09112009_133530.png"
+         sodipodi:absref="/local/home/gmouchard/unisim/svn/devel/unisim_docs/tms320c3x/pastedpic_09112009_133530.png"
+         width="93"
+         height="138"
+         id="image4501"
+         x="560"
+         y="154.36218" />
+      <path
+         sodipodi:nodetypes="cc"
+         id="path4503"
+         d="M 452,272.36218 L 560,232.36218"
+         style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:3.83385825;stroke-linecap:butt;stroke-linejoin:miter;marker-end:url(#Arrow2Lend);stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+      <text
+         id="text4505"
+         y="214.36218"
+         x="660"
+         style="font-size:34.42278671px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Courier 10 Pitch"
+         xml:space="preserve"><tspan
+           y="214.36218"
+           x="660"
+           id="tspan4507"
+           sodipodi:role="line">test.asm</tspan></text>
+      <text
+         id="text4509"
+         y="254.36218"
+         x="660"
+         style="font-size:34.42278671px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Courier 10 Pitch"
+         xml:space="preserve"><tspan
+           y="254.36218"
+           x="660"
+           id="tspan4511"
+           sodipodi:role="line">main.c</tspan></text>
+      <image
+         xlink:href="pastedpic_09112009_133530.png"
+         sodipodi:absref="/local/home/gmouchard/unisim/svn/devel/unisim_docs/tms320c3x/pastedpic_09112009_133530.png"
+         width="93"
+         height="138"
+         id="image4513"
+         x="560"
+         y="334.36218" />
+      <text
+         id="text4515"
+         y="414.36218"
+         x="660"
+         style="font-size:34.42278671px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Courier 10 Pitch"
+         xml:space="preserve"><tspan
+           y="414.36218"
+           x="660"
+           id="tspan4517"
+           sodipodi:role="line">random.txt</tspan></text>
+      <path
+         sodipodi:nodetypes="cc"
+         id="path4519"
+         d="M 452,352.36218 L 560,392.36218"
+         style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:3.83385825;stroke-linecap:butt;stroke-linejoin:miter;marker-end:url(#Arrow2Lend);stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+      <text
+         id="text4523"
+         y="52.362183"
+         x="613.61902"
+         style="font-size:34.42278671px;font-style:normal;font-weight:normal;text-align:center;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Courier 10 Pitch"
+         xml:space="preserve"><tspan
+           id="tspan4527"
+           y="52.362183"
+           x="613.61902"
+           sodipodi:role="line">Unit test</tspan><tspan
+           id="tspan4531"
+           y="95.390663"
+           x="613.61902"
+           sodipodi:role="line">Source</tspan><tspan
+           id="tspan4533"
+           y="138.41914"
+           x="613.61902"
+           sodipodi:role="line">Code</tspan></text>
+      <text
+         id="text4535"
+         y="512.36218"
+         x="613.61902"
+         style="font-size:34.42278671px;font-style:normal;font-weight:normal;text-align:center;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Courier 10 Pitch"
+         xml:space="preserve"><tspan
+           id="tspan4537"
+           y="512.36218"
+           x="613.61902"
+           sodipodi:role="line">Unit test</tspan><tspan
+           id="tspan4541"
+           y="555.39069"
+           x="613.61902"
+           sodipodi:role="line">Random</tspan><tspan
+           id="tspan4545"
+           y="598.41913"
+           x="613.61902"
+           sodipodi:role="line">Inputs</tspan></text>
+      <text
+         id="text4547"
+         y="472.36218"
+         x="199.89317"
+         style="font-size:18.63913918px;font-style:normal;font-weight:normal;text-align:center;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Courier 10 Pitch"
+         xml:space="preserve"><tspan
+           id="tspan4551"
+           y="472.36218"
+           x="199.89317"
+           sodipodi:role="line">%subst %src_float_reg, %dst_float_reg</tspan></text>
+      <path
+         id="path4557"
+         d="M 60,372.36218 L 20,452.36218"
+         style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+      <path
+         id="path4559"
+         d="M 140,372.36218 L 380,452.36218"
+         style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+      <image
+         xlink:href="pastedpic_09112009_133530.png"
+         sodipodi:absref="/local/home/gmouchard/unisim/svn/devel/unisim_docs/tms320c3x/pastedpic_09112009_133530.png"
+         width="93"
+         height="138"
+         id="image2511"
+         x="296.25156"
+         y="2.2192941" />
+      <text
+         id="text2513"
+         y="-60.798428"
+         x="331.39059"
+         style="font-size:34.42278671px;font-style:normal;font-weight:normal;text-align:center;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Courier 10 Pitch"
+         xml:space="preserve"><tspan
+           y="-60.798428"
+           x="331.39059"
+           sodipodi:role="line"
+           id="tspan2521">Subtitution strings</tspan><tspan
+           y="-17.769943"
+           x="331.39059"
+           sodipodi:role="line"
+           id="tspan2527">(command line arguments)</tspan></text>
+      <path
+         sodipodi:nodetypes="cc"
+         id="path2535"
+         d="M 341.07453,138.07645 L 341.07453,234.07645"
+         style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:3.83385825;stroke-linecap:butt;stroke-linejoin:miter;marker-end:url(#Arrow2Lend);stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+    </g>
+  </g>
+</svg>

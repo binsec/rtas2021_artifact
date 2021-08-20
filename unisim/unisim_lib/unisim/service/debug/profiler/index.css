@@ -1,0 +1,27 @@
+body{ font-family:Arial, Helvetica, sans-serif;font-style:normal;font-size:14px;text-align:left;font-weight:400;color:#000;margin:0;background:#FFF; }
+h1 { font-size:16px; white-space:nowrap; }
+table{ width:1280px; margin:0; }
+table th { text-align:center; }
+table th { font-weight:bold; }
+table td { text-align:left; }
+table { border-style:solid; }
+table { border-width:1px; }
+table { border-collapse: collapse; }
+th, td { margin:0; }
+th, td { border-style:solid; }
+th, td { border-width:1px; }
+th, td { border-width:1px; }
+a:link { text-decoration:none }
+#title { text-align:center; } 
+#content { width:1280px; padding:0.5em 0.25em 0.5em 0.25em; }
+
+#var-clear-all { white-space:nowrap; }
+.var-clear { white-space:nowrap; }
+.var-name { max-width:250px; overflow:hidden; white-space:nowrap; text-overflow: ellipsis; }
+.var-description { max-width:250px; overflow:hidden; white-space:nowrap; text-overflow: ellipsis; }
+.by-address, .by-address-histogram, .by-address-table { white-space:nowrap; }
+.by-address .button { margin:auto; }
+.by-address-histogram .button { margin: auto; }
+.by-address-table .button { margin: auto; }
+#var-clear-all .button { margin:auto; }
+.var-clear .button { margin:auto; }

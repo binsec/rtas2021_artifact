@@ -1,0 +1,172 @@
+/*
+ *  Copyright (c) 2017,
+ *  Commissariat a l'Energie Atomique (CEA)
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without modification,
+ *  are permitted provided that the following conditions are met:
+ *
+ *   - Redistributions of source code must retain the above copyright notice, this
+ *     list of conditions and the following disclaimer.
+ *
+ *   - Redistributions in binary form must reproduce the above copyright notice,
+ *     this list of conditions and the following disclaimer in the documentation
+ *     and/or other materials provided with the distribution.
+ *
+ *   - Neither the name of CEA nor the names of its contributors may be used to
+ *     endorse or promote products derived from this software without specific prior
+ *     written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ *  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *  DISCLAIMED.
+ *  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ *  INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ *  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+ *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ *  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Authors: Gilles Mouchard (gilles.mouchard@cea.fr)
+ */
+
+impl {
+#include <unisim/component/cxx/processor/powerpc/isa/lsp/lsp.hh>
+}
+
+/* Vector dot product of halfwords [exchanged], add, {signed integer,
+   unsigned integer, signed by unsigned integer} and accumulate
+   [negative] with saturate (zvdotph[x][{a,s}]{s,u,su}i[{aa,an}][s]):
+ * - zvdotphaui
+ * - zvdotphauis
+ * - zvdotphauiaa
+ * - zvdotphauiaas
+ * - zvdotphauian
+ * - zvdotphauians
+ * - zvdotphasi
+ * - zvdotphasis
+ * - zvdotphasiaa
+ * - zvdotphasiaas
+ * - zvdotphasian
+ * - zvdotphasians
+ * - zvdotphasui
+ * - zvdotphasuis
+ * - zvdotphasuiaa
+ * - zvdotphasuiaas
+ * - zvdotphasuian
+ * - zvdotphasuians
+ * - zvdotphxaui
+ * - zvdotphxauis
+ * - zvdotphxauiaa
+ * - zvdotphxauiaas
+ * - zvdotphxauian
+ * - zvdotphxauians
+ * - zvdotphxasi
+ * - zvdotphxasis
+ * - zvdotphxasiaa
+ * - zvdotphxasiaas
+ * - zvdotphxasian
+ * - zvdotphxasians
+ * - zvdotphxasui
+ * - zvdotphxasuis
+ * - zvdotphxasuiaa
+ * - zvdotphxasuiaas
+ * - zvdotphxasuian
+ * - zvdotphxasuians
+ * - zvdotphsui
+ * - zvdotphsuis
+ * - zvdotphsuiaa
+ * - zvdotphsuiaas
+ * - zvdotphsuian
+ * - zvdotphsuians
+ * - zvdotphssi
+ * - zvdotphssis
+ * - zvdotphssiaa
+ * - zvdotphssiaas
+ * - zvdotphssian
+ * - zvdotphssians
+ * - zvdotphssui
+ * - zvdotphssuis
+ * - zvdotphssuiaa
+ * - zvdotphssuiaas
+ * - zvdotphssuian
+ * - zvdotphssuians
+ */
+op zvdotphi(4[6]:rd[5]:ra[5]:rb[5]:0b1101[4]:substract[1]:exchange[1]:ty[2]:acc[2]:s[1])
+/* substract in {0="a",1="s"}, exchange in {0="",1="x"}, acc in {00="",01="aa",10="an"}, ty in {00="ui",01="si",10="sui"}, s in {0="",1="s"} */
+/* substract=1 exchange=1 is illegal */
+zvdotphi.var ill : {bool} = {
+	   ((substract != 0) && (exchange != 0)) // substract=1 & exchange=1 is illegal
+	|| (ty == 3)               // ty=0b11 is illegal
+	|| (acc == 3)              // acc=0b11 is illegal
+}
+zvdotphi.execute = {
+	if(unlikely(ill))
+	{
+		cpu->ThrowException<CPU::ProgramInterrupt::IllegalInstruction>();
+		return false;
+	}
+
+	cpu->ThrowException<CPU::ProgramInterrupt::UnimplementedInstruction>();
+	return false;
+}
+zvdotphi.disasm = {
+	os << "zvdotph" << (exchange ? "x" : "") << (substract ? "s" : "a" ) << LSP_TY(ty) << LSP_ACC(acc) << (s ? "s" : "") << " " << GPRPrint(rd) << ", " << GPRPrint(ra) << ", " << GPRPrint(rb);
+}
+
+specialize zvdotphi(substract=0,exchange=0,ty=0,acc=0,s=0)
+specialize zvdotphi(substract=0,exchange=0,ty=0,acc=0,s=1)
+specialize zvdotphi(substract=0,exchange=0,ty=0,acc=1,s=0)
+specialize zvdotphi(substract=0,exchange=0,ty=0,acc=1,s=1)
+specialize zvdotphi(substract=0,exchange=0,ty=0,acc=2,s=0)
+specialize zvdotphi(substract=0,exchange=0,ty=0,acc=2,s=1)
+specialize zvdotphi(substract=0,exchange=0,ty=1,acc=0,s=0)
+specialize zvdotphi(substract=0,exchange=0,ty=1,acc=0,s=1)
+specialize zvdotphi(substract=0,exchange=0,ty=1,acc=1,s=0)
+specialize zvdotphi(substract=0,exchange=0,ty=1,acc=1,s=1)
+specialize zvdotphi(substract=0,exchange=0,ty=1,acc=2,s=0)
+specialize zvdotphi(substract=0,exchange=0,ty=1,acc=2,s=1)
+specialize zvdotphi(substract=0,exchange=0,ty=2,acc=0,s=0)
+specialize zvdotphi(substract=0,exchange=0,ty=2,acc=0,s=1)
+specialize zvdotphi(substract=0,exchange=0,ty=2,acc=1,s=0)
+specialize zvdotphi(substract=0,exchange=0,ty=2,acc=1,s=1)
+specialize zvdotphi(substract=0,exchange=0,ty=2,acc=2,s=0)
+specialize zvdotphi(substract=0,exchange=0,ty=2,acc=2,s=1)
+specialize zvdotphi(substract=0,exchange=1,ty=0,acc=0,s=0)
+specialize zvdotphi(substract=0,exchange=1,ty=0,acc=0,s=1)
+specialize zvdotphi(substract=0,exchange=1,ty=0,acc=1,s=0)
+specialize zvdotphi(substract=0,exchange=1,ty=0,acc=1,s=1)
+specialize zvdotphi(substract=0,exchange=1,ty=0,acc=2,s=0)
+specialize zvdotphi(substract=0,exchange=1,ty=0,acc=2,s=1)
+specialize zvdotphi(substract=0,exchange=1,ty=1,acc=0,s=0)
+specialize zvdotphi(substract=0,exchange=1,ty=1,acc=0,s=1)
+specialize zvdotphi(substract=0,exchange=1,ty=1,acc=1,s=0)
+specialize zvdotphi(substract=0,exchange=1,ty=1,acc=1,s=1)
+specialize zvdotphi(substract=0,exchange=1,ty=1,acc=2,s=0)
+specialize zvdotphi(substract=0,exchange=1,ty=1,acc=2,s=1)
+specialize zvdotphi(substract=0,exchange=1,ty=2,acc=0,s=0)
+specialize zvdotphi(substract=0,exchange=1,ty=2,acc=0,s=1)
+specialize zvdotphi(substract=0,exchange=1,ty=2,acc=1,s=0)
+specialize zvdotphi(substract=0,exchange=1,ty=2,acc=1,s=1)
+specialize zvdotphi(substract=0,exchange=1,ty=2,acc=2,s=0)
+specialize zvdotphi(substract=0,exchange=1,ty=2,acc=2,s=1)
+specialize zvdotphi(substract=1,exchange=0,ty=0,acc=0,s=0)
+specialize zvdotphi(substract=1,exchange=0,ty=0,acc=0,s=1)
+specialize zvdotphi(substract=1,exchange=0,ty=0,acc=1,s=0)
+specialize zvdotphi(substract=1,exchange=0,ty=0,acc=1,s=1)
+specialize zvdotphi(substract=1,exchange=0,ty=0,acc=2,s=0)
+specialize zvdotphi(substract=1,exchange=0,ty=0,acc=2,s=1)
+specialize zvdotphi(substract=1,exchange=0,ty=1,acc=0,s=0)
+specialize zvdotphi(substract=1,exchange=0,ty=1,acc=0,s=1)
+specialize zvdotphi(substract=1,exchange=0,ty=1,acc=1,s=0)
+specialize zvdotphi(substract=1,exchange=0,ty=1,acc=1,s=1)
+specialize zvdotphi(substract=1,exchange=0,ty=1,acc=2,s=0)
+specialize zvdotphi(substract=1,exchange=0,ty=1,acc=2,s=1)
+specialize zvdotphi(substract=1,exchange=0,ty=2,acc=0,s=0)
+specialize zvdotphi(substract=1,exchange=0,ty=2,acc=0,s=1)
+specialize zvdotphi(substract=1,exchange=0,ty=2,acc=1,s=0)
+specialize zvdotphi(substract=1,exchange=0,ty=2,acc=1,s=1)
+specialize zvdotphi(substract=1,exchange=0,ty=2,acc=2,s=0)
+specialize zvdotphi(substract=1,exchange=0,ty=2,acc=2,s=1)

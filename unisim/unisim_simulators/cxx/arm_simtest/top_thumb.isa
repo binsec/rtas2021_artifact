@@ -1,0 +1,146 @@
+/*
+ *  Copyright (c) 2007-2013,
+ *  Commissariat a l'Energie Atomique (CEA)
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without modification,
+ *  are permitted provided that the following conditions are met:
+ *
+ *   - Redistributions of source code must retain the above copyright notice, this
+ *     list of conditions and the following disclaimer.
+ *
+ *   - Redistributions in binary form must reproduce the above copyright notice,
+ *     this list of conditions and the following disclaimer in the documentation
+ *     and/or other materials provided with the distribution.
+ *
+ *   - Neither the name of CEA nor the names of its contributors may be used to
+ *     endorse or promote products derived from this software without specific prior
+ *     written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ *  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *  DISCLAIMED.
+ *  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ *  INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ *  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+ *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ *  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Authors: Daniel Gracia Perez (daniel.gracia-perez@cea.fr), Yves Lhuillier (yves.lhuillier@cea.fr)
+ */
+
+/**********************************************
+
+           THUMB ARM EMULATOR ISA
+
+**********************************************/
+
+namespace unisim::component::cxx::processor::arm::isa::thumb
+
+set codetype scalar;
+set addressclass {uint32_t}
+set endianness little;
+//set fields_order descending;
+set words_order ascending;
+//set withencode_p true;
+
+template <{typename} {ARCH}>
+
+decl {
+#include <iosfwd>
+#include <stdint.h>
+} // end of decl
+
+impl {
+#include <unisim/component/cxx/processor/arm/isa/decode.hh>
+#include <unisim/component/cxx/processor/arm/disasm.hh>
+#include <unisim/component/cxx/processor/arm/execute.hh>
+#include <unisim/component/cxx/processor/arm/exception.hh>
+#include <unisim/util/likely/likely.hh>
+#include <testutils.hh>
+#include <iostream>
+#include <iomanip>
+
+} // end of impl
+
+action {void} execute({ARCH &} {cpu}) {
+  throw ut::DontTest( std::string("warning, ") + GetName() + " is not implemented." );
+}
+
+action {void} disasm({ARCH &} {cpu}, {std::ostream &} {buffer}) {
+  buffer << "Unknown instruction (thumb2)";
+}
+
+action {bool} donttest() const { return false; }
+
+include "unisim/component/cxx/processor/arm/isa/thumb/data_processing.isa"
+include "unisim/component/cxx/processor/arm/isa/thumb/load_store.isa"
+include "unisim/component/cxx/processor/arm/isa/thumb/multiply.isa"
+include "unisim/component/cxx/processor/arm/isa/thumb/misc_arithmetic.isa"
+
+include "unisim/component/cxx/processor/arm/isa/thumb2/data_processing.isa"
+include "unisim/component/cxx/processor/arm/isa/thumb2/load_store.isa"
+include "unisim/component/cxx/processor/arm/isa/thumb2/multiply.isa"
+include "unisim/component/cxx/processor/arm/isa/thumb2/misc_arithmetic.isa"
+
+//include "unisim/component/cxx/processor/arm/isa/thumb2/neon.isa"
+//include "unisim/component/cxx/processor/arm/isa/thumb2/vfp.isa"
+//include "unisim/component/cxx/processor/arm/isa/thumb2/xscale.isa"
+
+group donttest begin;
+include "unisim/component/cxx/processor/arm/isa/thumb/branch.isa"
+include "unisim/component/cxx/processor/arm/isa/thumb/exception.isa"
+
+include "unisim/component/cxx/processor/arm/isa/thumb2/branch.isa"
+include "unisim/component/cxx/processor/arm/isa/thumb2/coprocessor.isa"
+include "unisim/component/cxx/processor/arm/isa/thumb2/hints.isa"
+include "unisim/component/cxx/processor/arm/isa/thumb2/exception.isa"
+group donttest end;
+
+donttest.donttest = { return true; }
+
+include "unisim/component/cxx/processor/arm/isa/thumb2/ordering.isa"
+
+//subs_pclri.donttest = { return true; };
+pld_imm12.donttest = { return true; };
+pld_nimm.donttest = { return true; };
+pld_lit.donttest = { return true; };
+pld_reg.donttest = { return true; };
+pli_imm12.donttest = { return true; };
+pli_nimm.donttest = { return true; };
+pli_lit.donttest = { return true; };
+pli_reg.donttest = { return true; };
+
+push.donttest = { return true; };
+pop.donttest = { return true; };
+
+str_3.donttest = { return true; };
+ldr_4.donttest = { return true; };
+sub_4.donttest = { return true; };
+add_7.donttest = { return true; };
+add_6.donttest = { return true; };
+add_4_pc.donttest = { return true; };
+
+ldrd_lit.donttest = { return true; };
+ldrsh_lit.donttest = { return true; };
+ldr_lit.donttest = { return true; };
+ldr_lit_s.donttest = { return true; };
+ldrsb_lit.donttest = { return true; };
+ldrb_lit.donttest = { return true; };
+ldrh_lit.donttest = { return true; };
+
+ldrex.donttest = { return true; };
+ldrexh.donttest = { return true; };
+ldrexb.donttest = { return true; };
+ldrexd.donttest = { return true; };
+strex.donttest = { return true; };
+strexh.donttest = { return true; };
+strexb.donttest = { return true; };
+strexd.donttest = { return true; };
+clrex.donttest = { return true; };
+
+setend.donttest = { return true; };
+

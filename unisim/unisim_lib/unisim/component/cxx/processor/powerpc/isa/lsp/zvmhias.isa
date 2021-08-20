@@ -1,0 +1,134 @@
+/*
+ *  Copyright (c) 2017,
+ *  Commissariat a l'Energie Atomique (CEA)
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without modification,
+ *  are permitted provided that the following conditions are met:
+ *
+ *   - Redistributions of source code must retain the above copyright notice, this
+ *     list of conditions and the following disclaimer.
+ *
+ *   - Redistributions in binary form must reproduce the above copyright notice,
+ *     this list of conditions and the following disclaimer in the documentation
+ *     and/or other materials provided with the distribution.
+ *
+ *   - Neither the name of CEA nor the names of its contributors may be used to
+ *     endorse or promote products derived from this software without specific prior
+ *     written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ *  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *  DISCLAIMED.
+ *  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ *  INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ *  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+ *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ *  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Authors: Gilles Mouchard (gilles.mouchard@cea.fr)
+ */
+
+impl {
+#include <unisim/component/cxx/processor/powerpc/isa/lsp/lsp.hh>
+}
+
+/* Vector multiply halfwords, {upper/lower, lower/lower, upper/upper,
+   exchanged/lower}, {signed, signed by unsigned, unsigned} integer and
+   accumulate [negative, negative/positive] with saturate
+   (zvmh{ul,ll,uu,xl}{s,su,u}i{aa,an,anp}s):
+ * - zvmhuluiaas
+ * - zvmhuluians
+ * - zvmhuluianps
+ * - zvmhulsiaas
+ * - zvmhulsians
+ * - zvmhulsianps
+ * - zvmhulsuiaas
+ * - zvmhulsuians
+ * - zvmhulsuianps
+ * - zvmhlluiaas
+ * - zvmhlluians
+ * - zvmhlluianps
+ * - zvmhllsiaas
+ * - zvmhllsians
+ * - zvmhllsianps
+ * - zvmhllsuiaas
+ * - zvmhllsuians
+ * - zvmhllsuianps
+ * - zvmhuuuiaas
+ * - zvmhuuuians
+ * - zvmhuuuianps
+ * - zvmhuusiaas
+ * - zvmhuusians
+ * - zvmhuusianps
+ * - zvmhuusuiaas
+ * - zvmhuusuians
+ * - zvmhuusuianps
+ * - zvmhxluiaas
+ * - zvmhxluians
+ * - zvmhxluianps
+ * - zvmhxlsiaas
+ * - zvmhxlsians
+ * - zvmhxlsianps
+ * - zvmhxlsuiaas
+ * - zvmhxlsuians
+ * - zvmhxlsuianps
+ */
+op zvmhias(4[6]:rd[5]:ra[5]:rb[5]:0b1011[4]:hs[2]:ty[2]:acc[2]:0b1[1]) /* hs in {00="ul",01="ll",10="uu",11="xl"}, ty in {00="ui",01="si",10="sui"}, acc in {01="aa",10="an",11="anp"} */
+zvmhias.var ill : {bool} = {
+	   (ty == 3)  // ty=0b11 is illegal
+	|| (acc == 0) // acc=0b00 is illegal
+}
+zvmhias.execute = {
+	if(unlikely(ill))
+	{
+		cpu->ThrowException<CPU::ProgramInterrupt::IllegalInstruction>();
+		return false;
+	}
+
+	cpu->ThrowException<CPU::ProgramInterrupt::UnimplementedInstruction>();
+	return false;
+}
+zvmhias.disasm = {
+	os << "zvmh" << LSP_HS_UPPER_LOWER_EXCHANGED(hs) << LSP_TY(ty) << LSP_ACC(acc) << " " << GPRPrint(rd) << ", " << GPRPrint(ra) << ", " << GPRPrint(rb);
+}
+
+specialize zvmhias(hs=0,ty=0,acc=1)
+specialize zvmhias(hs=0,ty=0,acc=2)
+specialize zvmhias(hs=0,ty=0,acc=3)
+specialize zvmhias(hs=0,ty=1,acc=1)
+specialize zvmhias(hs=0,ty=1,acc=2)
+specialize zvmhias(hs=0,ty=1,acc=3)
+specialize zvmhias(hs=0,ty=2,acc=1)
+specialize zvmhias(hs=0,ty=2,acc=2)
+specialize zvmhias(hs=0,ty=2,acc=3)
+specialize zvmhias(hs=1,ty=0,acc=1)
+specialize zvmhias(hs=1,ty=0,acc=2)
+specialize zvmhias(hs=1,ty=0,acc=3)
+specialize zvmhias(hs=1,ty=1,acc=1)
+specialize zvmhias(hs=1,ty=1,acc=2)
+specialize zvmhias(hs=1,ty=1,acc=3)
+specialize zvmhias(hs=1,ty=2,acc=1)
+specialize zvmhias(hs=1,ty=2,acc=2)
+specialize zvmhias(hs=1,ty=2,acc=3)
+specialize zvmhias(hs=2,ty=0,acc=1)
+specialize zvmhias(hs=2,ty=0,acc=2)
+specialize zvmhias(hs=2,ty=0,acc=3)
+specialize zvmhias(hs=2,ty=1,acc=1)
+specialize zvmhias(hs=2,ty=1,acc=2)
+specialize zvmhias(hs=2,ty=1,acc=3)
+specialize zvmhias(hs=2,ty=2,acc=1)
+specialize zvmhias(hs=2,ty=2,acc=2)
+specialize zvmhias(hs=2,ty=2,acc=3)
+specialize zvmhias(hs=3,ty=0,acc=1)
+specialize zvmhias(hs=3,ty=0,acc=2)
+specialize zvmhias(hs=3,ty=0,acc=3)
+specialize zvmhias(hs=3,ty=1,acc=1)
+specialize zvmhias(hs=3,ty=1,acc=2)
+specialize zvmhias(hs=3,ty=1,acc=3)
+specialize zvmhias(hs=3,ty=2,acc=1)
+specialize zvmhias(hs=3,ty=2,acc=2)
+specialize zvmhias(hs=3,ty=2,acc=3)

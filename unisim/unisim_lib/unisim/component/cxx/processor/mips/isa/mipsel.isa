@@ -1,0 +1,829 @@
+/*
+ *  Copyright (c) 2019-2020,
+ *  Commissariat a l'Energie Atomique (CEA)
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without modification,
+ *  are permitted provided that the following conditions are met:
+ *
+ *   - Redistributions of source code must retain the above copyright notice, this
+ *     list of conditions and the following disclaimer.
+ *
+ *   - Redistributions in binary form must reproduce the above copyright notice,
+ *     this list of conditions and the following disclaimer in the documentation
+ *     and/or other materials provided with the distribution.
+ *
+ *   - Neither the name of CEA nor the names of its contributors may be used to
+ *     endorse or promote products derived from this software without specific prior
+ *     written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ *  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *  DISCLAIMED.
+ *  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ *  INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ *  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+ *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ *  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Authors: Yves Lhuillier (yves.lhuillier@cea.fr)
+ */
+
+/**********************************************
+
+             Mipsel EMULATOR ISA
+
+**********************************************/
+
+namespace unisim::component::cxx::processor::mips::isa
+set addressclass {uint32_t};
+set codetype scalar;
+set endianness little;
+template <{typename} {ARCH}>
+
+decl {
+#include <iosfwd>
+#include <cstdint>
+}; // end of decl
+
+action {void} disasm({std::ostream&} {sink}) const {
+  sink << "Unknown Mipsel instruction";
+}
+
+action {void} execute({ARCH&} {core}) const {
+  this->disasm(std::cerr << "0x" << std::hex << this->GetAddr() << ": ");
+  std::cerr << std::endl;
+  struct Unimplemented {};
+  throw Unimplemented();
+}
+
+impl {
+#include <unisim/component/cxx/processor/mips/isa/disasm.hh>
+#include <iostream>
+} // end of impl
+
+include "unisim/component/cxx/processor/mips/isa/special.isa"
+include "unisim/component/cxx/processor/mips/isa/floating-point.isa"
+include "unisim/component/cxx/processor/mips/isa/mips32r2.isa"
+
+
+op sync(0x00000000[21]:stype[5]:0xf[6]);
+
+sync.disasm = { sink << "sync"; if (stype) sink << '\t' << PrintHex(stype); };
+
+sync.execute = \
+{
+  if (stype) throw "nope";
+};
+
+op j(2[6]:shl<2> target[26]);
+
+j.disasm = { sink << "j\t" << PrintHex((this->GetAddr() & (-1<<28)) | target); };
+
+j.execute = \
+{
+  typedef typename ARCH::U32 U32;
+  
+  U32 base = core.GetPC() & U32(-1<<28);
+  core.Branch(base | U32(target), core.B_JMP);
+};
+
+op jal(3[6]:shl<2> target[26]);
+
+jal.disasm = { sink << "jal\t" << PrintHex((this->GetAddr() & (-1<<28)) | target); };
+
+jal.execute = \
+{
+  typedef typename ARCH::U32 U32;
+  
+  core.SetGPR(31, core.GetPC() + U32(8));
+  U32 base = core.GetPC() & U32(-1<<28);
+  core.Branch(base | U32(target),core.B_CALL);
+};
+
+op nop(0[32]);
+nop.disasm = { sink << "nop"; };
+
+nop.execute = {};
+
+op sll(0[6]:0[5]:rt[5]:rd[5]:imm[5]:0x00[6]);
+sll.disasm = { sink << "sll\t" << PrintGPR(rd) << ',' << PrintGPR(rt) << ',' << PrintHex(imm); };
+
+sll.execute = { core.SetGPR(rd, core.GetGPR(rt) << imm); }
+
+op srl(0[6]:0[5]:rt[5]:rd[5]:imm[5]:0x02[6]);
+srl.disasm = { sink << "srl\t" << PrintGPR(rd) << ',' << PrintGPR(rt) << ',' << PrintHex(imm); };
+
+srl.execute = { core.SetGPR(rd, core.GetGPR(rt) >> imm); }
+
+op sra(0[6]:0[5]:rt[5]:rd[5]:imm[5]:0x03[6]);
+sra.disasm = { sink << "sra\t" << PrintGPR(rd) << ',' << PrintGPR(rt) << ',' << PrintHex(imm); };
+
+sra.execute = { core.SetGPR(rd, typename ARCH::U32(typename ARCH::S32(core.GetGPR(rt)) >> imm)); }
+
+op sllv(0[6]:rs[5]:rt[5]:rd[5]:0[5]:0x04[6]);
+sllv.disasm = { sink << "sllv\t" << PrintGPR(rd) << ',' << PrintGPR(rt) << ',' << PrintGPR(rs); };
+
+sllv.execute = \
+{
+  typedef typename ARCH::U8 U8;
+  typedef typename ARCH::U32 U32;
+  core.SetGPR(rd, core.GetGPR(rt) << U8(core.GetGPR(rs) & U32(0xff)) );
+};
+
+op srlv(0[6]:rs[5]:rt[5]:rd[5]:0[5]:0x06[6]);
+srlv.disasm = { sink << "srlv\t" << PrintGPR(rd) << ',' << PrintGPR(rt) << ',' << PrintGPR(rs); };
+
+srlv.execute = \
+{
+  typedef typename ARCH::U8 U8;
+  typedef typename ARCH::U32 U32;
+  core.SetGPR(rd, core.GetGPR(rt) >> U8(core.GetGPR(rs) & U32(0xff)) );
+};
+
+op srav(0[6]:rs[5]:rt[5]:rd[5]:0[5]:0x07[6]);
+srav.disasm = { sink << "srav\t" << PrintGPR(rd) << ',' << PrintGPR(rt) << ',' << PrintGPR(rs); };
+
+srav.execute = \
+{
+  typedef typename ARCH::U8 U8;
+  typedef typename ARCH::U32 U32;
+  typedef typename ARCH::S32 S32;
+  core.SetGPR(rd, U32(S32(core.GetGPR(rt)) >> U8(core.GetGPR(rs) & U32(0xff))) );
+};
+
+op jr(0[6]:rs[5]:0[5]:0[5]:0[5]:0x08[6]);
+jr.disasm = { sink << "jr\t" << PrintGPR(rs); };
+
+jr.execute = { core.Branch(core.GetGPR(rs), core.B_JMP); };
+
+op jalr(0[6]:rs[5]:0[5]:rd[5]:0[5]:0x09[6]);
+
+jalr.disasm =                                   \
+{
+  sink << "jalr\t";
+  if (rd != 31) sink << PrintGPR(rd) << ',';
+  sink << PrintGPR(rs);
+};
+
+jalr.execute = \
+{
+  core.SetGPR(rd, core.GetPC() + typename ARCH::U32(8));
+  core.Branch(core.GetGPR(rs), core.B_CALL);
+};
+
+op syscall(0[6]:imm[20]:0x0c[6]);
+syscall.disasm = { sink << "syscall"; if (imm) sink << '\t' << PrintHex(imm); };
+
+syscall.execute = { core.SysCall(imm); }
+
+op break(0[6] : imm1[10] : imm2[10] : 0xd[6]);
+break.disasm =
+{
+  sink << "break";
+  if (imm1 or imm2)
+    sink << '\t' << PrintHex(imm1);
+  if (imm2)
+    sink <<  ',' << PrintHex(imm2);
+};
+
+op mfhi(0[6]:0[3]:ra[2]:0[5]:rd[5]:0[5]:0x10[6]);
+mfhi.disasm = { sink << "mfhi\t" << PrintGPR(rd); if (ra) sink << ',' << PrintR("$ac",ra); };
+
+mfhi.execute = { core.SetGPR(rd, core.GetHI(ra)); };
+
+op mthi(0[6]:rs[5]:0[5]:0[3]:ra[2]:0[5]:0x11[6]);
+mthi.disasm = { sink << "mthi\t" << PrintGPR(rs); if (ra) sink << ',' << PrintR("$ac",ra); };
+
+mthi.execute = { core.SetHI(ra, core.GetGPR(rs)); };
+
+op mflo(0[6]:0[3]:ra[2]:0[5]:rd[5]:0[5]:0x12[6]);
+mflo.disasm = { sink << "mflo\t" << PrintGPR(rd); if (ra) sink << ',' << PrintR("$ac",ra); };
+
+mflo.execute = { core.SetGPR(rd, core.GetLO(ra)); };
+
+op mtlo(0[6]:rs[5]:0[5]:0[3]:ra[2]:0[5]:0x13[6]);
+mtlo.disasm = { sink << "mtlo\t" << PrintGPR(rs); if (ra) sink << ',' << PrintR("$ac",ra); };
+
+mtlo.execute = { core.SetLO(ra, core.GetGPR(rs)); };
+
+op mult(0[6]:rs[5]:rt[5]:0[3]:ra[2]:0[5]:0x18[6]);
+mult.disasm = { sink << "mult\t"; if (ra) sink << PrintR("$ac",ra) << ','; sink << PrintGPR(rs) << ',' << PrintGPR(rt); };
+
+mult.execute = {
+  typedef typename ARCH::S32 S32;
+  typedef typename ARCH::S64 S64;
+  typedef typename ARCH::U32 U32;
+  
+  S64 res = S64(S32(core.GetGPR(rs)))*S64(S32(core.GetGPR(rt)));
+  core.SetHI(ra, U32(res >> 32));
+  core.SetLO(ra, U32(res >> 0));
+};
+
+op multu(0[6]:rs[5]:rt[5]:0[3]:ra[2]:0[5]:0x19[6]);
+multu.disasm = { sink << "multu\t"; if (ra) sink << PrintR("$ac",ra) << ','; sink << PrintGPR(rs) << ',' << PrintGPR(rt); };
+
+multu.execute = {
+  typedef typename ARCH::U32 U32;
+  typedef typename ARCH::U64 U64;
+  
+  U64 res = U64(U32(core.GetGPR(rs)))*U64(U32(core.GetGPR(rt)));
+  core.SetHI(ra, U32(res >> 32));
+  core.SetLO(ra, U32(res >> 0));
+};
+
+op div(0[6]:rs[5]:rt[5]:0[5]:0[5]:0x1a[6]);
+div.disasm = { sink << "div\t" << PrintGPR(0) << ',' << PrintGPR(rs) << ',' << PrintGPR(rt); };
+
+
+op divu(0[6]:rs[5]:rt[5]:0[5]:0[5]:0x1b[6]);
+divu.disasm = { sink << "divu\t" << PrintGPR(0) << ',' << PrintGPR(rs) << ',' << PrintGPR(rt); };
+
+divu.execute = { core.SetDivU( core.GetGPR(rs), core.GetGPR(rt) ); }
+
+op add(0[6]:rs[5]:rt[5]:rd[5]:0[5]:0x20[6]);
+add.disasm = { sink << "add\t" << PrintGPR(rd) << ',' << PrintGPR(rs) << ',' << PrintGPR(rt); };
+
+op addu(0[6]:rs[5]:rt[5]:rd[5]:0[5]:0x21[6]);
+addu.disasm = { sink << "addu\t" << PrintGPR(rd) << ',' << PrintGPR(rs) << ',' << PrintGPR(rt); };
+
+addu.execute = { core.SetGPR(rd, core.GetGPR(rs) + core.GetGPR(rt)); };
+
+op sub(0[6]:rs[5]:rt[5]:rd[5]:0[5]:0x22[6]);
+sub.disasm = \
+{
+  sink << "sub\t" << PrintGPR(rd);
+  if (rt) sink << ',' << PrintGPR(rs);
+  sink << ',' << PrintGPR(rt);
+};
+
+op subu(0[6]:rs[5]:rt[5]:rd[5]:0[5]:0x23[6]);
+subu.disasm = \
+{
+  sink << "subu\t" << PrintGPR(rd);
+  if (rt) sink << ',' << PrintGPR(rs);
+  sink << ',' << PrintGPR(rt);
+};
+
+subu.execute = \
+{
+  core.SetGPR(rd, core.GetGPR(rs) - core.GetGPR(rt));
+};
+
+op and(0[6]:rs[5]:rt[5]:rd[5]:0[5]:0x24[6]);
+and.disasm = { sink << "and\t" << PrintGPR(rd) << ',' << PrintGPR(rs) << ',' << PrintGPR(rt); };
+
+and.execute = { core.SetGPR(rd, core.GetGPR(rs) & core.GetGPR(rt)); }
+
+op or(0[6]:rs[5]:rt[5]:rd[5]:0[5]:0x25[6]);
+or.disasm = { sink << "or\t" << PrintGPR(rd) << ',' << PrintGPR(rs) << ',' << PrintGPR(rt); };
+
+or.execute = { core.SetGPR(rd, core.GetGPR(rs) | core.GetGPR(rt)); }
+
+op xor(0[6]:rs[5]:rt[5]:rd[5]:0[5]:0x26[6]);
+xor.disasm = { sink << "xor\t" << PrintGPR(rd) << ',' << PrintGPR(rs) << ',' << PrintGPR(rt); };
+
+xor.execute = { core.SetGPR(rd, core.GetGPR(rs) ^ core.GetGPR(rt)); }
+
+op nor(0[6]:rs[5]:rt[5]:rd[5]:0[5]:0x27[6]);
+nor.disasm = { sink << "nor\t" << PrintGPR(rd) << ',' << PrintGPR(rs) << ',' << PrintGPR(rt); };
+
+nor.execute = { core.SetGPR(rd, ~(core.GetGPR(rs) | core.GetGPR(rt))); }
+ 
+op bltz(1[6]:rs[5]:al[1]:0[2]:l[1]:0[1]:shl<2> sext offset[16]);
+bltz.disasm = { sink << "bltz" << (al ? "al" : "") << (l ? "l" : "") << '\t' << PrintGPR(rs) << ',' << PrintHex(this->GetAddr() + offset + 4); };
+
+bltz.execute = \
+{
+  typedef typename ARCH::U32 U32;
+  typedef typename ARCH::S32 S32;
+  if (al) core.SetGPR(31, core.GetPC() + U32(8));
+  if (core.Test(S32(core.GetGPR(rs)) < S32(0)))
+    core.Branch(core.GetPC() + U32(offset + 4), al ? core.B_CALL : core.B_JMP);
+  else if (l) /* Likely */
+    core.CancelDelaySlot();
+};
+
+op bgez(1[6]:rs[5]:al[1]:0[2]:l[1]:1[1]:shl<2> sext offset[16]);
+bgez.disasm = { sink << "bgez" << (al ? "al" : "") << (l ? "l" : "") << '\t' << PrintGPR(rs) << ',' << PrintHex(this->GetAddr() + offset + 4); };
+
+bgez.execute = \
+{
+  typedef typename ARCH::U32 U32;
+  typedef typename ARCH::S32 S32;
+  if (al) core.SetGPR(31, core.GetPC() + U32(8));
+  if (core.Test(S32(core.GetGPR(rs)) >= S32(0)))
+    core.Branch(core.GetPC() + U32(offset + 4), al ? core.B_CALL : core.B_JMP);
+  else if (l) /* Likely */
+    core.CancelDelaySlot();
+};
+
+
+op blez(0[1]:l[1]:3[3]:0[1]:rs[5]:0[5]:shl<2> sext offset[16]);
+blez.disasm = { sink << "blez" << (l ? "l" : "") << "\t" << PrintGPR(rs) << ',' << PrintHex(this->GetAddr() + offset + 4); };
+
+blez.execute = \
+{
+  typedef typename ARCH::U32 U32;
+  typedef typename ARCH::S32 S32;
+  if (core.Test(S32(core.GetGPR(rs)) <= S32(0)))
+    core.Branch(core.GetPC() + U32(offset + 4), core.B_JMP);
+  else if (l) /* Likely */
+    core.CancelDelaySlot();
+};
+
+op bgtz(0[1]:l[1]:3[3]:1[1]:rs[5]:0[5]:shl<2> sext offset[16]);
+bgtz.disasm = { sink << "bgtz" << (l ? "l" : "") << "\t" << PrintGPR(rs) << ',' << PrintHex(this->GetAddr() + offset + 4); };
+
+bgtz.execute = \
+{
+  typedef typename ARCH::U32 U32;
+  typedef typename ARCH::S32 S32;
+  if (core.Test(S32(core.GetGPR(rs)) > S32(0)))
+    core.Branch(core.GetPC() + U32(offset + 4), core.B_JMP);
+  else if (l) /* Likely */
+    core.CancelDelaySlot();
+};
+
+op beq(0[1]:l[1]:2[3]:0[1]:rs[5]:rt[5]:shl<2> sext offset[16]);
+beq.disasm = \
+{
+ sink << "beq" << (rt ? "" : "z") << (l ? "l" : "") << "\t" << PrintGPR(rs);
+ if (rt) sink << ',' << PrintGPR(rt);
+ sink << ',' << PrintHex(this->GetAddr() + offset + 4);
+};
+
+beq.execute = \
+{
+  typedef typename ARCH::U32 U32;
+  if (core.Test(core.GetGPR(rs) == core.GetGPR(rt)))
+    core.Branch(core.GetPC() + U32(offset + 4), core.B_JMP);
+  else if (l) /* Likely */
+    core.CancelDelaySlot();
+};
+
+op bne(0[1]:l[1]:2[3]:1[1]:rs[5]:rt[5]:shl<2> sext offset[16]);
+bne.disasm = \
+{
+ sink << "bne" << (rt ? "" : "z") << (l ? "l" : "") << "\t" << PrintGPR(rs);
+ if (rt) sink << ',' << PrintGPR(rt);
+ sink << ',' << PrintHex(this->GetAddr() + offset + 4);
+};
+
+bne.execute = \
+{
+  typedef typename ARCH::U32 U32;
+  if (core.Test(core.GetGPR(rs) != core.GetGPR(rt)))
+    core.Branch(core.GetPC() + U32(offset + 4),core.B_JMP);
+  else if (l) /* Likely */
+    core.CancelDelaySlot();
+};
+
+op tge(0[6]:rs[5]:rt[5]:imm[10]:0x30[6]);
+tge.disasm = { sink << "tge\t" << PrintGPR(rs) << ',' << PrintGPR(rt); if (imm) sink << ',' << PrintHex(imm); };
+
+op tgeu(0[6]:rs[5]:rt[5]:imm[10]:0x31[6]);
+tgeu.disasm = { sink << "tgeu\t" << PrintGPR(rs) << ',' << PrintGPR(rt); if (imm) sink << ',' << PrintHex(imm); };
+
+op tlt(0[6]:rs[5]:rt[5]:imm[10]:0x32[6]);
+tlt.disasm = { sink << "tlt\t" << PrintGPR(rs) << ',' << PrintGPR(rt); if (imm) sink << ',' << PrintHex(imm); };
+
+op tltu(0[6]:rs[5]:rt[5]:imm[10]:0x33[6]);
+tltu.disasm = { sink << "tltu\t" << PrintGPR(rs) << ',' << PrintGPR(rt); if (imm) sink << ',' << PrintHex(imm); };
+
+op teq(0[6]:rs[5]:rt[5]:imm[10]:0x34[6]);
+teq.disasm = { sink << "teq\t" << PrintGPR(rs) << ',' << PrintGPR(rt); if (imm) sink << ',' << PrintHex(imm); };
+
+op tne(0[6]:rs[5]:rt[5]:imm[10]:0x36[6]);
+tne.disasm = { sink << "tne\t" << PrintGPR(rs) << ',' << PrintGPR(rt); if (imm) sink << ',' << PrintHex(imm); };
+
+op tgei(1[6]:rs[5]:8[5]:sext imm[16]);
+tgei.disasm = { sink << "tgei\t" << PrintGPR(rs) << ',' << PrintI(imm); };
+
+op tgeiu(1[6]:rs[5]:9[5]:sext imm[16]);
+tgeiu.disasm = { sink << "tgeiu\t" << PrintGPR(rs) << ',' << PrintI(imm); };
+
+op tlti(1[6]:rs[5]:10[5]:sext imm[16]);
+tlti.disasm = { sink << "tlti\t" << PrintGPR(rs) << ',' << PrintI(imm); };
+
+op tltiu(1[6]:rs[5]:11[5]:sext imm[16]);
+tltiu.disasm = { sink << "tltiu\t" << PrintGPR(rs) << ',' << PrintI(imm); };
+
+op teqi(1[6]:rs[5]:12[5]:sext imm[16]);
+teqi.disasm = { sink << "teqi\t" << PrintGPR(rs) << ',' << PrintI(imm); };
+
+op tnei(1[6]:rs[5]:14[5]:sext imm[16]);
+tnei.disasm = { sink << "tnei\t" << PrintGPR(rs) << ',' << PrintI(imm); };
+
+op addi(8[6]:rs[5]:rt[5]:sext imm[16]);
+addi.disasm = { sink << "addi\t" << PrintGPR(rt) << ',' << PrintGPR(rs) << ',' << PrintI(imm); };
+
+op addiu(9[6]:rs[5]:rt[5]:sext imm[16]);
+addiu.disasm = { sink << "addiu\t" << PrintGPR(rt) << ',' << PrintGPR(rs) << ',' << PrintI(imm); };
+
+addiu.execute = { core.SetGPR(rt, core.GetGPR(rs) + typename ARCH::U32(imm)); };
+
+op slt(0[6]:rs[5]:rt[5]:rd[5]:0[5]:0x2a[6]);
+slt.disasm = { sink << "slt\t" << PrintGPR(rd) << ',' << PrintGPR(rs) << ',' << PrintGPR(rt); };
+
+slt.execute = \
+{
+  typedef typename ARCH::U32 U32;
+  typedef typename ARCH::S32 S32;
+  core.SetGPR( rd, U32(S32(core.GetGPR(rs)) < S32(core.GetGPR(rt))));
+};
+
+op slti(10[6]:rs[5]:rt[5]:sext imm[16]);
+slti.disasm = { sink << "slti\t" << PrintGPR(rt) << ',' << PrintGPR(rs) << ',' << PrintI(imm); };
+
+slti.execute = \
+{
+  typedef typename ARCH::U32 U32;
+  typedef typename ARCH::S32 S32;
+  core.SetGPR( rt, U32(S32(core.GetGPR(rs)) < S32(imm)));
+};
+
+op sltu(0[6]:rs[5]:rt[5]:rd[5]:0[5]:0x2b[6]);
+sltu.disasm = { sink << "sltu\t" << PrintGPR(rd) << ',' << PrintGPR(rs) << ',' << PrintGPR(rt); };
+
+sltu.execute = { core.SetGPR( rd, typename ARCH::U32(core.GetGPR(rs) < core.GetGPR(rt))); };
+
+op sltiu(11[6]:rs[5]:rt[5]:sext imm[16]);
+sltiu.disasm = { sink << "sltiu\t" << PrintGPR(rt) << ',' << PrintGPR(rs) << ',' << PrintI(imm); };
+
+sltiu.execute = { core.SetGPR( rt, typename ARCH::U32(core.GetGPR(rs) < typename ARCH::U32(imm))); };
+
+op andi(12[6]:rs[5]:rt[5]:imm[16]);
+andi.disasm = { sink << "andi\t" << PrintGPR(rt) << ',' << PrintGPR(rs) << ',' << PrintHex(imm); };
+
+andi.execute = { core.SetGPR(rt, core.GetGPR(rs) & typename ARCH::U32(imm)); };
+
+op ori(13[6]:rs[5]:rt[5]:imm[16]);
+ori.disasm = { sink << "ori\t" << PrintGPR(rt) << ',' << PrintGPR(rs) << ',' << PrintHex(imm); };
+
+ori.execute = { core.SetGPR(rt, core.GetGPR(rs) | typename ARCH::U32(imm)); };
+
+op xori(14[6]:rs[5]:rt[5]:imm[16]);
+xori.disasm = { sink << "xori\t" << PrintGPR(rt) << ',' << PrintGPR(rs) << ',' << PrintHex(imm); };
+
+xori.execute = { core.SetGPR(rt, core.GetGPR(rs) ^ typename ARCH::U32(imm)); };
+
+op lui(15[6]:0[5]:rt[5]:imm[16]);
+lui.disasm = { sink << "lui\t" << PrintGPR(rt) << ',' << PrintHex(imm); };
+
+lui.execute = { core.SetGPR(rt, typename ARCH::U32(imm << 16)); };
+                                                         
+op lb(32[6]:rs[5]:rt[5]:sext offset[16]);
+lb.disasm = { sink << "lb\t" << PrintGPR(rt) << ',' << PrintI(offset) << '(' << PrintGPR(rs) << ')'; };
+
+lb.execute = \
+{
+  typedef typename ARCH::S8 S8;
+  typedef typename ARCH::U32 U32;
+  core.SetGPR(rt, U32(core.template MemRead<S8>(core.GetGPR(rs) + U32(offset))));
+};
+
+op lbu(36[6]:rs[5]:rt[5]:sext offset[16]);
+lbu.disasm = { sink << "lbu\t" << PrintGPR(rt) << ',' << PrintI(offset) << '(' << PrintGPR(rs) << ')'; };
+
+lbu.execute = \
+{
+  typedef typename ARCH::U8 U8;
+  typedef typename ARCH::U32 U32;
+  core.SetGPR(rt, U32(core.template MemRead<U8>(core.GetGPR(rs) + U32(offset))));
+};
+
+op lh(33[6]:rs[5]:rt[5]:sext offset[16]);
+lh.disasm = { sink << "lh\t" << PrintGPR(rt) << ',' << PrintI(offset) << '(' << PrintGPR(rs) << ')'; };
+
+lh.execute = \
+{
+  typedef typename ARCH::S16 S16;
+  typedef typename ARCH::U32 U32;
+  core.SetGPR(rt, U32(core.template MemRead<S16>(core.GetGPR(rs) + U32(offset))));
+};
+
+op lhu(37[6]:rs[5]:rt[5]:sext offset[16]);
+lhu.disasm = { sink << "lhu\t" << PrintGPR(rt) << ',' << PrintI(offset) << '(' << PrintGPR(rs) << ')'; };
+
+lhu.execute = \
+{
+  typedef typename ARCH::U16 U16;
+  typedef typename ARCH::U32 U32;
+  core.SetGPR(rt, U32(core.template MemRead<U16>(core.GetGPR(rs) + U32(offset))));
+};
+
+op lw(35[6]:rs[5]:rt[5]:sext offset[16]);
+lw.disasm = { sink << "lw\t" << PrintGPR(rt) << ',' << int(offset) << '(' << PrintGPR(rs) << ')'; };
+
+lw.execute = \
+{
+  typedef typename ARCH::S32 S32;
+  typedef typename ARCH::U32 U32;
+  core.SetGPR(rt, U32(core.template MemRead<S32>(core.GetGPR(rs) + U32(offset))));
+};
+
+op lwu(39[6]:rs[5]:rt[5]:sext offset[16]);
+lwu.disasm = { sink << "lwu\t" << PrintGPR(rt) << ',' << PrintI(offset) << '(' << PrintGPR(rs) << ')'; };
+
+lwu.execute = \
+{
+  typedef typename ARCH::U32 U32;
+  core.SetGPR(rt, U32(core.template MemRead<U32>(core.GetGPR(rs) + U32(offset))));
+};
+
+op sb(40[6]:rs[5]:rt[5]:sext offset[16]);
+sb.disasm = { sink << "sb\t" << PrintGPR(rt) << ',' << PrintI(offset) << '(' << PrintGPR(rs) << ')'; };
+
+sb.execute = \
+{
+  typedef typename ARCH::U8 U8;
+  typedef typename ARCH::U32 U32;
+  core.template MemWrite(core.GetGPR(rs) + U32(offset), U8(core.GetGPR(rt)));
+};
+
+op sh(41[6]:rs[5]:rt[5]:sext offset[16]);
+sh.disasm = { sink << "sh\t" << PrintGPR(rt) << ',' << PrintI(offset) << '(' << PrintGPR(rs) << ')'; };
+
+sh.execute = \
+{
+  typedef typename ARCH::U16 U16;
+  typedef typename ARCH::U32 U32;
+  core.template MemWrite(core.GetGPR(rs) + U32(offset), U16(core.GetGPR(rt)));
+};
+
+op sw(43[6]:rs[5]:rt[5]:sext offset[16]);
+sw.disasm = { sink << "sw\t" << PrintGPR(rt) << ',' << int(offset) << '(' << PrintGPR(rs) << ')'; };
+
+sw.execute = \
+{
+  typedef typename ARCH::U32 U32;
+  core.template MemWrite(core.GetGPR(rs) + U32(offset), U32(core.GetGPR(rt)));
+};
+
+/* Load Linked Word */
+op ll(48[6]:rs[5]:rt[5]:sext offset[16]);
+ll.disasm = { sink << "ll\t" << PrintGPR(rt) << ',' << PrintI(offset) << '(' << PrintGPR(rs) << ')'; };
+
+ll.execute = \
+{
+  typedef typename ARCH::U32 U32;
+
+  U32 addr = core.GetGPR(rs) + U32(offset);
+  
+  core.AtomicBegin(addr);
+  core.SetGPR(rt, core.template MemRead<U32>(core.GetGPR(rs) + U32(offset)));
+};
+/* Store Conditional Word */
+op sc(56[6]:rs[5]:rt[5]:sext offset[16]);
+sc.disasm = { sink << "sc\t" << PrintGPR(rt) << ',' << PrintI(offset) << '(' << PrintGPR(rs) << ')'; };
+
+sc.execute = \
+{
+  typedef typename ARCH::U32 U32;
+  typedef typename ARCH::BOOL BOOL;
+  
+  U32 addr = core.GetGPR(rs) + U32(offset);
+  
+  BOOL cond = core.AtomicUpdate(addr);
+  if (core.Test(cond))
+    core.template MemWrite(addr, U32(core.GetGPR(rt)));
+  
+  core.SetGPR(rt,U32(cond));
+};
+
+/*** C0 ***/
+op c0(16[6]:1[1]:imm[25]);
+c0.disasm = { sink << "c" << unsigned(0) << "\t" << PrintHex(imm); };
+
+op mfc0(16[6]:0[5]:rb[5]:rc[5]:0[11]);
+mfc0.disasm = { sink << "mfc" << unsigned(0) << "\t" << PrintGPR(rb) << ',' << PrintGPR(rc); };
+
+op dmfc0(16[6]:1[5]:rb[5]:rc[5]:0[11]);
+dmfc0.disasm = { sink << "dmfc" << unsigned(0) << "\t" << PrintGPR(rb) << ',' << PrintGPR(rc); };
+
+op cfc0(16[6]:2[5]:rb[5]:rc[5]:0[11]);
+cfc0.disasm = { sink << "cfc" << unsigned(0) << "\t" << PrintGPR(rb) << ',' << PrintGPR(rc); };
+
+op mtc0(16[6]:4[5]:rb[5]:rc[5]:0[11]);
+mtc0.disasm = { sink << "mtc" << unsigned(0) << "\t" << PrintGPR(rb) << ',' << PrintGPR(rc); };
+
+op dmtc0(16[6]:5[5]:rb[5]:rc[5]:0[11]);
+dmtc0.disasm = { sink << "dmtc" << unsigned(0) << "\t" << PrintGPR(rb) << ',' << PrintGPR(rc); };
+
+op ctc0(16[6]:6[5]:rb[5]:rc[5]:0[11]);
+ctc0.disasm = { sink << "ctc" << unsigned(0) << "\t" << PrintGPR(rb) << ',' << PrintGPR(rc); };
+
+op bc0f(16[6]:8[5]:0[3]:l[1]:0[1]:0[2]:shl<2> offset[14]);
+bc0f.disasm = { sink << "bc" << unsigned(0) << "f" << (l ? "l" : "") << "\t" << PrintHex(this->GetAddr() + offset + 4); };
+
+op bc0t(16[6]:8[5]:0[3]:l[1]:1[1]:0[2]:shl<2> offset[14]);
+bc0t.disasm = { sink << "bc" << unsigned(0) << "t" << (l ? "l" : "") << "\t" << PrintHex(this->GetAddr() + offset + 4); };
+
+/*** C1 ***/
+op c1(17[6]:1[1]:imm[25]);
+c1.disasm = { sink << "c" << unsigned(1) << "\t" << PrintHex(imm); };
+
+op mfc1(17[6]:0[5]:rb[5]:rc[5]:0[11]);
+mfc1.disasm = { sink << "mfc" << unsigned(1) << "\t" << PrintGPR(rb) << ',' << PrintR("$f",rc); };
+
+op dmfc1(17[6]:1[5]:rb[5]:rc[5]:0[11]);
+dmfc1.disasm = { sink << "dmfc" << unsigned(1) << "\t" << PrintGPR(rb) << ',' << PrintR("$f",rc); };
+
+op cfc1(17[6]:2[5]:rb[5]:rc[5]:0[11]);
+cfc1.disasm = { sink << "cfc" << unsigned(1) << "\t" << PrintGPR(rb) << ',' << PrintGPR(rc); };
+
+op mtc1(17[6]:4[5]:rb[5]:rc[5]:0[11]);
+mtc1.disasm = { sink << "mtc" << unsigned(1) << "\t" << PrintGPR(rb) << ',' << PrintR("$f",rc); };
+
+op dmtc1(17[6]:5[5]:rb[5]:rc[5]:0[11]);
+dmtc1.disasm = { sink << "dmtc" << unsigned(1) << "\t" << PrintGPR(rb) << ',' << PrintR("$f",rc); };
+
+op ctc1(17[6]:6[5]:rb[5]:rc[5]:0[11]);
+ctc1.disasm = { sink << "ctc" << unsigned(1) << "\t" << PrintGPR(rb) << ',' << PrintGPR(rc); };
+
+op bc1f(17[6]:8[5]:0[3]:l[1]:0[1]:0[2]:shl<2> offset[14]);
+bc1f.disasm = { sink << "bc" << unsigned(1) << "f" << (l ? "l" : "") << "\t" << PrintHex(this->GetAddr() + offset + 4); };
+
+op bc1t(17[6]:8[5]:0[3]:l[1]:1[1]:0[2]:shl<2> offset[14]);
+bc1t.disasm = { sink << "bc" << unsigned(1) << "t" << (l ? "l" : "") << "\t" << PrintHex(this->GetAddr() + offset + 4); };
+
+/*** C2 ***/
+op c2(18[6]:1[1]:imm[25]);
+c2.disasm = { sink << "c" << unsigned(2) << "\t" << PrintHex(imm); };
+
+op mfc2(18[6]:0[5]:rb[5]:rc[5]:0[11]);
+mfc2.disasm = { sink << "mfc" << unsigned(2) << "\t" << PrintGPR(rb) << ',' << PrintGPR(rc); };
+
+op dmfc2(18[6]:1[5]:rb[5]:rc[5]:0[11]);
+dmfc2.disasm = { sink << "dmfc" << unsigned(2) << "\t" << PrintGPR(rb) << ',' << PrintGPR(rc); };
+
+op cfc2(18[6]:2[5]:rb[5]:rc[5]:0[11]);
+cfc2.disasm = { sink << "cfc" << unsigned(2) << "\t" << PrintGPR(rb) << ',' << PrintGPR(rc); };
+
+op mtc2(18[6]:4[5]:rb[5]:rc[5]:0[11]);
+mtc2.disasm = { sink << "mtc" << unsigned(2) << "\t" << PrintGPR(rb) << ',' << PrintGPR(rc); };
+
+op dmtc2(18[6]:5[5]:rb[5]:rc[5]:0[11]);
+dmtc2.disasm = { sink << "dmtc" << unsigned(2) << "\t" << PrintGPR(rb) << ',' << PrintGPR(rc); };
+
+op ctc2(18[6]:6[5]:rb[5]:rc[5]:0[11]);
+ctc2.disasm = { sink << "ctc" << unsigned(2) << "\t" << PrintGPR(rb) << ',' << PrintGPR(rc); };
+
+op bc2f(18[6]:8[5]:0[3]:l[1]:0[1]:0[2]:shl<2> offset[14]);
+bc2f.disasm = { sink << "bc" << unsigned(2) << "f" << (l ? "l" : "") << "\t" << PrintHex(this->GetAddr() + offset + 4); };
+
+op bc2t(18[6]:8[5]:0[3]:l[1]:1[1]:0[2]:shl<2> offset[14]);
+bc2t.disasm = { sink << "bc" << unsigned(2) << "t" << (l ? "l" : "") << "\t" << PrintHex(this->GetAddr() + offset + 4); };
+
+/*** C3 ***/
+op c3(19[6]:1[1]:imm[25]);
+c3.disasm = { sink << "c" << unsigned(3) << "\t" << PrintHex(imm); };
+
+op mfc3(19[6]:0[5]:rb[5]:rc[5]:0[11]);
+mfc3.disasm = { sink << "mfc" << unsigned(3) << "\t" << PrintGPR(rb) << ',' << PrintGPR(rc); };
+
+op dmfc3(19[6]:1[5]:rb[5]:rc[5]:0[11]);
+dmfc3.disasm = { sink << "dmfc" << unsigned(3) << "\t" << PrintGPR(rb) << ',' << PrintGPR(rc); };
+
+op cfc3(19[6]:2[5]:rb[5]:rc[5]:0[11]);
+cfc3.disasm = { sink << "cfc" << unsigned(3) << "\t" << PrintGPR(rb) << ',' << PrintGPR(rc); };
+
+op mtc3(19[6]:4[5]:rb[5]:rc[5]:0[11]);
+mtc3.disasm = { sink << "mtc" << unsigned(3) << "\t" << PrintGPR(rb) << ',' << PrintGPR(rc); };
+
+op dmtc3(19[6]:5[5]:rb[5]:rc[5]:0[11]);
+dmtc3.disasm = { sink << "dmtc" << unsigned(3) << "\t" << PrintGPR(rb) << ',' << PrintGPR(rc); };
+
+op ctc3(19[6]:6[5]:rb[5]:rc[5]:0[11]);
+ctc3.disasm = { sink << "ctc" << unsigned(3) << "\t" << PrintGPR(rb) << ',' << PrintGPR(rc); };
+
+op bc3f(19[6]:8[5]:0[3]:l[1]:0[1]:0[2]:shl<2> offset[14]);
+bc3f.disasm = { sink << "bc" << unsigned(3) << "f" << (l ? "l" : "") << "\t" << PrintHex(this->GetAddr() + offset + 4); };
+
+op bc3t(19[6]:8[5]:0[3]:l[1]:1[1]:0[2]:shl<2> offset[14]);
+bc3t.disasm = { sink << "bc" << unsigned(3) << "t" << (l ? "l" : "") << "\t" << PrintHex(this->GetAddr() + offset + 4); };
+
+op jalx(29[6]:shl<2> target[26]);
+jalx.disasm = { sink << "jalx\t" << PrintHex(target+1); };
+
+op lwl(34[6]:rs[5]:rt[5]:sext offset[16]);
+lwl.disasm = { sink << "lwl\t" << PrintGPR(rt) << ',' << PrintI(offset) << '(' << PrintGPR(rs) << ')'; };
+
+lwl.execute = \
+{
+  typedef typename ARCH::U32 U32;
+  U32 addr = core.GetGPR(rs) + U32(offset^3), aligned, shift;
+  if (core.IsBigEndian())
+    { aligned = addr & U32(-4); shift = addr % U32(4); }
+  else
+    { aligned = (addr + U32(3)) & U32(-4); shift = -addr % U32(4); }
+  shift <<= 3;
+  U32 value = core.template MemRead<U32>(aligned) << shift, mask = U32(-1) << shift;
+  core.SetGPR(rt, value | (core.GetGPR(rt) & ~mask));
+};
+
+op lwr(38[6]:rs[5]:rt[5]:sext offset[16]);
+lwr.disasm = { sink << "lwr\t" << PrintGPR(rt) << ',' << PrintI(offset) << '(' << PrintGPR(rs) << ')'; };
+
+lwr.execute = \
+{
+  typedef typename ARCH::U32 U32;
+  U32 addr = core.GetGPR(rs) + U32(offset), aligned, shift;
+  if (core.IsBigEndian())
+    { aligned = (addr + U32(3)) & U32(-4); shift = -addr % U32(4); }
+  else
+    { aligned = addr & U32(-4); shift = addr % U32(4); }
+  shift <<= 3;
+  U32 value = core.template MemRead<U32>(aligned) >> shift, mask = U32(-1) >> shift;
+  core.SetGPR(rt, value | (core.GetGPR(rt) & ~mask));
+};
+
+/* Store Word Left */
+op swl(42[6]:rs[5]:rt[5]:sext offset[16]);
+swl.disasm = { sink << "swl\t" << PrintGPR(rt) << ',' << PrintI(offset) << '(' << PrintGPR(rs) << ')'; };
+
+swl.execute = \
+{
+  typedef typename ARCH::U32 U32;
+  U32 addr = core.GetGPR(rs) + U32(offset^3), aligned, shift;
+  if (core.IsBigEndian())
+    { aligned = addr & U32(-4); shift = addr % U32(4); }
+  else
+    { aligned = (addr + U32(3)) & U32(-4); shift = -addr % U32(4); }
+  shift <<= 3;
+  U32 value = core.GetGPR(rt) >> shift, mask = U32(-1) >> shift;
+  core.MemWrite(aligned, value | (core.template MemRead<U32>(aligned) & ~mask));
+};
+
+/* Store Word Right */
+op swr(46[6]:rs[5]:rt[5]:sext offset[16]);
+swr.disasm = { sink << "swr\t" << PrintGPR(rt) << ',' << PrintI(offset) << '(' << PrintGPR(rs) << ')'; };
+
+swr.execute = \
+{
+  typedef typename ARCH::U32 U32;
+  U32 addr = core.GetGPR(rs) + U32(offset), aligned, shift;
+  if (core.IsBigEndian())
+    { aligned = (addr + U32(3)) & U32(-4); shift = -addr % U32(4); }
+  else
+    { aligned = addr & U32(-4); shift = addr % U32(4); }
+  shift <<= 3;
+  U32 value = core.GetGPR(rt) << shift, mask = U32(-1) << shift;
+  core.MemWrite(aligned, value | (core.template MemRead<U32>(aligned) & ~mask));
+};
+
+op sdl(44[6]:rs[5]:rt[5]:sext offset[16]);
+sdl.disasm = { sink << "sdl\t" << PrintGPR(rt) << ',' << PrintI(offset) << '(' << PrintGPR(rs) << ')'; };
+
+op sdr(45[6]:rs[5]:rt[5]:sext offset[16]);
+sdr.disasm = { sink << "sdr\t" << PrintGPR(rt) << ',' << PrintI(offset) << '(' << PrintGPR(rs) << ')'; };
+
+op cache(47[6]:rs[5]:rt[5]:sext offset[16]);
+cache.disasm = { sink << "cache\t" << PrintHex(rt) << ',' << PrintI(offset) << '(' << PrintGPR(rs) << ')'; };
+
+op lwc1(49[6]:rs[5]:rt[5]:sext offset[16]);
+lwc1.disasm = { sink << "lwc1\t" << PrintR("$f",rt) << ',' << PrintI(offset) << '(' << PrintGPR(rs) << ')'; };
+
+op lwc2(50[6]:rs[5]:rt[5]:sext offset[16]);
+lwc2.disasm = { sink << "lwc2\t" << PrintGPR(rt) << ',' << PrintI(offset) << '(' << PrintGPR(rs) << ')'; };
+
+op lwc3(51[6]:rs[5]:rt[5]:sext offset[16]);
+lwc3.disasm = { sink << "lwc3\t" << PrintGPR(rt) << ',' << PrintI(offset) << '(' << PrintGPR(rs) << ')'; };
+
+op lld(52[6]:rs[5]:rt[5]:sext offset[16]);
+lld.disasm = { sink << "lld\t" << PrintGPR(rt) << ',' << PrintI(offset) << '(' << PrintGPR(rs) << ')'; };
+
+op ldc1(53[6]:rs[5]:rt[5]:sext offset[16]);
+ldc1.disasm = { sink << "ldc1\t" << PrintR("$f",rt) << ',' << PrintI(offset) << '(' << PrintGPR(rs) << ')'; };
+
+op ldc2(54[6]:rs[5]:rt[5]:sext offset[16]);
+ldc2.disasm = { sink << "ldc2\t" << PrintGPR(rt) << ',' << PrintI(offset) << '(' << PrintGPR(rs) << ')'; };
+
+op ldc3(55[6]:rs[5]:rt[5]:sext offset[16]);
+ldc3.disasm = { sink << "ld\t" << PrintGPR(rt) << ',' << PrintI(offset) << '(' << PrintGPR(rs) << ')'; };
+
+op swc1(57[6]:rs[5]:rt[5]:sext offset[16]);
+swc1.disasm = { sink << "swc1\t" << PrintR("$f",rt) << ',' << PrintI(offset) << '(' << PrintGPR(rs) << ')'; };
+
+op swc2(58[6]:rs[5]:rt[5]:sext offset[16]);
+swc2.disasm = { sink << "swc2\t" << PrintGPR(rt) << ',' << PrintI(offset) << '(' << PrintGPR(rs) << ')'; };
+
+op swc3(59[6]:rs[5]:rt[5]:sext offset[16]);
+swc3.disasm = { sink << "swc3\t" << PrintGPR(rt) << ',' << PrintI(offset) << '(' << PrintGPR(rs) << ')'; };
+
+op scd(60[6]:rs[5]:rt[5]:sext offset[16]);
+scd.disasm = { sink << "scd\t" << PrintGPR(rt) << ',' << PrintI(offset) << '(' << PrintGPR(rs) << ')'; };
+
+op sdc1(61[6]:rs[5]:rt[5]:sext offset[16]);
+sdc1.disasm = { sink << "sdc1\t" << PrintR("$f",rt) << ',' << PrintI(offset) << '(' << PrintGPR(rs) << ')'; };
+
+op sdc2(62[6]:rs[5]:rt[5]:sext offset[16]);
+sdc2.disasm = { sink << "sdc2\t" << PrintGPR(rt) << ',' << PrintI(offset) << '(' << PrintGPR(rs) << ')'; };
+
+op sdc3(63[6]:rs[5]:rt[5]:sext offset[16]);
+sdc3.disasm = { sink << "sd\t" << PrintGPR(rt) << ',' << PrintI(offset) << '(' << PrintGPR(rs) << ')'; };
+

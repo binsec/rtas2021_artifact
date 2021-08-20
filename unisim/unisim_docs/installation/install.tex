@@ -1,0 +1,360 @@
+\section{Getting UNISIM}
+\label{getting_unisim}
+
+\subsection{Source distributions}
+
+The source of UNISIM is composed of three different packages:
+
+\begin{itemize}
+\item unisim\_tools: utilities used by the simulators and other external tools
+\item unisim\_lib: library with all the modules available in UNISIM, and the core libraries of the UNISIM framework
+\item unisim\_simulators: different simulators built using modules from the unisim\_lib
+\end{itemize}
+
+\subsubsection{Tarballs}
+
+Source is available as tarballs (.tar.gz) at \url{http://unisim.org/distributions/source}, where you will find the three different packages.
+To uncompress a source tarball, use program ‘tar’ at the command prompt:
+
+\begin{verbatim}
+$ tar zxvf <tarball name>
+\end{verbatim}
+
+To compile (and install) the packages refer to the corresponding sections. Note that the compilation order is:
+
+\begin{enumerate}
+\item unisim\_tools, check UNISIM Tools page
+\item unisim\_lib, check UNISIM Library page
+\item unisim\_simulators, check UNISIM simulators page
+\end{enumerate}
+
+\subsubsection{Subversion repository}
+
+Source of UNISIM is also available from the subversion repository at \url{https://guest@unisim.org/svn/devel}.
+Note that the subversion repository hosts the development version of UNISIM which may have installation problems or instabilities.
+You may use the subversion repository only if you want to have a daily up-to-date version of UNISIM and don’t care about such problems.
+To access to the source, you must have a subversion client installed which is available for you operating system either as a package or an installer here: \url{http://tortoisesvn.tigris.org}.
+
+To download the source from the command prompt, just type:
+
+\begin{verbatim}
+$ svn --username guest --password "" co https://unisim.org/svn/devel
+\end{verbatim}
+
+User “guest” has read permission to the source tree. No password is required for user “guest”.
+
+\subsection{Binary distributions}
+
+Binary distributions are only provided for UNISIM Tools and UNISIM Simulators. UNISIM Library is only distributed as source code.
+You must have permission to install softwares to use these binary distributions.
+On Linux or any other Unix-like operating systems, this means that you can login as user “root”, or you can run commands as root using “sudo”.
+On Windows, this means that you are either administrator or a user with some privileges.
+
+\subsubsection{Binaries for Debian, Ubuntu, ...}
+
+\noindent \textbf{Manually installing the UNISIM debian packages}
+
+The Debian packages (.deb) are available here: \url{http://unisim.org/distributions/binary/deb}.
+These packages can be used on Debian Linux or any derived debian distributions such as Ubuntu
+Program ‘dpkg’ can install the UNISIM debian packages:
+
+\begin{verbatim}
+$ dpkg -i <package name>
+\end{verbatim}
+
+Symetrically, it can uninstall the UNISIM debian packages:
+
+\begin{verbatim}
+$ dpkg -e <package name>
+\end{verbatim}
+
+\noindent \textbf{Debian Package repository}
+
+Your Linux can be configured to fetch the packages using you preferred package manager such as apt-get, synaptic or adept.
+At the command prompt, type the following as root:
+
+\begin{verbatim}
+$ echo "deb http://unisim.org/distributions/binary/deb stable main" > \
+  /etc/apt/sources.list.d/unisim.list
+$ apt-get update
+\end{verbatim}
+
+To install the UNISIM packages from the command prompt, type the following as root:
+
+\begin{verbatim}
+$ apt-get install unisim-tools
+$ apt-get install unisim-simulators
+\end{verbatim}
+
+To remove the UNISIM packages from the command prompt, type the following as root:
+
+\begin{verbatim}
+$ apt-get remove unisim-tools
+$ apt-get remove unisim-simulators
+\end{verbatim}
+
+\subsubsection{Binaries for Redhat, Fedora, Mandriva, Suse ...}
+
+\noindent \textbf{Manually installing the UNISIM rpm packages}
+
+The Redhat packages (.rpm) are available here: \url{http://unisim.org/distributions/binary/rpm}.
+These packages can be used on Redhat Linux or any derived redhat distributions such as Mandriva or Fedora.
+Program ‘rpm’ can install the UNISIM rpm packages:
+
+\begin{verbatim}
+$ rpm -i <package name>
+\end{verbatim}
+
+Symetrically, it can uninstall the UNISIM rpm packages:
+
+\begin{verbatim}
+$ rpm -e <package name>
+\end{verbatim}
+
+\noindent \textbf{Mandriva Package repository}
+
+Your Mandriva Linux can be configured to fetch the packages using you package manager such as urpmi, or drakerpm.
+At the command prompt, type the following as root:
+
+\begin{verbatim}
+$ urpmi.addmedia UNISIM http://unisim.org/distributions/binary/rpm
+\end{verbatim}
+
+To install the UNISIM packages from the command prompt, type the following as root:
+
+\begin{verbatim}
+$ urpmi unisim-tools
+$ urpmi unisim-simulators
+\end{verbatim}
+
+To remove the UNISIM packages from the command prompt, type the following as root:
+
+\begin{verbatim}
+$ urpme unisim-tools
+$ urpme unisim-simulators
+\end{verbatim}
+
+\subsubsection{Binaries for Windows (2000/XP/XP64/Vista 32/Vista 64)}
+
+The Windows installers (.exe) are available here:\\
+\url{http://unisim.org/distributions/binary/win32}.\\
+Run the installers and follow the instructions.
+To develop with UNISIM on Windows you may want to use Mingw32/MSYS, which is available for download at \url{http://www.mingw.org}.\\
+You can also use a “ready to use” packaged version of Mingw32/MSYS available here:\\
+\url{http://unisim.org/distributions/binary/win32/mingw32-unisim-pack.exe}.\\
+To uninstall UNISIM, go to “Start” $\rightarrow$ “Control Panel” $\rightarrow$ “Add or Remove Programs”, and select the UNISIM component you want to uninstall.
+
+\noindent \textbf{Tip:} When developing under Windows with Mingw32/MSYS, you should avoid using spaces in file and directory names
+
+\section{Building UNISIM}
+
+\subsection{Building the UNISIM Tools}
+
+\subsubsection{Requirements}
+
+\begin{itemize}
+\item GNU Bash shell (3.2.25 recommended)
+\item GNU Make (3.81 recommended)
+\item GNU C++ Compiler (g++) ($>=$ 3.x)
+\item automake ($>=$ 1.9.6 recommended)
+\item autoconf ($>=$ 2.59 recommended)
+\item bison (2.3 recommended) or Berkeley YACC (1.9 recommended)
+\item flex (2.5.4 recommended)
+\end{itemize}
+
+\subsubsection{Building the 'configure' scripts}
+
+If you've downloaded the source code as a tarball, you can ignore this paragraph.
+If you've downloaded the source code with subversion, you first need to build the configure scripts:
+
+\begin{verbatim}
+$ cd unisim_tools
+$ ./build-configure.sh
+\end{verbatim}
+
+In case of failure while running ‘build-configure.sh’, check that ‘find’, ‘autoconf’, ‘autoheader’ and ‘automake’ are correctly installed.
+
+\subsubsection{Configuring}
+
+\begin{verbatim}
+$ cd unisim_tools
+$ ./configure --prefix=${HOME}/unisim
+\end{verbatim}
+
+Script configure also supports the following options:
+
+\begin{itemize}
+\item \texttt{--disable-<directory>}: Disable compilation of a whole subdirectory\\
+(e.g. \texttt{--disable-build\_tool-genisslib} prevents configure and make from entering directory genisslib)
+\end{itemize}
+
+\subsubsection{Compiling the source code}
+
+\begin{verbatim}
+$ make
+\end{verbatim}
+
+\subsubsection{Installing the UNISIM Tools}
+
+\begin{verbatim}
+$ make install
+\end{verbatim}
+
+
+\subsection{Building the UNISIM Library}
+
+\subsubsection{Requirements}
+
+\noindent \textbf{Mandatory}
+
+\begin{itemize}
+\item UNISIM Tools
+\item GNU Bash shell (3.2.25 recommended)
+\item GNU Make (3.81 recommended)
+\item GNU C++ Compiler (g++) ($>=$ 3.x)
+\item automake ($>=$ 1.9.6 recommended)
+\item autoconf ($>=$ 2.59 recommended)
+\item boost development library (1.34.0 recommended)
+\item libxml2 development library (2.6.30 recommended)
+\item zlib development library (1.2.3 recommended)
+\item Core SystemC Language ($>=$ 2.1)
+\item TLM Transaction Level Modeling Library, Release 2.0
+\end{itemize}
+
+\noindent \textbf{Optional}
+
+\begin{itemize}
+\item libSDL development library provides video frame capability and access to input devices (e.g. keyboard)
+\item editline (libedit) development library provides line editing and history capabilities (e.g. for an inline debugger)
+\item ncurses development library provides access to terminal screen (e.g. for an inline debugger)
+\item Cacti 4.2 as a C++ class library (see \url{https://guest@unisim.org/svn/devel/extra/cacti}) provides a foundation to estimate power consumption
+\end{itemize}
+
+\subsubsection{Building the UNISIM Library 'configure' scripts}
+
+If you've downloaded the UNISIM Library source code as a tarball, you can ignore this paragraph.
+If you've downloaded the UNISIM Library source code with subversion, you first need to build the configure scripts:
+
+\begin{verbatim}
+$ cd unisim_lib
+$ ./build-configure.sh
+\end{verbatim}
+
+In case of failure while running \texttt{build-configure.sh}, check that \texttt{find}, \texttt{autoconf}, \texttt{autoheader} and \texttt{automake} are correctly installed.
+
+\subsubsection{Configuring UNISIM Library}
+
+\begin{verbatim}
+$ cd unisim_lib
+$ ./configure --prefix=${HOME}/unisim \
+              --with-unisim-tools=${HOME}/unisim \
+              --with-systemc=${HOME}/systemc \
+              --with-tlm20=${HOME}/TLM-2008-06-09
+\end{verbatim}
+
+Script configure also supports the following options:
+
+\begin{itemize}
+\item \texttt{--with-sdl=<path-to-sdl-install>}: Override the search path for SDL C headers
+\item \texttt{--with-boost=<path-to-boost-install>}: Override the search path for boost C++ headers
+\item \texttt{--with-libxml2=<path-to-libxml2-install>}: Override the search path for libxml2 C headers
+\item \texttt{--with-zlib=<path-to-zlib-install>}: Override the search path for zlib C headers
+\item \texttt{--with-libedit=<path-to-libedit-install>}: Override the search path for libedit C headers
+\item \texttt{--with-ncurses=<path-to-ncurses-install>}: Override the search path for ncurses C headers
+\item \texttt{--with-systemc=<path-to-systemc-install>}: Override the search path for SystemC C++ headers
+\item \texttt{--with-tlm20=<path-to-tlm2.0-install>}: Override the search path for TLM 2.0 C++ headers
+\item \texttt{--with-cacti=<path-to-cacti4.2-install>}: Override the search path for Cacti 4.2 C++ headers
+\item \texttt{--enable-release}: Compile both debug and release versions of components. Debug versions are more verbose than release versions
+\item \texttt{--disable-<directory>}: Disable compilation of a whole subdirectory\\ (e.g. \texttt{--disable-unisim-service-os-linux\_os} prevents configure and make from entering directory unisim/service/os/linux\_os)
+\end{itemize}
+
+\subsubsection{Compiling the UNISIM Library source code}
+
+\begin{verbatim}
+$ make
+\end{verbatim}
+
+\subsubsection{Installing the UNISIM Library}
+
+\begin{verbatim}
+$ make install
+\end{verbatim}
+
+
+\subsection{Building the UNISIM Simulators}
+
+\subsubsection{Requirements}
+
+\noindent \textbf{Mandatory}
+
+\begin{itemize}
+\item UNISIM Library
+\item GNU Bash shell (3.2.25 recommended)
+\item GNU Make (3.81 recommended)
+\item GNU C++ Compiler (g++) ($>=$ 3.x)
+\item automake ($>=$ 1.9.6 recommended)
+\item autoconf ($>=$ 2.59 recommended)
+\item boost development library (1.34.0 recommended)
+\item libxml2 development library (2.6.30 recommended)
+\item zlib development library (1.2.3 recommended)
+\item Core SystemC Language ($>=$ 2.1)
+\item TLM Transaction Level Modeling Library, Release 2.0
+\end{itemize}
+
+\noindent \textbf{Optional}
+
+\begin{itemize}
+\item libSDL development library provides video frame capability and access to input devices (e.g. keyboard)
+\item editline (libedit) development library provides line editing and history capabilities (e.g. for an inline debugger)
+\item ncurses development library provides access to terminal screen (e.g. for an inline debugger)
+\item Cacti 4.2 as a C++ class library (see \url{https://guest@unisim.org/svn/devel/extra/cacti}) provides a foundation to estimate power consumption
+\end{itemize}
+
+\subsubsection{Building the 'configure' scripts}
+
+If you downloaded the source code as a tarball, you can ignore this section. If you downloaded the source code with subversion, you first need to build the configure scripts:
+
+\begin{verbatim}
+$ cd unisim_simulators
+$ ./build-configure.sh
+\end{verbatim}
+
+In case of failure while running \texttt{build-configure.sh}, check that \texttt{find}, \texttt{autoconf}, \texttt{autoheader} and \texttt{automake} are correctly installed.
+
+\subsubsection{Configuring}
+
+\begin{verbatim}
+$ cd unisim_simulators
+$ ./configure --prefix=${HOME}/unisim \
+              --with-unisim-lib=${HOME}/unisim \
+              --with-systemc=${HOME}/systemc \
+              --with-tlm20=${HOME}/TLM-2008-06-09
+\end{verbatim}
+
+Script configure also supports the following options:
+\begin{itemize}
+\item \texttt{--with-sdl=<path-to-sdl-install>}: Override the search path for SDL C headers and libraries
+\item \texttt{--with-boost=<path-to-boost-install>}: Override the search path for boost C++ headers and libraries
+\item \texttt{--with-libxml2=<path-to-libxml2-install>}: Override the search path for libxml2 C headers and libraries
+\item \texttt{--with-zlib=<path-to-zlib-install>}: Override the search path for zlib C headers and libraries
+\item \texttt{--with-libedit=<path-to-libedit-install>}: Override the search path for libedit C headers and libraries
+\item \texttt{--with-ncurses=<path-to-ncurses-install>}: Override the search path for ncurses C headers and libraries
+\item \texttt{--with-systemc=<path-to-systemc-install>}: Override the search path for SystemC C++ headers and library. Depending on you host machine, script configure will search for library libsystemc.a in subdirectory lib-macosx, lib-gccsparcOS5, lib-cygwin, lib-linux, lib-linux64, lib-gcchpux11 (lib-macosx-x86 and lib-mingw32 if you patched your SystemC)
+\item \texttt{--with-tlm20=<path-to-tlm2.0-install>}: Override the search path for TLM 2.0 C++ headers.
+\item \texttt{--with-cacti=<path-to-cacti4.2-install>}: Override the search path for Cacti 4.2 C++ headers and libraries
+\item \texttt{--enable-static}: build statically linked simulators if possible
+\item \texttt{--enable-release}: Compile both debug and release versions of the simulators. Debug versions are more verbose than release versions
+\item \texttt{--disable-<directory>}: Disable compilation of a whole subdirectory\\ (e.g. \texttt{--disable-simulator-tlm-ppcemu} prevents configure and make from entering directory tlm/ppcemu)
+\end{itemize}
+
+\subsubsection{Compiling the source code}
+
+\begin{verbatim}
+$ make
+\end{verbatim}
+
+\subsubsection{Installing the UNISIM Simulators}
+
+\begin{verbatim}
+$ make install
+\end{verbatim}

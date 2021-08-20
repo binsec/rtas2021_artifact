@@ -1,0 +1,667 @@
+/*
+ *  Copyright (c) 2007-2016,
+ *  Commissariat a l'Energie Atomique (CEA)
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without modification,
+ *  are permitted provided that the following conditions are met:
+ *
+ *   - Redistributions of source code must retain the above copyright notice, this
+ *     list of conditions and the following disclaimer.
+ *
+ *   - Redistributions in binary form must reproduce the above copyright notice,
+ *     this list of conditions and the following disclaimer in the documentation
+ *     and/or other materials provided with the distribution.
+ *
+ *   - Neither the name of CEA nor the names of its contributors may be used to
+ *     endorse or promote products derived from this software without specific prior
+ *     written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ *  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *  DISCLAIMED.
+ *  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ *  INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ *  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+ *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ *  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Authors: Yves Lhuillier (yves.lhuillier@cea.fr), Daniel Gracia Perez (daniel.gracia-perez@cea.fr), 
+ */
+
+/**********************************************
+
+      EXCEPTION-GENERATING INSTRUCTIONS
+
+**********************************************/
+
+/*******************************************************************
+ * swi (software interrupt) instruction; also known as: svc (supervisor call) in armv7
+ * NOTE: this instruction is used to make the system calls
+ */
+
+op swi( cond[4]: 0b1111[4]: imm[24] );
+
+swi.disasm = {
+  buffer << "swi" << DisasmCondition(cond) << "\t" << DisasmI(imm);
+};
+
+swi.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+  
+  cpu.CallSupervisor( imm );
+};
+
+/*
+ * end of swi (software interrupt) instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * bkpt (breakpoint) instruction
+ */
+
+op bkpt( 0b1110[4]: 0b00010010[8]: shl<4> im1[12]: 0b0111[4]: im0[4] );
+bkpt.var imm : {uint32_t} = {im1|im0};
+
+bkpt.disasm = {
+  buffer << "bkpt\t0x" << std::hex << std::setw( 4 ) << std::setfill( '0' ) << imm << std::setw( 0 ) << std::dec;
+};
+
+bkpt.execute = {
+  cpu.BKPT( imm );
+};
+
+/*
+ * end of bkpt (breakpoint) instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * hvc () instruction
+ */
+
+op hvc( cond[4]: 0b00010100[8]: shl<4> im1[12]: 0b0111[4]: im0[4] );
+hvc.var imm : {uint32_t} = {im1|im0};
+
+hvc.disasm = {
+  buffer << "hvc" << DisasmCondition(cond) << '\t' << std::dec << imm;
+};
+
+/*
+ * end of hvc () instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * smc () instruction
+ */
+
+op smc( cond[4]: 0b00010110[8]: shl<4> im1[12]: 0b0111[4]: im0[4] );
+smc.var imm : {uint32_t} = {im1|im0};
+
+smc.disasm = {
+  buffer << "smc" << DisasmCondition(cond) << '\t' << std::dec << imm;
+};
+
+/*
+ * end of smc () instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * eret (Exception Return) instruction
+ */
+
+op eret( cond[4]: 0b0001011000000000000001101110[28] );
+
+eret.disasm = {
+  buffer << "eret" << DisasmCondition(cond);
+};
+
+/*
+ * end of eret (Exception Return) instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * cps (Change Processor State) instruction
+ * 
+ * CPS changes one or more of the CPSR.{A, I, F} interrupt mask bits
+ * and the CPSR.M mode field, without changing the other CPSR bits.
+ */ 
+
+op cps( 0b1111[4]: 0b00010000[8]: chitm[1]: dis[1]: chmod[1]: 0b00000000[8]: a[1]: i[1]: f[1]: 0b0[1]: mode[5] );
+cps.var reject : {Reject} = {(not chmod and (mode != 0)) or
+                             (chitm xor (a or i or f)) or
+                             (not (chmod or chitm)) or
+                             (not chitm and dis)};
+cps.var psr_mask : {uint32_t} = {a*A.getmask<uint32_t>()|i*I.getmask<uint32_t>()|f*F.getmask<uint32_t>()|chmod*M.getmask<uint32_t>()};
+cps.var psr_bits : {uint32_t} = {dis*(A.getmask<uint32_t>()|I.getmask<uint32_t>()|F.getmask<uint32_t>())|mode};
+
+cps.disasm = {
+  buffer << "cps";
+  char const* sep = "\t";
+  if (chitm) {
+    buffer << (dis?"id":"ie") << '\t' << (a?"a":"") << (i?"i":"") << (f?"f":"");
+    sep = ", ";
+  }
+  if (chmod)
+    buffer << sep << DisasmI( mode );
+};
+
+cps.execute = {
+  typedef typename ARCH::U32 U32;
+  
+  if (unlikely( cpu.Test(cpu.CPSR().Get(M) == U32(cpu.USER_MODE)) ))
+    return;
+  
+  // CPSRWriteByInstr() checks for illegal mode changes
+  CPSRWriteByInstr( cpu, U32(psr_bits), psr_mask );
+};
+
+/*
+ * end of cps (Change Processor State) instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * rfe (Return From Exception) instruction
+ * 
+ * RFE changes one or more of the RFER.{A, I, F} interrupt mask bits
+ * and the RFER.M mode field, without changing the other RFER bits.
+ */ 
+
+op rfe( 0b1111[4]: 0b100[3]: mod[2]: 0b0[1]: w[1]: 0b1[1]: rn[4]: 0b0000101000000000[16] );
+
+rfe.disasm = {
+  buffer << "rfe" << DisasmLSMMode(mod) << '\t' << DisasmRegister(rn) << (w ? "!" : "");
+};
+
+/*
+ * end of rfe (Return From Exception) instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * srs (Store Return State) instruction
+ * 
+ * SRS stores the LR and SPSR of the current mode to the stack of a
+ * specified mode.
+ */ 
+
+op srs( 0b1111[4]: 0b100[3]: mod[2]: 0b1[1]: w[1]: 0b0[1]: 0b1101[4]: 0b00000101000[11]: mode[5] );
+
+srs.disasm = {
+  buffer << "srs" << DisasmLSMMode(mod) << '\t' << DisasmRegister(13) << (w ? "!" : "") << ", " << DisasmI(mode);
+};
+
+/*
+ * end of srs (Store Return State) instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * SUBS PC, LR and related instructions
+ * 
+ * The SUBS PC, LR, #<const> instruction provides an exception return
+ * without the use of the stack. It subtracts the immediate constant
+ * from LR, branches to the resulting address, and also copies the
+ * SPSR to the CPSR. The ARM instruction set contains similar
+ * instructions based on other data-processing operations, or with a
+ * wider range of operands, or both. ARM deprecates using these other
+ * instructions, except for MOVS PC, LR.
+ *
+ * TODO: check mode
+ */
+
+op subspc_imm( cond[4]: 0b00[2]: 0b1[1]: 0b0010[4]: 0b1[1]: rn[4]: 0b1111[4]: shl<1> imr[4]: imb[8] );
+subspc_imm.var imm : {uint32_t} = {unisim::util::arithmetic::RotateRight( uint32_t( imb ), imr )};
+
+subspc_imm.disasm = {
+  buffer << "subs" << DisasmCondition(cond) << "\tpc, " << DisasmRegister(rn) << ", " << DisasmI(imm);
+};
+
+subspc_imm.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  U32 op1 = cpu.GetGPR( rn ), op2 = U32(imm), res = op1 - op2;
+  
+  CPSRWriteByInstr( cpu, cpu.CurrentMode().GetSPSR(), 0xffffffff );
+  
+  cpu.SetGPR( 15, res );
+};
+
+op subspc_imm_shift( cond[4]: 0b00[2]: 0b0[1]: 0b0010[4]: 0b1[1]: rn[4]: 0b1111[4]: imm[5]: shift[2]: 0b0[1]: rm[4] );
+
+subspc_imm_shift.disasm = {
+  buffer << "subs" << DisasmCondition(cond) << "\tpc, " << DisasmRegister(rn) << ", " << DisasmRegister(rm) << DisasmShImm( shift, imm );
+};
+
+subspc_imm_shift.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  U32 rmval = cpu.GetGPR( rm ),
+      op1 = cpu.GetGPR( rn ), op2 = ComputeImmShift( cpu, rmval, shift, imm ),
+      res = op1 - op2;
+
+  CPSRWriteByInstr( cpu, cpu.CurrentMode().GetSPSR(), 0xffffffff );
+  
+  cpu.SetGPR( 15, res );
+};
+
+/* WARNING: deprecated (except movs PC, LR)*/
+
+op movspc_imm( cond[4]: 0b00[2]: 0b1[1]: 0b1101[4]: 0b1[1]: 0b0000[4]: 0b1111[4]: shl<1> imr[4]: imb[8] );
+movspc_imm.var imm : {uint32_t} = {unisim::util::arithmetic::RotateRight( uint32_t( imb ), imr )};
+
+movspc_imm.disasm = {
+  buffer << "movs" << DisasmCondition(cond) << "\tpc, " << DisasmI(imm);
+};
+
+movspc_imm.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+
+  typedef typename ARCH::U32 U32;
+  U32 res = U32(imm);
+  
+  CPSRWriteByInstr( cpu, cpu.CurrentMode().GetSPSR(), 0xffffffff );
+  
+  cpu.SetGPR( 15, res );
+};
+
+op movspc_imm_shift( cond[4]: 0b00[2]: 0b0[1]: 0b1101[4]: 0b1[1]: 0b0000[4]: 0b1111[4]: imm[5]: shift[2]: 0b0[1]: rm[4] );
+
+movspc_imm_shift.disasm = {
+  uint32_t shift_value = imm;
+  
+  if (imm == 0) {
+    if (shift == 0 or shift == 3) {
+      buffer << (shift ? "rrxs" : "movs") << DisasmCondition(cond) << "\tpc, " << DisasmRegister(rm);
+      return;
+    }
+    shift_value = 32;
+  }
+  buffer << DisasmShift(shift) << "s" << DisasmCondition(cond) << "\tpc, " << DisasmRegister(rm) << ", " << DisasmI(shift_value);
+};
+
+movspc_imm_shift.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  U32 rmval = cpu.GetGPR( rm ), res = ComputeImmShift( cpu, rmval, shift, imm );
+  
+  CPSRWriteByInstr( cpu, cpu.CurrentMode().GetSPSR(), 0xffffffff );
+  
+  cpu.SetGPR( 15, res );
+};
+
+op andspc_imm( cond[4]: 0b00[2]: 0b1[1]: 0b0000[4]: 0b1[1]: rn[4]: 0b1111[4]: shl<1> imr[4]: imb[8] );
+andspc_imm.var imm : {uint32_t} = {unisim::util::arithmetic::RotateRight( uint32_t( imb ), imr )};
+
+andspc_imm.disasm = {
+  buffer << "ands" << DisasmCondition(cond) << "\tpc, " << ", " << DisasmRegister(rn) << ", " << DisasmI(imm);
+};
+
+andspc_imm.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+
+  typedef typename ARCH::U32 U32;
+  U32 op1 = cpu.GetGPR( rn ), op2 = U32(imm), res = op1 & op2;
+  
+  CPSRWriteByInstr( cpu, cpu.CurrentMode().GetSPSR(), 0xffffffff );
+  
+  cpu.SetGPR( 15, res );
+};
+
+op andspc_imm_shift( cond[4]: 0b00[2]: 0b0[1]: 0b0000[4]: 0b1[1]: rn[4]: 0b1111[4]: imm[5]: shift[2]: 0b0[1]: rm[4] );
+
+andspc_imm_shift.disasm = {
+  buffer << "ands" << DisasmCondition(cond) << "\tpc, " << DisasmRegister(rn) << ", " << DisasmRegister(rm) << DisasmShImm( shift, imm );
+};
+
+andspc_imm_shift.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+
+  typedef typename ARCH::U32 U32;
+  U32 rmval = cpu.GetGPR( rm ),
+      op1 = cpu.GetGPR( rn ), op2 = ComputeImmShift( cpu, rmval, shift, imm ),
+      res = op1 & op2;
+  
+  CPSRWriteByInstr( cpu, cpu.CurrentMode().GetSPSR(), 0xffffffff );
+  
+  cpu.SetGPR( 15, res );
+};
+
+op eorspc_imm( cond[4]: 0b00[2]: 0b1[1]: 0b0001[4]: 0b1[1]: rn[4]: 0b1111[4]: shl<1> imr[4]: imb[8] );
+eorspc_imm.var imm : {uint32_t} = {unisim::util::arithmetic::RotateRight( uint32_t( imb ), imr )};
+
+eorspc_imm.disasm = {
+  buffer << "eors" << DisasmCondition(cond) << "\tpc, " << DisasmRegister(rn) << ", " << DisasmI(imm);
+};
+
+eorspc_imm.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  U32 op1 = cpu.GetGPR( rn ), op2 = U32(imm), res = op1 ^ op2;
+  
+  CPSRWriteByInstr( cpu, cpu.CurrentMode().GetSPSR(), 0xffffffff );
+  
+  cpu.SetGPR( 15, res );
+};
+
+op eorspc_imm_shift( cond[4]: 0b00[2]: 0b0[1]: 0b0001[4]: 0b1[1]: rn[4]: 0b1111[4]: imm[5]: shift[2]: 0b0[1]: rm[4] );
+
+eorspc_imm_shift.disasm = {
+  buffer << "eors" << DisasmCondition(cond) << "\tpc, " << DisasmRegister(rn) << ", " << DisasmRegister(rm) << DisasmShImm( shift, imm );
+};
+
+eorspc_imm_shift.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+
+  typedef typename ARCH::U32 U32;
+  U32 rmval = cpu.GetGPR( rm ),
+           op1 = cpu.GetGPR( rn ), op2 = ComputeImmShift( cpu, rmval, shift, imm ),
+           res = op1 ^ op2;
+  
+  CPSRWriteByInstr( cpu, cpu.CurrentMode().GetSPSR(), 0xffffffff );
+  
+  cpu.SetGPR( 15, res );
+};
+
+op rsbspc_imm( cond[4]: 0b00[2]: 0b1[1]: 0b0011[4]: 0b1[1]: rn[4]: 0b1111[4]: shl<1> imr[4]: imb[8] );
+rsbspc_imm.var imm : {uint32_t} = {unisim::util::arithmetic::RotateRight( uint32_t( imb ), imr )};
+
+rsbspc_imm.disasm = {
+  buffer << "rsbs" << DisasmCondition(cond) << "\tpc, " << DisasmRegister(rn) << ", " << DisasmI(imm);
+};
+
+rsbspc_imm.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+
+  typedef typename ARCH::U32 U32;
+  U32 op1 = U32(imm), op2 = cpu.GetGPR( rn ), res = op1 - op2;
+  
+  CPSRWriteByInstr( cpu, cpu.CurrentMode().GetSPSR(), 0xffffffff );
+  
+  cpu.SetGPR( 15, res );
+};
+
+op rsbspc_imm_shift( cond[4]: 0b00[2]: 0b0[1]: 0b0011[4]: 0b1[1]: rn[4]: 0b1111[4]: imm[5]: shift[2]: 0b0[1]: rm[4] );
+
+rsbspc_imm_shift.disasm = {
+  buffer << "rsbs" << DisasmCondition(cond) << "\tpc, " << DisasmRegister(rn) << ", " << DisasmRegister(rm) << DisasmShImm( shift, imm );
+};
+
+rsbspc_imm_shift.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+
+  typedef typename ARCH::U32 U32;
+  U32 rmval = cpu.GetGPR( rm ),
+           op1 = ComputeImmShift( cpu, rmval, shift, imm ), op2 = cpu.GetGPR( rn ),
+           res = op1 - op2;
+  
+  CPSRWriteByInstr( cpu, cpu.CurrentMode().GetSPSR(), 0xffffffff );
+  
+  cpu.SetGPR( 15, res );
+};
+
+op addspc_imm( cond[4]: 0b00[2]: 0b1[1]: 0b0100[4]: 0b1[1]: rn[4]: 0b1111[4]: shl<1> imr[4]: imb[8] );
+addspc_imm.var imm : {uint32_t} = {unisim::util::arithmetic::RotateRight( uint32_t( imb ), imr )};
+
+addspc_imm.disasm = {
+  buffer << "adds" << DisasmCondition(cond) << "\tpc, " << DisasmRegister(rn) << ", " << DisasmI(imm);
+};
+
+addspc_imm.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+
+  typedef typename ARCH::U32 U32;
+  U32 op1 = cpu.GetGPR( rn ), op2 = U32(imm), res = op1 + op2;
+  
+  CPSRWriteByInstr( cpu, cpu.CurrentMode().GetSPSR(), 0xffffffff );
+  
+  cpu.SetGPR( 15, res );
+};
+
+op addspc_imm_shift( cond[4]: 0b00[2]: 0b0[1]: 0b0100[4]: 0b1[1]: rn[4]: 0b1111[4]: imm[5]: shift[2]: 0b0[1]: rm[4] );
+
+addspc_imm_shift.disasm = {
+  buffer << "adds" << DisasmCondition(cond) << "\tpc, " << DisasmRegister(rn) << ", " << DisasmRegister(rm) << DisasmShImm( shift, imm );
+};
+
+addspc_imm_shift.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+
+  typedef typename ARCH::U32 U32;
+  U32 rmval = cpu.GetGPR( rm ),
+           op1 = cpu.GetGPR( rn ), op2 = ComputeImmShift( cpu, rmval, shift, imm ),
+           res = op1 + op2;
+  
+  CPSRWriteByInstr( cpu, cpu.CurrentMode().GetSPSR(), 0xffffffff );
+  
+  cpu.SetGPR( 15, res );
+};
+
+op adcspc_imm( cond[4]: 0b00[2]: 0b1[1]: 0b0101[4]: 0b1[1]: rn[4]: 0b1111[4]: shl<1> imr[4]: imb[8] );
+adcspc_imm.var imm : {uint32_t} = {unisim::util::arithmetic::RotateRight( uint32_t( imb ), imr )};
+
+adcspc_imm.disasm = {
+  buffer << "adcs" << DisasmCondition(cond) << "\tpc, " << DisasmRegister(rn) << ", " << DisasmI(imm);
+};
+
+adcspc_imm.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+
+  typedef typename ARCH::U32 U32;
+  U32 op1 = cpu.GetGPR( rn ), op2 = U32(imm), carry = cpu.CPSR().Get( C ), res = op1 + op2 + carry;
+  
+  CPSRWriteByInstr( cpu, cpu.CurrentMode().GetSPSR(), 0xffffffff );
+  
+  cpu.SetGPR( 15, res );
+};
+
+op adcspc_imm_shift( cond[4]: 0b00[2]: 0b0[1]: 0b0101[4]: 0b1[1]: rn[4]: 0b1111[4]: imm[5]: shift[2]: 0b0[1]: rm[4] );
+
+adcspc_imm_shift.disasm = {
+  buffer << "adcs" << DisasmCondition(cond) << "\tpc, " << DisasmRegister(rn) << ", " << DisasmRegister(rm) << DisasmShImm( shift, imm );
+};
+
+adcspc_imm_shift.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+
+  typedef typename ARCH::U32 U32;
+  U32 rmval = cpu.GetGPR( rm ),
+    op1 = cpu.GetGPR( rn ), op2 = ComputeImmShift( cpu, rmval, shift, imm ), carry = cpu.CPSR().Get( C ),
+    res = op1 + op2 + carry;
+  
+  CPSRWriteByInstr( cpu, cpu.CurrentMode().GetSPSR(), 0xffffffff );
+  
+  cpu.SetGPR( 15, res );
+};
+
+op sbcspc_imm( cond[4]: 0b00[2]: 0b1[1]: 0b0110[4]: 0b1[1]: rn[4]: 0b1111[4]: shl<1> imr[4]: imb[8] );
+sbcspc_imm.var imm : {uint32_t} = {unisim::util::arithmetic::RotateRight( uint32_t( imb ), imr )};
+
+sbcspc_imm.disasm = {
+  buffer << "sbcs" << DisasmCondition(cond) << "\tpc, " << DisasmRegister(rn) << ", " << DisasmI(imm);
+};
+
+sbcspc_imm.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+
+  typedef typename ARCH::U32 U32;
+  U32 op1 = cpu.GetGPR( rn ), op2 = U32(imm), borrow = cpu.CPSR().Get( C ) ^ U32(1), res = op1 - op2 - borrow;
+  
+  CPSRWriteByInstr( cpu, cpu.CurrentMode().GetSPSR(), 0xffffffff );
+  
+  cpu.SetGPR( 15, res );
+};
+
+op sbcspc_imm_shift( cond[4]: 0b00[2]: 0b0[1]: 0b0110[4]: 0b1[1]: rn[4]: 0b1111[4]: imm[5]: shift[2]: 0b0[1]: rm[4] );
+
+sbcspc_imm_shift.disasm = {
+  buffer << "sbcs" << DisasmCondition(cond) << "\tpc, " << DisasmRegister(rn) << ", " << DisasmRegister(rm) << DisasmShImm( shift, imm );
+};
+
+sbcspc_imm_shift.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+
+  typedef typename ARCH::U32 U32;
+  U32 rmval = cpu.GetGPR( rm ),
+    op1 = cpu.GetGPR( rn ), op2 = ComputeImmShift( cpu, rmval, shift, imm ), borrow = cpu.CPSR().Get( C ) ^ U32(1),
+    res = op1 - op2 - borrow;
+  
+  CPSRWriteByInstr( cpu, cpu.CurrentMode().GetSPSR(), 0xffffffff );
+  
+  cpu.SetGPR( 15, res );
+};
+
+op rscspc_imm( cond[4]: 0b00[2]: 0b1[1]: 0b0111[4]: 0b1[1]: rn[4]: 0b1111[4]: shl<1> imr[4]: imb[8] );
+rscspc_imm.var imm : {uint32_t} = {unisim::util::arithmetic::RotateRight( uint32_t( imb ), imr )};
+
+rscspc_imm.disasm = {
+  buffer << "rscs" << DisasmCondition(cond) << "\tpc, " << DisasmRegister(rn) << ", " << DisasmI(imm);
+};
+
+rscspc_imm.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+
+  typedef typename ARCH::U32 U32;
+  U32 op1 = U32(imm), op2 = cpu.GetGPR( rn ), borrow = cpu.CPSR().Get( C ) ^ U32(1), res = op1 - op2 - borrow;
+  
+  CPSRWriteByInstr( cpu, cpu.CurrentMode().GetSPSR(), 0xffffffff );
+  
+  cpu.SetGPR( 15, res );
+};
+
+op rscspc_imm_shift( cond[4]: 0b00[2]: 0b0[1]: 0b0111[4]: 0b1[1]: rn[4]: 0b1111[4]: imm[5]: shift[2]: 0b0[1]: rm[4] );
+
+rscspc_imm_shift.disasm = {
+  buffer << "rscs" << DisasmCondition(cond) << "\tpc, " << DisasmRegister(rn) << ", " << DisasmRegister(rm) << DisasmShImm( shift, imm );
+};
+
+rscspc_imm_shift.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+
+  typedef typename ARCH::U32 U32;
+  U32 rmval = cpu.GetGPR( rm ),
+    op1 = ComputeImmShift( cpu, rmval, shift, imm ), op2 = cpu.GetGPR( rn ), borrow = cpu.CPSR().Get( C ) ^ U32(1),
+    res = op1 - op2 - borrow;
+  
+  CPSRWriteByInstr( cpu, cpu.CurrentMode().GetSPSR(), 0xffffffff );
+  
+  cpu.SetGPR( 15, res );
+};
+
+op orrspc_imm( cond[4]: 0b00[2]: 0b1[1]: 0b1100[4]: 0b1[1]: rn[4]: 0b1111[4]: shl<1> imr[4]: imb[8] );
+orrspc_imm.var imm : {uint32_t} = {unisim::util::arithmetic::RotateRight( uint32_t( imb ), imr )};
+
+orrspc_imm.disasm = {
+  buffer << "orrs" << DisasmCondition(cond) << "\tpc, " << DisasmRegister(rn) << ", " << DisasmI(imm);
+};
+
+orrspc_imm.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+
+  typedef typename ARCH::U32 U32;
+  U32 op1 = cpu.GetGPR( rn ), op2 = U32(imm), res = op1 | op2;
+  
+  CPSRWriteByInstr( cpu, cpu.CurrentMode().GetSPSR(), 0xffffffff );
+  
+  cpu.SetGPR( 15, res );
+};
+
+op orrspc_imm_shift( cond[4]: 0b00[2]: 0b0[1]: 0b1100[4]: 0b1[1]: rn[4]: 0b1111[4]: imm[5]: shift[2]: 0b0[1]: rm[4] );
+
+orrspc_imm_shift.disasm = {
+  buffer << "orrs" << DisasmCondition(cond) << "\tpc, " << DisasmRegister(rn) << ", " << DisasmRegister(rm) << DisasmShImm( shift, imm );
+};
+
+orrspc_imm_shift.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+
+  typedef typename ARCH::U32 U32;
+  U32 rmval = cpu.GetGPR( rm ),
+           op1 = cpu.GetGPR( rn ), op2 = ComputeImmShift( cpu, rmval, shift, imm ),
+           res = op1 | op2;
+  
+  CPSRWriteByInstr( cpu, cpu.CurrentMode().GetSPSR(), 0xffffffff );
+  
+  cpu.SetGPR( 15, res );
+};
+
+op bicspc_imm( cond[4]: 0b00[2]: 0b1[1]: 0b1110[4]: 0b1[1]: rn[4]: 0b1111[4]: shl<1> imr[4]: imb[8] );
+bicspc_imm.var imm : {uint32_t} = {unisim::util::arithmetic::RotateRight( uint32_t( imb ), imr )};
+
+bicspc_imm.disasm = {
+  buffer << "bics" << DisasmCondition(cond) << "\tpc, " << DisasmRegister(rn) << ", " << DisasmI(imm);
+};
+
+bicspc_imm.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+
+  typedef typename ARCH::U32 U32;
+  U32 op1 = cpu.GetGPR( rn ), op2 = U32(imm), res = op1 & ~op2;
+  
+  CPSRWriteByInstr( cpu, cpu.CurrentMode().GetSPSR(), 0xffffffff );
+  
+  cpu.SetGPR( 15, res );
+};
+
+op bicspc_imm_shift( cond[4]: 0b00[2]: 0b0[1]: 0b1110[4]: 0b1[1]: rn[4]: 0b1111[4]: imm[5]: shift[2]: 0b0[1]: rm[4] );
+
+bicspc_imm_shift.disasm = {
+  buffer << "bics" << DisasmCondition(cond) << "\tpc, " << DisasmRegister(rn) << ", " << DisasmRegister(rm) << DisasmShImm( shift, imm );
+};
+
+bicspc_imm_shift.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+
+  typedef typename ARCH::U32 U32;
+  U32 rmval = cpu.GetGPR( rm ),
+           op1 = cpu.GetGPR( rn ), op2 = ComputeImmShift( cpu, rmval, shift, imm ),
+           res = op1 & ~op2;
+  
+  CPSRWriteByInstr( cpu, cpu.CurrentMode().GetSPSR(), 0xffffffff );
+  
+  cpu.SetGPR( 15, res );
+};
+
+op mvnspc_imm( cond[4]: 0b00[2]: 0b1[1]: 0b1111[4]: 0b1[1]: 0b0000[4]: 0b1111[4]: shl<1> imr[4]: imb[8] );
+mvnspc_imm.var imm : {uint32_t} = {unisim::util::arithmetic::RotateRight( uint32_t( imb ), imr )};
+
+mvnspc_imm.disasm = {
+  buffer << "mvns" << DisasmCondition(cond) << "\tpc, " << DisasmI(imm);
+};
+
+mvnspc_imm.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+
+  typedef typename ARCH::U32 U32;
+  U32 res = U32(~imm);
+  
+  CPSRWriteByInstr( cpu, cpu.CurrentMode().GetSPSR(), 0xffffffff );
+  
+  cpu.SetGPR( 15, res );
+};
+
+op mvnspc_imm_shift( cond[4]: 0b00[2]: 0b0[1]: 0b1111[4]: 0b1[1]: 0b0000[4]: 0b1111[4]: imm[5]: shift[2]: 0b0[1]: rm[4] );
+
+mvnspc_imm_shift.disasm = {
+  buffer << "mvns" << DisasmCondition(cond) << "\tpc, " << DisasmRegister(rm) << DisasmShImm( shift, imm );
+};
+
+mvnspc_imm_shift.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  U32 rmval = cpu.GetGPR( rm ), res = ~(ComputeImmShift( cpu, rmval, shift, imm ));
+  
+  CPSRWriteByInstr( cpu, cpu.CurrentMode().GetSPSR(), 0xffffffff );
+  
+  cpu.SetGPR( 15, res );
+};
+
+/*
+ * end of SUBS PC, LR and related instructions
+ *******************************************************************/
+

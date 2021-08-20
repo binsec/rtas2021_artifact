@@ -1,0 +1,16 @@
+INSTALLATION
+------------
+
+Requirements:
+  - GNU C++ compiler
+  - GNU C++ standard library
+  - GNU bash
+  - GNU make
+  - libxml2 & libz development libraries and headers
+
+Building instructions:
+  $ ./configure
+  $ make
+
+Installing (optional):
+  $ make install

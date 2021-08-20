@@ -1,0 +1,3 @@
+This package contains:
+  - intelemu: an intel64 (x86 compat-mode-only) user level simulator
+See INSTALL for installation instructions.

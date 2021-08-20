@@ -1,0 +1,683 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<variables>
+	<object name="cpu">
+		<variable name="max-inst">
+			<type>parameter</type>
+			<data_type>unsigned 64-bit integer</data_type>
+			<value>0xffffffffffffffff</value>
+			<description></description>
+		</variable>
+		<variable name="trap-on-instruction-counter">
+			<type>parameter</type>
+			<data_type>unsigned 64-bit integer</data_type>
+			<value>0xffffffffffffffff</value>
+			<description></description>
+		</variable>
+		<variable name="mimic-dev-board">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>true</value>
+			<description></description>
+			<enumeration>
+				<item>true</item>
+				<item>false</item>
+			</enumeration>
+		</variable>
+		<variable name="trap-on-trap-instruction">
+			<type>parameter</type>
+			<data_type>unsigned 32-bit integer</data_type>
+			<value>0x00000000</value>
+			<description>if not zero, encoding of trap instruction that should trap into debugger</description>
+		</variable>
+		<variable name="enable-parallel-load-bug">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>true</value>
+			<description>When using parallel loads (LDF src2, dst2 || LDF src1, dst1) the src1 load doesn't transform incorrect zero values to valid zero representation, instead they copy the contents of the memory to the register. Set to this parameter to false to transform incorrect zero values.</description>
+			<enumeration>
+				<item>true</item>
+				<item>false</item>
+			</enumeration>
+		</variable>
+		<variable name="enable-rnd-bug">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>true</value>
+			<description>If enabled the `rnd` instruction sets the Z flag to 0 systematically, as it is done in the evaluation board. Otherwise, Z is unchanged as it is written in the documentation.</description>
+			<enumeration>
+				<item>true</item>
+				<item>false</item>
+			</enumeration>
+		</variable>
+		<variable name="enable-parallel-store-bug">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>true</value>
+			<description>If enabled, when using parallel stores (STF src2, dst2 || STF src1, dst1) the first store is treated as a NOP.</description>
+			<enumeration>
+				<item>true</item>
+				<item>false</item>
+			</enumeration>
+		</variable>
+		<variable name="enable-float-ops-with-non-ext-regs">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>false</value>
+			<description>If enabled non extended registers can be used on all the float instructions, however the behavior is not documented and can differ between chips revision. If disabled, it stops simulation when using non extended registers on float instructions.</description>
+			<enumeration>
+				<item>true</item>
+				<item>false</item>
+			</enumeration>
+		</variable>
+		<variable name="verbose-all">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>false</value>
+			<description></description>
+			<enumeration>
+				<item>true</item>
+				<item>false</item>
+			</enumeration>
+		</variable>
+		<variable name="verbose-setup">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>false</value>
+			<description></description>
+			<enumeration>
+				<item>true</item>
+				<item>false</item>
+			</enumeration>
+		</variable>
+		<variable name="cpu-cycle-time">
+			<type>parameter</type>
+			<data_type>sc_time</data_type>
+			<value>13333 ps</value>
+			<description>cpu cycle time</description>
+		</variable>
+		<variable name="nice-time">
+			<type>parameter</type>
+			<data_type>sc_time</data_type>
+			<value>1 us</value>
+			<description>maximum time between synchonizations</description>
+		</variable>
+		<variable name="ipc">
+			<type>parameter</type>
+			<data_type>double precision floating-point</data_type>
+			<value>1</value>
+			<description>targeted average instructions per second</description>
+		</variable>
+	</object>
+	<object name="dint-stub">
+		<variable name="enable">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>true</value>
+			<description>Enable/Disable a lazy implementation of TLM 2.0 method interface</description>
+			<enumeration>
+				<item>true</item>
+				<item>false</item>
+			</enumeration>
+		</variable>
+		<variable name="verbose">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>false</value>
+			<description>Enable/Disable verbosity</description>
+			<enumeration>
+				<item>true</item>
+				<item>false</item>
+			</enumeration>
+		</variable>
+	</object>
+	<object name="int0-stub">
+		<variable name="enable">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>true</value>
+			<description>Enable/Disable a lazy implementation of TLM 2.0 method interface</description>
+			<enumeration>
+				<item>true</item>
+				<item>false</item>
+			</enumeration>
+		</variable>
+		<variable name="verbose">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>false</value>
+			<description>Enable/Disable verbosity</description>
+			<enumeration>
+				<item>true</item>
+				<item>false</item>
+			</enumeration>
+		</variable>
+	</object>
+	<object name="int1-stub">
+		<variable name="enable">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>true</value>
+			<description>Enable/Disable a lazy implementation of TLM 2.0 method interface</description>
+			<enumeration>
+				<item>true</item>
+				<item>false</item>
+			</enumeration>
+		</variable>
+		<variable name="verbose">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>false</value>
+			<description>Enable/Disable verbosity</description>
+			<enumeration>
+				<item>true</item>
+				<item>false</item>
+			</enumeration>
+		</variable>
+	</object>
+	<object name="int2-stub">
+		<variable name="enable">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>true</value>
+			<description>Enable/Disable a lazy implementation of TLM 2.0 method interface</description>
+			<enumeration>
+				<item>true</item>
+				<item>false</item>
+			</enumeration>
+		</variable>
+		<variable name="verbose">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>false</value>
+			<description>Enable/Disable verbosity</description>
+			<enumeration>
+				<item>true</item>
+				<item>false</item>
+			</enumeration>
+		</variable>
+	</object>
+	<object name="int3-stub">
+		<variable name="enable">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>true</value>
+			<description>Enable/Disable a lazy implementation of TLM 2.0 method interface</description>
+			<enumeration>
+				<item>true</item>
+				<item>false</item>
+			</enumeration>
+		</variable>
+		<variable name="verbose">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>false</value>
+			<description>Enable/Disable verbosity</description>
+			<enumeration>
+				<item>true</item>
+				<item>false</item>
+			</enumeration>
+		</variable>
+	</object>
+	<object name="loader">
+		<object name="loader.memory-mapper">
+			<variable name="verbose">
+				<type>parameter</type>
+				<data_type>boolean</data_type>
+				<value>false</value>
+				<description>Enable/Disable verbosity</description>
+				<enumeration>
+					<item>true</item>
+					<item>false</item>
+				</enumeration>
+			</variable>
+			<variable name="verbose-parser">
+				<type>parameter</type>
+				<data_type>boolean</data_type>
+				<value>false</value>
+				<description>Enable/Disable verbosity of parser</description>
+				<enumeration>
+					<item>true</item>
+					<item>false</item>
+				</enumeration>
+			</variable>
+			<variable name="mapping">
+				<type>parameter</type>
+				<data_type>string</data_type>
+				<value>memory=memory:0x0-0xffffffff</value>
+				<description>Memory mapping. Syntax: [[(memory=]&lt;memory1&gt;[:[range=]&lt;low1-high1&gt;]][,[(memory=]&lt;memory2&gt;[:[range=]&lt;low2-high2&gt;]]... (e.g. ram:0x0-0x00ffff,rom:0xff0000-0xffffff)</description>
+			</variable>
+		</object>
+		<object name="loader.file0">
+			<variable name="filename">
+				<type>parameter</type>
+				<data_type>string</data_type>
+				<value>c31boot.out</value>
+				<description>the COFF filename to load</description>
+			</variable>
+			<variable name="dump-headers">
+				<type>parameter</type>
+				<data_type>boolean</data_type>
+				<value>false</value>
+				<description>Enable/Disable dump of COFF file headers while loading</description>
+				<enumeration>
+					<item>true</item>
+					<item>false</item>
+				</enumeration>
+			</variable>
+			<variable name="verbose">
+				<type>parameter</type>
+				<data_type>boolean</data_type>
+				<value>false</value>
+				<description>Enable/Disable verbosity</description>
+				<enumeration>
+					<item>true</item>
+					<item>false</item>
+				</enumeration>
+			</variable>
+		</object>
+		<variable name="verbose">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>false</value>
+			<description>Enable/Disable verbosity</description>
+			<enumeration>
+				<item>true</item>
+				<item>false</item>
+			</enumeration>
+		</variable>
+		<variable name="verbose-parser">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>false</value>
+			<description>Enable/Disable verbosity of parser</description>
+			<enumeration>
+				<item>true</item>
+				<item>false</item>
+			</enumeration>
+		</variable>
+		<variable name="filename">
+			<type>parameter</type>
+			<data_type>string</data_type>
+			<value>c31boot.out</value>
+			<description>List of files to load. Syntax: [[filename=]&lt;filename1&gt;[:[format=]&lt;format1&gt;]][,[filename=]&lt;filename2&gt;[:[format=]&lt;format2&gt;]]... (e.g. boot.bin:raw,app.elf)</description>
+		</variable>
+	</object>
+	<object name="memory">
+		<variable name="org">
+			<type>parameter</type>
+			<data_type>unsigned 32-bit integer</data_type>
+			<value>0x00000000</value>
+			<description>memory origin/base address</description>
+		</variable>
+		<variable name="bytesize">
+			<type>parameter</type>
+			<data_type>unsigned 32-bit integer</data_type>
+			<value>4294967295</value>
+			<description>memory size in bytes</description>
+		</variable>
+		<variable name="initial-byte-value">
+			<type>parameter</type>
+			<data_type>unsigned 8-bit integer</data_type>
+			<value>0x00</value>
+			<description></description>
+		</variable>
+		<variable name="cycle-time">
+			<type>parameter</type>
+			<data_type>sc_time</data_type>
+			<value>13333 ps</value>
+			<description>memory cycle time</description>
+		</variable>
+		<variable name="read-latency">
+			<type>parameter</type>
+			<data_type>sc_time</data_type>
+			<value>13333 ps</value>
+			<description>memory read latency</description>
+		</variable>
+		<variable name="write-latency">
+			<type>parameter</type>
+			<data_type>sc_time</data_type>
+			<value>0 s</value>
+			<description>memory write latency</description>
+		</variable>
+		<variable name="verbose">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>false</value>
+			<description>enable/disable verbosity</description>
+			<enumeration>
+				<item>true</item>
+				<item>false</item>
+			</enumeration>
+		</variable>
+	</object>
+	<object name="rint0-stub">
+		<variable name="enable">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>true</value>
+			<description>Enable/Disable a lazy implementation of TLM 2.0 method interface</description>
+			<enumeration>
+				<item>true</item>
+				<item>false</item>
+			</enumeration>
+		</variable>
+		<variable name="verbose">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>false</value>
+			<description>Enable/Disable verbosity</description>
+			<enumeration>
+				<item>true</item>
+				<item>false</item>
+			</enumeration>
+		</variable>
+	</object>
+	<object name="rint1-stub">
+		<variable name="enable">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>true</value>
+			<description>Enable/Disable a lazy implementation of TLM 2.0 method interface</description>
+			<enumeration>
+				<item>true</item>
+				<item>false</item>
+			</enumeration>
+		</variable>
+		<variable name="verbose">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>false</value>
+			<description>Enable/Disable verbosity</description>
+			<enumeration>
+				<item>true</item>
+				<item>false</item>
+			</enumeration>
+		</variable>
+	</object>
+	<object name="ti-c-io">
+		<variable name="enable">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>true</value>
+			<description>enable/disable TI C I/O support</description>
+			<enumeration>
+				<item>true</item>
+				<item>false</item>
+			</enumeration>
+		</variable>
+		<variable name="warning-as-error">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>false</value>
+			<description>Whether Warnings are considered as error or not</description>
+			<enumeration>
+				<item>true</item>
+				<item>false</item>
+			</enumeration>
+		</variable>
+		<variable name="pc-register-name">
+			<type>parameter</type>
+			<data_type>string</data_type>
+			<value>PC</value>
+			<description>Name of the CPU program counter register</description>
+		</variable>
+		<variable name="c-io-buffer-symbol-name">
+			<type>parameter</type>
+			<data_type>string</data_type>
+			<value>__CIOBUF_</value>
+			<description>C I/O buffer symbol name</description>
+		</variable>
+		<variable name="c-io-breakpoint-symbol-name">
+			<type>parameter</type>
+			<data_type>string</data_type>
+			<value>C$$IO$$</value>
+			<description>C I/O breakpoint symbol name</description>
+		</variable>
+		<variable name="c-exit-breakpoint-symbol-name">
+			<type>parameter</type>
+			<data_type>string</data_type>
+			<value>C$$EXIT</value>
+			<description>C EXIT breakpoint symbol name</description>
+		</variable>
+		<variable name="verbose-all">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>false</value>
+			<description>globally enable/disable verbosity</description>
+			<enumeration>
+				<item>true</item>
+				<item>false</item>
+			</enumeration>
+		</variable>
+		<variable name="verbose-io">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>false</value>
+			<description>enable/disable verbosity while I/Os</description>
+			<enumeration>
+				<item>true</item>
+				<item>false</item>
+			</enumeration>
+		</variable>
+		<variable name="verbose-setup">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>false</value>
+			<description>enable/disable verbosity while setup</description>
+			<enumeration>
+				<item>true</item>
+				<item>false</item>
+			</enumeration>
+		</variable>
+		<variable name="enable-lseek-bug">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>false</value>
+			<description>enable/disable lseek bug (as code composer)</description>
+			<enumeration>
+				<item>true</item>
+				<item>false</item>
+			</enumeration>
+		</variable>
+	</object>
+	<object name="tint0-stub">
+		<variable name="enable">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>true</value>
+			<description>Enable/Disable a lazy implementation of TLM 2.0 method interface</description>
+			<enumeration>
+				<item>true</item>
+				<item>false</item>
+			</enumeration>
+		</variable>
+		<variable name="verbose">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>false</value>
+			<description>Enable/Disable verbosity</description>
+			<enumeration>
+				<item>true</item>
+				<item>false</item>
+			</enumeration>
+		</variable>
+	</object>
+	<object name="tint1-stub">
+		<variable name="enable">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>true</value>
+			<description>Enable/Disable a lazy implementation of TLM 2.0 method interface</description>
+			<enumeration>
+				<item>true</item>
+				<item>false</item>
+			</enumeration>
+		</variable>
+		<variable name="verbose">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>false</value>
+			<description>Enable/Disable verbosity</description>
+			<enumeration>
+				<item>true</item>
+				<item>false</item>
+			</enumeration>
+		</variable>
+	</object>
+	<object name="xint0-stub">
+		<variable name="enable">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>true</value>
+			<description>Enable/Disable a lazy implementation of TLM 2.0 method interface</description>
+			<enumeration>
+				<item>true</item>
+				<item>false</item>
+			</enumeration>
+		</variable>
+		<variable name="verbose">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>false</value>
+			<description>Enable/Disable verbosity</description>
+			<enumeration>
+				<item>true</item>
+				<item>false</item>
+			</enumeration>
+		</variable>
+	</object>
+	<object name="xint1-stub">
+		<variable name="enable">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>true</value>
+			<description>Enable/Disable a lazy implementation of TLM 2.0 method interface</description>
+			<enumeration>
+				<item>true</item>
+				<item>false</item>
+			</enumeration>
+		</variable>
+		<variable name="verbose">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>false</value>
+			<description>Enable/Disable verbosity</description>
+			<enumeration>
+				<item>true</item>
+				<item>false</item>
+			</enumeration>
+		</variable>
+	</object>
+	<variable name="enable-gdb-server">
+		<type>parameter</type>
+		<data_type>boolean</data_type>
+		<value>false</value>
+		<description>Enable/Disable GDB server instantiation</description>
+		<enumeration>
+			<item>true</item>
+			<item>false</item>
+		</enumeration>
+	</variable>
+	<variable name="enable-inline-debugger">
+		<type>parameter</type>
+		<data_type>boolean</data_type>
+		<value>false</value>
+		<description>Enable/Disable inline debugger instantiation</description>
+		<enumeration>
+			<item>true</item>
+			<item>false</item>
+		</enumeration>
+	</variable>
+	<variable name="enable-press-enter-at-exit">
+		<type>parameter</type>
+		<data_type>boolean</data_type>
+		<value>false</value>
+		<description>Enable/Disable pressing key enter at exit</description>
+		<enumeration>
+			<item>true</item>
+			<item>false</item>
+		</enumeration>
+	</variable>
+	<variable name="kernel_logger.file">
+		<type>parameter</type>
+		<data_type>boolean</data_type>
+		<value>false</value>
+		<description>Keep logger output in a file</description>
+		<enumeration>
+			<item>true</item>
+			<item>false</item>
+		</enumeration>
+	</variable>
+	<variable name="kernel_logger.filename">
+		<type>parameter</type>
+		<data_type>string</data_type>
+		<value>logger_output.txt</value>
+		<description>Filename to keep logger output _(the option file must be activated)</description>
+	</variable>
+	<variable name="kernel_logger.std_err">
+		<type>parameter</type>
+		<data_type>boolean</data_type>
+		<value>true</value>
+		<description>Show logger output through the standard error output</description>
+		<enumeration>
+			<item>true</item>
+			<item>false</item>
+		</enumeration>
+	</variable>
+	<variable name="kernel_logger.std_err_color">
+		<type>parameter</type>
+		<data_type>boolean</data_type>
+		<value>false</value>
+		<description>Colorize logger output through the standard error output _(only works if std_err is active)</description>
+		<enumeration>
+			<item>true</item>
+			<item>false</item>
+		</enumeration>
+	</variable>
+	<variable name="kernel_logger.std_out">
+		<type>parameter</type>
+		<data_type>boolean</data_type>
+		<value>false</value>
+		<description>Show logger output through the standard output</description>
+		<enumeration>
+			<item>true</item>
+			<item>false</item>
+		</enumeration>
+	</variable>
+	<variable name="kernel_logger.std_out_color">
+		<type>parameter</type>
+		<data_type>boolean</data_type>
+		<value>false</value>
+		<description>Colorize logger output through the standard output _(only works if std_out is active)</description>
+		<enumeration>
+			<item>true</item>
+			<item>false</item>
+		</enumeration>
+	</variable>
+	<variable name="kernel_logger.xml_file">
+		<type>parameter</type>
+		<data_type>boolean</data_type>
+		<value>false</value>
+		<description>Keep logger output in a file xml formatted</description>
+		<enumeration>
+			<item>true</item>
+			<item>false</item>
+		</enumeration>
+	</variable>
+	<variable name="kernel_logger.xml_file_gzipped">
+		<type>parameter</type>
+		<data_type>boolean</data_type>
+		<value>false</value>
+		<description>If the xml_file option is active, the output file will be compressed (a .gz extension will be automatically added to the xml_filename option</description>
+		<enumeration>
+			<item>true</item>
+			<item>false</item>
+		</enumeration>
+	</variable>
+	<variable name="kernel_logger.xml_filename">
+		<type>parameter</type>
+		<data_type>string</data_type>
+		<value>logger_output.xml</value>
+		<description>Filename to keep logger xml output _(the option xml_file must be activated)</description>
+	</variable>
+</variables>

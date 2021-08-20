@@ -1,0 +1,9 @@
+unisim/component/cxx/processor/powerpc/isa/book_e/dccci.isa
+unisim/component/cxx/processor/powerpc/isa/book_e/dcread.isa
+unisim/component/cxx/processor/powerpc/isa/book_e/iccci.isa
+unisim/component/cxx/processor/powerpc/isa/book_e/icread.isa
+unisim/component/cxx/processor/powerpc/isa/book_e/msync.isa
+unisim/component/cxx/processor/powerpc/isa/book_e/nop.isa
+unisim/component/cxx/processor/powerpc/isa/book_e/tlbre.isa
+unisim/component/cxx/processor/powerpc/isa/book_e/tlbsx.isa
+unisim/component/cxx/processor/powerpc/isa/book_e/tlbwe.isa

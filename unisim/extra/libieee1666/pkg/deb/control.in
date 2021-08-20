@@ -1,0 +1,43 @@
+Source: libieee1666
+Priority: optional
+Section: libs
+Maintainer: Gilles Mouchard <gilles.mouchard@cea.fr>
+Standards-Version: 3.9.8
+Build-Depends: debhelper (>= 9), dh-autoreconf, autotools-dev, pkg-config @DEB_PACKAGE_DEV_DEPENDENCY@
+Homepage: http://unisim-vp.org
+
+Package: libieee1666-@PACKAGE_VERSION@
+Priority: standard
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Free implementation of IEEE 1666-2011.
+ libieee1666 is a free implementation of IEEE Standard 1666-2011, the IEEE
+ standard that defines SystemC language. SystemC is an extensible C++ class
+ library intended for modeling both software and hardware at different
+ abstraction level of modeling and level of detail, using the power of C++.
+ More than a hardware description language (HDL), SystemC is a system-level
+ modeling language. SystemC is closely related to an emerging methodology known
+ as Electronic System Level (ESL) design and verification.
+
+Package: libieee1666-@PACKAGE_VERSION@-dbg
+Priority: extra
+Section: debug
+Architecture: any
+Depends: ${misc:Depends}, libieee1666-@PACKAGE_VERSION@ (= ${binary:Version})
+Description: Debugging information for simulators linked with libieee1666.
+
+Package: libieee1666-dev
+Priority: standard
+Architecture: any
+Section: libdevel
+Depends: ${misc:Depends}, libieee1666-@PACKAGE_VERSION@ (= ${binary:Version}) @DEB_PACKAGE_DEV_DEPENDENCY@ 
+Description: Dynamic libraries, include files to develop SystemC modules and simulators.
+ It is necessary for compiling SystemC modules and simulators using libieee1666.
+
+Package: libieee1666-static-dev
+Priority: standard
+Architecture: any
+Section: libdevel
+Depends: ${misc:Depends}, libieee1666-dev (= ${binary:Version})
+Description: static Libraries you can use to develop SystemC modules and simulators.
+ This library is necessary for statically linking a simulator with libieee1666.

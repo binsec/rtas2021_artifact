@@ -1,0 +1,9 @@
+unisim/component/cxx/processor/tms320c3x/isa/2op.isa
+unisim/component/cxx/processor/tms320c3x/isa/3op.isa
+unisim/component/cxx/processor/tms320c3x/isa/actions_dec.isa
+unisim/component/cxx/processor/tms320c3x/isa/control.isa
+unisim/component/cxx/processor/tms320c3x/isa/interlock.isa
+unisim/component/cxx/processor/tms320c3x/isa/load_store.isa
+unisim/component/cxx/processor/tms320c3x/isa/parallel.isa
+unisim/component/cxx/processor/tms320c3x/isa/power.isa
+unisim/component/cxx/processor/tms320c3x/isa/tms320c3x.isa

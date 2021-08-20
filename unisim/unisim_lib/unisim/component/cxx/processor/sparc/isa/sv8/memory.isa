@@ -1,0 +1,930 @@
+/*
+ *  Copyright (c) 2007-2020,
+ *  Commissariat a l'Energie Atomique (CEA)
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without 
+ *  modification, are permitted provided that the following conditions are met:
+ *
+ *   - Redistributions of source code must retain the above copyright notice, 
+ *     this list of conditions and the following disclaimer.
+ *
+ *   - Redistributions in binary form must reproduce the above copyright notice,
+ *     this list of conditions and the following disclaimer in the documentation
+ *     and/or other materials provided with the distribution.
+ *
+ *   - Neither the name of CEA nor the names of its contributors may be used to
+ *     endorse or promote products derived from this software without specific 
+ *     prior written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
+ *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
+ *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
+ *  ARE DISCLAIMED.
+ *  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY 
+ *  DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES 
+ *  (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; 
+ *  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND 
+ *  ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT 
+ *  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF 
+ *  THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Authors: Yves Lhuillier (yves.lhuillier@cea.fr)
+ */
+
+/* Load Integer Instructions */
+
+op ldsb( 0b11[2]:rd[5]:0b001001[6]:rs1[5]:0b0[1]:asi[8]:rs2[5] )
+
+ldsb.disasm = {
+  os << "ldsb [%r" << rs1 << " + %r" << rs2 << "], %r" << rd;
+}
+
+ldsb.execute = {
+  uint8_t storage[1];
+  if( not sparcv8.read( sparcv8.rqasi(), sparcv8.m_gpr[rs1] + sparcv8.m_gpr[rs2], 1, storage ) )
+    { sparcv8.hwtrap( Trap_t::data_access_exception ); return; }
+  sparcv8.m_gpr[rd] = int32_t( int8_t( storage[0] ) );
+}
+
+op ldsbi( 0b11[2]:rd[5]:0b001001[6]:rs1[5]:0b1[1]:sext<32> simm13[13] )
+
+ldsbi.disasm = {
+  if( simm13 >= 0 ) os << "ldsb [%r" << rs1 << " + " << "0x" << hex << simm13 << "], %r" << rd;
+  else              os << "ldsb [%r" << rs1 << " - " << "0x" << hex << -simm13 << "], %r" << rd;
+}
+
+ldsbi.execute = {
+  uint8_t storage[1];
+  if( not sparcv8.read( sparcv8.rqasi(), sparcv8.m_gpr[rs1] + simm13, 1, storage ) )
+    { sparcv8.hwtrap( Trap_t::data_access_exception ); return; }
+  sparcv8.m_gpr[rd] = int32_t( int8_t( storage[0] ) );
+}
+
+op ldsh( 0b11[2]:rd[5]:0b001010[6]:rs1[5]:0b0[1]:asi[8]:rs2[5] )
+
+ldsh.disasm = {
+  os << "ldsh [%r" << rs1 << " + %r" << rs2 << "], %r" << rd;
+}
+
+ldsh.execute = {
+  uint32_t address = sparcv8.m_gpr[rs1] + sparcv8.m_gpr[rs2];
+  if( address & 0x1 ) { sparcv8.hwtrap( Trap_t::mem_address_not_aligned ); return; }
+  uint8_t storage[2];
+  if( not sparcv8.read( sparcv8.rqasi(), address, 2, storage ) )
+    { sparcv8.hwtrap( Trap_t::data_access_exception ); return; }
+  sparcv8.m_gpr[rd] = (((int32_t)( (int8_t)( storage[0] ) )) << 8) | (int32_t)( storage[1] );
+}
+
+op ldshi( 0b11[2]:rd[5]:0b001010[6]:rs1[5]:0b1[1]:sext<32> simm13[13] )
+
+ldshi.disasm = {
+  if( simm13 >= 0 ) os << "ldsh [%r" << rs1 << " + " << "0x" << hex << simm13 << "], %r" << rd;
+  else              os << "ldsh [%r" << rs1 << " - " << "0x" << hex << -simm13 << "], %r" << rd;
+}
+
+ldshi.execute = {
+  uint32_t address = sparcv8.m_gpr[rs1] + simm13;
+  if( address & 0x1 ) { sparcv8.hwtrap( Trap_t::mem_address_not_aligned ); return; }
+  uint8_t storage[2];
+  if( not sparcv8.read( sparcv8.rqasi(), address, 2, storage ) )
+    { sparcv8.hwtrap( Trap_t::data_access_exception ); return; }
+  sparcv8.m_gpr[rd] = (((int32_t)( (int8_t)( storage[0] ) )) << 8) | (int32_t)( storage[1] );
+}
+
+op ldub( 0b11[2]:rd[5]:0b000001[6]:rs1[5]:0b0[1]:asi[8]:rs2[5] )
+
+ldub.disasm = {
+  os << "ldub [%r" << rs1 << " + %r" << rs2 << "], %r" << rd;
+}
+
+ldub.execute = {
+  uint8_t storage[1];
+  if( not sparcv8.read( sparcv8.rqasi(), sparcv8.m_gpr[rs1] + sparcv8.m_gpr[rs2], 1, storage ) )
+    { sparcv8.hwtrap( Trap_t::data_access_exception ); return; }
+  sparcv8.m_gpr[rd] = storage[0];
+}
+
+op ldubi( 0b11[2]:rd[5]:0b000001[6]:rs1[5]:0b1[1]:sext<32> simm13[13] )
+
+ldubi.disasm = {
+  if( simm13 >= 0 ) os << "ldub [%r" << rs1 << " + " << "0x" << hex << simm13 << "], %r" << rd;
+  else              os << "ldub [%r" << rs1 << " - " << "0x" << hex << -simm13 << "], %r" << rd;
+}
+
+ldubi.execute = {
+  uint8_t storage[1];
+  if( not sparcv8.read( sparcv8.rqasi(), sparcv8.m_gpr[rs1] + simm13, 1, storage ) )
+    { sparcv8.hwtrap( Trap_t::data_access_exception ); return; }
+  sparcv8.m_gpr[rd] = storage[0];
+}
+
+op lduh( 0b11[2]:rd[5]:0b000010[6]:rs1[5]:0b0[1]:asi[8]:rs2[5] )
+
+lduh.disasm = {
+  os << "lduh [%r" << rs1 << " + %r" << rs2 << "], %r" << rd;
+}
+
+lduh.execute = {
+  uint32_t address = sparcv8.m_gpr[rs1] + sparcv8.m_gpr[rs2];
+  if( address & 0x1 ) { sparcv8.hwtrap( Trap_t::mem_address_not_aligned ); return; }
+  uint8_t storage[2];
+  if( not sparcv8.read( sparcv8.rqasi(), address, 2, storage ) )
+    { sparcv8.hwtrap( Trap_t::data_access_exception ); return; }
+  sparcv8.m_gpr[rd] = storage[0] << 8 | storage[1] << 0;
+}
+
+op lduhi( 0b11[2]:rd[5]:0b000010[6]:rs1[5]:0b1[1]:sext<32> simm13[13] )
+
+lduhi.disasm = {
+  if( simm13 >= 0 ) os << "lduh [%r" << rs1 << " + " << "0x" << hex << simm13 << "], %r" << rd;
+  else              os << "lduh [%r" << rs1 << " - " << "0x" << hex << -simm13 << "], %r" << rd;
+}
+
+lduhi.execute = {
+  uint32_t address = sparcv8.m_gpr[rs1] + simm13;
+  if( address & 0x1 ) { sparcv8.hwtrap( Trap_t::mem_address_not_aligned ); return; }
+  uint8_t storage[2];
+  if( not sparcv8.read( sparcv8.rqasi(), address, 2, storage ) )
+    { sparcv8.hwtrap( Trap_t::data_access_exception ); return; }
+  sparcv8.m_gpr[rd] = storage[0] << 8 | storage[1] << 0;
+}
+
+op ld( 0b11[2]:rd[5]:0b000000[6]:rs1[5]:0b0[1]:asi[8]:rs2[5] )
+
+ld.disasm = {
+  os << "ld [%r" << rs1 << " + %r" << rs2 << "], %r" << rd;
+}
+
+ld.execute = {
+  uint32_t address = sparcv8.m_gpr[rs1] + sparcv8.m_gpr[rs2];
+  if( address & 0x3 ) { sparcv8.hwtrap( Trap_t::mem_address_not_aligned ); return; }
+  uint8_t storage[4];
+  if( not sparcv8.read( sparcv8.rqasi(), address, 4, storage ) )
+    { sparcv8.hwtrap( Trap_t::data_access_exception ); return; }
+  sparcv8.m_gpr[rd] = storage[0] << 24 | storage[1] << 16 | storage[2] <<  8 | storage[3] <<  0;
+}
+
+op ldi( 0b11[2]:rd[5]:0b000000[6]:rs1[5]:0b1[1]:sext<32> simm13[13] )
+
+ldi.disasm = {
+  if( simm13 >= 0 ) os << "ld [%r" << rs1 << " + " << "0x" << hex << simm13 << "], %r" << rd;
+  else              os << "ld [%r" << rs1 << " - " << "0x" << hex << -simm13 << "], %r" << rd;
+}
+
+ldi.execute = {
+  uint32_t address = sparcv8.m_gpr[rs1] + simm13;
+  if( address & 0x3 ) { sparcv8.hwtrap( Trap_t::mem_address_not_aligned ); return; }
+  uint8_t storage[4];
+  if( not sparcv8.read( sparcv8.rqasi(), address, 4, storage ) )
+    { sparcv8.hwtrap( Trap_t::data_access_exception ); return; }
+  sparcv8.m_gpr[rd] = storage[0] << 24 | storage[1] << 16 | storage[2] <<  8 | storage[3] <<  0;
+}
+
+op ldd( 0b11[2]:rd[5]:0b000011[6]:rs1[5]:0b0[1]:asi[8]:rs2[5] )
+
+ldd.disasm = {
+  os << "ldd [%r" << rs1 << " + %r" << rs2 << "], %r" << (rd & 0x1e);
+}
+
+ldd.execute = {
+  uint32_t address = sparcv8.m_gpr[rs1] + sparcv8.m_gpr[rs2];
+  if( address & 0x7 ) { sparcv8.hwtrap( Trap_t::mem_address_not_aligned ); return; }
+  uint8_t storage[8];
+  if( not sparcv8.read( sparcv8.rqasi(), address, 8, storage ) )
+    { sparcv8.hwtrap( Trap_t::data_access_exception ); return; }
+  sparcv8.m_gpr[(rd & 0x1e)|0] = storage[0] << 24 | storage[1] << 16 | storage[2] <<  8 | storage[3] <<  0;
+  sparcv8.m_gpr[(rd & 0x1e)|1] = storage[4] << 24 | storage[5] << 16 | storage[6] <<  8 | storage[7] <<  0;
+}
+
+op lddi( 0b11[2]:rd[5]:0b000011[6]:rs1[5]:0b1[1]:sext<32> simm13[13] )
+
+lddi.disasm = {
+  if( simm13 >= 0 ) os << "ldd [%r" << rs1 << " + " << "0x" << hex << simm13 << "], %r" << (rd & 0x1e);
+  else              os << "ldd [%r" << rs1 << " - " << "0x" << hex << -simm13 << "], %r" << (rd & 0x1e);
+}
+
+lddi.execute = {
+  uint32_t address = sparcv8.m_gpr[rs1] + simm13;
+  if( address & 0x7 ) { sparcv8.hwtrap( Trap_t::mem_address_not_aligned ); return; }
+  uint8_t storage[8];
+  if( not sparcv8.read( sparcv8.rqasi(), address, 8, storage ) )
+    { sparcv8.hwtrap( Trap_t::data_access_exception ); return; }
+  sparcv8.m_gpr[(rd & 0x1e)|0] = storage[0] << 24 | storage[1] << 16 | storage[2] <<  8 | storage[3] <<  0;
+  sparcv8.m_gpr[(rd & 0x1e)|1] = storage[4] << 24 | storage[5] << 16 | storage[6] <<  8 | storage[7] <<  0;
+}
+
+op ldsba( 0b11[2]:rd[5]:0b011001[6]:rs1[5]:0[1]:asi[8]:rs2[5] )
+
+ldsba.disasm = {
+  os << "ldsba [%r" << rs1 << " + %r" << rs2 << "]" << "0x" << hex << asi << ", %r" << rd;
+}
+
+ldsba.execute = {
+  if( not sparcv8.super() ) { sparcv8.hwtrap( Trap_t::privileged_instruction ); return; }
+  uint8_t storage[1];
+  if( not sparcv8.read( SSv8::ASI_t( asi ), sparcv8.m_gpr[rs1] + sparcv8.m_gpr[rs2], 1, storage ) )
+    { sparcv8.hwtrap( Trap_t::data_access_exception ); return; }
+  sparcv8.m_gpr[rd] = int32_t( int8_t( storage[0] ) );
+}
+
+op ldsha( 0b11[2]:rd[5]:0b011010[6]:rs1[5]:0[1]:asi[8]:rs2[5] )
+
+ldsha.disasm = {
+  os << "ldsha [%r" << rs1 << " + %r" << rs2 << "]" << "0x" << hex << asi << ", %r" << rd;
+}
+
+ldsha.execute = {
+  if( not sparcv8.super() ) { sparcv8.hwtrap( Trap_t::privileged_instruction ); return; }
+  uint32_t address = sparcv8.m_gpr[rs1] + sparcv8.m_gpr[rs2];
+  if( address & 0x1 ) { sparcv8.hwtrap( Trap_t::mem_address_not_aligned ); return; }
+  uint8_t storage[2];
+  if( not sparcv8.read( SSv8::ASI_t( asi ), address, 2, storage ) )
+    { sparcv8.hwtrap( Trap_t::data_access_exception ); return; }
+  sparcv8.m_gpr[rd] = (((int32_t)( (int8_t)( storage[0] ) )) << 8) | (int32_t)( storage[1] );
+}
+
+op lduba( 0b11[2]:rd[5]:0b010001[6]:rs1[5]:0[1]:asi[8]:rs2[5] )
+
+lduba.disasm = {
+  os << "lduba [%r" << rs1 << " + %r" << rs2 << "]" << "0x" << hex << asi << ", %r" << rd;
+}
+
+lduba.execute = {
+  if( not sparcv8.super() ) { sparcv8.hwtrap( Trap_t::privileged_instruction ); return; }
+  uint8_t storage[1];
+  if( not sparcv8.read( SSv8::ASI_t( asi ), sparcv8.m_gpr[rs1] + sparcv8.m_gpr[rs2], 1, storage ) )
+    { sparcv8.hwtrap( Trap_t::data_access_exception ); return; }
+  sparcv8.m_gpr[rd] = storage[0];
+}
+
+op lduha( 0b11[2]:rd[5]:0b010010[6]:rs1[5]:0[1]:asi[8]:rs2[5] )
+
+lduha.disasm = {
+  os << "lduha [%r" << rs1 << " + %r" << rs2 << "]" << "0x" << hex << asi << ", %r" << rd;
+}
+
+lduha.execute = {
+  if( not sparcv8.super() ) { sparcv8.hwtrap( Trap_t::privileged_instruction ); return; }
+  uint32_t address = sparcv8.m_gpr[rs1] + sparcv8.m_gpr[rs2];
+  if( address & 0x1 ) { sparcv8.hwtrap( Trap_t::mem_address_not_aligned ); return; }
+  uint8_t storage[2];
+  if( not sparcv8.read( SSv8::ASI_t( asi ), address, 2, storage ) )
+    { sparcv8.hwtrap( Trap_t::data_access_exception ); return; }
+  sparcv8.m_gpr[rd] = storage[0] << 8 | storage[1] << 0;
+}
+
+op lda( 0b11[2]:rd[5]:0b010000[6]:rs1[5]:0[1]:asi[8]:rs2[5] )
+
+lda.disasm = {
+  os << "lda [%r" << rs1 << " + %r" << rs2 << "]" << "0x" << hex << asi << ", %r" << rd;
+}
+
+lda.execute = {
+  if( not sparcv8.super() ) { sparcv8.hwtrap( Trap_t::privileged_instruction ); return; }
+  uint32_t address = sparcv8.m_gpr[rs1] + sparcv8.m_gpr[rs2];
+  if( address & 0x3 ) { sparcv8.hwtrap( Trap_t::mem_address_not_aligned ); return; }
+  uint8_t storage[4];
+  if( not sparcv8.read( SSv8::ASI_t( asi ), address, 4, storage ) )
+    { sparcv8.hwtrap( Trap_t::data_access_exception ); return; }
+  sparcv8.m_gpr[rd] = storage[0] << 24 | storage[1] << 16 | storage[2] <<  8 | storage[3] <<  0;
+}
+
+op ldda( 0b11[2]:rd[5]:0b010011[6]:rs1[5]:0[1]:asi[8]:rs2[5] )
+
+ldda.disasm = {
+  os << "ldda [%r" << rs1 << " + %r" << rs2 << "]" << "0x" << hex << asi << ", %r" << (rd & 0x1e);
+}
+
+ldda.execute = {
+  if( not sparcv8.super() ) { sparcv8.hwtrap( Trap_t::privileged_instruction ); return; }
+  uint32_t address = sparcv8.m_gpr[rs1] + sparcv8.m_gpr[rs2];
+  if( address & 0x7 ) { sparcv8.hwtrap( Trap_t::mem_address_not_aligned ); return; }
+  uint8_t storage[8];
+  if( not sparcv8.read( SSv8::ASI_t( asi ), address, 8, storage ) )
+    { sparcv8.hwtrap( Trap_t::data_access_exception ); return; }
+  sparcv8.m_gpr[(rd & 0x1e)|0] = storage[0] << 24 | storage[1] << 16 | storage[2] <<  8 | storage[3] <<  0;
+  sparcv8.m_gpr[(rd & 0x1e)|1] = storage[4] << 24 | storage[5] << 16 | storage[6] <<  8 | storage[7] <<  0;
+}
+
+/* Load Floating-point Instructions */
+
+op ldf( 0b11[2]:rd[5]:0b100000[6]:rs1[5]:0b0[1]:?[8]:rs2[5] )
+
+ldf.disasm = {
+  os << "ld [%r" << rs1 << " + %r" << rs2 << "], %f" << rd;
+}
+
+ldf.execute = {
+  uint32_t address = sparcv8.m_gpr[rs1] + sparcv8.m_gpr[rs2];
+  if( address & 0x3 ) { sparcv8.hwtrap( Trap_t::mem_address_not_aligned ); return; }
+  uint8_t storage[4];
+  if( not sparcv8.read( sparcv8.rqasi(), address, 4, storage ) )
+    { sparcv8.hwtrap( Trap_t::data_access_exception ); return; }
+  sparcv8.m_fprawbank.load32( storage, rd );
+}
+
+op ldfi( 0b11[2]:rd[5]:0b100000[6]:rs1[5]:0b1[1]:sext<32> simm13[13] )
+
+ldfi.disasm = {
+  if( simm13 >= 0 ) os << "ld [%r" << rs1 << " + " << "0x" << hex << simm13 << "], %f" << rd;
+  else              os << "ld [%r" << rs1 << " - " << "0x" << hex << -simm13 << "], %f" << rd;
+}
+
+ldfi.execute = {
+  uint32_t address = sparcv8.m_gpr[rs1] + simm13;
+  if( address & 0x3 ) { sparcv8.hwtrap( Trap_t::mem_address_not_aligned ); return; }
+  uint8_t storage[4];
+  if( not sparcv8.read( sparcv8.rqasi(), address, 4, storage ) )
+    { sparcv8.hwtrap( Trap_t::data_access_exception ); return; }
+  sparcv8.m_fprawbank.load32( storage, rd );
+}
+
+op lddf( 0b11[2]:rd[5]:0b100011[6]:rs1[5]:0b0[1]:?[8]:rs2[5] )
+
+lddf.disasm = {
+  os << "ldd [%r" << rs1 << " + %r" << rs2 << "], %f" << (rd & 0x1e);
+}
+
+lddf.execute = {
+  uint32_t address = sparcv8.m_gpr[rs1] + sparcv8.m_gpr[rs2];
+  if( address & 0x7 ) { sparcv8.hwtrap( Trap_t::mem_address_not_aligned ); return; }
+  uint8_t storage[8];
+  if( not sparcv8.read( sparcv8.rqasi(), address, 8, storage ) )
+    { sparcv8.hwtrap( Trap_t::data_access_exception ); return; }
+  sparcv8.m_fprawbank.load64( storage, rd & 0x1e );
+}
+
+op lddfi( 0b11[2]:rd[5]:0b100011[6]:rs1[5]:0b1[1]:sext<32> simm13[13] )
+
+lddfi.disasm = {
+  if( simm13 >= 0 ) os << "ldd [%r" << rs1 << " + " << "0x" << hex << simm13 << "], %f" << (rd & 0x1e);
+  else              os << "ldd [%r" << rs1 << " - " << "0x" << hex << -simm13 << "], %f" << (rd & 0x1e);
+}
+
+lddfi.execute = {
+  uint32_t address = sparcv8.m_gpr[rs1] + simm13;
+  if( address & 0x7 ) { sparcv8.hwtrap( Trap_t::mem_address_not_aligned ); return; }
+  uint8_t storage[8];
+  if( not sparcv8.read( sparcv8.rqasi(), address, 8, storage ) )
+    { sparcv8.hwtrap( Trap_t::data_access_exception ); return; }
+  sparcv8.m_fprawbank.load64( storage, rd & 0x1e );
+}
+
+op ldfsr( 0b11[2]:rd[5]:0b100001[6]:rs1[5]:0b0[1]:?[8]:rs2[5] )
+
+ldfsr.disasm = {
+  os << "ld [%r" << rs1 << " + %r" << rs2 << "], %fsr";
+}
+
+ldfsr.execute = {
+  uint32_t address = sparcv8.m_gpr[rs1] + sparcv8.m_gpr[rs2];
+  if( address & 0x3 ) { sparcv8.hwtrap( Trap_t::mem_address_not_aligned ); return; }
+  uint8_t storage[4];
+  if( not sparcv8.read( sparcv8.rqasi(), address, 4, storage ) )
+    { sparcv8.hwtrap( Trap_t::data_access_exception ); return; }
+  sparcv8.m_fsr = storage[0] << 24 | storage[1] << 16 | storage[2] <<  8 | storage[3] <<  0;
+}
+
+op ldfsri( 0b11[2]:rd[5]:0b100001[6]:rs1[5]:0b1[1]:sext<32> simm13[13] )
+
+ldfsri.disasm = {
+  if( simm13 >= 0 ) os << "ldd [%r" << rs1 << " + " << "0x" << hex << simm13 << "], %fsr";
+  else              os << "ldd [%r" << rs1 << " - " << "0x" << hex << -simm13 << "], %fsr";
+}
+
+ldfsri.execute = {
+  uint32_t address = sparcv8.m_gpr[rs1] + simm13;
+  if( address & 0x3 ) { sparcv8.hwtrap( Trap_t::mem_address_not_aligned ); return; }
+  uint8_t storage[4];
+  if( not sparcv8.read( sparcv8.rqasi(), address, 4, storage ) )
+    { sparcv8.hwtrap( Trap_t::data_access_exception ); return; }
+  sparcv8.m_fsr = storage[0] << 24 | storage[1] << 16 | storage[2] <<  8 | storage[3] <<  0;
+}
+
+/* Load Coprocessor Instructions */
+
+op ldc( 0b11[2]:rd[5]:0b110000[6]:rs1[5]:0b0[1]:?[8]:rs2[5] )
+
+ldc.disasm = {
+  os << "ld [%r" << rs1 << " + %r" << rs2 << "], %c" << rd;
+}
+
+op ldci( 0b11[2]:rd[5]:0b110000[6]:rs1[5]:0b1[1]:sext<32> simm13[13] )
+
+ldci.disasm = {
+  if( simm13 >= 0 ) os << "ld [%r" << rs1 << " + " << "0x" << hex << simm13 << "], %c" << rd;
+  else              os << "ld [%r" << rs1 << " - " << "0x" << hex << -simm13 << "], %c" << rd;
+}
+
+op lddc( 0b11[2]:rd[5]:0b110011[6]:rs1[5]:0b0[1]:?[8]:rs2[5] )
+
+lddc.disasm = {
+  os << "ldd [%r" << rs1 << " + %r" << rs2 << "], %c" << (rd & 0x1e);
+}
+
+op lddci( 0b11[2]:rd[5]:0b110011[6]:rs1[5]:0b1[1]:sext<32> simm13[13] )
+
+lddci.disasm = {
+  if( simm13 >= 0 ) os << "ldd [%r" << rs1 << " + " << "0x" << hex << simm13 << "], %c" << (rd & 0x1e);
+  else              os << "ldd [%r" << rs1 << " - " << "0x" << hex << -simm13 << "], %c" << (rd & 0x1e);
+}
+
+op ldcsr( 0b11[2]:rd[5]:0b110001[6]:rs1[5]:0b0[1]:?[8]:rs2[5] )
+
+ldcsr.disasm = {
+  os << "ld [%r" << rs1 << " + %r" << rs2 << "], %csr";
+}
+
+op ldcsri( 0b11[2]:rd[5]:0b110001[6]:rs1[5]:0b1[1]:sext<32> simm13[13] )
+
+ldcsri.disasm = {
+  if( simm13 >= 0 ) os << "ldd [%r" << rs1 << " + " << "0x" << hex << simm13 << "], %csr";
+  else              os << "ldd [%r" << rs1 << " - " << "0x" << hex << -simm13 << "], %csr";
+}
+
+/* Store Integer Instructions */
+
+op stb( 0b11[2]:rd[5]:0b000101[6]:rs1[5]:0b0[1]:asi[8]:rs2[5] )
+
+stb.disasm = {
+  os << "stb %r" << rd << ", [%r" << rs1 << " + %r" << rs2 << "]";
+}
+
+stb.execute = {
+  uint8_t storage[1];
+  storage[0] = sparcv8.m_gpr[rd];
+  if( not sparcv8.write( sparcv8.rqasi(), sparcv8.m_gpr[rs1] + sparcv8.m_gpr[rs2], 1, storage ) )
+    { sparcv8.hwtrap( Trap_t::data_access_exception ); return; }
+}
+
+op stbi( 0b11[2]:rd[5]:0b000101[6]:rs1[5]:0b1[1]:sext<32> simm13[13] )
+
+stbi.disasm = {
+  if( simm13 >= 0 ) os << "stb %r" << rd << ", [%r" << rs1 << " + " << "0x" << hex << simm13 << "]";
+  else              os << "stb %r" << rd << ", [%r" << rs1 << " - " << "0x" << hex << -simm13 << "]";
+}
+
+stbi.execute = {
+  uint8_t storage[1];
+  storage[0] = sparcv8.m_gpr[rd];
+  if( not sparcv8.write( sparcv8.rqasi(), sparcv8.m_gpr[rs1] + simm13, 1, storage ) )
+    { sparcv8.hwtrap( Trap_t::data_access_exception ); return; }
+}
+
+op sth( 0b11[2]:rd[5]:0b000110[6]:rs1[5]:0b0[1]:asi[8]:rs2[5] )
+
+sth.disasm = {
+  os << "sth %r" << rd << ", [%r" << rs1 << " + %r" << rs2 << "]";
+}
+
+sth.execute = {
+  uint32_t address = sparcv8.m_gpr[rs1] + sparcv8.m_gpr[rs2];
+  if( address & 0x1 ) { sparcv8.hwtrap( Trap_t::mem_address_not_aligned ); return; }
+  uint8_t storage[2];
+  uint32_t data = sparcv8.m_gpr[rd];
+  storage[0] = data >> 8; storage[1] = data >> 0;
+  if( not sparcv8.write( sparcv8.rqasi(), address, 2, storage ) )
+    { sparcv8.hwtrap( Trap_t::data_access_exception ); return; }
+}
+
+op sthi( 0b11[2]:rd[5]:0b000110[6]:rs1[5]:0b1[1]:sext<32> simm13[13] )
+
+sthi.disasm = {
+  if( simm13 >= 0 ) os << "sth %r" << rd << ", [%r" << rs1 << " + " << "0x" << hex << simm13 << "]";
+  else              os << "sth %r" << rd << ", [%r" << rs1 << " - " << "0x" << hex << -simm13 << "]";
+}
+
+sthi.execute = {
+  uint32_t address = sparcv8.m_gpr[rs1] + simm13;
+  if( address & 0x1 ) { sparcv8.hwtrap( Trap_t::mem_address_not_aligned ); return; }
+  uint8_t storage[2];
+  uint32_t data = sparcv8.m_gpr[rd];
+  storage[0] = data >> 8; storage[1] = data >> 0;
+  if( not sparcv8.write( sparcv8.rqasi(), address, 2, storage ) )
+    { sparcv8.hwtrap( Trap_t::data_access_exception ); return; }
+}
+
+op st( 0b11[2]:rd[5]:0b000100[6]:rs1[5]:0b0[1]:asi[8]:rs2[5] )
+
+st.disasm = {
+  os << "st %r" << rd << ", [%r" << rs1 << " + %r" << rs2 << "]";
+}
+
+st.execute = {
+  uint32_t address = sparcv8.m_gpr[rs1] + sparcv8.m_gpr[rs2];
+  if( address & 0x3 ) { sparcv8.hwtrap( Trap_t::mem_address_not_aligned ); return; }
+  uint8_t storage[4];
+  uint32_t data = sparcv8.m_gpr[rd];
+  storage[0] = data >> 24; storage[1] = data >> 16; storage[2] = data >>  8; storage[3] = data >>  0;
+  if( not sparcv8.write( sparcv8.rqasi(), address, 4, storage ) )
+    { sparcv8.hwtrap( Trap_t::data_access_exception ); return; }
+}
+
+op sti( 0b11[2]:rd[5]:0b000100[6]:rs1[5]:0b1[1]:sext<32> simm13[13] )
+
+sti.disasm = {
+  if( simm13 >= 0 ) os << "st %r" << rd << ", [%r" << rs1 << " + " << "0x" << hex << simm13 << "]";
+  else              os << "st %r" << rd << ", [%r" << rs1 << " - " << "0x" << hex << -simm13 << "]";
+}
+
+sti.execute = {
+  uint32_t address = sparcv8.m_gpr[rs1] + simm13;
+  if( address & 0x3 ) { sparcv8.hwtrap( Trap_t::mem_address_not_aligned ); return; }
+  uint8_t storage[4];
+  uint32_t data = sparcv8.m_gpr[rd];
+  storage[0] = data >> 24; storage[1] = data >> 16; storage[2] = data >>  8; storage[3] = data >>  0;
+  if( not sparcv8.write( sparcv8.rqasi(), address, 4, storage ) )
+    { sparcv8.hwtrap( Trap_t::data_access_exception ); return; }
+}
+
+op std( 0b11[2]:rd[5]:0b000111[6]:rs1[5]:0b0[1]:asi[8]:rs2[5] )
+
+std.disasm = {
+  os << "std %r" << (rd & 0x1e) << ", [%r" << rs1 << " + %r" << rs2 << "]";
+}
+
+std.execute = {
+  uint32_t address = sparcv8.m_gpr[rs1] + sparcv8.m_gpr[rs2];
+  if( address & 0x7 ) { sparcv8.hwtrap( Trap_t::mem_address_not_aligned ); return; }
+  uint8_t storage[8];
+  uint32_t data0 = sparcv8.m_gpr[(rd & 0x1e)|0], data1 = sparcv8.m_gpr[(rd & 0x1e)|1];
+  storage[0] = data0 >> 24; storage[1] = data0 >> 16; storage[2] = data0 >>  8; storage[3] = data0 >>  0;
+  storage[4] = data1 >> 24; storage[5] = data1 >> 16; storage[6] = data1 >>  8; storage[7] = data1 >>  0;
+  if( not sparcv8.write( sparcv8.rqasi(), address, 8, storage ) )
+    { sparcv8.hwtrap( Trap_t::data_access_exception ); return; }
+}
+
+op stdi( 0b11[2]:rd[5]:0b000111[6]:rs1[5]:0b1[1]:sext<32> simm13[13] )
+
+stdi.disasm = {
+  if( simm13 >= 0 ) os << "std %r" << (rd & 0x1e) << ", [%r" << rs1 << " + " << "0x" << hex << simm13 << "]";
+  else              os << "std %r" << (rd & 0x1e) << ", [%r" << rs1 << " - " << "0x" << hex << -simm13 << "]";
+}
+
+stdi.execute = {
+  uint32_t address = sparcv8.m_gpr[rs1] + simm13;
+  if( address & 0x7 ) { sparcv8.hwtrap( Trap_t::mem_address_not_aligned ); return; }
+  uint8_t storage[8];
+  uint32_t data0 = sparcv8.m_gpr[(rd & 0x1e)|0], data1 = sparcv8.m_gpr[(rd & 0x1e)|1];
+  storage[0] = data0 >> 24; storage[1] = data0 >> 16; storage[2] = data0 >>  8; storage[3] = data0 >>  0;
+  storage[4] = data1 >> 24; storage[5] = data1 >> 16; storage[6] = data1 >>  8; storage[7] = data1 >>  0;
+  if( not sparcv8.write( sparcv8.rqasi(), address, 8, storage ) )
+    { sparcv8.hwtrap( Trap_t::data_access_exception ); return; }
+}
+
+op stba( 0b11[2]:rd[5]:0b010101[6]:rs1[5]:0[1]:asi[8]:rs2[5] )
+
+stba.disasm = {
+  os << "stba %r" << rd << ", [%r" << rs1 << " + %r" << rs2 << "]" << "0x" << hex << asi;
+}
+
+stba.execute = {
+  if( not sparcv8.super() ) { sparcv8.hwtrap( Trap_t::privileged_instruction ); return; }
+  uint8_t storage[1];
+  storage[0] = sparcv8.m_gpr[rd];
+  if( not sparcv8.write( SSv8::ASI_t( asi ), sparcv8.m_gpr[rs1] + sparcv8.m_gpr[rs2], 1, storage ) )
+    { sparcv8.hwtrap( Trap_t::data_access_exception ); return; }
+}
+
+op stha( 0b11[2]:rd[5]:0b010110[6]:rs1[5]:0[1]:asi[8]:rs2[5] )
+
+stha.disasm = {
+  os << "stha %r" << rd << ", [%r" << rs1 << " + %r" << rs2 << "]" << "0x" << hex << asi;
+}
+
+stha.execute = {
+  if( not sparcv8.super() ) { sparcv8.hwtrap( Trap_t::privileged_instruction ); return; }
+  uint32_t address = sparcv8.m_gpr[rs1] + sparcv8.m_gpr[rs2];
+  if( address & 0x1 ) { sparcv8.hwtrap( Trap_t::mem_address_not_aligned ); return; }
+  uint8_t storage[2];
+  uint32_t data = sparcv8.m_gpr[rd];
+  storage[0] = data >> 8; storage[1] = data >> 0;
+  if( not sparcv8.write( SSv8::ASI_t( asi ), address, 2, storage ) )
+    { sparcv8.hwtrap( Trap_t::data_access_exception ); return; }
+}
+
+op sta( 0b11[2]:rd[5]:0b010100[6]:rs1[5]:0[1]:asi[8]:rs2[5] )
+
+sta.disasm = {
+  os << "sta %r" << rd << ", [%r" << rs1 << " + %r" << rs2 << "]" << "0x" << hex << asi;
+}
+
+sta.execute = {
+  if( not sparcv8.super() ) { sparcv8.hwtrap( Trap_t::privileged_instruction ); return; }
+  uint32_t address = sparcv8.m_gpr[rs1] + sparcv8.m_gpr[rs2];
+  if( address & 0x3 ) { sparcv8.hwtrap( Trap_t::mem_address_not_aligned ); return; }
+  uint8_t storage[4];
+  uint32_t data = sparcv8.m_gpr[rd];
+  storage[0] = data >> 24; storage[1] = data >> 16; storage[2] = data >>  8; storage[3] = data >>  0;
+  if( not sparcv8.write( SSv8::ASI_t( asi ), address, 4, storage ) )
+    { sparcv8.hwtrap( Trap_t::data_access_exception ); return; }
+}
+
+op stda( 0b11[2]:rd[5]:0b010111[6]:rs1[5]:0[1]:asi[8]:rs2[5] )
+
+stda.disasm = {
+  os << "stda %r" << (rd & 0x1e) << ", [%r" << rs1 << " + %r" << rs2 << "]" << "0x" << hex << asi;
+}
+
+stda.execute = {
+  if( not sparcv8.super() ) { sparcv8.hwtrap( Trap_t::privileged_instruction ); return; }
+  uint32_t address = sparcv8.m_gpr[rs1] + sparcv8.m_gpr[rs2];
+  if( address & 0x7 ) { sparcv8.hwtrap( Trap_t::mem_address_not_aligned ); return; }
+  uint8_t storage[8];
+  uint32_t data0 = sparcv8.m_gpr[(rd & 0x1e)|0], data1 = sparcv8.m_gpr[(rd & 0x1e)|1];
+  storage[0] = data0 >> 24; storage[1] = data0 >> 16; storage[2] = data0 >>  8; storage[3] = data0 >>  0;
+  storage[4] = data1 >> 24; storage[5] = data1 >> 16; storage[6] = data1 >>  8; storage[7] = data1 >>  0;
+  if( not sparcv8.write( SSv8::ASI_t( asi ), address, 8, storage ) )
+    { sparcv8.hwtrap( Trap_t::data_access_exception ); return; }
+}
+
+/* Store Floating-point Instructions */
+
+op stf( 0b11[2]:rd[5]:0b100100[6]:rs1[5]:0b0[1]:?[8]:rs2[5] )
+
+stf.disasm = {
+  os << "st %f" << rd << ", [%r" << rs1 << " + %r" << rs2 << "]";
+}
+
+stf.execute = {
+  uint32_t address = sparcv8.m_gpr[rs1] + sparcv8.m_gpr[rs2];
+  if( address & 0x3 ) { sparcv8.hwtrap( Trap_t::mem_address_not_aligned ); return; }
+  uint8_t storage[4];
+  sparcv8.m_fprawbank.store32( rd, storage );
+  if( not sparcv8.write( sparcv8.rqasi(), address, 4, storage ) )
+    { sparcv8.hwtrap( Trap_t::data_access_exception ); return; }
+}
+
+op stfi( 0b11[2]:rd[5]:0b100100[6]:rs1[5]:0b1[1]:sext<32> simm13[13] )
+
+stfi.disasm = {
+  if( simm13 >= 0 ) os << "st %f" << rd << ", [%r" << rs1 << " + " << "0x" << hex << simm13 << "]";
+  else              os << "st %f" << rd << ", [%r" << rs1 << " - " << "0x" << hex << -simm13 << "]";
+}
+
+stfi.execute = {
+  uint32_t address = sparcv8.m_gpr[rs1] + simm13;
+  if( address & 0x3 ) { sparcv8.hwtrap( Trap_t::mem_address_not_aligned ); return; }
+  uint8_t storage[4];
+  sparcv8.m_fprawbank.store32( rd, storage );
+  if( not sparcv8.write( sparcv8.rqasi(), address, 4, storage ) )
+    { sparcv8.hwtrap( Trap_t::data_access_exception ); return; }
+}
+
+op stdf( 0b11[2]:rd[5]:0b100111[6]:rs1[5]:0b0[1]:?[8]:rs2[5] )
+
+stdf.disasm = {
+  os << "std %f" << (rd & 0x1e) << ", [%r" << rs1 << " + %r" << rs2 << "]";
+}
+
+stdf.execute = {
+  uint32_t address = sparcv8.m_gpr[rs1] + sparcv8.m_gpr[rs2];
+  if( address & 0x7 ) { sparcv8.hwtrap( Trap_t::mem_address_not_aligned ); return; }
+  uint8_t storage[8];
+  sparcv8.m_fprawbank.store64( rd & 0x1e, storage );
+  if( not sparcv8.write( sparcv8.rqasi(), address, 8, storage ) )
+    { sparcv8.hwtrap( Trap_t::data_access_exception ); return; }
+}
+
+op stdfi( 0b11[2]:rd[5]:0b100111[6]:rs1[5]:0b1[1]:sext<32> simm13[13] )
+
+stdfi.disasm = {
+  if( simm13 >= 0 ) os << "std %f" << (rd & 0x1e) << ", [%r" << rs1 << " + " << "0x" << hex << simm13 << "]";
+  else              os << "std %f" << (rd & 0x1e) << ", [%r" << rs1 << " - " << "0x" << hex << -simm13 << "]";
+}
+
+stdfi.execute = {
+  uint32_t address = sparcv8.m_gpr[rs1] + simm13;
+  if( address & 0x7 ) { sparcv8.hwtrap( Trap_t::mem_address_not_aligned ); return; }
+  uint8_t storage[8];
+  sparcv8.m_fprawbank.store64( rd & 0x1e, storage );
+  if( not sparcv8.write( sparcv8.rqasi(), address, 8, storage ) )
+    { sparcv8.hwtrap( Trap_t::data_access_exception ); return; }
+}
+
+op stfsr( 0b11[2]:rd[5]:0b100101[6]:rs1[5]:0b0[1]:?[8]:rs2[5] )
+
+stfsr.disasm = {
+  os << "st %fsr, [%r" << rs1 << " + %r" << rs2 << "]";
+}
+
+stfsr.execute = {
+  uint32_t address = sparcv8.m_gpr[rs1] + sparcv8.m_gpr[rs2];
+  if( address & 0x3 ) { sparcv8.hwtrap( Trap_t::mem_address_not_aligned ); return; }
+  uint8_t storage[4];
+  uint32_t data = sparcv8.m_fsr;
+  storage[0] = data >> 24; storage[1] = data >> 16; storage[2] = data >>  8; storage[3] = data >>  0;
+  if( not sparcv8.write( sparcv8.rqasi(), address, 4, storage ) )
+    { sparcv8.hwtrap( Trap_t::data_access_exception ); return; }
+}
+
+op stfsri( 0b11[2]:rd[5]:0b100101[6]:rs1[5]:0b1[1]:sext<32> simm13[13] )
+
+stfsri.disasm = {
+  if( simm13 >= 0 ) os << "st %fsr, [%r" << rs1 << " + " << "0x" << hex << simm13 << "]";
+  else              os << "st %fsr, [%r" << rs1 << " - " << "0x" << hex << -simm13 << "]";
+}
+
+stfsri.execute = {
+  uint32_t address = sparcv8.m_gpr[rs1] + simm13;
+  if( address & 0x3 ) { sparcv8.hwtrap( Trap_t::mem_address_not_aligned ); return; }
+  uint8_t storage[4];
+  uint32_t data = sparcv8.m_fsr;
+  storage[0] = data >> 24; storage[1] = data >> 16; storage[2] = data >>  8; storage[3] = data >>  0;
+  if( not sparcv8.write( sparcv8.rqasi(), address, 4, storage ) )
+    { sparcv8.hwtrap( Trap_t::data_access_exception ); return; }
+}
+
+op stdfq( 0b11[2]:rd[5]:0b100110[6]:rs1[5]:0b0[1]:?[8]:rs2[5] )
+
+stdfq.disasm = {
+  os << "st %fq, [%r" << rs1 << " + %r" << rs2 << "]";
+}
+
+op stdfqi( 0b11[2]:rd[5]:0b100110[6]:rs1[5]:0b1[1]:sext<32> simm13[13] )
+
+stdfqi.disasm = {
+  if( simm13 >= 0 ) os << "st %fq, [%r" << rs1 << " + " << "0x" << hex << simm13 << "]";
+  else              os << "st %fq, [%r" << rs1 << " - " << "0x" << hex << -simm13 << "]";
+}
+
+/* Store Coprocessor Instructions */
+
+op stc( 0b11[2]:rd[5]:0b110100[6]:rs1[5]:0b0[1]:?[8]:rs2[5] )
+
+stc.disasm = {
+  os << "st %c" << rd << ", [%r" << rs1 << " + %r" << rs2 << "]";
+}
+
+op stci( 0b11[2]:rd[5]:0b110100[6]:rs1[5]:0b1[1]:sext<32> simm13[13] )
+
+stci.disasm = {
+  if( simm13 >= 0 ) os << "st %c" << rd << ", [%r" << rs1 << " + " << "0x" << hex << simm13 << "]";
+  else              os << "st %c" << rd << ", [%r" << rs1 << " - " << "0x" << hex << -simm13 << "]";
+}
+
+op stdc( 0b11[2]:rd[5]:0b110111[6]:rs1[5]:0b0[1]:?[8]:rs2[5] )
+
+stdc.disasm = {
+  os << "std %c" << (rd & 0x1e) << ", [%r" << rs1 << " + %r" << rs2 << "]";
+}
+
+op stdci( 0b11[2]:rd[5]:0b110111[6]:rs1[5]:0b1[1]:sext<32> simm13[13] )
+
+stdci.disasm = {
+  if( simm13 >= 0 ) os << "std %c" << (rd & 0x1e) << ", [%r" << rs1 << " + " << "0x" << hex << simm13 << "]";
+  else              os << "std %c" << (rd & 0x1e) << ", [%r" << rs1 << " - " << "0x" << hex << -simm13 << "]";
+}
+
+op stcsr( 0b11[2]:rd[5]:0b110101[6]:rs1[5]:0b0[1]:?[8]:rs2[5] )
+
+stcsr.disasm = {
+  os << "st %csr, [%r" << rs1 << " + %r" << rs2 << "]";
+}
+
+op stcsri( 0b11[2]:rd[5]:0b110101[6]:rs1[5]:0b1[1]:sext<32> simm13[13] )
+
+stcsri.disasm = {
+  if( simm13 >= 0 ) os << "st %csr, [%r" << rs1 << " + " << "0x" << hex << simm13 << "]";
+  else              os << "st %csr, [%r" << rs1 << " - " << "0x" << hex << -simm13 << "]";
+}
+
+op stdcq( 0b11[2]:rd[5]:0b110110[6]:rs1[5]:0b0[1]:?[8]:rs2[5] )
+
+stdcq.disasm = {
+  os << "st %cq, [%r" << rs1 << " + %r" << rs2 << "]";
+}
+
+op stdcqi( 0b11[2]:rd[5]:0b110110[6]:rs1[5]:0b1[1]:sext<32> simm13[13] )
+
+stdcqi.disasm = {
+  if( simm13 >= 0 ) os << "st %cq, [%r" << rs1 << " + " << "0x" << hex << simm13 << "]";
+  else              os << "st %cq, [%r" << rs1 << " - " << "0x" << hex << -simm13 << "]";
+}
+
+/* Atomic Load-Store Unsigned Byte Instructions */
+
+op ldstub( 0b11[2]:rd[5]:0b001101[6]:rs1[5]:0b0[1]:asi[8]:rs2[5] )
+
+ldstub.disasm = {
+  os << "ldstub [%r" << rs1 << " + %r" << rs2 << "], %r" << rd;
+}
+
+ldstub.execute = {
+  uint8_t storage[1];
+  uint8_t magic = 0xff;
+  uint32_t address = sparcv8.m_gpr[rs1] + sparcv8.m_gpr[rs2];
+  if( not sparcv8.read( sparcv8.rqasi(), address, 1, storage ) or
+      not sparcv8.write( sparcv8.rqasi(), address, 1, &magic ) )
+    { sparcv8.hwtrap( Trap_t::data_access_exception ); return; }
+  sparcv8.m_gpr[rd] = storage[0];
+}
+
+op ldstubi( 0b11[2]:rd[5]:0b001101[6]:rs1[5]:0b1[1]:sext<32> simm13[13] )
+
+ldstubi.disasm = {
+  if( simm13 >= 0 ) os << "ldstub [%r" << rs1 << " + " << "0x" << hex << simm13 << "], %r" << rd;
+  else              os << "ldstub [%r" << rs1 << " - " << "0x" << hex << -simm13 << "], %r" << rd;
+}
+
+ldstubi.execute = {
+  uint8_t storage[1];
+  uint8_t magic = 0xff;
+  uint32_t address = sparcv8.m_gpr[rs1] + simm13;
+  if( not sparcv8.read( sparcv8.rqasi(), address, 1, storage ) or
+      not sparcv8.write( sparcv8.rqasi(), address, 1, &magic ) )
+    { sparcv8.hwtrap( Trap_t::data_access_exception ); return; }
+  sparcv8.m_gpr[rd] = storage[0];
+}
+
+op ldstuba( 0b11[2]:rd[5]:0b011101[6]:rs1[5]:0b0[1]:asi[8]:rs2[5] )
+
+ldstuba.disasm = {
+  os << "ldstuba [%r" << rs1 << " + %r" << rs2 << "]" << "0x" << hex << asi << ", %r" << rd;
+}
+
+ldstuba.execute = {
+  if( not sparcv8.super() ) { sparcv8.hwtrap( Trap_t::privileged_instruction ); return; }
+  uint8_t storage[1];
+  uint8_t magic = 0xff;
+  uint32_t address = sparcv8.m_gpr[rs1] + sparcv8.m_gpr[rs2];
+  if( not sparcv8.read( SSv8::ASI_t( asi ), address, 1, storage ) or
+      not sparcv8.write( SSv8::ASI_t( asi ), address, 1, &magic ) )
+    { sparcv8.hwtrap( Trap_t::data_access_exception ); return; }
+  sparcv8.m_gpr[rd] = storage[0];
+}
+
+/* SWAP Register with Memory Instruction */
+
+op swap( 0b11[2]:rd[5]:0b001111[6]:rs1[5]:0b0[1]:asi[8]:rs2[5] )
+
+swap.disasm = {
+  os << "swap [%r" << rs1 << " + %r" << rs2 << "], %r" << rd;
+}
+
+swap.execute = {
+  uint8_t storage_i[4];
+  uint8_t storage_o[4];
+  uint32_t reg = sparcv8.m_gpr[rd];
+  storage_o[0] = reg >> 24; storage_o[1] = reg >> 16; storage_o[2] = reg >>  8; storage_o[3] = reg >>  0;
+  uint32_t address = sparcv8.m_gpr[rs1] + sparcv8.m_gpr[rs2];
+  if( not sparcv8.read( sparcv8.rqasi(), address, 4, storage_i ) or
+      not sparcv8.write( sparcv8.rqasi(), address, 4, storage_o ) )
+    { sparcv8.hwtrap( Trap_t::data_access_exception ); return; }
+  sparcv8.m_gpr[rd] = storage_i[0] << 24 | storage_i[1] << 16 | storage_i[2] << 8 | storage_i[3] << 0;
+}
+
+op swapi( 0b11[2]:rd[5]:0b001111[6]:rs1[5]:0b1[1]:sext<32> simm13[13] )
+
+swapi.disasm = {
+  if( simm13 >= 0 ) os << "swap [%r" << rs1 << " + " << "0x" << hex << simm13 << "], %r" << rd;
+  else              os << "swap [%r" << rs1 << " - " << "0x" << hex << -simm13 << "], %r" << rd;
+}
+
+swapi.execute = {
+  uint8_t storage_i[4];
+  uint8_t storage_o[4];
+  uint32_t reg = sparcv8.m_gpr[rd];
+  storage_o[0] = reg >> 24; storage_o[1] = reg >> 16; storage_o[2] = reg >>  8; storage_o[3] = reg >>  0;
+  uint32_t address = sparcv8.m_gpr[rs1] + simm13;
+  if( not sparcv8.read( sparcv8.rqasi(), address, 4, storage_i ) or
+      not sparcv8.write( sparcv8.rqasi(), address, 4, storage_o ) )
+    { sparcv8.hwtrap( Trap_t::data_access_exception ); return; }
+  sparcv8.m_gpr[rd] = storage_i[0] << 24 | storage_i[1] << 16 | storage_i[2] << 8 | storage_i[3] << 0;
+}
+
+op swapa( 0b11[2]:rd[5]:0b011111[6]:rs1[5]:0b0[1]:asi[8]:rs2[5] )
+
+swapa.disasm = {
+  os << "swapa [%r" << rs1 << " + %r" << rs2 << "]" << "0x" << hex << asi << ", %r" << rd;
+}
+
+swapa.execute = {
+  if( not sparcv8.super() ) { sparcv8.hwtrap( Trap_t::privileged_instruction ); return; }
+  uint8_t storage_i[4];
+  uint8_t storage_o[4];
+  uint32_t reg = sparcv8.m_gpr[rd];
+  storage_o[0] = reg >> 24; storage_o[1] = reg >> 16; storage_o[2] = reg >>  8; storage_o[3] = reg >>  0;
+  uint32_t address = sparcv8.m_gpr[rs1] + sparcv8.m_gpr[rs2];
+  if( not sparcv8.read( SSv8::ASI_t( asi ), address, 4, storage_i ) or
+      not sparcv8.write( SSv8::ASI_t( asi ), address, 4, storage_o ) )
+    { sparcv8.hwtrap( Trap_t::data_access_exception ); return; }
+  sparcv8.m_gpr[rd] = storage_i[0] << 24 | storage_i[1] << 16 | storage_i[2] << 8 | storage_i[3] << 0;
+}
+
+/* Flush Instruction Memory */
+
+op flush( 0b10[2]:?[5]:0b111011[6]:rs1[5]:0b0[1]:?[8]:rs2[5] )
+
+flush.disasm = {
+  os << "flush %r" << rs1 << " + %r" << rs2;
+}
+
+op flushi( 0b10[2]:?[5]:0b111011[6]:rs1[5]:0b1[1]:sext<32> simm13[13] )
+
+flushi.disasm = {
+  if( simm13 >= 0 ) os << "flush %r" << rs1 << " + " << "0x" << hex << simm13;
+  else              os << "flush %r" << rs1 << " - " << "0x" << hex << -simm13;
+}
+

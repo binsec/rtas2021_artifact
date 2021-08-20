@@ -1,0 +1,1 @@
+AC_CHECK_HEADER([ostream],, AC_MSG_ERROR([ostream is missing]))

@@ -1,0 +1,13 @@
+diff --git a/package/dist_armsec.sh b/package/dist_armsec.sh
+index 0631d134a..a6b5c5cf3 100755
+--- a/package/dist_armsec.sh
++++ b/package/dist_armsec.sh
+@@ -216,7 +216,7 @@ libtool: \$(LIBTOOL_DEPS)
+ # Program
+ bin_PROGRAMS = unisim-${SIMPKG}-${SIMULATOR_VERSION}
+ unisim_${AM_SIMPKG}_${AM_SIMULATOR_VERSION}_SOURCES = ${UNISIM_SIMULATOR_SOURCE_FILES}
+-unisim_${AM_SIMPKG}_${AM_SIMULATOR_VERSION}_LDFLAGS = -static-libtool-libs
++# unisim_${AM_SIMPKG}_${AM_SIMULATOR_VERSION}_LDFLAGS = -static-libtool-libs
+ unisim_${AM_SIMPKG}_${AM_SIMULATOR_VERSION}_LDADD = libunisim-${SIMPKG}-${SIMULATOR_VERSION}.la
+ 
+ # Static Library

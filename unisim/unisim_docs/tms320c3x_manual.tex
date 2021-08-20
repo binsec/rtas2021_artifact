@@ -1,0 +1,64 @@
+\documentclass[a4paper,11pt]{article}
+
+\makeatletter
+\newcommand\appendix@section[1]{%
+  \refstepcounter{section}%
+  \orig@section*{Appendix \@Alph\c@section: #1}%
+  \addcontentsline{toc}{section}{Appendix \@Alph\c@section: #1}%
+}
+\let\orig@section\section
+\g@addto@macro\appendix{\let\section\appendix@section}
+\makeatother
+
+
+\usepackage{graphicx}
+\usepackage{pifont}
+\usepackage{ulem}
+\usepackage{supertabular}
+\usepackage{rotating}
+\usepackage{latexsym}
+\usepackage{placeins}
+\usepackage{verbatim}
+\usepackage{appendix}
+\voffset -1.5cm
+\hoffset 0.0cm
+\textheight 25cm
+\textwidth 16cm
+\topmargin 0.0cm
+\oddsidemargin 0.0cm
+\evensidemargin 0.0cm
+
+\newcommand{\VROT}[1]{\begin{turn}{90}#1\end{turn}}     % vertical text
+\def\X{$\surd$}     % tick symbol
+
+\usepackage{hyperref}%                   % Utilisation de HyperTeX
+
+\hypersetup{
+    pdfauthor   = {Gilles Mouchard},%
+    pdftitle    = {UNISIM\\ TMS320C3X Manual},%
+    pdfsubject  = {UNISIM\\ TMS320C3X Manual},%
+    pdfkeywords = {simulation framework, architectural exploration, embedded system design, system verification},%
+    pdfcreator  = {rubber},%
+    pdfproducer = {rubber}
+}
+
+\title{UNISIM\\ TMS320C3X Manual}
+\author{Gilles Mouchard \\Daniel Gracia P\'erez \\Reda Nouacer \\ \\CEA List}
+\date{}
+
+\begin{document}
+% \addtolength{\hoffset}{-2.0cm}
+% \addtolength{\voffset}{-2.0cm}
+
+
+\maketitle
+\input{tms320c3x/tms320c3x}
+
+\newpage
+\appendix
+\appendixpage
+\section{Simulator technical reference (generated)}
+\label{techref}
+\input{tms320c3x/techref}
+
+\end{document}

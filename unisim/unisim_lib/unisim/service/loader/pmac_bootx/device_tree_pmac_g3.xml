@@ -1,0 +1,259 @@
+<devnode>
+	<string_property name="name" value="device-tree"/>
+	<string_property name="AAPL,original-name" value="device-tree"/>
+	<string_property name="copyright" value="(c) 2005-2006 CEA"/>
+	<string_property name="system-id" value="0000000000000"/>
+	<hex_property name="#address-cells" value="00000001"/>
+	<hex_property name="#size-cells" value="00000001"/>
+	<hex_property name="clock-frequency" value="03fb97a0"/>
+	<hex_property name="AAPL,cpu-id" value="00000000"/>
+	<string_property name="model" value="Power Macintosh"/>
+	<string_property name="compatible" value="AAPL,PowerMac G3\0MacRISC"/>
+	
+	<devnode>
+		<string_property name="name" value="memory"/>
+		<string_property name="device_type" value="memory"/>
+		<hex_property name="reg" value="00000000 10000000"/>
+	</devnode>
+	
+	<devnode>
+		<string_property name="name" value="rom"/>
+		<hex_property name="reg" value="ff000000 01000000"/>
+		<hex_property name="available" value="ff000000 01000000"/>
+		<string_property name="write-characteristic" value="rom"/>
+	</devnode>
+
+	<!-- external rom	
+	<devnode>
+		<string_property name="name" value="rom"/> shall it be different? (i.e.: erom)
+		<hex_property name="reg" value="78000000 08000000"/>
+		<hex_property name="available" value="78000000 08000000"/>
+		<string_property name="write-characteristic" value="rom"/> it could be a flash, nvram or eeprom
+	</devnode>
+	-->
+
+	<devnode>
+		<string_property name="name" value="cpus"/>
+		<string_property name="device_type" value="cpus"/>
+		<hex_property name="#address-cells" value="00000001"/>
+		<hex_property name="#size-cells" value="00000001"/>
+		<devnode>
+			<string_property name="name" value="PowerPC,755"/>
+			<string_property name="device_type" value="cpu"/>
+			<hex_property name="reg" value="00000000"/>
+			<hex_property name="cpu-version" value="00083100"/>
+			<string_property name="graphics" value=""/>
+			<string_property name="external-control" value=""/>
+			<string_property name="performance-monitor" value=""/>
+			<hex_property name="clock-frequency" value="11ec2a50"/>
+			<hex_property name="bus-frequency" value="03fb97a0"/>
+			<hex_property name="timebase-frequency" value="00fee5e8"/>
+			<string_property name="tlb-split" value=""/>
+			<hex_property name="d-tlb-sets" value="00000040"/>
+			<hex_property name="d-tlb-size" value="00000080"/>
+			<hex_property name="i-tlb-sets" value="00000040"/>
+			<hex_property name="i-tlb-size" value="00000080"/>
+			<hex_property name="d-cache-size" value="00008000"/>
+			<hex_property name="i-cache-size" value="00008000"/>
+			<hex_property name="d-cache-sets" value="00000080"/>
+			<hex_property name="i-cache-sets" value="00000080"/>
+			<hex_property name="i-cache-block-size" value="00000020"/>
+			<hex_property name="d-cache-block-size" value="00000020"/>
+			<hex_property name="l2-cache" value="ff830410"/>
+		</devnode>
+	</devnode>
+	
+	<devnode>
+		<string_property name="name" value="pci"/>
+		<string_property name="device_type" value="pci"/>
+		<string_property name="model" value="MOT,PPC107"/>
+		<hex_property name="8259-interrupt-acknowledge" value="fef00000"/>
+		<hex_property name="bus-range" value="00000000 00000000"/>
+		<hex_property name="#address-cells" value="00000003"/>
+		<hex_property name="#size-cells" value="00000002"/>
+		<hex_property name="#interrupt-cells" value="00000001"/>
+		<hex_property name="clock-frequency" value="01fca055"/>
+		<!-- ranges explanation:
+		     first value defines the pci io space starting at fe000000 and size 800000
+		     second value defines the high 32MB addresses of the pci memory space
+		     third value defines the low 2G-32MB addresses of the pci memory space -->
+		<hex_property name="ranges" value="010000000000000000000000 fe000000 0000000000800000 
+		                                   020000000000000000000000 fd000000 0000000001000000 
+		                                   020000000000000080000000 80000000 000000007d000000"/>
+		<string_property name="compatible" value="grackle"/>
+
+	<!--
+		<devnode>
+			<string_property name="name" value="mac-io"/>
+			<string_property name="device_type" value="dbdma"/>
+			<string_property name="model" value="AAPL,343S1201"/>
+			<hex_property name="reg" value="00008000 00000000   00000000 00000000   00000000 02008010   00000000 f3000000   00000000 00080000"/>
+			<hex_property name="assigned-addresses" value="82008010 00000000 f3000000 00000000 00080000"/>
+			<hex_property name="ranges" value="00000000 02008010 00000000 f3000000 00080000"/>
+			<hex_property name="#address-cells" value="00000001"/>
+			<hex_property name="#size-cells" value="00000001"/>
+			<hex_property name="vendor-id" value="0000106b"/>
+			<hex_property name="device-id" value="00000010"/>
+			<hex_property name="revision-id" value="00000001"/>
+			<hex_property name="class-code" value="00ff0000"/>
+			<hex_property name="min-grant" value="00000000"/>
+			<hex_property name="max-latency" value="00000000"/>
+			<hex_property name="devsel-speed" value="00000001"/>
+			<hex_property name="AAPL,address" value="f3000000"/>
+			<string_property name="compatible" value="heathrow"/>
+		</devnode>
+		-->
+
+		<devnode>
+			<string_property name="name" value="mac-io"/>
+			<string_property name="device-type" value="dbdma"/>
+			<string_property name="model" value="AAPL,343S1201"/>
+			<hex_property name="reg" 
+						  value="00000800 00000000 00000000 00000000 00000000 
+								 02000810 00000000 f3000000 00000000 00080000"/>
+			<hex_property name="assigned-addresses"
+						  value="82000810 00000000 f3000000 00000000 00080000"/>
+			<hex_property name="ranges"
+						  value="00000000 82000810 00000000 f3000000 00080000"/>
+			<hex_property name="#address-cells"
+						  value="00000001"/>
+			<hex_property name="#size-cells"
+						  value="00000001"/>
+			<hex_property name="vendor-id"
+						  value="0000106b"/>
+			<hex_property name="device-id"
+						  value="00000010"/>
+			<hex_property name="revision-id"
+						  value="00000001"/>
+			<hex_property name="class-code"
+						  value="00ff0000"/>
+			<!--
+				<hex_property name="min-grant"
+							  value="00000000"/>
+				<hex_property name="max-latency"
+							  value="00000000"/>
+				<hex_property name="devsel-speed"
+							  value="00000001"/>
+			-->
+			<hex_property name="AAPL,address"
+						  value="f3000000"/>
+			<string_property name="compatible"	
+							 value="heathrow"/>
+		</devnode>
+		<devnode>
+			<string_property name="name" value="ATY,mach64_GT"/>
+			<string_property name="device_type" value="display"/>
+			<hex_property name="vendor-id" value="00001002"/>
+			<hex_property name="device-id" value="00004758"/>
+			<hex_property name="width" value="00000320"/>
+			<hex_property name="height" value="00000258"/>
+			<hex_property name="depth" value="00000010"/>  <!-- report 16 like MacOS but actually it is 15 -->
+			<hex_property name="linebytes" value="00000640"/>
+			<!-- the unisim-display is inside the pci memory space -->
+			<hex_property name="address" value="a0000000"/>
+		</devnode>
+
+		<devnode>
+			<hex_property name="vendor-id" value="00008086"/>
+			<hex_property name="device-id" value="00007111"/>
+			<hex_property name="revision-id" value="00000000"/>
+			<hex_property name="class-code" value="0001018f"/>
+			<hex_property name="subsystem-vendor-id" value="00000000"/>
+			<hex_property name="subsystem-id" value="00000000"/>
+			<string_property name="name" value="pci-ata"/>
+			<string_property name="compatible" value="pci1095,646\0pci1095,646\0pciclass,01018f\0" />
+			<string_property name="device_type" value="pci-ide"/>
+			<hex_property name="#address-cells" value="00000001"/>
+			<hex_property name="#size-cells" value="00000000"/>
+			<hex_property name="assigned-addresses"
+						  value="81001010 00000000 00018101 00000000 00000010 
+						  		 81001014 00000000 00018109 00000000 00000010 
+						  		 81001018 00000000 00000001 00000000 00000010 
+						  		 8100101c 00000000 0000000b 00000000 00000010
+						  		 81001020 00000000 00018119 00000000 00000010"/>
+			<hex_property name="reg"
+						  value="00001000 00000000 00000000 00000000 00000000 
+						 		 01001010 00000000 00000000 00000000 00000008
+						 		 01001014 00000000 00000000 00000000 00000004
+						 		 01001018 00000000 00000000 00000000 00000008
+						 		 0100101c 00000000 00000000 00000000 00000004 
+						 		 01001020 00000000 00000000 00000000 00000010"/>
+						 		 
+			<devnode>
+				<string_property name="name" value="atapi-disk"/>
+				<hex_property name="device_id" value="00000000"/>
+				<string_property name="device_type" value="block"/>
+				<string_property name="category" value="hd"/>
+			</devnode>
+		</devnode>		
+
+		<!--
+		
+		<devnode>
+			<hex_property name="66mhz-capable" value="00000000"/>
+			<hex_property name="udf-supported" value="00000000"/>
+			<hex_property name="fast-back-to-back" value="00000000"/>
+			<hex_property name="devsel-speed" value="00000001"/>
+			<hex_property name="class-code" value="00060100"/>
+			<hex_property name="subsystem-vendor-id" value="00000000"/>
+			<hex_property name="subsystem-id" value="00000000"/>
+			<hex_property name="max-latency" value="00000000"/>
+			<hex_property name="min-grant" value="00000000"/>
+			<hex_property name="revision-id" value="00000004"/>
+			<hex_property name="device-id" value="00000565"/>
+			<hex_property name="vendor-id" value="000010ad"/>
+			<hex_property name="interrupt-parent" value="ff85b01c"/>
+			<hex_property name="compatible" value="pci10ad,105\0pnpPNP,a00"/>
+			<hex_property name="model" value="WINB,83C553"/>
+			<hex_property name="#interrupt-cells" value="00000002"/>
+			<hex_property name="ranges" value="00000000 00000000 02000000 00000000 00000000 01000000 00000001 00000000 01000000 00000000 00000000 00010000"/>
+			<hex_property name="clock-frequency" value="007ea5e0"/>
+			<hex_property name="reg" value="00000800 00000000 00000000 00000000 00000000"/>
+			<string_property name="device_type" value="isa"/>
+			<string_property name="name" value="isa"/>
+			
+			<devnode>
+				<string_property name="model" value="NSM,PC87308"/>
+				<string_property name="device_type" value="serial"/>
+				<hex_property name="reg" value="00000001 000003f8 00000008"/>
+				<string_property name="compatible" value="pnpPNP,501"/>
+				<string_property name="name" value="serial"/>
+				<hex_property name="clock-frequency" value="001c2000"/>
+				<hex_property name="interrupts" value="00000004 00000003"/>
+			</devnode>
+		
+		</devnode>
+
+		-->
+		
+	</devnode>
+	
+	<!--
+		
+	<devnode>
+
+		<string_property name="name" value="isa"/>
+		<string_property name="type" value="ISA"/>
+		<hex_property name="address" value="80000000"/>
+
+			<devnode>
+				<string_property name="model" value="NSM,PC87308"/>
+				<string_property name="device_type" value="serial"/>
+				<hex_property name="reg" value="00000001 000003f8 00000008"/>
+				<string_property name="compatible" value="pnpPNP,501"/>
+				<string_property name="name" value="serial"/>
+				<hex_property name="clock-frequency" value="001c2000"/>
+				<hex_property name="interrupts" value="00000004 00000003"/>
+			</devnode>
+
+	</devnode>
+
+	-->
+	
+	<devnode>
+		<string_property name="name" value="chosen"/>
+	</devnode>
+	   		
+</devnode>
+
+

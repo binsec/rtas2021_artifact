@@ -1,0 +1,2 @@
+unisim/service/os/avr32_t2h_syscalls/avr32_t2h_syscalls_32.cc
+unisim/service/os/avr32_t2h_syscalls/avr32_t2h_syscalls_64.cc

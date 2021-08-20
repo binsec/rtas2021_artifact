@@ -1,0 +1,42 @@
+body{ font-family:Arial, Helvetica, sans-serif;font-style:normal;font-size:14px;text-align:left;font-weight:400;color:#000;margin:0;background:#FFF; }
+h1 { font-size:16px; white-space:nowrap; }
+table{ width:1280px; margin:0; }
+table th { text-align:center; }
+table th { font-weight:bold; }
+table td { text-align:left; }
+table { border-style:solid; }
+table { border-width:0px; }
+table { border-collapse: collapse; }
+th, td { padding-left: 1em; }
+th, td { margin:0; }
+th, td { border-style:solid; }
+th, td { border-width:0px; }
+th, td { border-width:0px; }
+.scale0 { background-color:#ffffff; }
+.scale1 { background-color:#fff0f0; }
+.scale2 { background-color:#ffe0e0; }
+.scale3 { background-color:#ffd0d0; }
+.scale4 { background-color:#ffc0c0; }
+.scale5 { background-color:#ffb0b0; }
+.scale6 { background-color:#ffa0a0; }
+.scale7 { background-color:#ff9090; }
+.scale8 { background-color:#ff8080; }
+.scale9 { background-color:#ff7070; }
+.scale10 { background-color:#ff6060; }
+.scale11 { background-color:#ff5050; }
+.scale12 { background-color:#ff4040; }
+.scale13 { background-color:#ff3030; }
+.scale14 { background-color:#ff2020; }
+.scale15 { background-color:#ff1010; }
+.scale16 { background-color:#ff0000; }
+a:link { text-decoration:none }
+#content { width:1280px; padding:0.5em 0.25em 0.5em 0.25em; }
+#show-table { position:absolute; left:4px; top:4px; }
+#show-histogram { position:absolute; left:50px; top:4px; }
+#save { position:absolute; left:96px; top:4px; }
+#title { position:absolute; left:164px; top:4px; margin:0; } 
+#source { position:absolute; left:4px; top:64px; margin:0; }
+
+.lineno { text-align:right; }
+.value {}
+.source-code { width:768px; font-family:"Courier New",Courier,monospace; }

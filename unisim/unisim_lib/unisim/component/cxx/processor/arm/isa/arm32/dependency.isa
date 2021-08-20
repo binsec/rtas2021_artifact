@@ -1,0 +1,387 @@
+/*
+ *  Copyright (c) 2008-2016,
+ *  Commissariat a l'Energie Atomique (CEA)
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without modification,
+ *  are permitted provided that the following conditions are met:
+ *
+ *   - Redistributions of source code must retain the above copyright notice, this
+ *     list of conditions and the following disclaimer.
+ *
+ *   - Redistributions in binary form must reproduce the above copyright notice,
+ *     this list of conditions and the following disclaimer in the documentation
+ *     and/or other materials provided with the distribution.
+ *
+ *   - Neither the name of CEA nor the names of its contributors may be used to
+ *     endorse or promote products derived from this software without specific prior
+ *     written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ *  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *  DISCLAIMED.
+ *  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ *  INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ *  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+ *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ *  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Authors: Yves Lhuillier (yves.lhuillier@cea.fr), Daniel Gracia Perez (daniel.gracia-perez@cea.fr), 
+ */
+
+{
+
+namespace unisim {
+namespace component {
+namespace cxx {
+namespace processor {
+namespace arm {
+
+typedef enum operand_type_t { GPR_T, FPR_T, CR_T} operand_type_t;
+typedef enum operand_direction_t { INPUT_T, OUTPUT_T } operand_direction_t;
+typedef enum unit_type_t { NO_UNIT_T, ALU_T, CP_T} unit_type_t;
+
+typedef struct operand_t {
+	operand_type_t type;
+	operand_direction_t dir;
+	unsigned int value;
+} operand_t;
+
+#define INPUT(_type, _value) \
+(\
+        Operation<CONFIG>::operands[Operation<CONFIG>::noperands].type = _type,\
+        Operation<CONFIG>::operands[Operation<CONFIG>::noperands].dir = INPUT_T,\
+        Operation<CONFIG>::operands[Operation<CONFIG>::noperands++].value = _value\
+)
+
+#define OUTPUT(_type, _value) \
+(\
+        Operation<CONFIG>::operands[Operation<CONFIG>::noperands].type = _type,\
+        Operation<CONFIG>::operands[Operation<CONFIG>::noperands].dir = OUTPUT_T,\
+        Operation<CONFIG>::operands[Operation<CONFIG>::noperands++].value = _value\
+)
+
+typedef operand_t operands_t[8];
+
+} // end of namespace arm
+} // end of namespace processor
+} // end of namespace cxx
+} // end of namespace component
+} // end of namespace unisim
+
+}
+
+var noperands : {unsigned int} = {0}
+var operands : {operands_t}
+var unit : {unit_type_t} = {NO_UNIT_T}
+
+
+/*** constructors actions to set up dependencies START ***/
+
+constructor action initialize_dependency_read_rm() {}
+constructor action initialize_dependency_read_rn() {}
+constructor action initialize_dependency_read_rs() {}
+constructor action initialize_dependency_read_reglist() {}
+constructor action initialize_dependency_read_crm() {}
+constructor action initialize_dependency_read_crn() {}
+
+constructor action initialize_dependency_write_rn() {}
+constructor action initialize_dependency_write_rd() {}
+constructor action initialize_dependency_write_rdhi() {}
+constructor action initialize_dependency_write_rdlo() {}
+constructor action initialize_dependency_write_reglist() {}
+
+/*** constructors actions to set up dependencies END ***/
+
+/*** definition of groups of instructions that share dependencies START ***/
+
+group group_read_rm(bx, \
+		blx_2, \
+		and_imm_shift, and_reg_shift, \
+		eor_imm_shift, eor_reg_shift, \
+		sub_imm_shift, sub_reg_shift, \
+		rsb_imm_shift, rsb_reg_shift, \
+		add_imm_shift, add_reg_shift, \
+		adc_imm_shift, adc_reg_shift, \
+		sbc_imm_shift, sbc_reg_shift, \
+		rsc_imm_shift, rsc_reg_shift, \
+		tst_imm_shift, tst_reg_shift, \
+		teq_imm_shift, teq_reg_shift, \
+		cmp_imm_shift, cmp_reg_shift, \
+		cmn_imm_shift, cmn_reg_shift, \
+		orr_imm_shift, orr_reg_shift, \
+		mov_imm_shift, mov_reg_shift, \
+		bic_imm_shift, bic_reg_shift, \
+		mvn_imm_shift, mvn_reg_shift, \
+		ldr_reg_post, ldr_reg_offset, \
+		ldrb_reg_post, ldrb_reg_offset, \
+		ldrt_reg, \
+		ldrbt_reg, \
+		str_reg_post, str_reg_offset, \
+		strb_reg_post, strb_reg_offset, \
+		strt_reg, \
+		strbt_reg, \
+		ldrh_reg_post, ldrh_reg_offset, \
+		ldrsh_reg_post, ldrsh_reg_offset, \
+		ldrsb_reg_post, ldrsb_reg_offset, \
+		strh_reg_post, strh_reg_offset, \
+		ldrd_reg_post, ldrd_reg_offset, \
+		strd_reg_post, strd_reg_offset, \
+		clz, \
+		mla, \
+		mul, \
+		smlal, \
+		smull, \
+		umlal, \
+		umull, \
+		swp, \
+		swpb, \
+		msr_reg)
+
+group group_read_rn( \
+		ldc, \
+		ldc_unindexed, \
+		stc, \
+		stc_unindexed, \
+		ldc2, ldc2_unindexed, \
+		stc2, stc2_unindexed, \
+		and_32imm, and_imm_shift, and_reg_shift, \
+		eor_32imm, eor_imm_shift, eor_reg_shift, \
+		sub_32imm, sub_imm_shift, sub_reg_shift, \
+		rsb_32imm, rsb_imm_shift, rsb_reg_shift, \
+		add_32imm, add_imm_shift, add_reg_shift, \
+		adc_32imm, adc_imm_shift, adc_reg_shift, \
+		sbc_32imm, sbc_imm_shift, sbc_reg_shift, \
+		rsc_32imm, rsc_imm_shift, rsc_reg_shift, \
+		tst_32imm, tst_imm_shift, tst_reg_shift, \
+		teq_32imm, teq_imm_shift, teq_reg_shift, \
+		cmp_32imm, cmp_imm_shift, cmp_reg_shift, \
+		cmn_32imm, cmn_imm_shift, cmn_reg_shift, \
+		orr_32imm, orr_imm_shift, orr_reg_shift, \
+		bic_32imm, bic_imm_shift, bic_reg_shift, \
+		mvn_32imm, mvn_imm_shift, mvn_reg_shift, \
+		ldr_imm_post, ldr_imm_offset, ldr_reg_post, ldr_reg_offset, \
+		ldrb_imm_post, ldrb_imm_offset, ldrb_reg_post, ldrb_reg_offset, \
+		ldrt_imm, ldrt_reg, \
+		ldrbt_imm, ldrbt_reg, \
+		str_imm_post, str_imm_offset, str_reg_post, str_reg_offset, \
+		strb_imm_post, strb_imm_offset, strb_reg_post, strb_reg_offset, \
+		strt_imm, strt_reg, \
+		strbt_imm, strbt_reg, \
+		ldm, \
+		ldm_pcusr, \
+		ldm_npcusr, \
+		stm, \
+		stm_usr, \
+		ldrh_imm_post, ldrh_imm_offset, ldrh_reg_post, ldrh_reg_offset, \
+		ldrsh_imm_post, ldrsh_imm_offset, ldrsh_reg_post, ldrsh_reg_offset, \
+		ldrsb_imm_post, ldrsb_imm_offset, ldrsb_reg_post, ldrsb_reg_offset, \
+		strh_imm_post, strh_imm_offset, strh_reg_post, strh_reg_offset, \
+		ldrd_imm_post, ldrd_imm_offset, ldrd_reg_post, ldrd_reg_offset, \
+		strd_imm_post, strd_imm_offset, strd_reg_post, strd_reg_offset, \
+		mla, \
+		swp, \
+		swpb)
+
+group group_read_rs( \
+		and_reg_shift, \
+		eor_reg_shift, \
+		sub_reg_shift, \
+		rsb_reg_shift, \
+		add_reg_shift, \
+		adc_reg_shift, \
+		sbc_reg_shift, \
+		rsc_reg_shift, \
+		tst_reg_shift, \
+		teq_reg_shift, \
+		cmp_reg_shift, \
+		cmn_reg_shift, \
+		orr_reg_shift, \
+		mov_reg_shift, \
+		bic_reg_shift, \
+		mvn_reg_shift, \
+		mla, \
+		mul, \
+		smlal, \
+		smull, \
+		umlal, \
+		umull)
+
+group group_read_rd( \
+		ldr_reg_post, ldr_reg_offset, \
+		ldrb_reg_post, ldrb_reg_offset, \
+		ldrt_reg, \
+		str_imm_post, str_imm_offset, str_reg_post, str_reg_offset, \
+		strb_imm_post, strb_imm_offset, strb_reg_post, strb_reg_offset, \
+		strt_imm, strt_reg, \
+		strbt_imm, strbt_reg, \
+		ldrh_reg_post, ldrh_reg_offset, \
+		ldrsh_reg_post, ldrsh_reg_offset, \
+		ldrsb_reg_post, ldrsb_reg_offset, \
+		strh_imm_post, strh_imm_offset, strh_reg_post, strh_reg_offset, \
+		ldrd_reg_post, ldrd_reg_offset, \
+		strd_imm_post, strd_imm_offset, strd_reg_post, strd_reg_offset)
+
+group group_read_rd_plus_one( \
+		strd_imm_post, strd_imm_offset, strd_reg_post, strd_reg_offset)
+
+group group_read_reglist( \
+		stm, \
+		stm_usr)
+
+group group_read_crn( \
+		cdp, \
+		mcr, \
+		mrc, \
+		cdp2, mcr2, mrc2)
+
+group group_read_crm( \
+		cdp, \
+		mcr, \
+		mrc, \
+		cdp2, mcr2, mrc2)
+
+group group_write_rn( \
+		ldc, \
+		stc, \
+		ldc2, \
+		stc2, \
+		ldr_imm_post, \
+		ldr_reg_post, \
+		ldrb_imm_post, \
+		ldrb_reg_post, \
+		ldrt_imm, ldrt_reg, \
+		ldrbt_imm, ldrbt_reg, \
+		str_imm_post, \
+		str_reg_post, \
+		strb_imm_post, \
+		strb_reg_post, \
+		strt_imm, strt_reg, \
+		strbt_imm, strbt_reg, \
+		ldrh_imm_post, \
+		ldrh_reg_post, \
+		ldrsh_imm_post, \
+		ldrsh_reg_post, \
+		ldrsb_imm_post, \
+		ldrsb_reg_post, \
+		strh_imm_post, \
+		strh_reg_post, \
+		ldrd_imm_post, \
+		ldrd_reg_post, \
+		strd_imm_post, \
+		strd_reg_post)
+
+group group_write_rn_cond_w( \
+		ldm, \
+		stm, \
+		ldm_npcusr)
+
+group group_write_rd( \
+		and_32imm, and_imm_shift, and_reg_shift, \
+		eor_32imm, eor_imm_shift, eor_reg_shift, \
+		sub_32imm, sub_imm_shift, sub_reg_shift, \
+		rsb_32imm, rsb_imm_shift, rsb_reg_shift, \
+		add_32imm, add_imm_shift, add_reg_shift, \
+		adc_32imm, adc_imm_shift, adc_reg_shift, \
+		sbc_32imm, sbc_imm_shift, sbc_reg_shift, \
+		rsc_32imm, rsc_imm_shift, rsc_reg_shift, \
+		orr_32imm, orr_imm_shift, orr_reg_shift, \
+		bic_32imm, bic_imm_shift, bic_reg_shift, \
+		mvn_32imm, mvn_imm_shift, mvn_reg_shift, \
+		ldr_imm_post, ldr_imm_offset, ldr_reg_post, ldr_reg_offset, \
+		ldrb_imm_post, ldrb_imm_offset, ldrb_reg_post, ldrb_reg_offset, \
+		ldrt_imm, ldrt_reg, \
+		ldrbt_imm, ldrbt_reg, \
+		ldrh_imm_post, ldrh_imm_offset, ldrh_reg_post, ldrh_reg_offset, \
+		ldrsh_imm_post, ldrsh_imm_offset, ldrsh_reg_post, ldrsh_reg_offset, \
+		ldrsb_imm_post, ldrsb_imm_offset, ldrsb_reg_post, ldrsb_reg_offset, \
+		ldrd_imm_post, ldrd_imm_offset, ldrd_reg_post, ldrd_reg_offset, \
+		clz, \
+		mla, \
+		mul, \
+		mrs)
+
+group group_write_rd_plus_one( \
+		ldrd_imm_post, ldrd_imm_offset, ldrd_reg_post, ldrd_reg_offset)
+
+group group_write_rdhi( \
+		smlal, \
+		smull, \
+		umlal, \
+		umull)
+group group_write_rdlo( \
+		smlal, \
+		smull, \
+		umlal, \
+		umull)
+
+group group_write_reglist( \
+		ldm, \
+		ldm_pcusr, \
+		ldm_npcusr)
+
+group group_write_crd( \
+		cdp, \
+		ldc, \
+		ldc_unindexed, \
+		stc, \
+		stc_unindexed, \
+		cdp2, \
+		ldc2, ldc2_unindexed, \
+		stc2, stc2_unindexed)
+
+/* definition of groups of instructions that share dependencies END ***/
+
+/* specialization of the groups dependencies START ***/
+
+//constructor action initialize_dependency_read_rm() {}
+//constructor action initialize_dependency_read_rn() {}
+//constructor action initialize_dependency_read_rs() {}
+//constructor action initialize_dependency_read_reglist() {}
+//constructor action initialize_dependency_read_crm() {}
+//constructor action initialize_dependency_read_crn() {}
+//
+//constructor action initialize_dependency_write_rn() {}
+//constructor action initialize_dependency_write_rd() {}
+//constructor action initialize_dependency_write_rdhi() {}
+//constructor action initialize_dependency_write_rdlo() {}
+//constructor action initialize_dependency_write_reglist() {}
+
+//group_read_rm.initialize_dependency_read_rm() {
+//
+//}
+//
+//group_read_rn
+//
+//group_read_rs
+//
+//group_read_rd
+//
+//group_read_rd_plus_one
+//
+//group_read_reglist
+//
+//group_read_crn
+//
+//group_read_crm
+//
+//group_write_rn
+//
+//group_write_rn_cond_w
+//
+//group_write_rd
+//
+//group_write_rd_plus_one
+//
+//group_write_rdhi
+//
+//group_write_rdlo
+//
+//group_write_reglist
+//
+//group_write_crd
+
+/* specialization of the groups dependencies END ***/

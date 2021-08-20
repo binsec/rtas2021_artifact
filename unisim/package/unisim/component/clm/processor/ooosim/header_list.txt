@@ -1,0 +1,5 @@
+unisim/component/clm/processor/ooosim/config.hh
+unisim/component/clm/processor/ooosim/cpu_emulator.hh
+unisim/component/clm/processor/ooosim/cpu_simulator.hh
+unisim/component/clm/processor/ooosim/iss_interface.hh
+unisim/component/clm/processor/ooosim/parameters.hh

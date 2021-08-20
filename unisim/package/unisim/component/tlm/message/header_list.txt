@@ -1,0 +1,6 @@
+unisim/component/tlm/message/interrupt.hh
+unisim/component/tlm/message/isa.hh
+unisim/component/tlm/message/memory.hh
+unisim/component/tlm/message/pci.hh
+unisim/component/tlm/message/simple_fsb.hh
+unisim/component/tlm/message/snooping_fsb.hh

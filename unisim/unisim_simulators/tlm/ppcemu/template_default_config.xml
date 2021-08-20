@@ -1,0 +1,523 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<variables>
+	<object name="bus">
+		<variable name="bus.verbose">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>false</value>
+			<description>enable/disable verbosity</description>
+		</variable>
+		<variable name="bus.cycle-time">
+			<type>parameter</type>
+			<data_type>sc_time</data_type>
+			<value>13333 ps</value>
+			<description>cycle time</description>
+		</variable>
+	</object>
+	<object name="cpu">
+		<variable name="cpu.verbose-all">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>false</value>
+			<description>globally enable/disable verbosity</description>
+		</variable>
+		<variable name="cpu.verbose-setup">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>false</value>
+			<description>enable/disable verbosity while setup</description>
+		</variable>
+		<variable name="cpu.verbose-step">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>false</value>
+			<description>enable/disable verbosity when simulating an instruction</description>
+		</variable>
+		<variable name="cpu.verbose-dtlb">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>false</value>
+			<description>enable/disable verbosity when accessing data translation lookahead buffer</description>
+		</variable>
+		<variable name="cpu.verbose-dl1">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>false</value>
+			<description>enable/disable verbosity when accessing L1 data cache</description>
+		</variable>
+		<variable name="cpu.verbose-il1">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>false</value>
+			<description>enable/disable verbosity when accessing L1 instruction cache</description>
+		</variable>
+		<variable name="cpu.verbose-l2">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>false</value>
+			<description>enable/disable verbosity when accessing L2 unified cache</description>
+		</variable>
+		<variable name="cpu.verbose-load">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>false</value>
+			<description>enable/disable verbosity when simulating a load</description>
+		</variable>
+		<variable name="cpu.verbose-store">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>false</value>
+			<description>enable/disable verbosity when simulating a store</description>
+		</variable>
+		<variable name="cpu.verbose-read-memory">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>false</value>
+			<description>enable/disable verbosity when reading memory for a debug purpose</description>
+		</variable>
+		<variable name="cpu.verbose-write-memory">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>false</value>
+			<description>enable/disable verbosity when writing memory for a debug purpose</description>
+		</variable>
+		<variable name="cpu.verbose-exception">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>false</value>
+			<description>enable/disable verbosity when handling exceptions</description>
+		</variable>
+		<variable name="cpu.verbose-set-msr">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>false</value>
+			<description>enable/disable verbosity when setting MSR</description>
+		</variable>
+		<variable name="cpu.verbose-set-hid0">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>false</value>
+			<description>enable/disable verbosity when setting HID0</description>
+		</variable>
+		<variable name="cpu.verbose-set-hid1">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>false</value>
+			<description>enable/disable verbosity when setting HID1</description>
+		</variable>
+		<variable name="cpu.verbose-set-hid2">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>false</value>
+			<description>enable/disable verbosity when setting HID2</description>
+		</variable>
+		<variable name="cpu.verbose-set-l2cr">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>false</value>
+			<description>enable/disable verbosity when setting L2CR</description>
+		</variable>
+		<variable name="cpu.trap-on-instruction-counter">
+			<type>parameter</type>
+			<data_type>unsigned 64-bit integer</data_type>
+			<value>18446744073709551615</value>
+			<description>number of simulated instruction before traping</description>
+		</variable>
+		<variable name="cpu.cpu-cycle-time">
+			<type>parameter</type>
+			<data_type>unsigned 64-bit integer</data_type>
+			<value>3333</value>
+			<description>CPU cycle time in picoseconds</description>
+		</variable>
+		<variable name="cpu.voltage">
+			<type>parameter</type>
+			<data_type>unsigned 64-bit integer</data_type>
+			<value>1300</value>
+			<description>CPU voltage in mV</description>
+		</variable>
+		<variable name="cpu.max-inst">
+			<type>parameter</type>
+			<data_type>unsigned 64-bit integer</data_type>
+			<value>18446744073709551615</value>
+			<description>maximum number of instructions to simulate</description>
+		</variable>
+		<variable name="cpu.bus-cycle-time">
+			<type>parameter</type>
+			<data_type>sc_time</data_type>
+			<value>13333 ps</value>
+			<description>bus cycle time</description>
+		</variable>
+		<variable name="cpu.nice-time">
+			<type>parameter</type>
+			<data_type>sc_time</data_type>
+			<value>1 ms</value>
+			<description>maximum time between synchonizations</description>
+		</variable>
+		<variable name="cpu.ipc">
+			<type>parameter</type>
+			<data_type>double precision floating-point</data_type>
+			<value>1</value>
+			<description>targeted average instructions per second</description>
+		</variable>
+	</object>
+	<object name="elf32-loader">
+		<variable name="elf32-loader.filename">
+			<type>parameter</type>
+			<data_type>string</data_type>
+			<value>a.out</value>
+			<description>the ELF filename to load into memory</description>
+		</variable>
+		<variable name="elf32-loader.base-addr">
+			<type>parameter</type>
+			<data_type>unsigned 32-bit integer</data_type>
+			<value>0x0</value>
+			<description>if not null, a forced base address for a unique program segment</description>
+		</variable>
+		<variable name="elf32-loader.force-use-virtual-address">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>false</value>
+			<description>force use of virtual addresses instead of physical addresses</description>
+		</variable>
+		<variable name="elf32-loader.dump-headers">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>false</value>
+			<description>dump headers while loading ELF file</description>
+		</variable>
+		<variable name="elf32-loader.verbose">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>false</value>
+			<description>enable/disable verbosity</description>
+		</variable>
+	</object>
+	<object name="fsb-to-mem-bridge">
+		<variable name="fsb-to-mem-bridge.verbose_all">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>false</value>
+			<description></description>
+		</variable>
+		<variable name="fsb-to-mem-bridge.fsb-cycle-time">
+			<type>parameter</type>
+			<data_type>unsigned 64-bit integer</data_type>
+			<value>0x3415</value>
+			<description></description>
+		</variable>
+		<variable name="fsb-to-mem-bridge.mem-cycle-time">
+			<type>parameter</type>
+			<data_type>unsigned 64-bit integer</data_type>
+			<value>0x3415</value>
+			<description></description>
+		</variable>
+	</object>
+	<object name="kernel_logger">
+		<variable name="kernel_logger.std_err">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>true</value>
+			<description>Show logger output through the standard error output</description>
+		</variable>
+		<variable name="kernel_logger.std_out">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>false</value>
+			<description>Show logger output through the standard output</description>
+		</variable>
+		<variable name="kernel_logger.std_err_color">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>false</value>
+			<description>Colorize logger output through the standard error output (only works if std_err is active)</description>
+		</variable>
+		<variable name="kernel_logger.std_out_color">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>false</value>
+			<description>Colorize logger output through the standard output (only works if std_out is active)</description>
+		</variable>
+		<variable name="kernel_logger.file">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>false</value>
+			<description>Keep logger output in a file</description>
+		</variable>
+		<variable name="kernel_logger.filename">
+			<type>parameter</type>
+			<data_type>string</data_type>
+			<value>logger_output.txt</value>
+			<description>Filename to keep logger output (the option file must be activated)</description>
+		</variable>
+		<variable name="kernel_logger.xml_file">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>false</value>
+			<description>Keep logger output in a file xml formatted</description>
+		</variable>
+		<variable name="kernel_logger.xml_filename">
+			<type>parameter</type>
+			<data_type>string</data_type>
+			<value>logger_output.xml</value>
+			<description>Filename to keep logger xml output (the option xml_file must be activated)</description>
+		</variable>
+		<variable name="kernel_logger.xml_file_gzipped">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>false</value>
+			<description>If the xml_file option is active, the output file will be compressed (a .gz extension will be automatically added to the xml_filename option</description>
+		</variable>
+	</object>
+	<object name="linux-loader">
+		<variable name="linux-loader.endianness">
+			<type>parameter</type>
+			<data_type>string</data_type>
+			<value>big-endian</value>
+			<description>The endianness of the binary loaded. Available values are: little-endian and big-endian.</description>
+		</variable>
+		<variable name="linux-loader.stack-base">
+			<type>parameter</type>
+			<data_type>unsigned 32-bit integer</data_type>
+			<value>0xc0000000</value>
+			<description></description>
+		</variable>
+		<variable name="linux-loader.max-environ">
+			<type>parameter</type>
+			<data_type>unsigned 32-bit integer</data_type>
+			<value>0x4000</value>
+			<description></description>
+		</variable>
+		<variable name="linux-loader.argc">
+			<type>parameter</type>
+			<data_type>signed 32-bit integer</data_type>
+			<value>0x1</value>
+			<description></description>
+		</variable>
+		<variable name="linux-loader.argv[0]">
+			<type>parameter</type>
+			<data_type>string</data_type>
+			<value>a.out</value>
+			<description></description>
+		</variable>
+		<variable name="linux-loader.argv[1]">
+			<type>parameter</type>
+			<data_type>string</data_type>
+			<value></value>
+			<description></description>
+		</variable>
+		<variable name="linux-loader.argv[2]">
+			<type>parameter</type>
+			<data_type>string</data_type>
+			<value></value>
+			<description></description>
+		</variable>
+		<variable name="linux-loader.argv[3]">
+			<type>parameter</type>
+			<data_type>string</data_type>
+			<value></value>
+			<description></description>
+		</variable>
+		<variable name="linux-loader.argv[4]">
+			<type>parameter</type>
+			<data_type>string</data_type>
+			<value></value>
+			<description></description>
+		</variable>
+		<variable name="linux-loader.argv[5]">
+			<type>parameter</type>
+			<data_type>string</data_type>
+			<value></value>
+			<description></description>
+		</variable>
+		<variable name="linux-loader.argv[6]">
+			<type>parameter</type>
+			<data_type>string</data_type>
+			<value></value>
+			<description></description>
+		</variable>
+		<variable name="linux-loader.argv[7]">
+			<type>parameter</type>
+			<data_type>string</data_type>
+			<value></value>
+			<description></description>
+		</variable>
+		<variable name="linux-loader.argv[8]">
+			<type>parameter</type>
+			<data_type>string</data_type>
+			<value></value>
+			<description></description>
+		</variable>
+		<variable name="linux-loader.argv[9]">
+			<type>parameter</type>
+			<data_type>string</data_type>
+			<value></value>
+			<description></description>
+		</variable>
+		<variable name="linux-loader.envc">
+			<type>parameter</type>
+			<data_type>signed 32-bit integer</data_type>
+			<value>0x0</value>
+			<description></description>
+		</variable>
+		<variable name="linux-loader.envp[0]">
+			<type>parameter</type>
+			<data_type>string</data_type>
+			<value></value>
+			<description></description>
+		</variable>
+		<variable name="linux-loader.envp[1]">
+			<type>parameter</type>
+			<data_type>string</data_type>
+			<value></value>
+			<description></description>
+		</variable>
+		<variable name="linux-loader.envp[2]">
+			<type>parameter</type>
+			<data_type>string</data_type>
+			<value></value>
+			<description></description>
+		</variable>
+		<variable name="linux-loader.envp[3]">
+			<type>parameter</type>
+			<data_type>string</data_type>
+			<value></value>
+			<description></description>
+		</variable>
+		<variable name="linux-loader.envp[4]">
+			<type>parameter</type>
+			<data_type>string</data_type>
+			<value></value>
+			<description></description>
+		</variable>
+		<variable name="linux-loader.envp[5]">
+			<type>parameter</type>
+			<data_type>string</data_type>
+			<value></value>
+			<description></description>
+		</variable>
+		<variable name="linux-loader.envp[6]">
+			<type>parameter</type>
+			<data_type>string</data_type>
+			<value></value>
+			<description></description>
+		</variable>
+		<variable name="linux-loader.envp[7]">
+			<type>parameter</type>
+			<data_type>string</data_type>
+			<value></value>
+			<description></description>
+		</variable>
+		<variable name="linux-loader.envp[8]">
+			<type>parameter</type>
+			<data_type>string</data_type>
+			<value></value>
+			<description></description>
+		</variable>
+		<variable name="linux-loader.envp[9]">
+			<type>parameter</type>
+			<data_type>string</data_type>
+			<value></value>
+			<description></description>
+		</variable>
+		<variable name="linux-loader.verbose">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>false</value>
+			<description>Display verbose information</description>
+		</variable>
+	</object>
+	<object name="linux-os">
+		<variable name="linux-os.system">
+			<type>parameter</type>
+			<data_type>string</data_type>
+			<value>powerpc</value>
+			<description>Emulated system architecture available values are &quot;arm&quot; and &quot;powerpc&quot;</description>
+		</variable>
+		<variable name="linux-os.endianness">
+			<type>parameter</type>
+			<data_type>string</data_type>
+			<value>big-endian</value>
+			<description>The endianness of the binary loaded. Available values are: little-endian and big-endian.</description>
+		</variable>
+		<variable name="linux-os.memory-page-size">
+			<type>parameter</type>
+			<data_type>unsigned 32-bit integer</data_type>
+			<value>0x1000</value>
+			<description></description>
+		</variable>
+		<variable name="linux-os.linux-kernel">
+			<type>parameter</type>
+			<data_type>string</data_type>
+			<value>2.6.27.35</value>
+			<description>A string containing the linux kernel version that the program emulated was compiled for. Currently only version 2.6.27.35 is supported</description>
+		</variable>
+		<variable name="linux-os.utsname-sysname">
+			<type>parameter</type>
+			<data_type>string</data_type>
+			<value>Linux</value>
+			<description>The value that the uname system call should return. As this service is providing linux emulation supoort its value should be 'Linux', so you should not modify it.</description>
+		</variable>
+		<variable name="linux-os.utsname-nodename">
+			<type>parameter</type>
+			<data_type>string</data_type>
+			<value>localhost</value>
+			<description>The network node hostname that the uname system call should return. Default value is localhost, but you could write whatever name you want.</description>
+		</variable>
+		<variable name="linux-os.utsname-release">
+			<type>parameter</type>
+			<data_type>string</data_type>
+			<value>2.6.27.35</value>
+			<description>The kernel realese information that the uname system call should return. This should usually match the linux-kernel parameter.</description>
+		</variable>
+		<variable name="linux-os.utsname-version">
+			<type>parameter</type>
+			<data_type>string</data_type>
+			<value>#UNISIM SMP Fri Mar 12 05:23:09 UTC 2010</value>
+			<description>The kernel version information that the uname system call should return.</description>
+		</variable>
+		<variable name="linux-os.utsname-machine">
+			<type>parameter</type>
+			<data_type>string</data_type>
+			<value>powerpc</value>
+			<description>The machine information that the uname system call should return. This should be one of the supported architectures (the system parameter, that is, arm or powerpc) or a specific model  derived from it (i.e., arm926ejs).</description>
+		</variable>
+		<variable name="linux-os.utsname-domainname">
+			<type>parameter</type>
+			<data_type>string</data_type>
+			<value>localhost</value>
+			<description>The domain name information that the uname system call should return.</description>
+		</variable>
+		<variable name="linux-os.verbose">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>false</value>
+			<description></description>
+		</variable>
+	</object>
+	<object name="memory">
+		<variable name="memory.org">
+			<type>parameter</type>
+			<data_type>unsigned 32-bit integer</data_type>
+			<value>0x0</value>
+			<description>memory origin/base address</description>
+		</variable>
+		<variable name="memory.bytesize">
+			<type>parameter</type>
+			<data_type>unsigned 32-bit integer</data_type>
+			<value>4294967295</value>
+			<description>memory size in bytes</description>
+		</variable>
+		<variable name="memory.verbose">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>false</value>
+			<description>enable/disable verbosity</description>
+		</variable>
+		<variable name="memory.cycle-time">
+			<type>parameter</type>
+			<data_type>sc_time</data_type>
+			<value>13333 ps</value>
+			<description>RAM memory cycle time</description>
+		</variable>
+	</object>
+</variables>

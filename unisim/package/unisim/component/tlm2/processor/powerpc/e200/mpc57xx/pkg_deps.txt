@@ -1,0 +1,10 @@
+libc/inttypes
+libc/unistd
+m4/systemc
+std/stack
+std/vector
+unisim/component/cxx/processor/powerpc/e200/mpc57xx
+unisim/kernel
+unisim/kernel/logger
+unisim/kernel/tlm2
+unisim/kernel/variable/sc_time

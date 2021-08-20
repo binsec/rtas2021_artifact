@@ -1,0 +1,1 @@
+AC_CHECK_HEADER([list],, AC_MSG_ERROR([list is missing]))

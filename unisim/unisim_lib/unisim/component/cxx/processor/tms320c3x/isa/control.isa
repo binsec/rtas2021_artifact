@@ -1,0 +1,1176 @@
+/*
+ *  Copyright (c) 2009,
+ *  Commissariat a l'Energie Atomique (CEA)
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without modification,
+ *  are permitted provided that the following conditions are met:
+ *
+ *   - Redistributions of source code must retain the above copyright notice, this
+ *     list of conditions and the following disclaimer.
+ *
+ *   - Redistributions in binary form must reproduce the above copyright notice,
+ *     this list of conditions and the following disclaimer in the documentation
+ *     and/or other materials provided with the distribution.
+ *
+ *   - Neither the name of CEA nor the names of its contributors may be used to
+ *     endorse or promote products derived from this software without specific prior
+ *     written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ *  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *  DISCLAIMED.
+ *  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ *  INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ *  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+ *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ *  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Authors: Daniel Gracia Perez (daniel.gracia-perez@cea.fr)
+ *          Gilles Mouchard (gilles.mouchard@cea.fr)
+ */
+
+/* List of program-control operations:
+ * - Bcond        branch conditionally (standard)
+ * - BcondD       branch conditionally (delayed)
+ * - BR           branch unconditionally (standard)
+ * - BRD          branch unconditionally (delayed)
+ * - CALL         call subroutine
+ * - CALLcond     call subroutine conditionally
+ * - DBcond       decrement and branch conditionally (standard)
+ * - DBcondD      decrement and branch conditionally (delayed)
+ * - IACK         interrupt acknowledge
+ * - IDLE         idle until interrupt
+ * - NOP          no operation
+ * - RETIcond     return from interrupt conditionally
+ * - RETScond     return form subroutine conditionally
+ * - RPTB         repeat block of instructions
+ * - RPTS         repeat single instruction
+ * - SWI          software interrupt
+ * - TRAPcond     trap conditionally
+ */
+
+/**********************************************************
+ * Bcond (branch conditionally (standard))
+ * op Bcond(0b011010[6]:b[1]:0b000[3]:0b0[1]:cond[5]:reg_or_disp[16])
+ */
+ 
+op Bcond_reg (0b011010[6]:0b0[1]:0b000[3]:0b0[1]:cond[5]:0[11]:reg[5])
+
+Bcond_reg.disasm = {
+	const char *cond_name = COND_NAME[cond];
+	const char *reg_name = REG_NAME[reg];
+	
+	if(!cond_name || !reg_name) return false;
+	os << "B" << cond_name << " " << reg_name;
+	os << " <" << cpu.GetFunctionFriendlyName(cpu.GetReg(reg)) << ">";
+	return true;
+}
+
+Bcond_reg.execute = {
+	// Check whether the source register and the condition are valid
+	if(unlikely(!cpu.HasReg(reg) || !cpu.HasCondition(cond)))
+	{
+		throw BogusOpcodeException<CONFIG, DEBUG>(this);
+	}
+
+	// Check whether the instruction does not break some rules (pg 7-6 and 7-9)
+	// Rule 1: this instruction can't be the last instruction in the block
+	// Note: this instruction can't be one of the three instructions after a delayed branch
+	if(unlikely(cpu.HasPendingBranch() || (cpu.GetST_RM() && cpu.GetRE() == cpu.GetPC())))
+	{
+		throw MisplacedOpcodeException<CONFIG, DEBUG>(this);
+	}
+
+	// Check the condition
+	if(!cpu.CheckCondition(cond)) return;
+
+	// Read the source operand
+	typename CONFIG::address_t target_addr = cpu.GetReg(reg);
+
+	// Branch to the target address
+	cpu.Branch(target_addr);
+}
+
+op Bcond_disp(0b011010[6]:0b1[1]:0b000[3]:0b0[1]:cond[5]:sext<32> imm[16])
+
+Bcond_disp.disasm = {
+	const char *cond_name = COND_NAME[cond];
+	
+	if(!cond_name) return false;
+	os << "B" << cond_name << " 0x" << hex << ((Operation<CONFIG, DEBUG>::GetAddr() / 4) + 1 + imm) << dec;
+	os << " <" << cpu.GetFunctionFriendlyName((Operation<CONFIG, DEBUG>::GetAddr() / 4) + 1 + imm) << ">";
+	return true;
+}
+
+Bcond_disp.execute = {
+	// Check whether the condition is valid
+	if(unlikely(!cpu.HasCondition(cond)))
+	{
+		throw BogusOpcodeException<CONFIG, DEBUG>(this);
+	}
+
+	// Check whether the instruction does not break some rules (pg 7-6 and 7-9)
+	// Rule 1: this instruction can't be the last instruction in the block
+	// Note: this instruction can't be one of the three instructions after a delayed branch
+	if(unlikely(cpu.HasPendingBranch() || (cpu.GetST_RM() && cpu.GetRE() == cpu.GetPC())))
+	{
+		throw MisplacedOpcodeException<CONFIG, DEBUG>(this);
+	}
+
+	// Check the condition
+	if(!cpu.CheckCondition(cond)) return;
+
+	// Read the next PC
+	typename CONFIG::address_t next_pc = cpu.GetNPC();
+
+	// Compute the branch target address
+	typename CONFIG::address_t target_addr = next_pc + imm;
+
+	// Branch to the target address
+	cpu.Branch(target_addr);
+}
+ 
+/* end of Bcond (branch conditionally (standard))
+ **********************************************************/
+
+/**********************************************************
+ * BcondD (branch conditionally (delayed))
+ * op BcondD(0b011010[6]:b[1]:0b000[3]:0b1[1]:cond[5]:reg_or_disp[16])
+ */
+
+op BcondD_reg (0b011010[6]:0b0[1]:0b000[3]:0b1[1]:cond[5]:0[11]:reg[5])
+
+BcondD_reg.disasm = {
+	const char *cond_name = COND_NAME[cond];
+	const char *reg_name = REG_NAME[reg];
+	
+	if(!cond_name || !reg_name) return false;
+	os << "B" << cond_name << "D " << reg_name;
+	os << " <" << cpu.GetFunctionFriendlyName(cpu.GetReg(reg)) << ">";
+	return true;
+}
+
+BcondD_reg.execute = {
+	// Check whether the source register and the condition are valid
+	if(unlikely(!cpu.HasReg(reg) || !cpu.HasCondition(cond)))
+	{
+		throw BogusOpcodeException<CONFIG, DEBUG>(this);
+	}
+
+	// Check whether the instruction does not break some rules (pg 7-6 and 7-9)
+	// Rule 1: this instruction can't be the last instruction in the block
+	// Rule 2: this instruction can't be one of the last 4 instructions in the block
+	// Note: this instruction can't be one of the three instructions after a delayed branch
+	if(unlikely(cpu.HasPendingBranch() || (cpu.GetST_RM() && (cpu.GetPC() >= (cpu.GetRE() - 3) && (cpu.GetPC() <= cpu.GetRE())))))
+	{
+		throw MisplacedOpcodeException<CONFIG, DEBUG>(this);
+	}
+
+	// Check the condition
+	if(!cpu.CheckCondition(cond)) return;
+
+	// Read the source operand
+	typename CONFIG::address_t target_addr = cpu.GetReg(reg);
+
+	// Branch to the target address with a delay of 3 instructions
+	cpu.Branch(target_addr, 3);
+}
+
+op BcondD_disp(0b011010[6]:0b1[1]:0b000[3]:0b1[1]:cond[5]:sext<32> imm[16])
+
+BcondD_disp.disasm = {
+	const char *cond_name = COND_NAME[cond];
+	
+	if(!cond_name) return false;
+	os << "B" << cond_name << "D 0x" << hex << ((Operation<CONFIG, DEBUG>::GetAddr() / 4) + 3 + imm) << dec;
+	os << " <" << cpu.GetFunctionFriendlyName((Operation<CONFIG, DEBUG>::GetAddr() / 4) + 3 + imm) << ">";
+	return true;
+}
+
+BcondD_disp.execute = {
+	// Check whether the condition is valid
+	if(unlikely(!cpu.HasCondition(cond)))
+	{
+		throw BogusOpcodeException<CONFIG, DEBUG>(this);
+	}
+
+	// Check whether the instruction does not break some rules (pg 7-6 and 7-9)
+	// Rule 1: this instruction can't be the last instruction in the block
+	// Rule 2: this instruction can't be one of the last 4 instructions in the block
+	// Note: this instruction can't be one of the three instructions after a delayed branch
+	if(unlikely(cpu.HasPendingBranch() || (cpu.GetST_RM() && (cpu.GetPC() >= (cpu.GetRE() - 3) && (cpu.GetPC() <= cpu.GetRE())))))
+	{
+		throw MisplacedOpcodeException<CONFIG, DEBUG>(this);
+	}
+
+	// Check the condition
+	if(!cpu.CheckCondition(cond)) return;
+
+	// Read the next PC
+	typename CONFIG::address_t next_pc = cpu.GetNPC();
+
+	// Compute the branch target address
+	typename CONFIG::address_t target_addr = next_pc + imm + 2;
+
+	// Branch to the target address with a delay of 3 instructions
+	cpu.Branch(target_addr, 3);
+}
+
+/* end of BcondD (branch conditionally (delayed))
+ **********************************************************/
+
+/**********************************************************
+ * BR (branch unconditionally (standard))
+ * op BR(0b0110000[7]:0b0[1]:src[24])
+ */
+ 
+ op BR(0b0110000[7]:0b0[1]:<32> src[24])
+
+BR.disasm = {
+	os << "BR 0x" << hex << src << dec;
+	os << " <" << cpu.GetFunctionFriendlyName(src) << ">";
+	return true;
+}
+
+BR.execute = {
+	// Check whether the instruction does not break some rules (pg 7-6 and 7-9)
+	// Rule 1: this instruction can't be the last instruction in the block
+	// Note: this instruction can't be one of the three instructions after a delayed branch
+	if(unlikely(cpu.HasPendingBranch() || (cpu.GetST_RM() && cpu.GetRE() == cpu.GetPC())))
+	{
+		throw MisplacedOpcodeException<CONFIG, DEBUG>(this);
+	}
+
+	// Compute the branch target address
+	typename CONFIG::address_t target_addr = src;
+
+	// Branch to the target address
+	cpu.Branch(target_addr);
+}
+
+/* end of BR (branch unconditionally (standard))
+ **********************************************************/
+
+/**********************************************************
+ * BRD (branch unconditionally (delayed))
+ * op BRD(0b0110000[7]:0b1[1]:src[24])
+ */
+ 
+op BRD(0b0110000[7]:0b1[1]:<32> src[24])
+
+BRD.disasm = {
+	os << "BRD 0x" << hex << src << dec;
+	os << " <" << cpu.GetFunctionFriendlyName(src) << ">";
+	return true;
+}
+
+BRD.execute = {
+	// Check whether the instruction does not break some rules (pg 7-6 and 7-9)
+	// Rule 1: this instruction can't be the last instruction in the block
+	// Rule 2: this instruction can't be one of the last 4 instructions in the block
+	// Note: this instruction can't be one of the three instructions after a delayed branch
+	if(unlikely(cpu.HasPendingBranch() || (cpu.GetST_RM() && (cpu.GetPC() >= (cpu.GetRE() - 3) && (cpu.GetPC() <= cpu.GetRE())))))
+	{
+		throw MisplacedOpcodeException<CONFIG, DEBUG>(this);
+	}
+
+	// Compute the branch target address
+	typename CONFIG::address_t target_addr = src;
+
+	// Branch to the target address with a delay of 3 instructions
+	cpu.Branch(target_addr, 3);	
+}
+ 
+/* end of BRD (branch unconditionally (delayed))
+ **********************************************************/
+
+/**********************************************************
+ * CALL (call subroutine)
+ * op CALL(0b0110001[7]:0b0[1]:src[24])
+ */
+ 
+op CALL(0b0110001[7]:0b0[1]:<32> src[24])
+
+CALL.disasm = {
+	os << "CALL 0x" << hex << src << dec;
+	os << " <" << cpu.GetFunctionFriendlyName(src) << ">";
+	return true;
+}
+
+CALL.execute = {
+	// Check whether the instruction does not break some rules (pg 7-6 and 7-9)
+	// Rule 1: this instruction can't be the last instruction in the block
+	// Note: this instruction can't be one of the three instructions after a delayed branch
+	if(unlikely(cpu.HasPendingBranch() || (cpu.GetST_RM() && cpu.GetRE() == cpu.GetPC())))
+	{
+		throw MisplacedOpcodeException<CONFIG, DEBUG>(this);
+	}
+
+	// Read SP and compute its new value
+	typename CONFIG::address_t sp = cpu.GetSP() + 1;
+
+	// Read the next PC
+	typename CONFIG::address_t next_pc = cpu.GetNPC();
+
+	// Compute the target call address
+	typename CONFIG::address_t target_addr = src;
+
+	// Store the next PC at SP + 1
+	cpu.IntStore(sp & ADDRESS_MASK, next_pc);
+
+	// Update SP
+	cpu.SetSP(sp);
+
+	// Branch to the target address
+	cpu.Branch(target_addr);	
+}
+
+/* end of CALL (call subroutine)
+ **********************************************************/
+
+/**********************************************************
+ * CALLcond (call subroutine conditionally)
+ * op CALLcond(0b011100[6]:b[1]:0b0000[4]:cond[5]:reg_or_disp[16])
+ */
+
+op CALLcond_reg (0b011100[6]:0b0[1]:0b0000[4]:cond[5]:0[11]:reg[5])
+
+CALLcond_reg.disasm = {
+	const char *cond_name = COND_NAME[cond];
+	const char *reg_name = REG_NAME[reg];
+	
+	if(!cond_name || !reg_name) return false;
+	os << "CALL" << cond_name << " " << reg_name;
+	os << " <" << cpu.GetFunctionFriendlyName(cpu.GetReg(reg)) << ">";
+	return true;
+}
+
+CALLcond_reg.execute = {
+	// Check whether the source register and the condition are valid
+	if(unlikely(!cpu.HasReg(reg) || !cpu.HasCondition(cond)))
+	{
+		throw BogusOpcodeException<CONFIG, DEBUG>(this);
+	}
+
+	// Check whether the instruction does not break some rules (pg 7-6 and 7-9)
+	// Rule 1: this instruction can't be the last instruction in the block
+	// Note: this instruction can't be one of the three instructions after a delayed branch
+	if(unlikely(cpu.HasPendingBranch() || (cpu.GetST_RM() && cpu.GetRE() == cpu.GetPC())))
+	{
+		throw MisplacedOpcodeException<CONFIG, DEBUG>(this);
+	}
+
+	// Check the condition
+	if(!cpu.CheckCondition(cond)) return;
+
+	// Read the source operand
+	typename CONFIG::address_t target_addr = cpu.GetReg(reg);
+
+	// Read SP and compute its new value
+	typename CONFIG::address_t sp = cpu.GetSP() + 1;
+
+	// Read the next PC
+	typename CONFIG::address_t next_pc = cpu.GetNPC();
+
+	// Store the next PC at SP + 1
+	cpu.IntStore(sp & ADDRESS_MASK, next_pc);
+
+	// Update SP
+	cpu.SetSP(sp);
+
+	// Branch to the target address
+	cpu.Branch(target_addr);	
+}
+
+op CALLcond_disp(0b011100[6]:0b1[1]:0b0000[4]:cond[5]:sext<32> imm[16])
+
+CALLcond_disp.disasm = {
+	const char *cond_name = COND_NAME[cond];
+	
+	if(!cond_name) return false;
+	os << "CALL" << cond_name << " 0x" << hex << ((Operation<CONFIG, DEBUG>::GetAddr() / 4) + 1 + imm) << dec;
+	os << " <" << cpu.GetFunctionFriendlyName((Operation<CONFIG, DEBUG>::GetAddr() / 4) + 1 + imm) << ">";
+	return true;
+}
+
+CALLcond_disp.execute = {
+	// Check whether the condition is valid
+	if(unlikely(!cpu.HasCondition(cond)))
+	{
+		throw BogusOpcodeException<CONFIG, DEBUG>(this);
+	}
+
+	// Check whether the instruction does not break some rules (pg 7-6 and 7-9)
+	// Rule 1: this instruction can't be the last instruction in the block
+	// Note: this instruction can't be one of the three instructions after a delayed branch
+	if(unlikely(cpu.HasPendingBranch() || (cpu.GetST_RM() && cpu.GetRE() == cpu.GetPC())))
+	{
+		throw MisplacedOpcodeException<CONFIG, DEBUG>(this);
+	}
+
+	// Check the condition
+	if(!cpu.CheckCondition(cond)) return;
+
+	// Read SP and compute its new value
+	typename CONFIG::address_t sp = cpu.GetSP() + 1;
+
+	// Read the next PC
+	typename CONFIG::address_t next_pc = cpu.GetNPC();
+
+	// Compute the target address
+	typename CONFIG::address_t target_addr = next_pc + imm;
+
+	// Store the next PC at SP + 1
+	cpu.IntStore(sp & ADDRESS_MASK, next_pc);
+
+	// Update SP
+	cpu.SetSP(sp);
+
+	// Branch to the target address
+	cpu.Branch(target_addr);	
+}
+
+/* end of CALLcond (call subroutine conditionally)
+ **********************************************************/
+
+/**********************************************************
+ * DBcond (decrement and branch conditionally (standard))
+ * op DBcond(0b011011[6]:b[1]:ar[3]:0b0[1]:cond[5]:reg_or_disp[16])
+ */
+
+op DBcond_reg (0b011011[6]:0b0[1]:ar[3]:0b0[1]:cond[5]:0[11]:reg[5])
+
+DBcond_reg.disasm = {
+	const char *cond_name = COND_NAME[cond];
+	const char *reg_name = REG_NAME[reg];
+
+	if(!cond_name || !reg_name) return false;
+	os << "DB" << cond_name << " AR" << ar << ", " << reg_name;
+	os << " <" << cpu.GetFunctionFriendlyName(cpu.GetReg(reg)) << ">";
+	return true;
+}
+
+DBcond_reg.execute = {
+	// Check whether the source register and the condition are valid
+	if(unlikely(!cpu.HasReg(reg) || !cpu.HasCondition(cond)))
+	{
+		throw BogusOpcodeException<CONFIG, DEBUG>(this);
+	}
+
+	// Check whether the instruction does not break some rules (pg 7-6 and 7-9)
+	// Rule 1: this instruction can't be the last instruction in the block
+	// Note: this instruction can't be one of the three instructions after a delayed branch
+	if(unlikely(cpu.HasPendingBranch() || (cpu.GetST_RM() && cpu.GetRE() == cpu.GetPC())))
+	{
+		throw MisplacedOpcodeException<CONFIG, DEBUG>(this);
+	}
+
+	// Check the condition
+	if(!cpu.CheckCondition(cond)) return;
+
+	// Read ARn
+	int32_t ar_value = SignExtend(cpu.GetAR23_0(ar), 24);
+
+	// Compute new value for ARn
+	ar_value = ar_value - 1;
+
+	// Update ARn
+	cpu.SetAR23_0(ar, (uint32_t) ar_value);
+
+	// Check whether ARn is >= 0
+	if(ar_value < 0) return;
+
+	// Read the source operand
+	typename CONFIG::address_t target_addr = cpu.GetReg(reg);
+
+	// Branch to the target address
+	cpu.Branch(target_addr);
+}
+
+op DBcond_disp(0b011011[6]:0b1[1]:ar[3]:0b0[1]:cond[5]:sext<32> imm[16])
+
+DBcond_disp.disasm = {
+	const char *cond_name = COND_NAME[cond];
+
+	if(!cond_name) return false;
+	os << "DB" << cond_name << " AR" << ar << ", 0x" << hex << ((Operation<CONFIG, DEBUG>::GetAddr() / 4) + 1 + imm) << dec;
+	os << " <" << cpu.GetFunctionFriendlyName((Operation<CONFIG, DEBUG>::GetAddr() / 4) + 1 + imm) << ">";
+	return true;
+}
+
+DBcond_disp.execute = {
+	// Check whether the source register and the condition are valid
+	if(unlikely(!cpu.HasCondition(cond)))
+	{
+		throw BogusOpcodeException<CONFIG, DEBUG>(this);
+	}
+
+	// Check whether the instruction does not break some rules (pg 7-6 and 7-9)
+	// Rule 1: this instruction can't be the last instruction in the block
+	// Note: this instruction can't be one of the three instructions after a delayed branch
+	if(unlikely(cpu.HasPendingBranch() || (cpu.GetST_RM() && cpu.GetRE() == cpu.GetPC())))
+	{
+		throw MisplacedOpcodeException<CONFIG, DEBUG>(this);
+	}
+
+	// Check the condition
+	if(!cpu.CheckCondition(cond)) return;
+
+	// Read ARn
+	int32_t ar_value = SignExtend(cpu.GetAR23_0(ar), 24);
+
+	// Compute new value for ARn
+	ar_value = ar_value - 1;
+
+	// Update ARn
+	cpu.SetAR23_0(ar, (uint32_t) ar_value);
+
+	// Check whether ARn is >= 0
+	if(ar_value < 0) return;
+
+	// Read the next PC
+	typename CONFIG::address_t next_pc = cpu.GetNPC();
+
+	// Compute the target address
+	typename CONFIG::address_t target_addr = next_pc + imm;
+
+	// Branch to the target address
+	cpu.Branch(target_addr);
+}
+
+/* end of DBcond (decrement and branch conditionally (standard))
+ **********************************************************/
+
+/**********************************************************
+ * DBcondD (decrement and branch conditionally (delayed))
+ * op DBcondD(0b011011[6]:b[1]:ar[3]:0b1[1]:cond[5]:reg_or_disp[16])
+ */
+
+op DBcondD_reg (0b011011[6]:0b0[1]:ar[3]:0b1[1]:cond[5]:0[11]:reg[5])
+
+DBcondD_reg.disasm = {
+	const char *cond_name = COND_NAME[cond];
+	const char *reg_name = REG_NAME[reg];
+
+	if(!cond_name || !reg_name) return false;
+	os << "DB" << cond_name << "D AR" << ar << ", " << reg_name;
+	os << " <" << cpu.GetFunctionFriendlyName(cpu.GetReg(reg)) << ">";
+	return true;
+}
+
+DBcondD_reg.execute = {
+	// Check whether the source register and the condition are valid
+	if(unlikely(!cpu.HasReg(reg) || !cpu.HasCondition(cond)))
+	{
+		throw BogusOpcodeException<CONFIG, DEBUG>(this);
+	}
+
+	// Check whether the instruction does not break some rules (pg 7-6 and 7-9)
+	// Rule 1: this instruction can't be the last instruction in the block
+	// Rule 2: this instruction can't be one of the last 4 instructions in the block
+	// Note: this instruction can't be one of the three instructions after a delayed branch
+	if(unlikely(cpu.HasPendingBranch() || (cpu.GetST_RM() && (cpu.GetPC() >= (cpu.GetRE() - 3) && (cpu.GetPC() <= cpu.GetRE())))))
+	{
+		throw MisplacedOpcodeException<CONFIG, DEBUG>(this);
+	}
+
+	// Check the condition
+	if(!cpu.CheckCondition(cond)) return;
+
+	// Read ARn
+	int32_t ar_value = SignExtend(cpu.GetAR23_0(ar), 24);
+
+	// Compute new value for ARn
+	ar_value = ar_value - 1;
+
+	// Update ARn
+	cpu.SetAR23_0(ar, (uint32_t) ar_value);
+
+	// Check whether ARn is >= 0
+	if(ar_value < 0) return;
+
+	// Read the source operand
+	typename CONFIG::address_t target_addr = cpu.GetReg(reg);
+
+	// Branch to the target address with a delay of 3 instructions
+	cpu.Branch(target_addr, 3);
+}
+
+op DBcondD_disp(0b011011[6]:0b1[1]:ar[3]:0b1[1]:cond[5]:sext<32> imm[16])
+
+DBcondD_disp.disasm = {
+	const char *cond_name = COND_NAME[cond];
+
+	if(!cond_name) return false;
+	os << "DB" << cond_name << "D AR" << ar << ", 0x" << hex << ((Operation<CONFIG, DEBUG>::GetAddr() / 4) + 3 + imm) << dec;
+	os << " <" << cpu.GetFunctionFriendlyName((Operation<CONFIG, DEBUG>::GetAddr() / 4) + 3 + imm) << ">";
+	return true;
+}
+
+DBcondD_disp.execute = {
+	// Check whether the source register and the condition are valid
+	if(unlikely(!cpu.HasCondition(cond)))
+	{
+		throw BogusOpcodeException<CONFIG, DEBUG>(this);
+	}
+
+	// Check whether the instruction does not break some rules (pg 7-6 and 7-9)
+	// Rule 1: this instruction can't be the last instruction in the block
+	// Rule 2: this instruction can't be one of the last 4 instructions in the block
+	// Note: this instruction can't be one of the three instructions after a delayed branch
+	if(unlikely(cpu.HasPendingBranch() || (cpu.GetST_RM() && (cpu.GetPC() >= (cpu.GetRE() - 3) && (cpu.GetPC() <= cpu.GetRE())))))
+	{
+		throw MisplacedOpcodeException<CONFIG, DEBUG>(this);
+	}
+
+	// Check the condition
+	if(!cpu.CheckCondition(cond)) return;
+
+	// Read ARn
+	int32_t ar_value = SignExtend(cpu.GetAR23_0(ar), 24);
+
+	// Compute new value for ARn
+	ar_value = ar_value - 1;
+
+	// Update ARn
+	cpu.SetAR23_0(ar, (uint32_t) ar_value);
+
+	// Check whether ARn is >= 0
+	if(ar_value < 0) return;
+
+	// Read the next PC
+	typename CONFIG::address_t next_pc = cpu.GetNPC();
+
+	// Compute the target address
+	typename CONFIG::address_t target_addr = next_pc + imm + 2;
+
+	// Branch to the target address with a delay of 3 instructions
+	cpu.Branch(target_addr, 3);
+}
+
+/* end of DBcondD (decrement and branch conditionally (delayed))
+ **********************************************************/
+
+/**********************************************************
+ * IACK (interrupt acknowledge)
+ * op IACK(0b000[3]:0b110110[6]:g[2]:0b00000[5]:src[16])
+ */
+
+op IACK_dir  (0b000[3]:0b110110[6]:0b01[2]:0b00000[5]:direct[16])
+
+IACK_dir.disasm = {
+	os << "IACK @0x" << direct;
+	return true;
+}
+
+IACK_dir.execute = {
+	throw UnimplementedOpcodeException<CONFIG, DEBUG>(this);
+}
+
+op IACK_indir(0b000[3]:0b110110[6]:0b10[2]:0b00000[5]:mod[5]:ar[3]:disp[8])
+
+IACK_indir.disasm = {
+	string disasm_indir;
+	if(!cpu.DisasmIndir(disasm_indir, Operation<CONFIG, DEBUG>::GetAddr() / 4, mod, ar, disp)) return false;
+	os << "IACK " << disasm_indir;
+	return true;
+}
+
+IACK_indir.execute = {
+	throw UnimplementedOpcodeException<CONFIG, DEBUG>(this);
+}
+
+/* end of IACK (interrupt acknowledge)
+ **********************************************************/
+
+/**********************************************************
+ * IDLE (idle until interrupt)
+ * op IDLE(0b000[3]:0b001100[6]:0[23])
+ */
+ 
+op IDLE(0b000[3]:0b001100[6]:0[23])
+
+IDLE.disasm = {
+	os << "IDLE";
+	return true;
+}
+
+IDLE.execute = {
+	// Check wether the instruction does not break some rules (pg 7-6 and 7-9)
+	// Rule 1: this instruction can't be the last instruction in the block
+	// Note: this instruction can't be one of the three instructions after a delayed branch
+	if(unlikely(cpu.HasPendingBranch() || (cpu.GetST_RM() && cpu.GetRE() == cpu.GetPC())))
+	{
+		throw MisplacedOpcodeException<CONFIG, DEBUG>(this);
+	}
+
+	// Set ST[GIE]
+	cpu.SetST_GIE();
+
+	// Enter idle mode 1
+	cpu.Idle(1);
+}
+
+/* end of IDLE (idle until interrupt)
+ **********************************************************/
+
+/**********************************************************
+ * NOP (no operation)
+ * op NOP(0b000[3]:0b011001[6]:g[2]:0b00000[5]:src[16])
+ */
+
+op NOP_reg  (0b000[3]:0b011001[6]:0b00[2]:0b00000[5]:0[11]:reg[5])
+
+NOP_reg.disasm = {
+	
+	os << "NOP";
+	return true;
+}
+
+NOP_reg.execute = {
+	// No operation
+}
+
+op NOP_indir(0b000[3]:0b011001[6]:0b10[2]:0b00000[5]:mod[5]:ar[3]:disp[8])
+
+NOP_indir.disasm = {
+	string disasm_indir;
+	if(!cpu.DisasmIndir(disasm_indir, Operation<CONFIG, DEBUG>::GetAddr() / 4, mod, ar, disp)) return false;
+	os << "NOP " << disasm_indir;
+	return true;
+}
+
+NOP_indir.execute = {
+	// Check that indirect addressing mode is valid and compute the effective address
+	typename CONFIG::address_t ea;        // The effective address
+	bool update_ar;                       // Whether to update ARn
+	typename CONFIG::address_t output_ar; // New value of ARn if it is updated
+
+	if(unlikely(!cpu.ComputeIndirEA(ea, update_ar, output_ar, mod, ar, disp)))
+	{
+		throw BogusOpcodeException<CONFIG, DEBUG>(this);
+	}
+
+	// Do a dummy load from memory
+	cpu.IntLoad(ea);
+}
+
+/* end of NOP (no operation)
+ **********************************************************/
+
+/**********************************************************
+ * RETIcond (return from interrupt conditionally)
+ * op RETIcond(0b01111[5]:0b0000[4]:0b00[2]:cond[5]:0[16])
+ */
+
+op RETIcond(0b01111[5]:0b0000[4]:0b00[2]:cond[5]:0[16])
+
+RETIcond.disasm = {
+	const char *cond_name = COND_NAME[cond];
+
+	if(!cond_name) return false;
+	os << "RETI" << cond_name;
+	os << " <" << cpu.GetFunctionFriendlyName(cpu.IntLoad(cpu.GetSP() & ADDRESS_MASK)) << ">";
+	return true;
+}
+
+RETIcond.execute = {
+	// Check whether the condition is valid
+	if(unlikely(!cpu.HasCondition(cond)))
+	{
+		throw BogusOpcodeException<CONFIG, DEBUG>(this);
+	}
+
+	// Check wether the instruction does not break some rules (pg 7-6 and 7-9)
+	// Rule 1: this instruction can't be the last instruction in the block
+	// Note: this instruction can't be one of the three instructions after a delayed branch
+	if(unlikely(cpu.HasPendingBranch() || (cpu.GetST_RM() && cpu.GetRE() == cpu.GetPC())))
+	{
+		throw MisplacedOpcodeException<CONFIG, DEBUG>(this);
+	}
+
+	// Check the condition
+	if(!cpu.CheckCondition(cond)) return;
+
+	// Read SP
+	typename CONFIG::address_t sp = cpu.GetSP();
+
+	// Load the target address stored at SP
+	typename CONFIG::address_t target_addr = cpu.IntLoad(sp & ADDRESS_MASK);
+
+	// Compute the new value of SP
+	sp = sp - 1;
+
+	// Update SP
+	cpu.SetSP(sp);
+
+	// Set ST[GIE]
+	cpu.SetST_GIE();
+
+	// Branch to the target address
+	cpu.Branch(target_addr);	
+}
+
+/* end of RETIcond (return from interrupt conditionally)
+ **********************************************************/
+
+/**********************************************************
+ * RETScond (return form subroutine conditionally)
+ * op RETScond(0b01111[5]:0b0001[4]:0b00[2]:cond[5]:0[16])
+ */
+
+op RETScond(0b01111[5]:0b0001[4]:0b00[2]:cond[5]:0[16])
+
+RETScond.disasm = {
+	const char *cond_name = COND_NAME[cond];
+
+	if(!cond_name) return false;
+	os << "RETS" << cond_name;
+	os << " <" << cpu.GetFunctionFriendlyName(cpu.IntLoad(cpu.GetSP() & ADDRESS_MASK)) << ">";
+	return true;
+}
+
+RETScond.execute = {
+	// Check whether the condition is valid
+	if(unlikely(!cpu.HasCondition(cond)))
+	{
+		throw BogusOpcodeException<CONFIG, DEBUG>(this);
+	}
+
+	// Check wether the instruction does not break some rules (pg 7-6 and 7-9)
+	// Rule 1: this instruction can't be the last instruction in the block
+	// Note: this instruction can't be one of the three instructions after a delayed branch
+	if(unlikely(cpu.HasPendingBranch() || (cpu.GetST_RM() && cpu.GetRE() == cpu.GetPC())))
+	{
+		throw MisplacedOpcodeException<CONFIG, DEBUG>(this);
+	}
+
+	// Check the condition
+	if(!cpu.CheckCondition(cond)) return;
+
+	// Read SP
+	typename CONFIG::address_t sp = cpu.GetSP();
+
+	// Load the target address stored at SP
+	typename CONFIG::address_t target_addr = cpu.IntLoad(sp & ADDRESS_MASK);
+
+	// Compute the new value of SP
+	sp = sp - 1;
+
+	// Update SP
+	cpu.SetSP(sp);
+
+	// Branch to the target address
+	cpu.Branch(target_addr);	
+}
+
+/* end of RETScond (return form subroutine conditionally)
+ **********************************************************/
+
+/**********************************************************
+ * RPTB (repeat block of instructions)
+ * op RPTB(0b01100100[8]:src[24])
+ */
+ 
+op RPTB(0b01100100[8]:<32> src[24])
+
+RPTB.disasm = {
+	os << "RPTB 0x" << hex << src << dec;
+	os << " <" << cpu.GetFunctionFriendlyName(src) << ">";
+	return true;
+}
+
+RPTB.execute = {
+	// Check wether the instruction does not break some rules (pg 7-6 and 7-9)
+	// Rule 1: this instruction can't be the last instruction in the block
+	// Note: this instruction can't be one of the three instructions after a delayed branch
+	if(unlikely(cpu.HasPendingBranch() || (cpu.GetST_RM() && cpu.GetRE() == cpu.GetPC())))
+	{
+		throw MisplacedOpcodeException<CONFIG, DEBUG>(this);
+	}
+
+	// Read the next PC
+	typename CONFIG::address_t next_pc = cpu.GetNPC();
+
+	// Write next PC into RS and RE
+	cpu.SetRS(next_pc);
+
+	// Set ST[RM]
+	cpu.SetST_RM();
+
+	// Set S
+	cpu.ResetS();
+
+	// Load RE with source operand value
+	cpu.SetRE(src);
+}
+
+/* end of RPTB (repeat block of instructions)
+ **********************************************************/
+
+/**********************************************************
+ * RPTS (repeat single instruction)
+ * op RPTS(0b000[3]:0b100111[6]:g[2]:0b11011[5]:src[16])
+ */
+
+op RPTS_reg  (0b000[3]:0b100111[6]:0b00[2]:0b11011[5]:0[11]:src[5])
+
+RPTS_reg.disasm = {
+	const char *src_reg_name = REG_NAME[src];
+
+	if(!src_reg_name) return false;
+	os << "RPTS " << src_reg_name;
+	return true;
+}
+
+RPTS_reg.execute = {
+	// Check that source register is valid
+	if(unlikely(!cpu.HasReg(src)))
+	{
+		throw BogusOpcodeException<CONFIG, DEBUG>(this);
+	}
+
+	// Check wether the instruction does not break some rules (pg 7-6 and 7-9)
+	// Rule 1: this instruction can't be the last instruction in the block
+	// Note: this instruction can't be one of the three instructions after a delayed branch
+	if(unlikely(cpu.HasPendingBranch() || (cpu.GetST_RM() && cpu.GetRE() == cpu.GetPC())))
+	{
+		throw MisplacedOpcodeException<CONFIG, DEBUG>(this);
+	}
+
+	// Read the source operand
+	typename CONFIG::address_t src_value = cpu.GetReg(src);
+
+	// Read the next PC
+	typename CONFIG::address_t next_pc = cpu.GetNPC();
+
+	// Write next PC into RS and RE
+	cpu.SetRS(next_pc);
+	cpu.SetRE(next_pc);
+
+	// Set ST[RM]
+	cpu.SetST_RM();
+
+	// Set S
+	cpu.SetS();
+
+	// Load RC with source operand value
+	cpu.SetRC(src_value);
+}
+
+op RPTS_dir  (0b000[3]:0b100111[6]:0b01[2]:0b11011[5]:direct[16])
+
+RPTS_dir.disasm = {
+	os << "RPTS @0x" << hex << direct << dec;
+	return true;
+}
+
+RPTS_dir.execute = {
+	// Check wether the instruction does not break some rules (pg 7-6 and 7-9)
+	// Rule 1: this instruction can't be the last instruction in the block
+	// Note: this instruction can't be one of the three instructions after a delayed branch
+	if(unlikely(cpu.HasPendingBranch() || (cpu.GetST_RM() && cpu.GetRE() == cpu.GetPC())))
+	{
+		throw MisplacedOpcodeException<CONFIG, DEBUG>(this);
+	}
+
+	// Compute the effective address of the source operand
+	typename CONFIG::address_t ea = cpu.ComputeDirEA(direct);
+
+	// Load the source operand value from memory
+	typename CONFIG::address_t src_value = cpu.IntLoad(ea);
+
+	// Read the next PC
+	typename CONFIG::address_t next_pc = cpu.GetNPC();
+
+	// Write next PC into RS and RE
+	cpu.SetRS(next_pc);
+	cpu.SetRE(next_pc);
+
+	// Set ST[RM]
+	cpu.SetST_RM();
+
+	// Set S
+	cpu.SetS();
+
+	// Load RC with source operand value
+	cpu.SetRC(src_value);
+}
+
+op RPTS_indir(0b000[3]:0b100111[6]:0b10[2]:0b11011[5]:mod[5]:ar[3]:disp[8])
+
+RPTS_indir.disasm = {
+	string disasm_indir;
+	if(!cpu.DisasmIndir(disasm_indir, Operation<CONFIG, DEBUG>::GetAddr() / 4, mod, ar, disp)) return false;
+	os << "RPTS " << disasm_indir;
+	return true;
+}
+
+RPTS_indir.execute = {
+	// Check that indirect addressing mode is valid and compute the effective address of the source operand
+	typename CONFIG::address_t ea;        // The effective address
+	bool update_ar;                       // Whether to update ARn
+	typename CONFIG::address_t output_ar; // New value of ARn if it is updated
+
+	if(unlikely(!cpu.ComputeIndirEA(ea, update_ar, output_ar, mod, ar, disp)))
+	{
+		throw BogusOpcodeException<CONFIG, DEBUG>(this);
+	}
+
+	// Check wether the instruction does not break some rules (pg 7-6 and 7-9)
+	// Rule 1: this instruction can't be the last instruction in the block
+	// Note: this instruction can't be one of the three instructions after a delayed branch
+	if(unlikely(cpu.HasPendingBranch() || (cpu.GetST_RM() && cpu.GetRE() == cpu.GetPC())))
+	{
+		throw MisplacedOpcodeException<CONFIG, DEBUG>(this);
+	}
+
+	// Load the source operand value from memory
+	typename CONFIG::address_t src_value = cpu.IntLoad(ea);
+
+	// Read the next PC
+	typename CONFIG::address_t next_pc = cpu.GetNPC();
+
+	// Write next PC into RS and RE
+	cpu.SetRS(next_pc);
+	cpu.SetRE(next_pc);
+
+	// Set ST[RM]
+	cpu.SetST_RM();
+
+	// Set S
+	cpu.SetS();
+
+	// Load RC with source operand value
+	cpu.SetRC(src_value);
+}
+
+op RPTS_imm  (0b000[3]:0b100111[6]:0b11[2]:0b11011[5]:imm[16])
+
+RPTS_imm.disasm = {
+	os << "RPTS 0x" << hex << imm << dec;
+	return true;
+}
+
+RPTS_imm.execute = {
+	// Check wether the instruction does not break some rules (pg 7-6 and 7-9)
+	// Rule 1: this instruction can't be the last instruction in the block
+	// Note: this instruction can't be one of the three instructions after a delayed branch
+	if(unlikely(cpu.HasPendingBranch() || (cpu.GetST_RM() && cpu.GetRE() == cpu.GetPC())))
+	{
+		throw MisplacedOpcodeException<CONFIG, DEBUG>(this);
+	}
+
+	// Compute the result
+	uint32_t src_value = imm; // imm has already been sign extended by the decoder
+
+	// Read the next PC
+	typename CONFIG::address_t next_pc = cpu.GetNPC();
+
+	// Write next PC into RS and RE
+	cpu.SetRS(next_pc);
+	cpu.SetRE(next_pc);
+
+	// Set ST[RM]
+	cpu.SetST_RM();
+
+	// Set S
+	cpu.SetS();
+
+	// Load RC with source operand value
+	cpu.SetRC(src_value);
+}
+
+/* end of RPTS (repeat single instruction)
+ **********************************************************/
+
+/**********************************************************
+ * SWI (software interrupt)
+ * op SWI(0b0110011[7]:0b0000[4]:0[21])
+ */
+
+op SWI(0b0110011[7]:0b0000[4]:0[21])
+
+SWI.disasm = {
+	os << "SWI";
+	return true;
+}
+
+SWI.execute = {
+	if(unlikely(!cpu.SWI()))
+	{
+		throw UnimplementedOpcodeException<CONFIG, DEBUG>(this);
+	}
+}
+
+
+/* end of SWI (software interrupt)
+ **********************************************************/
+
+/**********************************************************
+ * TRAPcond (trap conditionally)
+ * op TRAPcond(0b0111010[7]:0b0000[4]:cond[5]:0b01[11]:n[5])
+ */
+
+op TRAPcond(0b0111010[7]:0b0000[4]:cond[5]:0b01[11]:<32> n[5])
+
+TRAPcond.disasm = {
+	const char *cond_name = COND_NAME[cond];
+	if(!cond_name) return false;
+	os << "TRAP" << cond_name << " " << n;
+	return true;
+}
+
+TRAPcond.execute = {
+	// Check whether the condition is valid
+	if(unlikely(!cpu.HasCondition(cond)))
+	{
+		throw BogusOpcodeException<CONFIG, DEBUG>(this);
+	}
+
+	// Check wether the instruction does not break some rules (pg 7-6 and 7-9)
+	// Rule 1: this instruction can't be the last instruction in the block
+	// Note: this instruction can't be one of the three instructions after a delayed branch
+	if(unlikely(cpu.HasPendingBranch() || (cpu.GetST_RM() && cpu.GetRE() == cpu.GetPC())))
+	{
+		throw MisplacedOpcodeException<CONFIG, DEBUG>(this);
+	}
+
+	// Check whether to trap into debugger or really trapping
+	if(cpu.HasDebuggerTrap(Operation<CONFIG, DEBUG>::GetEncoding()))
+	{
+		cpu.SetNPC(cpu.GetPC()); // force re-execution (debugger should reinstall correct instruction)
+		return;
+	}
+	
+	// Check the condition
+	if(!cpu.CheckCondition(cond)) return;
+
+	// Read SP and compute its new value
+	typename CONFIG::address_t sp = cpu.GetSP() + 1;
+
+	// Read the next PC
+	typename CONFIG::address_t next_pc = cpu.GetNPC();
+
+	// Store the next PC at SP + 1
+	cpu.IntStore(sp & ADDRESS_MASK, next_pc);
+
+	// Update SP
+	cpu.SetSP(sp);
+
+	// Load trap handler address
+	typename CONFIG::address_t trap_handler_addr = cpu.IntLoad(0x20 + n);
+
+	// Reset ST[GIE] to disable further interrupts until reactivated by the software
+	cpu.ResetST_GIE();
+
+	// Branch to trap handler
+	cpu.Branch(trap_handler_addr);
+}
+
+/* end of TRAPcond (trap conditionally)
+ **********************************************************/

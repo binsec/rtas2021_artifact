@@ -1,0 +1,64 @@
+/*
+ *  Copyright (c) 2017,
+ *  Commissariat a l'Energie Atomique (CEA)
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without modification,
+ *  are permitted provided that the following conditions are met:
+ *
+ *   - Redistributions of source code must retain the above copyright notice, this
+ *     list of conditions and the following disclaimer.
+ *
+ *   - Redistributions in binary form must reproduce the above copyright notice,
+ *     this list of conditions and the following disclaimer in the documentation
+ *     and/or other materials provided with the distribution.
+ *
+ *   - Neither the name of CEA nor the names of its contributors may be used to
+ *     endorse or promote products derived from this software without specific prior
+ *     written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ *  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *  DISCLAIMED.
+ *  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ *  INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ *  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+ *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ *  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Authors: Gilles Mouchard (gilles.mouchard@cea.fr), Franck Vedrine (franck.vedrine@cea.fr)
+ */
+
+op efsmadd(0b000100[6]:rd[5]:ra[5]:rb[5]:0b01011000010[11]);
+
+efsmadd.execute = {
+	if (!cpu->CheckSPV())
+		return false;
+	
+	// Read the input operands
+	SoftFloat d( SoftFloat::FromRawBits, cpu->GetGPR(rd) ), result( SoftFloat::FromRawBits, cpu->GetGPR(ra) ), b( SoftFloat::FromRawBits, cpu->GetGPR(rb) );
+	
+	// Check for Invalid Operation/Input errors
+	if (not cpu->EFPProcessInput().set(result).set(b).set(d).proceed())
+		return false;
+	
+	// Compute the result
+	Flags flags( Flags::RoundingMode(cpu->GetSPEFSCR().Get<CPU::SPEFSCR::FRMC>()) );
+	result.multAndAddAssign(b, d, flags);
+	
+	// Handle EFP Specific Signaling/Rounding
+	bool status = cpu->EFPProcessOutput( result, flags );
+	
+	// Write back the result
+	cpu->SetGPR(rd, result.queryRawBits());
+	
+	return status;
+};
+
+efsmadd.disasm = {
+	os << "efsmadd " << GPRPrint(rd) << ", " << GPRPrint(ra) << ", " << GPRPrint(rb);
+};
+

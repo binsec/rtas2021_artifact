@@ -1,0 +1,7 @@
+libc/unistd
+m4/systemc
+unisim/component/cxx/processor/powerpc/e600
+unisim/component/tlm/message
+unisim/kernel
+unisim/kernel/tlm
+unisim/kernel/variable/sc_time

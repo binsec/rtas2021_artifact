@@ -1,0 +1,996 @@
+/*
+ *  Copyright (c) 2007-2020,
+ *  Commissariat a l'Energie Atomique (CEA)
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without 
+ *  modification, are permitted provided that the following conditions are met:
+ *
+ *   - Redistributions of source code must retain the above copyright notice, 
+ *     this list of conditions and the following disclaimer.
+ *
+ *   - Redistributions in binary form must reproduce the above copyright notice,
+ *     this list of conditions and the following disclaimer in the documentation
+ *     and/or other materials provided with the distribution.
+ *
+ *   - Neither the name of CEA nor the names of its contributors may be used to
+ *     endorse or promote products derived from this software without specific 
+ *     prior written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
+ *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
+ *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
+ *  ARE DISCLAIMED.
+ *  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY 
+ *  DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES 
+ *  (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; 
+ *  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND 
+ *  ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT 
+ *  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF 
+ *  THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Authors: Yves Lhuillier (yves.lhuillier@cea.fr)
+ */
+
+/* SETHI And NOP Instruction */
+
+op sethi( 0b00[2]:rd[5]:0b100[3]:shl<10> imm22[22] );
+
+sethi.disasm = {
+  if( rd == 0 and imm22 == 0 ) os << "nop";
+  else os << "sethi %hi(" << /*XXX:%#010x*/ "0x" << hex << imm22 << "), %r" << rd;
+};
+
+sethi.execute = {
+  sparcv8.m_gpr[rd] = imm22 /* | (sparcv8.m_gpr[rd] & 0x3ff) */;
+};
+
+/* Logical Instructions */
+
+op and_( 0b10[2]:rd[5]:0b000001[6]:rs1[5]:0b0[1]:?[8]:rs2[5] );
+
+and_.disasm = {
+  os << "and %r" << rs1 << ", %r" << rs2 << ", %r" << rd;
+};
+
+and_.execute = {
+  sparcv8.m_gpr[rd] = sparcv8.m_gpr[rs1] & sparcv8.m_gpr[rs2];
+};
+
+op andi( 0b10[2]:rd[5]:0b000001[6]:rs1[5]:0b1[1]:sext<32> simm13[13] );
+
+andi.disasm = {
+  os << "and %r" << rs1 << ", " << simm13 << ", %r" << rd;
+};
+
+andi.execute = {
+  sparcv8.m_gpr[rd] = sparcv8.m_gpr[rs1] & simm13;
+};
+
+op andcc( 0b10[2]:rd[5]:0b010001[6]:rs1[5]:0b0[1]:?[8]:rs2[5] );
+
+andcc.disasm = {
+  os << "andcc %r" << rs1 << ", %r" << rs2 << ", %r" << rd;
+};
+
+andcc.execute = {
+  uint32_t result = sparcv8.m_gpr[rs1] & sparcv8.m_gpr[rs2];
+  sparcv8.modicc( 0xf, (result >> 31) & 1, result == 0, 0, 0 );
+  sparcv8.m_gpr[rd] = result;
+};
+
+op andcci( 0b10[2]:rd[5]:0b010001[6]:rs1[5]:0b1[1]:sext<32> simm13[13] );
+
+andcci.disasm = {
+  os << "andcc %r" << rs1 << ", " << simm13 << ", %r" << rd;
+};
+
+andcci.execute = {
+  uint32_t result = sparcv8.m_gpr[rs1] & simm13;
+  sparcv8.modicc( 0xf, (result >> 31) & 1, result == 0, 0, 0 );
+  sparcv8.m_gpr[rd] = result;
+};
+
+op andn( 0b10[2]:rd[5]:0b000101[6]:rs1[5]:0b0[1]:?[8]:rs2[5] );
+
+andn.disasm = {
+  os << "andn %r" << rs1 << ", %r" << rs2 << ", %r" << rd;
+};
+
+andn.execute = {
+  sparcv8.m_gpr[rd] = sparcv8.m_gpr[rs1] & ~(sparcv8.m_gpr[rs2]);
+};
+
+op andni( 0b10[2]:rd[5]:0b000101[6]:rs1[5]:0b1[1]:sext<32> simm13[13] );
+
+andni.disasm = {
+  os << "andn %r" << rs1 << ", " << simm13 << ", %r" << rd;
+};
+
+andni.execute = {
+  sparcv8.m_gpr[rd] = sparcv8.m_gpr[rs1] & ~(simm13);
+};
+
+op andncc( 0b10[2]:rd[5]:0b010101[6]:rs1[5]:0b0[1]:?[8]:rs2[5] );
+
+andncc.disasm = {
+  os << "andncc %r" << rs1 << ", %r" << rs2 << ", %r" << rd;
+};
+
+andncc.execute = {
+  uint32_t result = sparcv8.m_gpr[rs1] & ~(sparcv8.m_gpr[rs2]);
+  sparcv8.modicc( 0xf, (result >> 31) & 1, result == 0, 0, 0 );
+  sparcv8.m_gpr[rd] = result;
+};
+
+op andncci( 0b10[2]:rd[5]:0b010101[6]:rs1[5]:0b1[1]:sext<32> simm13[13] );
+
+andncci.disasm = {
+  os << "andncc %r" << rs1 << ", " << simm13 << ", %r" << rd;
+};
+
+andncci.execute = {
+  uint32_t result = sparcv8.m_gpr[rs1] & ~(simm13);
+  sparcv8.modicc( 0xf, (result >> 31) & 1, result == 0, 0, 0 );
+  sparcv8.m_gpr[rd] = result;
+};
+
+op or_( 0b10[2]:rd[5]:0b000010[6]:rs1[5]:0b0[1]:?[8]:rs2[5] );
+
+or_.disasm = {
+  os << "or %r" << rs1 << ", %r" << rs2 << ", %r" << rd;
+};
+
+or_.execute = {
+  sparcv8.m_gpr[rd] = sparcv8.m_gpr[rs1] | sparcv8.m_gpr[rs2];
+};
+
+op ori( 0b10[2]:rd[5]:0b000010[6]:rs1[5]:0b1[1]:sext<32> simm13[13] );
+
+ori.disasm = {
+  os << "or %r" << rs1 << ", " << simm13 << ", %r" << rd;
+};
+
+ori.execute = {
+  sparcv8.m_gpr[rd] = sparcv8.m_gpr[rs1] | simm13;
+};
+
+op orcc( 0b10[2]:rd[5]:0b010010[6]:rs1[5]:0b0[1]:?[8]:rs2[5] );
+
+orcc.disasm = {
+  if (rd == 0) {
+    os << "tst %r" << rs1 << ", %r" << rs2;
+  } else {
+    os << "orcc %r" << rs1 << ", %r" << rs2 << ", %r" << rd;
+  }
+};
+
+orcc.execute = {
+  uint32_t result = sparcv8.m_gpr[rs1] | sparcv8.m_gpr[rs2];
+  sparcv8.modicc( 0xf, (result >> 31) & 1, result == 0, 0, 0 );
+  sparcv8.m_gpr[rd] = result;
+};
+
+op orcci( 0b10[2]:rd[5]:0b010010[6]:rs1[5]:0b1[1]:sext<32> simm13[13] );
+
+orcci.disasm = {
+  if (rd == 0) {
+    os << "tst %r" << rs1 << ", " << simm13;
+  } else {
+    os << "orcc %r" << rs1 << ", " << simm13 << ", %r" << rd;
+  }
+};
+
+orcci.execute = {
+  uint32_t result = sparcv8.m_gpr[rs1] | simm13;
+  sparcv8.modicc( 0xf, (result >> 31) & 1, result == 0, 0, 0 );
+  sparcv8.m_gpr[rd] = result;
+};
+
+op orn( 0b10[2]:rd[5]:0b000110[6]:rs1[5]:0b0[1]:?[8]:rs2[5] );
+
+orn.disasm = {
+  os << "orn %r" << rs1 << ", %r" << rs2 << ", %r" << rd;
+};
+
+orn.execute = {
+  sparcv8.m_gpr[rd] = sparcv8.m_gpr[rs1] | ~(sparcv8.m_gpr[rs2]);
+};
+
+op orni( 0b10[2]:rd[5]:0b000110[6]:rs1[5]:0b1[1]:sext<32> simm13[13] );
+
+orni.disasm = {
+  os << "orn %r" << rs1 << ", " << simm13 << ", %r" << rd;
+};
+
+orni.execute = {
+  sparcv8.m_gpr[rd] = sparcv8.m_gpr[rs1] | ~(simm13);
+};
+
+op orncc( 0b10[2]:rd[5]:0b010110[6]:rs1[5]:0b0[1]:?[8]:rs2[5] );
+
+orncc.disasm = {
+  os << "orncc %r" << rs1 << ", %r" << rs2 << ", %r" << rd;
+};
+
+orncc.execute = {
+  uint32_t result = sparcv8.m_gpr[rs1] | ~(sparcv8.m_gpr[rs2]);
+  sparcv8.modicc( 0xf, (result >> 31) & 1, result == 0, 0, 0 );
+  sparcv8.m_gpr[rd] = result;
+};
+
+op orncci( 0b10[2]:rd[5]:0b010110[6]:rs1[5]:0b1[1]:sext<32> simm13[13] );
+
+orncci.disasm = {
+  os << "orncc %r" << rs1 << ", " << simm13 << ", %r" << rd;
+};
+
+orncci.execute = {
+  uint32_t result = sparcv8.m_gpr[rs1] | ~(simm13);
+  sparcv8.modicc( 0xf, (result >> 31) & 1, result == 0, 0, 0 );
+  sparcv8.m_gpr[rd] = result;
+};
+
+op xor_( 0b10[2]:rd[5]:0b000011[6]:rs1[5]:0b0[1]:?[8]:rs2[5] );
+
+xor_.disasm = {
+  os << "xor %r" << rs1 << ", %r" << rs2 << ", %r" << rd;
+};
+
+xor_.execute = {
+  sparcv8.m_gpr[rd] = sparcv8.m_gpr[rs1] ^ sparcv8.m_gpr[rs2];
+};
+
+op xori( 0b10[2]:rd[5]:0b000011[6]:rs1[5]:0b1[1]:sext<32> simm13[13] );
+
+xori.disasm = {
+  os << "xor %r" << rs1 << ", " << simm13 << ", %r" << rd;
+};
+
+xori.execute = {
+  sparcv8.m_gpr[rd] = sparcv8.m_gpr[rs1] ^ simm13;
+};
+
+op xorcc( 0b10[2]:rd[5]:0b010011[6]:rs1[5]:0b0[1]:?[8]:rs2[5] );
+
+xorcc.disasm = {
+  os << "xorcc %r" << rs1 << ", %r" << rs2 << ", %r" << rd;
+};
+
+xorcc.execute = {
+  uint32_t result = sparcv8.m_gpr[rs1] ^ sparcv8.m_gpr[rs2];
+  sparcv8.modicc( 0xf, (result >> 31) & 1, result == 0, 0, 0 );
+  sparcv8.m_gpr[rd] = result;
+};
+
+op xorcci( 0b10[2]:rd[5]:0b010011[6]:rs1[5]:0b1[1]:sext<32> simm13[13] );
+
+xorcci.disasm = {
+  os << "xorcc %r" << rs1 << ", " << simm13 << ", %r" << rd;
+};
+
+xorcci.execute = {
+  uint32_t result = sparcv8.m_gpr[rs1] ^ simm13;
+  sparcv8.modicc( 0xf, (result >> 31) & 1, result == 0, 0, 0 );
+  sparcv8.m_gpr[rd] = result;
+};
+
+op xnor( 0b10[2]:rd[5]:0b000111[6]:rs1[5]:0b0[1]:?[8]:rs2[5] );
+
+xnor.disasm = {
+  os << "xnor %r" << rs1 << ", %r" << rs2 << ", %r" << rd;
+};
+
+xnor.execute = {
+  sparcv8.m_gpr[rd] = sparcv8.m_gpr[rs1] ^ ~(sparcv8.m_gpr[rs2]);
+};
+
+op xnori( 0b10[2]:rd[5]:0b000111[6]:rs1[5]:0b1[1]:sext<32> simm13[13] );
+
+xnori.disasm = {
+  os << "xnor %r" << rs1 << ", " << simm13 << ", %r" << rd;
+};
+
+xnori.execute = {
+  sparcv8.m_gpr[rd] = sparcv8.m_gpr[rs1] ^ ~(simm13);
+};
+
+op xnorcc( 0b10[2]:rd[5]:0b010111[6]:rs1[5]:0b0[1]:?[8]:rs2[5] );
+
+xnorcc.disasm = {
+  os << "xnorcc %r" << rs1 << ", %r" << rs2 << ", %r" << rd;
+};
+
+xnorcc.execute = {
+  uint32_t result = sparcv8.m_gpr[rs1] ^ ~(sparcv8.m_gpr[rs2]);
+  sparcv8.modicc( 0xf, (result >> 31) & 1, result == 0, 0, 0 );
+  sparcv8.m_gpr[rd] = result;
+};
+
+op xnorcci( 0b10[2]:rd[5]:0b010111[6]:rs1[5]:0b1[1]:sext<32> simm13[13] );
+
+xnorcci.disasm = {
+  os << "xnorcc %r" << rs1 << ", " << simm13 << ", %r" << rd;
+};
+
+xnorcci.execute = {
+  uint32_t result = sparcv8.m_gpr[rs1] ^ ~(simm13);
+  sparcv8.modicc( 0xf, (result >> 31) & 1, result == 0, 0, 0 );
+  sparcv8.m_gpr[rd] = result;
+};
+
+/* Shift Instructions */
+
+op sll( 0b10[2]:rd[5]:0b100101[6]:rs1[5]:0b0[1]:?[8]:rs2[5] );
+
+sll.disasm = {
+  os << "sll %r" << rs1 << ", %r" << rs2 << ", %r" << rd;
+};
+
+
+sll.execute = {
+  sparcv8.m_gpr[rd] = sparcv8.m_gpr[rs1] << (sparcv8.m_gpr[rs2] & 0x1f);
+};
+
+op slli( 0b10[2]:rd[5]:0b100101[6]:rs1[5]:0b1[1]:?[8]:shcnt[5] );
+
+slli.disasm = {
+  os << "sll %r" << rs1 << ", " << shcnt << ", %r" << rd;
+};
+
+slli.execute = {
+  sparcv8.m_gpr[rd] = sparcv8.m_gpr[rs1] << (shcnt & 0x1f);
+};
+
+op srl( 0b10[2]:rd[5]:0b100110[6]:rs1[5]:0b0[1]:?[8]:rs2[5] );
+
+srl.disasm = {
+  os << "srl %r" << rs1 << ", %r" << rs2 << ", %r" << rd;
+};
+
+srl.execute = {
+  sparcv8.m_gpr[rd] = sparcv8.m_gpr[rs1] >> (sparcv8.m_gpr[rs2] & 0x1f);
+};
+
+op srli( 0b10[2]:rd[5]:0b100110[6]:rs1[5]:0b1[1]:?[8]:shcnt[5] );
+
+srli.disasm = {
+  os << "srl %r" << rs1 << ", " << shcnt << ", %r" << rd;
+};
+
+srli.execute = {
+  sparcv8.m_gpr[rd] = sparcv8.m_gpr[rs1] >> (shcnt & 0x1f);
+};
+
+op sra( 0b10[2]:rd[5]:0b100111[6]:rs1[5]:0b0[1]:?[8]:rs2[5] );
+
+sra.disasm = {
+  os << "sra %r" << rs1 << ", %r" << rs2 << ", %r" << rd;
+};
+
+sra.execute = {
+  sparcv8.m_gpr[rd] = int32_t( sparcv8.m_gpr[rs1] ) >> (sparcv8.m_gpr[rs2] & 0x1f);
+};
+
+op srai( 0b10[2]:rd[5]:0b100111[6]:rs1[5]:0b1[1]:?[8]:shcnt[5] );
+
+srai.disasm = {
+  os << "sra %r" << rs1 << ", " << shcnt << ", %r" << rd;
+};
+
+srai.execute = {
+  sparcv8.m_gpr[rd] = int32_t( sparcv8.m_gpr[rs1] ) >> (shcnt & 0x1f);
+};
+
+/* Add Instructions */
+
+op add( 0b10[2]:rd[5]:0b000000[6]:rs1[5]:0b0[1]:?[8]:rs2[5] );
+
+add.disasm = {
+  os << "add %r" << rs1 << ", %r" << rs2 << ", %r" << rd;
+};
+
+add.execute = {
+  sparcv8.m_gpr[rd] = sparcv8.m_gpr[rs1] + sparcv8.m_gpr[rs2];
+};
+
+op addi( 0b10[2]:rd[5]:0b000000[6]:rs1[5]:0b1[1]:sext<32> simm13[13] );
+
+addi.disasm = {
+  os << "add %r" << rs1 << ", " << simm13 << ", %r" << rd;
+};
+
+addi.execute = {
+  sparcv8.m_gpr[rd] = sparcv8.m_gpr[rs1] + simm13;
+};
+
+op addcc( 0b10[2]:rd[5]:0b010000[6]:rs1[5]:0b0[1]:?[8]:rs2[5] );
+
+addcc.disasm = {
+  os << "addcc %r" << rs1 << ", %r" << rs2 << ", %r" << rd;
+};
+
+addcc.execute = {
+  uint32_t op1 = sparcv8.m_gpr[rs1], op2 = sparcv8.m_gpr[rs2], res = op1 + op2;
+  sparcv8.modicc( 0xf, (res >> 31) & 1, res == 0,
+                        ((op1 & op2 & (~res)) | ((~op1) & (~op2) & res)) >> 31,
+                        ((op1 & op2) | ((~res) & (op1 | op2))) >> 31 );
+  sparcv8.m_gpr[rd] = res;
+};
+
+op addcci( 0b10[2]:rd[5]:0b010000[6]:rs1[5]:0b1[1]:sext<32> simm13[13] );
+
+addcci.disasm = {
+  os << "addcc %r" << rs1 << ", " << simm13 << ", %r" << rd;
+};
+
+addcci.execute = {
+  uint32_t op1 = sparcv8.m_gpr[rs1], op2 = simm13, res = op1 + op2;
+  sparcv8.modicc( 0xf, (res >> 31) & 1, res == 0,
+                        ((op1 & op2 & (~res)) | ((~op1) & (~op2) & res)) >> 31,
+                        ((op1 & op2) | ((~res) & (op1 | op2))) >> 31 );
+  sparcv8.m_gpr[rd] = res;
+};
+
+op addx( 0b10[2]:rd[5]:0b001000[6]:rs1[5]:0b0[1]:?[8]:rs2[5] );
+
+addx.disasm = {
+  os << "addx %r" << rs1 << ", %r" << rs2 << ", %r" << rd;
+};
+
+addx.execute = {
+  sparcv8.m_gpr[rd] = sparcv8.m_gpr[rs1] + sparcv8.m_gpr[rs2] + sparcv8.c();
+};
+
+op addxi( 0b10[2]:rd[5]:0b001000[6]:rs1[5]:0b1[1]:sext<32> simm13[13] );
+
+addxi.disasm = {
+  os << "addx %r" << rs1 << ", " << simm13 << ", %r" << rd;
+};
+
+addxi.execute = {
+  sparcv8.m_gpr[rd] = sparcv8.m_gpr[rs1] + simm13 + sparcv8.c();
+};
+
+op addxcc( 0b10[2]:rd[5]:0b011000[6]:rs1[5]:0b0[1]:?[8]:rs2[5] );
+
+addxcc.disasm = {
+  os << "addxcc %r" << rs1 << ", %r" << rs2 << ", %r" << rd;
+};
+
+addxcc.execute = {
+  uint32_t op1 = sparcv8.m_gpr[rs1], op2 = sparcv8.m_gpr[rs2], res = op1 + op2 + sparcv8.c();
+  sparcv8.modicc( 0xf, (res >> 31) & 1, res == 0,
+                        ((op1 & op2 & (~res)) | ((~op1) & (~op2) & res)) >> 31,
+                        ((op1 & op2) | ((~res) & (op1 | op2))) >> 31 );
+  sparcv8.m_gpr[rd] = res;
+};
+
+op addxcci( 0b10[2]:rd[5]:0b011000[6]:rs1[5]:0b1[1]:sext<32> simm13[13] );
+
+addxcci.disasm = {
+  os << "addxcc %r" << rs1 << ", " << simm13 << ", %r" << rd;
+};
+
+addxcci.execute = {
+  uint32_t op1 = sparcv8.m_gpr[rs1], op2 = simm13, res = op1 + op2 + sparcv8.c();
+  sparcv8.modicc( 0xf, (res >> 31) & 1, res == 0,
+                  ((op1 & op2 & (~res)) | ((~op1) & (~op2) & res)) >> 31,
+                  ((op1 & op2) | ((~res) & (op1 | op2))) >> 31 );
+  sparcv8.m_gpr[rd] = res;
+};
+
+/* Tagged Add Instructions */
+
+op taddcc( 0b10[2]:rd[5]:0b100000[6]:rs1[5]:0b0[1]:?[8]:rs2[5] );
+
+taddcc.disasm = {
+  os << "taddcc %r" << rs1 << ", %r" << rs2 << ", %r" << rd;
+};
+
+taddcc.execute = {
+  uint32_t op1 = sparcv8.m_gpr[rs1], op2 = sparcv8.m_gpr[rs2], res = op1 + op2;
+  sparcv8.modicc( 0xf, (res >> 31) & 1, res == 0,
+                  (((op1 & op2 & (~res)) | ((~op1) & (~op2) & res)) >> 31) | (((op1 | op2) & 3) ? 1 : 0),
+                  ((op1 & op2) | ((~res) & (op1 | op2))) >> 31 );
+  sparcv8.m_gpr[rd] = res;
+};
+
+op taddcci( 0b10[2]:rd[5]:0b100000[6]:rs1[5]:0b1[1]:sext<32> simm13[13] );
+
+taddcci.disasm = {
+  os << "taddcc %r" << rs1 << ", " << simm13 << ", %r" << rd;
+};
+
+taddcci.execute = {
+  uint32_t op1 = sparcv8.m_gpr[rs1], op2 = simm13, res = op1 + op2;
+  sparcv8.modicc( 0xf, (res >> 31) & 1, res == 0,
+                  (((op1 & op2 & (~res)) | ((~op1) & (~op2) & res)) >> 31) | (((op1 | op2) & 3) ? 1 : 0),
+                  ((op1 & op2) | ((~res) & (op1 | op2))) >> 31 );
+  sparcv8.m_gpr[rd] = res;
+};
+
+op taddcctv( 0b10[2]:rd[5]:0b100010[6]:rs1[5]:0b0[1]:?[8]:rs2[5] );
+
+taddcctv.disasm = {
+  os << "taddcctv %r" << rs1 << ", %r" << rs2 << ", %r" << rd;
+};
+
+taddcctv.execute = {
+  uint32_t op1 = sparcv8.m_gpr[rs1], op2 = sparcv8.m_gpr[rs2], res = op1 + op2;
+  uint32_t tmpv = (((op1 & op2 & (~res)) | ((~op1) & (~op2) & res)) >> 31) | (((op1 | op2) & 3) ? 1 : 0);
+  if( tmpv ) { sparcv8.hwtrap( Trap_t::tag_overflow ); return; }
+  sparcv8.modicc( 0xf, (res >> 31) & 1, res == 0,
+                  tmpv,
+                  ((op1 & op2) | ((~res) & (op1 | op2))) >> 31 );
+  sparcv8.m_gpr[rd] = res;
+};
+
+op taddcctvi( 0b10[2]:rd[5]:0b100010[6]:rs1[5]:0b1[1]:sext<32> simm13[13] );
+
+taddcctvi.disasm = {
+  os << "taddcctv %r" << rs1 << ", " << simm13 << ", %r" << rd;
+};
+
+taddcctvi.execute = {
+  uint32_t op1 = sparcv8.m_gpr[rs1], op2 = simm13, res = op1 + op2;
+  uint32_t tmpv = (((op1 & op2 & (~res)) | ((~op1) & (~op2) & res)) >> 31) | (((op1 | op2) & 3) ? 1 : 0);
+  if( tmpv ) { sparcv8.hwtrap( Trap_t::tag_overflow ); return; }
+  sparcv8.modicc( 0xf, (res >> 31) & 1, res == 0,
+                  tmpv,
+                  ((op1 & op2) | ((~res) & (op1 | op2))) >> 31 );
+  sparcv8.m_gpr[rd] = res;
+};
+
+/* Substract Instructions */
+
+op sub( 0b10[2]:rd[5]:0b000100[6]:rs1[5]:0b0[1]:?[8]:rs2[5] );
+
+sub.disasm = {
+  os << "sub %r" << rs1 << ", %r" << rs2 << ", %r" << rd;
+};
+
+sub.execute = {
+  sparcv8.m_gpr[rd] = sparcv8.m_gpr[rs1] - sparcv8.m_gpr[rs2];
+};
+
+op subi( 0b10[2]:rd[5]:0b000100[6]:rs1[5]:0b1[1]:sext<32> simm13[13] );
+
+subi.disasm = {
+  os << "sub %r" << rs1 << ", " << simm13 << ", %r" << rd;
+};
+
+subi.execute = {
+  sparcv8.m_gpr[rd] = sparcv8.m_gpr[rs1] - simm13;
+};
+
+op subcc( 0b10[2]:rd[5]:0b010100[6]:rs1[5]:0b0[1]:?[8]:rs2[5] );
+
+subcc.disasm = {
+  if (rd == 0) {
+    os << "cmp %r" << rs1 << ", %r" << rs2;
+  } else {
+    os << "subcc %r" << rs1 << ", %r" << rs2 << ", %r" << rd;
+  }
+};
+
+subcc.execute = {
+  uint32_t op1 = sparcv8.m_gpr[rs1], op2 = sparcv8.m_gpr[rs2], res = op1 - op2;
+  sparcv8.modicc( 0xf, (res >> 31) & 1, res == 0,
+                        ((op1 & (~op2) & (~res)) | ((~op1) & op2 & res)) >> 31,
+                        (((~op1) & op2) | (res & ((~op1) | op2))) >> 31 );
+  sparcv8.m_gpr[rd] = res;
+};
+
+op subcci( 0b10[2]:rd[5]:0b010100[6]:rs1[5]:0b1[1]:sext<32> simm13[13] );
+
+subcci.disasm = {
+  if (rd == 0) {
+    os << "cmp %r" << rs1 << ", " << simm13;
+  } else {
+    os << "subcc %r" << rs1 << ", " << simm13 << ", %r" << rd;
+  }
+};
+
+subcci.execute = {
+  uint32_t op1 = sparcv8.m_gpr[rs1], op2 = simm13, res = op1 - op2;
+  sparcv8.modicc( 0xf, (res >> 31) & 1, res == 0,
+                        ((op1 & (~op2) & (~res)) | ((~op1) & op2 & res)) >> 31,
+                        (((~op1) & op2) | (res & ((~op1) | op2))) >> 31 );
+  sparcv8.m_gpr[rd] = res;
+};
+
+op subx( 0b10[2]:rd[5]:0b001100[6]:rs1[5]:0b0[1]:?[8]:rs2[5] );
+
+subx.disasm = {
+  os << "subx %r" << rs1 << ", %r" << rs2 << ", %r" << rd;
+};
+
+subx.execute = {
+  sparcv8.m_gpr[rd] = sparcv8.m_gpr[rs1] - sparcv8.m_gpr[rs2] - sparcv8.c();
+};
+
+op subxi( 0b10[2]:rd[5]:0b001100[6]:rs1[5]:0b1[1]:sext<32> simm13[13] );
+
+subxi.disasm = {
+  os << "subx %r" << rs1 << ", " << simm13 << ", %r" << rd;
+};
+
+subxi.execute = {
+  sparcv8.m_gpr[rd] = sparcv8.m_gpr[rs1] - simm13 - sparcv8.c();
+};
+
+op subxcc( 0b10[2]:rd[5]:0b011100[6]:rs1[5]:0b0[1]:?[8]:rs2[5] );
+
+subxcc.disasm = {
+  os << "subxcc %r" << rs1 << ", %r" << rs2 << ", %r" << rd;
+};
+
+subxcc.execute = {
+  uint32_t op1 = sparcv8.m_gpr[rs1], op2 = sparcv8.m_gpr[rs2], res = op1 - op2 - sparcv8.c();
+  sparcv8.modicc( 0xf, (res >> 31) & 1, res == 0,
+                        ((op1 & (~op2) & (~res)) | ((~op1) & op2 & res)) >> 31,
+                        (((~op1) & op2) | (res & ((~op1) | op2))) >> 31 );
+  sparcv8.m_gpr[rd] = res;
+};
+
+op subxcci( 0b10[2]:rd[5]:0b011100[6]:rs1[5]:0b1[1]:sext<32> simm13[13] );
+
+subxcci.disasm = {
+  os << "subxcc %r" << rs1 << ", " << simm13 << ", %r" << rd;
+};
+
+subxcci.execute = {
+  uint32_t op1 = sparcv8.m_gpr[rs1], op2 = simm13, res = op1 - op2 - sparcv8.c();
+  sparcv8.modicc( 0xf, (res >> 31) & 1, res == 0,
+                        ((op1 & (~op2) & (~res)) | ((~op1) & op2 & res)) >> 31,
+                        (((~op1) & op2) | (res & ((~op1) | op2))) >> 31 );
+  sparcv8.m_gpr[rd] = res;
+};
+
+/* Tagged Substract Instructions */
+
+op tsubcc( 0b10[2]:rd[5]:0b100001[6]:rs1[5]:0b0[1]:?[8]:rs2[5] );
+
+tsubcc.disasm = {
+  os << "tsubcc %r" << rs1 << ", %r" << rs2 << ", %r" << rd;
+};
+
+tsubcc.execute = {
+  uint32_t op1 = sparcv8.m_gpr[rs1], op2 = sparcv8.m_gpr[rs2], res = op1 - op2;
+  sparcv8.modicc( 0xf, (res >> 31) & 1, res == 0,
+                  (((op1 & (~op2) & (~res)) | ((~op1) & op2 & res)) >> 31) | (((op1 | op2) & 3) ? 1 : 0),
+                  (((~op1) & op2) | (res & ((~op1) | op2))) >> 31 );
+  sparcv8.m_gpr[rd] = res;
+};
+
+op tsubcci( 0b10[2]:rd[5]:0b100001[6]:rs1[5]:0b1[1]:sext<32> simm13[13] );
+
+tsubcci.disasm = {
+  os << "tsubcc %r" << rs1 << ", " << simm13 << ", %r" << rd;
+};
+
+tsubcci.execute = {
+  uint32_t op1 = sparcv8.m_gpr[rs1], op2 = simm13, res = op1 - op2;
+  sparcv8.modicc( 0xf, (res >> 31) & 1, res == 0,
+                  (((op1 & (~op2) & (~res)) | ((~op1) & op2 & res)) >> 31) | (((op1 | op2) & 3) ? 1 : 0),
+                  (((~op1) & op2) | (res & ((~op1) | op2))) >> 31 );
+  sparcv8.m_gpr[rd] = res;
+};
+
+op tsubcctv( 0b10[2]:rd[5]:0b100011[6]:rs1[5]:0b0[1]:?[8]:rs2[5] );
+
+tsubcctv.disasm = {
+  os << "tsubcctv %r" << rs1 << ", %r" << rs2 << ", %r" << rd;
+};
+
+tsubcctv.execute = {
+  uint32_t op1 = sparcv8.m_gpr[rs1], op2 = sparcv8.m_gpr[rs2], res = op1 - op2;
+  uint32_t tmpv = (((op1 & (~op2) & (~res)) | ((~op1) & op2 & res)) >> 31) | (((op1 | op2) & 3) ? 1 : 0);
+  if( tmpv ) { sparcv8.hwtrap( Trap_t::tag_overflow ); return; }
+  sparcv8.modicc( 0xf, (res >> 31) & 1, res == 0,
+                  tmpv,
+                  (((~op1) & op2) | (res & ((~op1) | op2))) >> 31 );
+  sparcv8.m_gpr[rd] = res;
+};
+
+op tsubcctvi( 0b10[2]:rd[5]:0b100011[6]:rs1[5]:0b1[1]:sext<32> simm13[13] );
+
+tsubcctvi.disasm = {
+  os << "tsubcctv %r" << rs1 << ", " << simm13 << ", %r" << rd;
+};
+
+tsubcctvi.execute = {
+  uint32_t op1 = sparcv8.m_gpr[rs1], op2 = simm13, res = op1 - op2;
+  uint32_t tmpv = (((op1 & (~op2) & (~res)) | ((~op1) & op2 & res)) >> 31) | (((op1 | op2) & 3) ? 1 : 0);
+  if( tmpv ) { sparcv8.hwtrap( Trap_t::tag_overflow ); return; }
+  sparcv8.modicc( 0xf, (res >> 31) & 1, res == 0,
+                  tmpv,
+                  (((~op1) & op2) | (res & ((~op1) | op2))) >> 31 );
+  sparcv8.m_gpr[rd] = res;
+};
+
+/* Multiply Step Instructions */
+
+op mulscc( 0b10[2]:rd[5]:0b100100[6]:rs1[5]:0b0[1]:?[8]:rs2[5] );
+
+mulscc.disasm = {
+  os << "mulscc %r" << rs1 << ", %r" << rs2 << ", %r" << rd;
+};
+
+mulscc.execute = {
+  uint32_t op1 = ((sparcv8.n() ^ sparcv8.v()) << 31) | (sparcv8.m_gpr[rs1] >> 1);
+  uint32_t op2 = ((sparcv8.m_y & 1) ? sparcv8.m_gpr[rs2] : 0 );
+  uint32_t res = op1 + op2;
+  sparcv8.m_y = (sparcv8.m_gpr[rs1] << 31) | (sparcv8.m_y >> 1);
+  sparcv8.m_gpr[rd] = res;
+  sparcv8.modicc( 0xf, res >> 31, res == 0, 
+                        ((op1 & op2 & (~res)) | ((~op1) & (~op2) & res)) >> 31,
+                        ((op1 & op2) | ((~res) & (op1 | op2))) >> 31 );
+};
+
+op mulscci( 0b10[2]:rd[5]:0b100100[6]:rs1[5]:0b1[1]:sext<32> simm13[13] );
+
+mulscci.disasm = {
+  os << "mulscc %r" << rs1 << ", " << simm13 << ", %r" << rd;
+};
+
+mulscci.execute = {
+  uint32_t op1 = ((sparcv8.n() ^ sparcv8.v()) << 31) | (sparcv8.m_gpr[rs1] >> 1);
+  uint32_t op2 = ((sparcv8.m_y & 1) ? simm13 : 0 );
+  uint32_t res = op1 + op2;
+  sparcv8.m_y = (sparcv8.m_gpr[rs1] << 31) | (sparcv8.m_y >> 1);
+  sparcv8.m_gpr[rd] = res;
+  sparcv8.modicc( 0xf, res >> 31, res == 0, 
+                        ((op1 & op2 & (~res)) | ((~op1) & (~op2) & res)) >> 31,
+                        ((op1 & op2) | ((~res) & (op1 | op2))) >> 31 );
+};
+
+/* Multiply Instructions */
+
+op umul( 0b10[2]:rd[5]:0b001010[6]:rs1[5]:0b0[1]:?[8]:rs2[5] );
+
+umul.disasm = {
+  os << "umul %r" << rs1 << ", %r" << rs2 << ", %r" << rd;
+};
+
+umul.execute = {
+  uint64_t op1 = uint32_t( sparcv8.m_gpr[rs1] ), op2 = uint32_t( sparcv8.m_gpr[rs2] ), res = op1 * op2;
+  sparcv8.m_y = res >> 32;
+  sparcv8.m_gpr[rd] = res;
+};
+
+op umuli( 0b10[2]:rd[5]:0b001010[6]:rs1[5]:0b1[1]:sext<32> simm13[13] );
+
+umuli.disasm = {
+  os << "umul %r" << rs1 << ", " << uint32_t( simm13 ) << ", %r" << rd;
+};
+
+umuli.execute = {
+  uint64_t op1 = uint32_t( sparcv8.m_gpr[rs1] ), op2 = uint32_t( simm13 ), res = op1 * op2;
+  sparcv8.m_y = res >> 32;
+  sparcv8.m_gpr[rd] = res;
+};
+
+op smul( 0b10[2]:rd[5]:0b001011[6]:rs1[5]:0b0[1]:?[8]:rs2[5] );
+
+smul.disasm = {
+  os << "smul %r" << rs1 << ", %r" << rs2 << ", %r" << rd;
+};
+
+smul.execute = {
+  int64_t op1 = int32_t( sparcv8.m_gpr[rs1] ), op2 = int32_t( sparcv8.m_gpr[rs2] ), res = op1 * op2;
+  sparcv8.m_y = res >> 32;
+  sparcv8.m_gpr[rd] = res;
+};
+
+op smuli( 0b10[2]:rd[5]:0b001011[6]:rs1[5]:0b1[1]:sext<32> simm13[13] );
+
+smuli.disasm = {
+  os << "smul %r" << rs1 << ", " << simm13 << ", %r" << rd;
+};
+
+smuli.execute = {
+  int64_t op1 = int32_t( sparcv8.m_gpr[rs1] ), op2 = int32_t( simm13 ), res = op1 * op2;
+  sparcv8.m_y = res >> 32;
+  sparcv8.m_gpr[rd] = res;
+};
+
+op umulcc( 0b10[2]:rd[5]:0b011010[6]:rs1[5]:0b0[1]:?[8]:rs2[5] );
+
+umulcc.disasm = {
+  os << "umulcc %r" << rs1 << ", %r" << rs2 << ", %r" << rd;
+};
+
+umulcc.execute = {
+  uint64_t op1 = uint32_t( sparcv8.m_gpr[rs1] ), op2 = uint32_t( sparcv8.m_gpr[rs2] ), res = op1 * op2;
+  sparcv8.m_y = res >> 32;
+  sparcv8.m_gpr[rd] = res;
+  sparcv8.modicc( 0xf, (res >> 31) & 1, (res & 0xffffffffll) == 0, 0, 0 );
+};
+
+op umulcci( 0b10[2]:rd[5]:0b011010[6]:rs1[5]:0b1[1]:sext<32> simm13[13] );
+
+umulcci.disasm = {
+  os << "umulcc %r" << rs1 << ", " << uint32_t( simm13 ) << ", %r" << rd;
+};
+
+umulcci.execute = {
+  uint64_t op1 = uint32_t( sparcv8.m_gpr[rs1] ), op2 = uint32_t( simm13 ), res = op1 * op2;
+  sparcv8.m_y = res >> 32;
+  sparcv8.m_gpr[rd] = res;
+  sparcv8.modicc( 0xf, (res >> 31) & 1, (res & 0xffffffffll) == 0, 0, 0 );
+};
+
+op smulcc( 0b10[2]:rd[5]:0b011011[6]:rs1[5]:0b0[1]:?[8]:rs2[5] );
+
+smulcc.disasm = {
+  os << "smulcc %r" << rs1 << ", %r" << rs2 << ", %r" << rd;
+};
+
+smulcc.execute = {
+  int64_t op1 = int32_t( sparcv8.m_gpr[rs1] ), op2 = int32_t( sparcv8.m_gpr[rs2] ), res = op1 * op2;
+  sparcv8.m_y = res >> 32;
+  sparcv8.m_gpr[rd] = res;
+  sparcv8.modicc( 0xf, (res >> 31) & 1, (res & 0xffffffffll) == 0, 0, 0 );
+};
+
+op smulcci( 0b10[2]:rd[5]:0b011011[6]:rs1[5]:0b1[1]:sext<32> simm13[13] );
+
+smulcci.disasm = {
+  os << "smulcc %r" << rs1 << ", " << simm13 << ", %r" << rd;
+};
+
+smulcci.execute = {
+  int64_t op1 = int32_t( sparcv8.m_gpr[rs1] ), op2 = int32_t( simm13 ), res = op1 * op2;
+  sparcv8.m_y = res >> 32;
+  sparcv8.m_gpr[rd] = res;
+  sparcv8.modicc( 0xf, (res >> 31) & 1, (res & 0xffffffffll) == 0, 0, 0 );
+};
+
+/* Divide Instructions */
+
+op udiv( 0b10[2]:rd[5]:0b001110[6]:rs1[5]:0b0[1]:?[8]:rs2[5] );
+
+udiv.disasm = {
+  os << "udiv %r" << rs1 << ", %r" << rs2 << ", %r" << rd;
+};
+
+udiv.execute = {
+  if( sparcv8.m_gpr[rs2] == 0 ) { sparcv8.hwtrap( Trap_t::division_by_zero ); return; }
+  uint64_t op1 = (uint64_t( sparcv8.m_y ) << 32) | sparcv8.m_gpr[rs1];
+  uint64_t res = op1 / sparcv8.m_gpr[rs2];
+  if( res & 0xffffffff00000000ull ) {
+    sparcv8.m_gpr[rd] = 0xffffffff;
+  } else {
+    sparcv8.m_gpr[rd] = res;
+  }
+};
+
+op udivi( 0b10[2]:rd[5]:0b001110[6]:rs1[5]:0b1[1]:sext<32> simm13[13] );
+
+udivi.disasm = {
+  os << "udiv %r" << rs1 << ", " << simm13 << ", %r" << rd;
+};
+
+udivi.execute = {
+  if( simm13 == 0 ) { sparcv8.hwtrap( Trap_t::division_by_zero ); return; }
+  uint64_t op1 = (uint64_t( sparcv8.m_y ) << 32) | sparcv8.m_gpr[rs1];
+  uint64_t res = op1 / uint32_t( simm13 );
+  if( res & 0xffffffff00000000ull ) {
+    sparcv8.m_gpr[rd] = 0xffffffff;
+  } else {
+    sparcv8.m_gpr[rd] = res;
+  }
+};
+
+op sdiv( 0b10[2]:rd[5]:0b001111[6]:rs1[5]:0b0[1]:?[8]:rs2[5] );
+
+sdiv.disasm = {
+  os << "sdiv %r" << rs1 << ", %r" << rs2 << ", %r" << rd;
+};
+
+sdiv.execute = {
+  if( sparcv8.m_gpr[rs2] == 0 ) { sparcv8.hwtrap( Trap_t::division_by_zero ); return; }
+  int64_t op1 = (int64_t( sparcv8.m_y ) << 32) | sparcv8.m_gpr[rs1];
+  int64_t res = op1 / int32_t( sparcv8.m_gpr[rs2] );
+  if( res & 0xffffffff00000000ull ) {
+    sparcv8.m_gpr[rd] = (res & 0x8000000000000000ull) == 0 ? 0x7fffffff : 0x80000000;
+  } else {
+    sparcv8.m_gpr[rd] = res;
+  }
+};
+
+op sdivi( 0b10[2]:rd[5]:0b001111[6]:rs1[5]:0b1[1]:sext<32> simm13[13] );
+
+sdivi.disasm = {
+  os << "sdiv %r" << rs1 << ", " << simm13 << ", %r" << rd;
+};
+
+sdivi.execute = {
+  if( simm13 == 0 ) { sparcv8.hwtrap( Trap_t::division_by_zero ); return; }
+  int64_t op1 = (int64_t( sparcv8.m_y ) << 32) | sparcv8.m_gpr[rs1];
+  int64_t res = op1 / int32_t( simm13 );
+  if( res & 0xffffffff00000000ull ) {
+    sparcv8.m_gpr[rd] = (res & 0x8000000000000000ull) == 0 ? 0x7fffffff : 0x80000000;
+  } else {
+    sparcv8.m_gpr[rd] = res;
+  }
+};
+
+op udivcc( 0b10[2]:rd[5]:0b011110[6]:rs1[5]:0b0[1]:?[8]:rs2[5] );
+
+udivcc.disasm = {
+  os << "udivcc %r" << rs1 << ", %r" << rs2 << ", %r" << rd;
+};
+
+udivcc.execute = {
+  if( sparcv8.m_gpr[rs2] == 0 ) { sparcv8.hwtrap( Trap_t::division_by_zero ); return; }
+  uint64_t op1 = (uint64_t( sparcv8.m_y ) << 32) | sparcv8.m_gpr[rs1];
+  uint64_t res = op1 / sparcv8.m_gpr[rs2];
+  if( res & 0xffffffff00000000ull ) {
+    sparcv8.m_gpr[rd] = 0xffffffff;
+    sparcv8.modicc( 0xf, (res >> 31) & 1, (res & 0xffffffffll) == 0, 1, 0 );
+  } else {
+    sparcv8.m_gpr[rd] = res;
+    sparcv8.modicc( 0xf, (res >> 31) & 1, (res & 0xffffffffll) == 0, 0, 0 );
+  }
+};
+
+op udivcci( 0b10[2]:rd[5]:0b011110[6]:rs1[5]:0b1[1]:sext<32> simm13[13] );
+
+udivcci.disasm = {
+  os << "udivcc %r" << rs1 << ", " << simm13 << ", %r" << rd;
+};
+
+udivcci.execute = {
+  if( simm13 == 0 ) { sparcv8.hwtrap( Trap_t::division_by_zero ); return; }
+  uint64_t op1 = (uint64_t( sparcv8.m_y ) << 32) | sparcv8.m_gpr[rs1];
+  uint64_t res = op1 / uint32_t( simm13 );
+  if( res & 0xffffffff00000000ull ) {
+    sparcv8.m_gpr[rd] = 0xffffffff;
+    sparcv8.modicc( 0xf, (res >> 31) & 1, (res & 0xffffffffll) == 0, 1, 0 );
+  } else {
+    sparcv8.m_gpr[rd] = res;
+    sparcv8.modicc( 0xf, (res >> 31) & 1, (res & 0xffffffffll) == 0, 0, 0 );
+  }
+};
+
+op sdivcc( 0b10[2]:rd[5]:0b011111[6]:rs1[5]:0b0[1]:?[8]:rs2[5] );
+
+sdivcc.disasm = {
+  os << "sdivcc %r" << rs1 << ", %r" << rs2 << ", %r" << rd;
+};
+
+sdivcc.execute = {
+  if( sparcv8.m_gpr[rs2] == 0 ) { sparcv8.hwtrap( Trap_t::division_by_zero ); return; }
+  int64_t op1 = (int64_t( sparcv8.m_y ) << 32) | sparcv8.m_gpr[rs1];
+  int64_t res = op1 / int32_t( sparcv8.m_gpr[rs2] );
+  if( res & 0xffffffff00000000ull ) {
+    sparcv8.m_gpr[rd] = (res & 0x8000000000000000ull) == 0 ? 0x7fffffff : 0x80000000;
+    sparcv8.modicc( 0xf, (res >> 31) & 1, (res & 0xffffffffll) == 0, 1, 0 );
+  } else {
+    sparcv8.m_gpr[rd] = res;
+    sparcv8.modicc( 0xf, (res >> 31) & 1, (res & 0xffffffffll) == 0, 0, 0 );
+  }
+};
+
+op sdivcci( 0b10[2]:rd[5]:0b011111[6]:rs1[5]:0b1[1]:sext<32> simm13[13] );
+
+sdivcci.disasm = {
+  os << "sdivcc %r" << rs1 << ", " << simm13 << ", %r" << rd;
+};
+
+sdivcci.execute = {
+  if( simm13 == 0 ) { sparcv8.hwtrap( Trap_t::division_by_zero ); return; }
+  int64_t op1 = (int64_t( sparcv8.m_y ) << 32) | sparcv8.m_gpr[rs1];
+  int64_t res = op1 / int32_t( simm13 );
+  if( res & 0xffffffff00000000ull ) {
+    sparcv8.m_gpr[rd] = (res & 0x8000000000000000ull) == 0 ? 0x7fffffff : 0x80000000;
+    sparcv8.modicc( 0xf, (res >> 31) & 1, (res & 0xffffffffll) == 0, 1, 0 );
+  } else {
+    sparcv8.m_gpr[rd] = res;
+    sparcv8.modicc( 0xf, (res >> 31) & 1, (res & 0xffffffffll) == 0, 0, 0 );
+  }
+};
+

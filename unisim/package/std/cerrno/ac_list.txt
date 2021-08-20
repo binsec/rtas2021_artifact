@@ -1,0 +1,1 @@
+AC_CHECK_HEADER([cerrno],, AC_MSG_ERROR([cerrno is missing]))

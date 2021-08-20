@@ -1,0 +1,501 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<variables>
+	<object name="cpu">
+		<object name="cpu.icache">
+			<variable name="size">
+				<type>parameter</type>
+				<data_type>unsigned 32-bit integer</data_type>
+				<value>131072</value>
+				<description>Size of the cache in bytes. Avalaible sizes are 4KB, 8KB, 16KB, 32KB, 64KB and 128KB. The cache can be deactivated setting this value to 0.</description>
+			</variable>
+		</object>
+		<object name="cpu.dcache">
+			<variable name="size">
+				<type>parameter</type>
+				<data_type>unsigned 32-bit integer</data_type>
+				<value>131072</value>
+				<description>Size of the cache in bytes. Avalaible sizes are 4KB, 8KB, 16KB, 32KB, 64KB and 128KB. The cache can be deactivated setting this value to 0.</description>
+			</variable>
+		</object>
+		<variable name="default-endianness">
+			<type>parameter</type>
+			<data_type>string</data_type>
+			<value>little-endian</value>
+			<description>The processor default/boot endianness. Available values are: little-endian and big-endian.</description>
+		</variable>
+		<variable name="voltage">
+			<type>parameter</type>
+			<data_type>unsigned 64-bit integer</data_type>
+			<value>0</value>
+			<description>The processor voltage in mV.</description>
+		</variable>
+		<variable name="verbose">
+			<type>parameter</type>
+			<data_type>unsigned 32-bit integer</data_type>
+			<value>0x0</value>
+			<description>Activate the verbose system (0 = inactive, different than 0 = active).</description>
+		</variable>
+		<variable name="trap-on-instruction-counter">
+			<type>parameter</type>
+			<data_type>unsigned 64-bit integer</data_type>
+			<value>0</value>
+			<description>Produce a trap when the given instruction count is reached.</description>
+		</variable>
+		<variable name="cpu-cycle-time">
+			<type>parameter</type>
+			<data_type>sc_time</data_type>
+			<value>31250 ps</value>
+			<description>The processor cycle time.</description>
+		</variable>
+		<variable name="bus-cycle-time">
+			<type>parameter</type>
+			<data_type>sc_time</data_type>
+			<value>31250 ps</value>
+			<description>The processor bus cycle time.</description>
+		</variable>
+		<variable name="nice-time">
+			<type>parameter</type>
+			<data_type>sc_time</data_type>
+			<value>1 ms</value>
+			<description>Maximum time between SystemC waits.</description>
+		</variable>
+		<variable name="ipc">
+			<type>parameter</type>
+			<data_type>double precision floating-point</data_type>
+			<value>1</value>
+			<description>Instructions per cycle performance.</description>
+		</variable>
+		<variable name="verbose-tlm">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>false</value>
+			<description>Display TLM information</description>
+			<enumeration>
+				<item>true</item>
+				<item>false</item>
+			</enumeration>
+		</variable>
+	</object>
+	<object name="elf-loader">
+		<variable name="filename">
+			<type>parameter</type>
+			<data_type>string</data_type>
+			<value>basicmath_small.armemu</value>
+			<description>the ELF filename to load into memory</description>
+		</variable>
+		<variable name="base-addr">
+			<type>parameter</type>
+			<data_type>unsigned 64-bit integer</data_type>
+			<value>0x0</value>
+			<description>if force-base-addr is true force base address for a unique program segment, otherwise ignored</description>
+		</variable>
+		<variable name="force-base-addr">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>false</value>
+			<description>if true force base address for a unique program segment</description>
+			<enumeration>
+				<item>true</item>
+				<item>false</item>
+			</enumeration>
+		</variable>
+		<variable name="force-use-virtual-address">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>false</value>
+			<description>force use of virtual addresses instead of physical addresses</description>
+			<enumeration>
+				<item>true</item>
+				<item>false</item>
+			</enumeration>
+		</variable>
+		<variable name="dump-headers">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>false</value>
+			<description>dump headers while loading ELF file</description>
+			<enumeration>
+				<item>true</item>
+				<item>false</item>
+			</enumeration>
+		</variable>
+		<variable name="verbose">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>false</value>
+			<description>enable/disable verbosity</description>
+			<enumeration>
+				<item>true</item>
+				<item>false</item>
+			</enumeration>
+		</variable>
+		<variable name="dwarf-to-html-output-directory">
+			<type>parameter</type>
+			<data_type>string</data_type>
+			<value></value>
+			<description>DWARF v2/v3 to HTML output directory</description>
+		</variable>
+		<variable name="parse-dwarf">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>true</value>
+			<description>Enable/Disable parsing of DWARF debugging informations</description>
+			<enumeration>
+				<item>true</item>
+				<item>false</item>
+			</enumeration>
+		</variable>
+	</object>
+	<object name="linux-loader">
+		<variable name="endianness">
+			<type>parameter</type>
+			<data_type>string</data_type>
+			<value>little-endian</value>
+			<description>The endianness of the binary loaded. Available values are: little-endian and big-endian.</description>
+		</variable>
+		<variable name="stack-base">
+			<type>parameter</type>
+			<data_type>unsigned 64-bit integer</data_type>
+			<value>0x40000000</value>
+			<description>The stack base address used for the load and execution of the linux application</description>
+		</variable>
+		<variable name="stack-size">
+			<type>parameter</type>
+			<data_type>unsigned 64-bit integer</data_type>
+			<value>0x800000</value>
+			<description>The stack size used for the load and execution of the linux application. The top of the stack will be stack-base + stack-size.</description>
+		</variable>
+		<variable name="max-environ">
+			<type>parameter</type>
+			<data_type>unsigned 64-bit integer</data_type>
+			<value>16384</value>
+			<description>The maximum size of the program environment during its execution.</description>
+		</variable>
+		<variable name="argc">
+			<type>parameter</type>
+			<data_type>unsigned 32-bit integer</data_type>
+			<value>1</value>
+			<description>Number of commands in the program execution line (usually at least one which is the name of the program executed). The different tokens can be set up with the parameters argv[&lt;n&gt;] where &lt;n&gt; can go up to argc - 1.</description>
+		</variable>
+		<variable name="envc">
+			<type>parameter</type>
+			<data_type>unsigned 32-bit integer</data_type>
+			<value>0</value>
+			<description>Number of environment variables defined for the program execution. The different variables can be set up with the parameters envp[&lt;n&gt;] where &lt;n&gt; can go up to envc - 1.</description>
+		</variable>
+		<variable name="verbose">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>false</value>
+			<description>Display verbose information</description>
+			<enumeration>
+				<item>true</item>
+				<item>false</item>
+			</enumeration>
+		</variable>
+		<variable name="argv[0]">
+			<type>parameter</type>
+			<data_type>string</data_type>
+			<value>basicmath_small.armemu</value>
+			<description>The '0' token in the command line.</description>
+		</variable>
+	</object>
+	<object name="linux-os">
+		<variable name="system">
+			<type>parameter</type>
+			<data_type>string</data_type>
+			<value>arm-eabi</value>
+			<description>Emulated system architecture available values are &quot;arm&quot;, &quot;arm-eabi&quot; and &quot;powerpc&quot;</description>
+		</variable>
+		<variable name="endianness">
+			<type>parameter</type>
+			<data_type>string</data_type>
+			<value>little-endian</value>
+			<description>The endianness of the binary loaded. Available values are: little-endian and big-endian.</description>
+		</variable>
+		<variable name="memory-page-size">
+			<type>parameter</type>
+			<data_type>unsigned 32-bit integer</data_type>
+			<value>0x1000</value>
+			<description></description>
+		</variable>
+		<variable name="utsname-sysname">
+			<type>parameter</type>
+			<data_type>string</data_type>
+			<value>Linux</value>
+			<description>The value that the uname system call should return. As this service is providing linux emulation supoort its value should be 'Linux', so you should not modify it.</description>
+		</variable>
+		<variable name="utsname-nodename">
+			<type>parameter</type>
+			<data_type>string</data_type>
+			<value>localhost</value>
+			<description>The network node hostname that the uname system call should return. Default value is localhost, but you could write whatever name you want.</description>
+		</variable>
+		<variable name="utsname-release">
+			<type>parameter</type>
+			<data_type>string</data_type>
+			<value>2.6.27.35</value>
+			<description>The kernel realese information that the uname system call should return. This should usually match the linux-kernel parameter.</description>
+		</variable>
+		<variable name="utsname-version">
+			<type>parameter</type>
+			<data_type>string</data_type>
+			<value>#UNISIM SMP Fri Mar 12 05:23:09 UTC 2010</value>
+			<description>The kernel version information that the uname system call should return.</description>
+		</variable>
+		<variable name="utsname-machine">
+			<type>parameter</type>
+			<data_type>string</data_type>
+			<value>armv5</value>
+			<description>The machine information that the uname system call should return. This should be one of the supported architectures (the system parameter, that is, arm or powerpc) or a specific model  derived from it (i.e., arm926ejs).</description>
+		</variable>
+		<variable name="utsname-domainname">
+			<type>parameter</type>
+			<data_type>string</data_type>
+			<value>localhost</value>
+			<description>The domain name information that the uname system call should return.</description>
+		</variable>
+		<variable name="verbose">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>false</value>
+			<description></description>
+			<enumeration>
+				<item>true</item>
+				<item>false</item>
+			</enumeration>
+		</variable>
+	</object>
+	<object name="memory">
+		<variable name="org">
+			<type>parameter</type>
+			<data_type>unsigned 64-bit integer</data_type>
+			<value>0x0</value>
+			<description>memory origin/base address</description>
+		</variable>
+		<variable name="bytesize">
+			<type>parameter</type>
+			<data_type>unsigned 64-bit integer</data_type>
+			<value>4294967295</value>
+			<description>memory size in bytes</description>
+		</variable>
+		<variable name="cycle-time">
+			<type>parameter</type>
+			<data_type>sc_time</data_type>
+			<value>31250 ps</value>
+			<description>memory cycle time</description>
+		</variable>
+		<variable name="read-latency">
+			<type>parameter</type>
+			<data_type>sc_time</data_type>
+			<value>31250 ps</value>
+			<description>memory read latency</description>
+		</variable>
+		<variable name="write-latency">
+			<type>parameter</type>
+			<data_type>sc_time</data_type>
+			<value>0 s</value>
+			<description>memory write latency</description>
+		</variable>
+		<variable name="verbose">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>false</value>
+			<description>enable/disable verbosity</description>
+			<enumeration>
+				<item>true</item>
+				<item>false</item>
+			</enumeration>
+		</variable>
+	</object>
+	<object name="trap-handler">
+		<variable name="num-traps">
+			<type>parameter</type>
+			<data_type>unsigned 32-bit integer</data_type>
+			<value>0x3</value>
+			<description>Total number of traps that will be received.</description>
+		</variable>
+		<variable name="send-traps-to-logger">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>false</value>
+			<description>Send the traps to the logger.</description>
+			<enumeration>
+				<item>true</item>
+				<item>false</item>
+			</enumeration>
+		</variable>
+		<variable name="trap-reporting-export-name[0]">
+			<type>parameter</type>
+			<data_type>string</data_type>
+			<value>cpu-exception-trap-handler</value>
+			<description>The name of the 0 trap-reporting-export</description>
+		</variable>
+		<variable name="trap-reporting-export-name[1]">
+			<type>parameter</type>
+			<data_type>string</data_type>
+			<value>cpu-instruction-counter-trap-handler</value>
+			<description>The name of the 1 trap-reporting-export</description>
+		</variable>
+		<variable name="trap-reporting-export-name[2]">
+			<type>parameter</type>
+			<data_type>string</data_type>
+			<value>cpu-irq-trap-handler</value>
+			<description>The name of the 2 trap-reporting-export</description>
+		</variable>
+	</object>
+	<variable name="authors">
+		<type>parameter</type>
+		<data_type>string</data_type>
+		<value>Yves Lhuillier (yves.lhuillier@cea.fr)</value>
+		<description>Authors</description>
+	</variable>
+	<variable name="copyright">
+		<type>parameter</type>
+		<data_type>string</data_type>
+		<value>Copyright (C) 2007-2010, Commissariat a l'Energie Atomique</value>
+		<description>Copyright</description>
+	</variable>
+	<variable name="description">
+		<type>parameter</type>
+		<data_type>string</data_type>
+		<value>UNISIM ARMv5 User Level Simulator</value>
+		<description>Description</description>
+	</variable>
+	<variable name="enable-gdb-server">
+		<type>parameter</type>
+		<data_type>boolean</data_type>
+		<value>false</value>
+		<description>Enable GDB server.</description>
+		<enumeration>
+			<item>true</item>
+			<item>false</item>
+		</enumeration>
+	</variable>
+	<variable name="enable-inline-debugger">
+		<type>parameter</type>
+		<data_type>boolean</data_type>
+		<value>false</value>
+		<description>Enable inline debugger.</description>
+		<enumeration>
+			<item>true</item>
+			<item>false</item>
+		</enumeration>
+	</variable>
+	<variable name="enable-press-enter-at-exit">
+		<type>parameter</type>
+		<data_type>boolean</data_type>
+		<value>false</value>
+		<description>Enable/Disable pressing key enter at exit</description>
+		<enumeration>
+			<item>true</item>
+			<item>false</item>
+		</enumeration>
+	</variable>
+	<variable name="kernel_logger.file">
+		<type>parameter</type>
+		<data_type>boolean</data_type>
+		<value>false</value>
+		<description>Keep logger output in a file</description>
+		<enumeration>
+			<item>true</item>
+			<item>false</item>
+		</enumeration>
+	</variable>
+	<variable name="kernel_logger.filename">
+		<type>parameter</type>
+		<data_type>string</data_type>
+		<value>logger_output.txt</value>
+		<description>Filename to keep logger output (the option file must be activated)</description>
+	</variable>
+	<variable name="kernel_logger.std_err">
+		<type>parameter</type>
+		<data_type>boolean</data_type>
+		<value>true</value>
+		<description>Show logger output through the standard error output</description>
+		<enumeration>
+			<item>true</item>
+			<item>false</item>
+		</enumeration>
+	</variable>
+	<variable name="kernel_logger.std_err_color">
+		<type>parameter</type>
+		<data_type>boolean</data_type>
+		<value>true</value>
+		<description>Colorize logger output through the standard error output (only works if std_err is active)</description>
+		<enumeration>
+			<item>true</item>
+			<item>false</item>
+		</enumeration>
+	</variable>
+	<variable name="kernel_logger.std_out">
+		<type>parameter</type>
+		<data_type>boolean</data_type>
+		<value>false</value>
+		<description>Show logger output through the standard output</description>
+		<enumeration>
+			<item>true</item>
+			<item>false</item>
+		</enumeration>
+	</variable>
+	<variable name="kernel_logger.std_out_color">
+		<type>parameter</type>
+		<data_type>boolean</data_type>
+		<value>false</value>
+		<description>Colorize logger output through the standard output (only works if std_out is active)</description>
+		<enumeration>
+			<item>true</item>
+			<item>false</item>
+		</enumeration>
+	</variable>
+	<variable name="kernel_logger.xml_file">
+		<type>parameter</type>
+		<data_type>boolean</data_type>
+		<value>false</value>
+		<description>Keep logger output in a file xml formatted</description>
+		<enumeration>
+			<item>true</item>
+			<item>false</item>
+		</enumeration>
+	</variable>
+	<variable name="kernel_logger.xml_file_gzipped">
+		<type>parameter</type>
+		<data_type>boolean</data_type>
+		<value>false</value>
+		<description>If the xml_file option is active, the output file will be compressed (a .gz extension will be automatically added to the xml_filename option</description>
+		<enumeration>
+			<item>true</item>
+			<item>false</item>
+		</enumeration>
+	</variable>
+	<variable name="kernel_logger.xml_filename">
+		<type>parameter</type>
+		<data_type>string</data_type>
+		<value>logger_output.xml</value>
+		<description>Filename to keep logger xml output (the option xml_file must be activated)</description>
+	</variable>
+	<variable name="license">
+		<type>parameter</type>
+		<data_type>string</data_type>
+		<value>BSD (See file COPYING)</value>
+		<description>License</description>
+	</variable>
+	<variable name="program-name">
+		<type>parameter</type>
+		<data_type>string</data_type>
+		<value>UNISIM ARMEmu</value>
+		<description>Program name</description>
+	</variable>
+	<variable name="schematic">
+		<type>parameter</type>
+		<data_type>string</data_type>
+		<value></value>
+		<description>path to simulator schematic</description>
+	</variable>
+	<variable name="version">
+		<type>parameter</type>
+		<data_type>string</data_type>
+		<value>0.6.1</value>
+		<description>Version</description>
+	</variable>
+</variables>

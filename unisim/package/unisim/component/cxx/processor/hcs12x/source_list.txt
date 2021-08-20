@@ -1,0 +1,5 @@
+unisim/component/cxx/processor/hcs12x/ccr.cc
+unisim/component/cxx/processor/hcs12x/cpu.cc
+unisim/component/cxx/processor/hcs12x/exception.cc
+unisim/component/cxx/processor/hcs12x/mmc.cc
+unisim/component/cxx/processor/hcs12x/xgate.cc

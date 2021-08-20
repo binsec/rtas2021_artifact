@@ -1,0 +1,81 @@
+/*
+ *  Copyright (c) 2007-2018,
+ *  Commissariat a l'Energie Atomique (CEA)
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without modification,
+ *  are permitted provided that the following conditions are met:
+ *
+ *   - Redistributions of source code must retain the above copyright notice, this
+ *     list of conditions and the following disclaimer.
+ *
+ *   - Redistributions in binary form must reproduce the above copyright notice,
+ *     this list of conditions and the following disclaimer in the documentation
+ *     and/or other materials provided with the distribution.
+ *
+ *   - Neither the name of CEA nor the names of its contributors may be used to
+ *     endorse or promote products derived from this software without specific prior
+ *     written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ *  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *  DISCLAIMED.
+ *  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ *  INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ *  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+ *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ *  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Authors: Gilles Mouchard (gilles.mouchard@cea.fr)
+ */
+
+/* Multiply Low Doubleword */
+op mulld(31[6]:rd[5]:ra[5]:rb[5]:oe[1]:233[9]:rc[1]);
+
+mulld.execute = {
+	// Read the input operands
+	S64 a( cpu->GetGPR(ra) ), b( cpu->GetGPR(rb) );
+	
+	// Compute the result
+	S64 result = a*b;
+	
+	// Write back the result
+	cpu->SetGPR(rd, UINT(result));
+	
+	if(oe)
+	{
+		/* Overflow if the signed 128-bits product cannot be
+                 * represented as a signed 64-bits result.
+		 */
+		S64 high( SignedMultiplyHigh(a, b) );
+		UINT overflow = UINT((result >> 63) != high);
+		// Generate XER[OV] and XER[SO]: XER[OV]=overflow XER[SO]=1
+		XER& xer = cpu->GetXER();
+		xer.Set<XER::OV>(overflow);
+		xer.Set<XER::SO>(xer.Get<XER::SO>() | overflow);
+	}
+	
+	if(unlikely(rc))
+	{
+		// Generate CR0: CR0[SO]=XER[SO] CR0[LT]=(result<0) CR0[GT]=(result>0) CR0[EQ]=(result==0)
+		CR& cr = cpu->GetCR();
+		cr.Set<CR::CR0::SO>(cpu->GetXER().Get<XER::SO>());
+		cr.Set<CR::CR0::LT>(result < S64(0));
+		cr.Set<CR::CR0::GT>(result > S64(0));
+		cr.Set<CR::CR0::EQ>(result == S64(0));
+	}
+
+	return true;
+};
+
+mulld.disasm = {
+	os << "mulld" << (oe ? "o" : "") << (rc ? "." : "") << " " << GPRPrint(rd) << ", " << GPRPrint(ra) << ", " << GPRPrint(rb);
+};
+
+specialize mulld(rc=0,oe=0);
+specialize mulld(rc=0,oe=1);
+specialize mulld(rc=1,oe=0);
+specialize mulld(rc=1,oe=1);

@@ -1,0 +1,35 @@
+# DO NOT DELETE
+
+$(BINDIR)/fsc.o: include/unisim/fsc.h include/unisim/unisim_list.h
+$(BINDIR)/fsc.o: include/unisim/unisim_graph.h include/unisim/unisim_string.h
+$(BINDIR)/unisim_commandline.o: include/unisim/unisim_commandline.h
+$(BINDIR)/unisim.o: include/unisim/unisim.h include/unisim/fsc.h
+$(BINDIR)/unisim.o: include/unisim/unisim_list.h include/unisim/unisim_graph.h
+$(BINDIR)/unisim.o: include/unisim/unisim_string.h
+$(BINDIR)/unisim.o: include/unisim/unisim_commandline.h
+$(BINDIR)/unisim.o: include/unisim/unisim_signal.h
+$(BINDIR)/unisim.o: include/unisim/unisim_parameters.h
+$(BINDIR)/unisim_module.o: include/unisim/unisim.h include/unisim/fsc.h
+$(BINDIR)/unisim_module.o: include/unisim/unisim_list.h
+$(BINDIR)/unisim_module.o: include/unisim/unisim_graph.h
+$(BINDIR)/unisim_module.o: include/unisim/unisim_string.h
+$(BINDIR)/unisim_module.o: include/unisim/unisim_commandline.h
+$(BINDIR)/unisim_module.o: include/unisim/unisim_signal.h
+$(BINDIR)/unisim_module.o: include/unisim/unisim_parameters.h
+$(BINDIR)/unisim_parameters.o: include/unisim/unisim_parameters.h
+$(BINDIR)/unisim_port.o: include/unisim/unisim.h include/unisim/fsc.h
+$(BINDIR)/unisim_port.o: include/unisim/unisim_list.h include/unisim/unisim_graph.h
+$(BINDIR)/unisim_port.o: include/unisim/unisim_string.h
+$(BINDIR)/unisim_port.o: include/unisim/unisim_commandline.h
+$(BINDIR)/unisim_port.o: include/unisim/unisim_signal.h
+$(BINDIR)/unisim_port.o: include/unisim/unisim_parameters.h
+$(BINDIR)/unisim_simulator.o: include/unisim/unisim.h include/unisim/fsc.h
+$(BINDIR)/unisim_simulator.o: include/unisim/unisim_list.h
+$(BINDIR)/unisim_simulator.o: include/unisim/unisim_graph.h
+$(BINDIR)/unisim_simulator.o: include/unisim/unisim_string.h
+$(BINDIR)/unisim_simulator.o: include/unisim/unisim_commandline.h
+$(BINDIR)/unisim_simulator.o: include/unisim/unisim_signal.h
+$(BINDIR)/unisim_simulator.o: include/unisim/unisim_parameters.h
+$(BINDIR)/unisim_string.o: include/unisim/fsc.h include/unisim/unisim_list.h
+$(BINDIR)/unisim_string.o: include/unisim/unisim_graph.h
+$(BINDIR)/unisim_string.o: include/unisim/unisim_string.h

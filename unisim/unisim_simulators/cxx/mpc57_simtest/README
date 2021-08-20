@@ -1,0 +1,4 @@
+This package contains:
+  - mpc57_simtest: an MPC57 V5 user level simulator
+
+See INSTALL for installation instructions.

@@ -1,0 +1,103 @@
+/*
+ *  Copyright (c) 2007-2018,
+ *  Commissariat a l'Energie Atomique (CEA)
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without modification,
+ *  are permitted provided that the following conditions are met:
+ *
+ *   - Redistributions of source code must retain the above copyright notice, this
+ *     list of conditions and the following disclaimer.
+ *
+ *   - Redistributions in binary form must reproduce the above copyright notice,
+ *     this list of conditions and the following disclaimer in the documentation
+ *     and/or other materials provided with the distribution.
+ *
+ *   - Neither the name of CEA nor the names of its contributors may be used to
+ *     endorse or promote products derived from this software without specific prior
+ *     written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ *  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *  DISCLAIMED.
+ *  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ *  INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ *  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+ *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ *  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Authors: Gilles Mouchard (gilles.mouchard@cea.fr)
+ */
+
+/* Compare Logical Immediate (64-bit operands) */
+op cmpliL(10[6]:crfD[3]:?[1]:1[1]:ra[5]:uimm[16]);
+
+cmpliL.execute = {
+	// Read the input operands
+	U64 a = U64(cpu->GetGPR(ra)), b = U64(uimm);
+	
+	// Generate CR[crfD] bit field
+	CR& cr = cpu->GetCR();
+	XER& xer = cpu->GetXER();
+	switch(crfD)
+	{
+		case 0:
+			cr.Set<CR::CR0::SO>(xer.Get<XER::SO>());
+			cr.Set<CR::CR0::LT>(a < b);
+			cr.Set<CR::CR0::GT>(a > b);
+			cr.Set<CR::CR0::EQ>(a == b);
+			break;
+		case 1:
+			cr.Set<CR::CR1::SO>(xer.Get<XER::SO>());
+			cr.Set<CR::CR1::LT>(a < b);
+			cr.Set<CR::CR1::GT>(a > b);
+			cr.Set<CR::CR1::EQ>(a == b);
+			break;
+		case 2:
+			cr.Set<CR::CR2::SO>(xer.Get<XER::SO>());
+			cr.Set<CR::CR2::LT>(a < b);
+			cr.Set<CR::CR2::GT>(a > b);
+			cr.Set<CR::CR2::EQ>(a == b);
+			break;
+		case 3:
+			cr.Set<CR::CR3::SO>(xer.Get<XER::SO>());
+			cr.Set<CR::CR3::LT>(a < b);
+			cr.Set<CR::CR3::GT>(a > b);
+			cr.Set<CR::CR3::EQ>(a == b);
+			break;
+		case 4:
+			cr.Set<CR::CR4::SO>(xer.Get<XER::SO>());
+			cr.Set<CR::CR4::LT>(a < b);
+			cr.Set<CR::CR4::GT>(a > b);
+			cr.Set<CR::CR4::EQ>(a == b);
+			break;
+		case 5:
+			cr.Set<CR::CR5::SO>(xer.Get<XER::SO>());
+			cr.Set<CR::CR5::LT>(a < b);
+			cr.Set<CR::CR5::GT>(a > b);
+			cr.Set<CR::CR5::EQ>(a == b);
+			break;
+		case 6:
+			cr.Set<CR::CR6::SO>(xer.Get<XER::SO>());
+			cr.Set<CR::CR6::LT>(a < b);
+			cr.Set<CR::CR6::GT>(a > b);
+			cr.Set<CR::CR6::EQ>(a == b);
+			break;
+		case 7:
+			cr.Set<CR::CR7::SO>(xer.Get<XER::SO>());
+			cr.Set<CR::CR7::LT>(a < b);
+			cr.Set<CR::CR7::GT>(a > b);
+			cr.Set<CR::CR7::EQ>(a == b);
+			break;
+	}
+	
+	return true;
+};
+
+cmpliL.disasm = {
+	os << "cmpldi " << CRPrint(crfD) << ", " << GPRPrint(ra) << ", " << uimm;
+};
+

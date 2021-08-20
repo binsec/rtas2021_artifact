@@ -1,0 +1,1 @@
+AC_CHECK_HEADER([sys/mman.h],, AC_MSG_ERROR([sys/mman.h is missing]))

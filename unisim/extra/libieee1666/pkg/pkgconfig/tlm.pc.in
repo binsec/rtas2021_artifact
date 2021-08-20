@@ -1,0 +1,4 @@
+Name: TLM-2.0
+Description: Dependency package for TLM 2.0 support in libieee1666
+Version: 2.0.3
+Requires: libieee1666

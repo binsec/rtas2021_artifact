@@ -1,0 +1,638 @@
+/*
+ *  Copyright (c) 2008,
+ *  Commissariat a l'Energie Atomique (CEA)
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without modification,
+ *  are permitted provided that the following conditions are met:
+ *
+ *   - Redistributions of source code must retain the above copyright notice, this
+ *     list of conditions and the following disclaimer.
+ *
+ *   - Redistributions in binary form must reproduce the above copyright notice,
+ *     this list of conditions and the following disclaimer in the documentation
+ *     and/or other materials provided with the distribution.
+ *
+ *   - Neither the name of CEA nor the names of its contributors may be used to
+ *     endorse or promote products derived from this software without specific prior
+ *     written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ *  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *  DISCLAIMED.
+ *  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ *  INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ *  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+ *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ *  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Authors: Reda   Nouacer  (reda.nouacer@cea.fr)
+ */
+ 
+// DEC EXT
+op dec_ext(0x73[8]:><:opr16a[16])
+
+dec_ext.getCycles = { return 4; }
+
+dec_ext.disasm = {
+	string mnem = "DEC";
+	
+	sink << mnem << " 0x" << std::hex << opr16a;
+	return mnem;
+}
+
+dec_ext.execute = {
+	physical_address_t addr = opr16a;
+	uint8_t opr16aVal = cpu->memRead8(addr);
+	uint8_t result, carry_out, overflow, carry_in, sign;
+	
+	carry_in = 0;
+	SignedSub8(result, carry_out, overflow, sign, opr16aVal, 1, carry_in);
+
+	cpu->memWrite8(addr, result);
+		
+	if (overflow) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x80) == 0x80) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+// DEC IDX or IDX1 or IDX2 or [D,IDX] or [IDX2]
+op dec_idx(0x63[8]:> <:*xb[XB])
+
+dec_idx.pre_execute = {
+	
+	xb->pre_execute(sink);
+	// after: other specific actions
+}
+
+dec_idx.post_execute = {
+
+	// before: other specific actions
+	xb->post_execute(sink);
+}
+
+dec_idx.getCycles = { return XbModes::GetIDXCycles(xb->getXbMode(), 3, 4, 5, 6, 6); }
+
+dec_idx.disasm = {
+	string mnem = "DEC";
+	
+	sink << mnem << " ";
+	xb->disasm(sink);
+	return mnem;
+}
+
+dec_idx.execute = {
+	physical_address_t addr = xb->getEAddr(cpu);
+	uint8_t val = cpu->memRead8(addr);
+
+	uint8_t result, carry_out, overflow, carry_in, sign;
+	
+	carry_in = 0;
+	SignedSub8(result, carry_out, overflow, sign, val, 1, carry_in);
+
+	cpu->memWrite8(addr, result);
+	
+	if (overflow) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+	
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x80) == 0x80) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+// DECA  or DECB
+op dec_ab(0b010[3]:b[1]:0x3[4])
+
+dec_ab.getCycles = { return 1; }
+
+dec_ab.disasm = {
+	string mnem;
+	
+	if (b == 0) {
+		mnem = "DECA";
+	} else {
+		mnem = "DECB";
+	}
+	
+	sink << mnem;
+	return mnem;
+}
+
+dec_ab.execute = {
+	
+	uint8_t result, carry_out, overflow, carry_in, sign;
+
+	uint8_t val;
+	if (b==0) {
+		val = cpu->getRegA();
+	} else {
+		val = cpu->getRegB();
+	}
+
+	carry_in = 0;
+	SignedSub8(result, carry_out, overflow, sign, val, 1, carry_in);
+	
+	if (b==0) {
+		cpu->setRegA(result);
+	} else {
+		cpu->setRegB(result);		
+	}
+	
+	if (overflow) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+	
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x80) == 0x80) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+// DECW  EXT
+op decw_ext(0x18[8]:0x73[8]:opr16a[16])
+
+decw_ext.getCycles = { return 5; }
+
+decw_ext.disasm = {
+	string mnem = "DECW";
+	
+	sink << mnem << " 0x" << std::hex << opr16a;
+	return mnem;
+}
+
+decw_ext.execute = {
+	physical_address_t addr = opr16a;
+	uint16_t opr16aVal = cpu->memRead16(addr);
+	uint16_t result;
+	uint8_t carry_out, overflow, carry_in, sign;
+	
+	carry_in = 0;
+	SignedSub16(result, carry_out, overflow, sign, opr16aVal, 1, carry_in);
+
+	cpu->memWrite16(addr, result);
+		
+	if (overflow) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+	
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x8000) == 0x8000) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+// DECW  IDX or IDX1 or IDX2 or [D,IDX] or [IDX2]
+op decw_idx(0x18[8]:0x63[8]:> <:*xb[XB])
+
+decw_idx.pre_execute = {
+	
+	xb->pre_execute(sink);
+	// after: other specific actions
+}
+
+decw_idx.post_execute = {
+
+	// before: other specific actions
+	xb->post_execute(sink);
+}
+
+decw_idx.getCycles = { return XbModes::GetIDXCycles(xb->getXbMode(), 4, 5, 5, 7, 7); }
+
+decw_idx.disasm = {
+	string mnem = "DECW";
+	
+	sink << mnem << " ";
+	xb->disasm(sink);
+	return mnem;
+}
+
+decw_idx.execute = {
+	physical_address_t addr = xb->getEAddr(cpu);
+	uint16_t val = cpu->memRead16(addr);
+
+	uint16_t result;
+	uint8_t carry_out, overflow, carry_in, sign;
+	
+	carry_in = 0;
+	SignedSub16(result, carry_out, overflow, sign, val, 1, carry_in);
+
+	cpu->memWrite16(addr, result);
+	
+	if (overflow) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+	
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x8000) == 0x8000) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+// DECX or DECY
+op dec_xy(0x18[8]:0b010[3]:b[1]:0x3[4])
+
+dec_xy.getCycles = { return 2; }
+
+dec_xy.disasm = {
+	string mnem;
+	
+	if (b==0) {
+		mnem = "DECX";
+	} else {
+		mnem = "DECY";
+	}
+	sink << mnem;
+	return mnem;
+}
+
+dec_xy.execute = {
+
+	uint16_t val;
+	if (b==0) {
+		val = cpu->getRegX();
+	} else {
+		val = cpu->getRegY();
+	}
+
+	uint16_t result;
+	uint8_t carry_out, overflow, carry_in, sign;
+	
+	carry_in = 0;
+	SignedSub16(result, carry_out, overflow, sign, val, 1, carry_in);
+
+	if (b==0) {
+		cpu->setRegX(result);
+	} else {
+		cpu->setRegY(result);
+	}
+	
+	if (overflow) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+	
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x8000) == 0x8000) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+// DES
+op des(0x1B[8]:0x9F[8])
+
+des.getCycles = { return 2; }
+
+des.disasm = {
+	string mnem = "DES";
+	
+	sink << mnem;
+	return mnem;
+}
+
+des.execute = {
+	cpu->setRegSP(cpu->getRegSP() - 1);
+
+	return getCycles();
+}
+
+// DEX
+op dex(0x09[8])
+
+dex.getCycles = { return 1; }
+
+dex.disasm = {
+	string mnem = "DEX";
+	
+	sink << mnem;
+	return mnem;
+}
+
+dex.execute = {
+	uint16_t val = cpu->getRegX();
+	val--;
+	cpu->setRegX(val);
+	if (val == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();  
+
+	return getCycles();
+}
+
+// DEY
+op dey(0x03[8])
+
+dey.getCycles = { return 1; }
+
+dey.disasm = {
+	string mnem = "DEY";
+	
+	sink << mnem;
+	return mnem;
+}
+
+dey.execute = {
+	uint16_t val = cpu->getRegY();
+	val--;
+	cpu->setRegY(val);
+	if (val == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();  
+
+	return getCycles();
+}
+
+/* ********* Increment Instructions ****** */
+
+// INC EXT
+op inc_ext(0x72[8]:><:opr16a[16])
+
+inc_ext.getCycles = { return 4; }
+
+inc_ext.disasm = {
+	string mnem = "INC";
+	
+	sink << mnem << " 0x" << std::hex << opr16a;
+	return mnem;
+}
+
+inc_ext.execute = {
+	physical_address_t addr = opr16a;
+	uint8_t opr16aVal = cpu->memRead8(addr);
+	uint8_t result, carry_out, overflow, carry_in, sign;
+	
+	carry_in = 0;
+	UnsignedAdd8(result, carry_out, overflow, sign, opr16aVal, 1, carry_in);
+
+	cpu->memWrite8(addr, result);
+		
+	if (overflow) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+	
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x80) == 0x80) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+// INC IDX or IDX or IDX2 or [D,IDX] or [IDX2]
+op inc_idx(0x62[8]:> <:*xb[XB])
+
+inc_idx.pre_execute = {
+	
+	xb->pre_execute(sink);
+	// after: other specific actions
+}
+
+inc_idx.post_execute = {
+
+	// before: other specific actions
+	xb->post_execute(sink);
+}
+
+inc_idx.getCycles = { return XbModes::GetIDXCycles(xb->getXbMode(), 3, 4, 5, 6, 6); }
+
+inc_idx.disasm = {
+	string mnem = "INC";
+	
+	sink << mnem << " ";
+	xb->disasm(sink);
+	return mnem;
+}
+
+inc_idx.execute = {
+	physical_address_t addr = xb->getEAddr(cpu);
+	uint8_t val = cpu->memRead8(addr);
+
+	uint8_t result, carry_out, overflow, carry_in, sign;
+	
+	carry_in = 0;
+	UnsignedAdd8(result, carry_out, overflow, sign, val, 1, carry_in);
+
+	cpu->memWrite8(addr, result);
+	
+	if (overflow) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+	
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x80) == 0x80) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+// INCA  or INCB
+op inc_ab(0b010[3]:b[1]:0x2[4])
+
+inc_ab.getCycles = { return 1; }
+
+inc_ab.disasm = {
+	string mnem;
+	
+	if (b == 0) {
+		mnem = "INCA";
+	} else {
+		mnem = "INCB";
+	}
+	sink << mnem;
+	return mnem;
+}
+
+inc_ab.execute = {
+	
+	uint8_t result, carry_out, overflow, carry_in, sign;
+
+	uint8_t val;
+	if (b==0) {
+		val = cpu->getRegA();
+	} else {
+		val = cpu->getRegB();
+	}
+
+	carry_in = 0;
+	UnsignedAdd8(result, carry_out, overflow, sign, val, 1, carry_in);
+	
+	if (b==0) {
+		cpu->setRegA(result);
+	} else {
+		cpu->setRegB(result);		
+	}
+	
+	if (overflow) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+	
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x80) == 0x80) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+// INCW EXT
+op incw_ext(0x18[8]:0x72[8]:opr16a[16])
+
+incw_ext.getCycles = { return 5; }
+
+incw_ext.disasm = {
+	string mnem = "INCW";
+	
+	sink << mnem << " 0x" << std::hex << opr16a;
+	return mnem;
+}
+
+incw_ext.execute = {
+	physical_address_t addr = opr16a;
+	uint16_t opr16aVal = cpu->memRead16(addr);
+	uint16_t result;
+	uint8_t carry_out, overflow, carry_in, sign;
+	
+	carry_in = 0;
+	UnsignedAdd16(result, carry_out, overflow, sign, opr16aVal, 1, carry_in);
+
+	cpu->memWrite16(addr, result);
+		
+	if (overflow) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+	
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x8000) == 0x8000) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+// INCW  IDX or IDX1 or IDX2 or [D,IDX] or [IDX2]
+op incw_idx(0x18[8]:0x62[8]:> <:*xb[XB])
+
+incw_idx.pre_execute = {
+	
+	xb->pre_execute(sink);
+	// after: other specific actions
+}
+
+incw_idx.post_execute = {
+
+	// before: other specific actions
+	xb->post_execute(sink);
+}
+
+incw_idx.getCycles = { return XbModes::GetIDXCycles(xb->getXbMode(), 4, 5, 6, 7, 7); }
+
+incw_idx.disasm = {
+	string mnem = "INCW";
+	
+	sink << mnem << " ";
+	xb->disasm(sink);
+	return mnem;
+}
+
+incw_idx.execute = {
+	physical_address_t addr = xb->getEAddr(cpu);
+	uint16_t val = cpu->memRead16(addr);
+
+	uint16_t result;
+	uint8_t carry_out, overflow, carry_in, sign;
+	
+	carry_in = 0;
+	UnsignedAdd16(result, carry_out, overflow, sign, val, 1, carry_in);
+
+	cpu->memWrite16(addr, result);
+	
+	if (overflow) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+	
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x8000) == 0x8000) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+// INX or INCY
+op inc_xy(0x18[8]:0b010[3]:b[1]:0x2[4])
+
+inc_xy.getCycles = { return 2; }
+
+inc_xy.disasm = {
+	string mnem;
+	
+	if (b==0) {
+		mnem = "INCX";
+	} else {
+		mnem = "INCY";
+	}
+	sink << mnem;
+	return mnem;
+}
+
+inc_xy.execute = {
+
+	uint16_t val;
+	if (b==0) {
+		val = cpu->getRegX();
+	} else {
+		val = cpu->getRegY();
+	}
+
+	uint16_t result;
+	uint8_t carry_out, overflow, carry_in, sign;
+	
+	carry_in = 0;
+	UnsignedAdd16(result, carry_out, overflow, sign, val, 1, carry_in);
+
+	if (b==0) {
+		cpu->setRegX(result);
+	} else {
+		cpu->setRegY(result);
+	}
+	
+	if (overflow) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+	
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x8000) == 0x8000) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+// INS
+op ins(0x1B[8]:0x81[8])
+
+ins.getCycles = { return 2; }
+
+ins.disasm = {
+	string mnem = "INS";
+	
+	sink << mnem;
+	return mnem;
+}
+
+ins.execute = {
+	cpu->setRegSP(cpu->getRegSP() + 1);
+
+	return getCycles();
+}
+
+// INX
+op inx(0x08[8])
+
+inx.getCycles = { return 1; }
+
+inx.disasm = {
+	string mnem = "INX";
+	
+	sink << mnem;
+	return mnem;
+}
+
+inx.execute = {
+	uint16_t val = cpu->getRegX();
+	val++;
+	cpu->setRegX(val);
+	if (val == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();  
+
+	return getCycles();
+}
+
+// INY
+op iny(0x02[8])
+
+iny.getCycles = { return 1; }
+
+iny.disasm = {
+	string mnem = "INY";
+	
+	sink << mnem;
+	return mnem;
+}
+
+iny.execute = {
+	uint16_t val = cpu->getRegY();
+	val++;
+	cpu->setRegY(val);
+	if (val == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();  
+
+	return getCycles();
+}
+

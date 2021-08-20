@@ -1,0 +1,73 @@
+op dsllv(0[6]:rs[5]:rt[5]:rd[5]:0[5]:0x14[6]);
+dsllv.disasm = { sink << "dsllv\t" << PrintGPR(rd) << "," << PrintGPR(rt) << "," << PrintGPR(rs); };
+
+op dsrlv(0[6]:rs[5]:rt[5]:rd[5]:0[5]:0x16[6]);
+dsrlv.disasm = { sink << "dsrlv\t" << PrintGPR(rd) << "," << PrintGPR(rt) << "," << PrintGPR(rs); };
+
+op dsrav(0[6]:rs[5]:rt[5]:rd[5]:0[5]:0x17[6]);
+dsrav.disasm = { sink << "dsrav\t" << PrintGPR(rd) << "," << PrintGPR(rt) << "," << PrintGPR(rs); };
+
+op dmult(0[6]:rs[5]:rt[5]:0[5]:0[5]:0x1c[6]);
+dmult.disasm = { sink << "dmult\t" << PrintGPR(rs) << "," << PrintGPR(rt); };
+
+op dmultu(0[6]:rs[5]:rt[5]:0[5]:0[5]:0x1d[6]);
+dmultu.disasm = { sink << "dmultu\t" << PrintGPR(rs) << "," << PrintGPR(rt); };
+
+op ddiv(0[6]:rs[5]:rt[5]:0[5]:0[5]:0x1e[6]);
+ddiv.disasm = { sink << "ddiv\t" << PrintGPR(0) << "," << PrintGPR(rs) << "," << PrintGPR(rt); };
+
+op ddivu(0[6]:rs[5]:rt[5]:0[5]:0[5]:0x1f[6]);
+ddivu.disasm = { sink << "ddivu\t" << PrintGPR(0) << "," << PrintGPR(rs) << "," << PrintGPR(rt); };
+
+op dadd(0[6]:rs[5]:rt[5]:rd[5]:0[5]:0x2c[6]);
+dadd.disasm = { sink << "dadd\t" << PrintGPR(rd) << "," << PrintGPR(rs) << "," << PrintGPR(rt); };
+
+op daddu(0[6]:rs[5]:rt[5]:rd[5]:0[5]:0x2d[6]);
+daddu.disasm = { sink << "daddu\t" << PrintGPR(rd) << "," << PrintGPR(rs) << "," << PrintGPR(rt); };
+
+op dneg(0[6]:0[5]:rt[5]:rd[5]:0[5]:0x2e[6]);
+dneg.disasm = { sink << "dneg\t" << PrintGPR(rd) << "," << PrintGPR(rt); };
+
+op dnegu(0[6]:0[5]:rt[5]:rd[5]:0[5]:0x2f[6]);
+dnegu.disasm = { sink << "dnegu\t" << PrintGPR(rd) << "," << PrintGPR(rt); };
+
+op dsub(0[6]:rs[5]:rt[5]:rd[5]:0[5]:0x2e[6]);
+dsub.disasm = { sink << "dsub\t" << PrintGPR(rd) << "," << PrintGPR(rs) << "," << PrintGPR(rt); };
+
+op dsubu(0[6]:rs[5]:rt[5]:rd[5]:0[5]:0x2f[6]);
+dsubu.disasm = { sink << "dsubu\t" << PrintGPR(rd) << "," << PrintGPR(rs) << "," << PrintGPR(rt); };
+
+op dsll(0[6]:0[5]:rt[5]:rd[5]:imm[5]:0x38[6]);
+dsll.disasm = { sink << "dsll\t" << PrintGPR(rd) << "," << PrintGPR(rt) << "," << PrintHex(imm);; };
+
+op dsrl(0[6]:0[5]:rt[5]:rd[5]:imm[5]:0x3a[6]);
+dsrl.disasm = { sink << "dsrl\t" << PrintGPR(rd) << "," << PrintGPR(rt) << "," << PrintHex(imm);; };
+
+op dsra(0[6]:0[5]:rt[5]:rd[5]:imm[5]:0x3b[6]);
+dsra.disasm = { sink << "dsra\t" << PrintGPR(rd) << "," << PrintGPR(rt) << "," << PrintHex(imm);; };
+
+op dsll32(0[6]:0[5]:rt[5]:rd[5]:imm[5]:0x3c[6]);
+dsll32.disasm = { sink << "dsll32\t" << PrintGPR(rd) << "," << PrintGPR(rt) << "," << PrintHex(imm);; };
+
+op dsrl32(0[6]:0[5]:rt[5]:rd[5]:imm[5]:0x3e[6]);
+dsrl32.disasm = { sink << "dsrl32\t" << PrintGPR(rd) << "," << PrintGPR(rt) << "," << PrintHex(imm);; };
+
+op dsra32(0[6]:0[5]:rt[5]:rd[5]:imm[5]:0x3f[6]);
+dsra32.disasm = { sink << "dsra32\t" << PrintGPR(rd) << "," << PrintGPR(rt) << "," << PrintHex(imm);; };
+
+op dli(13[6]:0[5]:rt[5]:imm[16]);
+dli.specialize(ori);
+dli.disasm = { sink << "dli\t" << PrintGPR(rt) << ',' << PrintHex(imm);  };
+
+op daddi(24[6]:rs[5]:rt[5]:sext imm[16]);
+daddi.disasm = { sink << "daddi\t" << PrintGPR(rt) << ',' << PrintGPR(rs) << ',' << PrintI(imm);  };
+
+op daddiu(25[6]:rs[5]:rt[5]:sext imm[16]);
+daddiu.disasm = { sink << "daddiu\t" << PrintGPR(rt) << ',' << PrintGPR(rs) << ',' << PrintI(imm);  };
+
+op ldl(26[6]:ra[5]:rb[5]:sext offset[16]);
+ldl.disasm = { sink << "ldl\t" << PrintGPR(rb) << ',' << int(offset) << '(' << PrintGPR(ra) << ')'; };
+
+op ldr(27[6]:ra[5]:rb[5]:sext offset[16]);
+ldr.disasm = { sink << "ldr\t" << PrintGPR(rb) << ',' << int(offset) << '(' << PrintGPR(ra) << ')'; };
+

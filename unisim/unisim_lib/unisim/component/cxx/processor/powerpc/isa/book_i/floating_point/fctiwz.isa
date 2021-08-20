@@ -1,0 +1,92 @@
+/*
+ *  Copyright (c) 2007-2018,
+ *  Commissariat a l'Energie Atomique (CEA)
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without modification,
+ *  are permitted provided that the following conditions are met:
+ *
+ *   - Redistributions of source code must retain the above copyright notice, this
+ *     list of conditions and the following disclaimer.
+ *
+ *   - Redistributions in binary form must reproduce the above copyright notice,
+ *     this list of conditions and the following disclaimer in the documentation
+ *     and/or other materials provided with the distribution.
+ *
+ *   - Neither the name of CEA nor the names of its contributors may be used to
+ *     endorse or promote products derived from this software without specific prior
+ *     written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ *  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *  DISCLAIMED.
+ *  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ *  INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ *  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+ *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ *  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Authors: Gilles Mouchard (gilles.mouchard@cea.fr)
+ */
+ 
+/* Floating Convert To Integer Word with round toward Zero */
+op fctiwz(63[6]:fd[5]:?[5]:fb[5]:15[10]:rc[1]);
+
+fctiwz.execute = {
+	if(not CONFIG::HAS_FPU)
+	{
+		cpu->ThrowException<CPU::ProgramInterrupt::UnimplementedInstruction>();
+		return false;
+	}
+	if(unlikely(not cpu->GetMSR().Get<CPU::MSR::FP>()))
+	{
+		cpu->ThrowException<CPU::FloatingPointUnavailableInterrupt::FloatingPointUnavailable>();
+		return false;
+	}
+
+	// Read the input operands
+	FPSCR& fpscr( cpu->GetFPSCR() );
+	SoftDouble b = cpu->GetFPR(fb);
+	
+	// Compute the result
+	Flags flags( Flags::RoundingMode(1) ); // ZeroRounding
+	S32 res32 = b.queryS32( flags );
+	
+        U64 undef_high = (U64(0xfff80000) | U64(res32 == S32(0) and b.isNegative())) << 32;
+        
+	SoftDouble result(SoftDouble::FromRawBits, undef_high | U64(U32(res32)));
+	
+	// Generate VXSNAN, VXCVI, FR, FI, XX, FX, VX, FEX
+	if (likely(not flags.isOverflow())) fpscr.SetInexact( flags.isApproximate() );
+	UINT new_fpscr( fpscr ), old_fpscr = new_fpscr;
+	GenFPSCR_VXSNAN<FPSCR>(new_fpscr, flags);
+	GenFPSCR_VXCVI<FPSCR>(new_fpscr, flags);
+	GenFPSCR_FR<FPSCR, SoftDouble>(new_fpscr, b, flags);
+	GenFPSCR_FX<FPSCR>(new_fpscr, old_fpscr);
+	GenFPSCR_VX<FPSCR>(new_fpscr);
+	GenFPSCR_FEX<FPSCR>(new_fpscr);
+
+	// Update FPSCR
+	fpscr = new_fpscr;
+
+	if (not cpu->CheckFloatingPointException())
+		return false;
+
+	// Write back the result
+	cpu->SetFPR(fd, result);
+
+	// Copy FX, FEX, VX, OX to CR1
+	if(unlikely(rc)) { cpu->GetCR().Set<CR::CR1>( fpscr.Get<FPSCR::_0_3>() ); }
+	
+	return true;
+};
+
+fctiwz.disasm = {
+	os << "fctiwz" << (rc ? "." : "") << " " << FPRPrint(fd) << ", " << FPRPrint(fb);
+};
+
+specialize fctiwz(rc=0);
+specialize fctiwz(rc=1);

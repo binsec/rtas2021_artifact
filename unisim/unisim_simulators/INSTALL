@@ -1,0 +1,70 @@
+1. Requirements:
+----------------
+
+Mandatory:
+    * UNISIM Library (see http://unisim.org/site/unisim_lib/start)
+    * GNU Bash shell (3.2.25 recommended)
+    * GNU Make (3.81 recommended)
+    * GNU C++ Compiler (g++) (>= 3.x)
+    * automake (>= 1.9.6 recommended)
+    * autoconf (>= 2.59 recommended)
+    * boost (1.34.0 recommended)
+    * libxml2 (2.6.30 recommended)
+    * zlib (1.2.3 recommended)
+    * Core SystemC Language (>= 2.1)
+    * TLM Transaction Level Modeling Library, Release 2.0
+Optional:
+    * libSDL (>= 1.2.8 recommended) provides video frame capability and access to input devices (e.g. keyboard)
+    * libedit (>= 2.11 recommended) provides line editing and history capabilities (e.g. for an inline debugger)
+    * ncurses (>= 5.6 recommended) provides access to terminal screen (e.g. for an inline debugger)
+    * Cacti 4.2 as a C++ class library (see https://unisim.org/svn/devel/extra/cacti) provides a foundation to estimate power consumption
+
+More details on installing these softwares are available at http://unisim.org/site/unisim_simulators/start
+
+2. Building the 'configure' scripts:
+------------------------------------
+
+If you downloaded the source code as a tarball, you can ignore this section. If you downloaded the source code with subversion, you first need to build the configure scripts:
+
+$ cd unisim_simulators
+$ ./build-configure.sh
+
+In case of failure while running ‘build-configure.sh’, check that ‘find’, ‘autoconf’ and ‘automake’ are correctly installed.
+
+3. Configuring
+--------------
+
+$ cd unisim_simulators
+$ ./configure --prefix=${HOME}/unisim \
+              --with-unisim-lib=${HOME}/unisim \
+              --with-systemc=${HOME}/systemc \
+              --with-tlm20=${HOME}/TLM-2008-06-09
+
+Script configure also supports the following options:
+
+    * --with-sdl=<path-to-sdl-install>: Override the search path for SDL C headers and libraries
+    * --with-boost=<path-to-boost-install>: Override the search path for boost C++ headers and libraries
+    * --with-libxml2=<path-to-libxml2-install>: Override the search path for libxml2 C headers and libraries
+    * --with-zlib=<path-to-zlib-install>: Override the search path for zlib C headers and libraries
+    * --with-libedit=<path-to-libedit-install>: Override the search path for libedit C headers and libraries
+    * --with-ncurses=<path-to-ncurses-install>: Override the search path for ncurses C headers and libraries
+    * --with-systemc=<path-to-systemc-install>: Override the search path for SystemC C++ headers and library. Depending on you host machine, script configure will search for library libsystemc.a in subdirectory lib-macosx, lib-gccsparcOS5, lib-cygwin, lib-linux, lib-linux64, lib-gcchpux11 (lib-macosx-x86 and lib-mingw32 if you patched your SystemC)
+    * --with-tlm20=<path-to-tlm2.0-install>: Override the search path for TLM 2.0 C++ headers.
+    * --with-cacti=<path-to-cacti4.2-install>: Override the search path for Cacti 4.2 C++ headers and libraries
+    * --enable-release: Compile both debug and release versions of the simulators. Debug versions are more verbose than release versions.
+    * --disable-<directory>: Disable compilation of a whole subdirectory (e.g. –disable-simulator-tlm-ppcemu prevents configure and make from entering directory tlm/ppcemu)
+
+4. Compiling the source code
+----------------------------
+
+$ make
+
+5. Installing the UNISIM Simulators
+-----------------------------------
+
+$ make install
+
+Installation tree is the following:
+
+    * bin...................... : All the UNISIM Simulators are there
+    * share.................... : Licenses and other documents are there

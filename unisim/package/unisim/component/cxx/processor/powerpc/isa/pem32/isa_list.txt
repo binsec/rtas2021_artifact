@@ -1,0 +1,4 @@
+unisim/component/cxx/processor/powerpc/isa/pem32/tlbia.isa
+unisim/component/cxx/processor/powerpc/isa/pem32/tlbie.isa
+unisim/component/cxx/processor/powerpc/isa/pem32/tlbld.isa
+unisim/component/cxx/processor/powerpc/isa/pem32/tlbli.isa

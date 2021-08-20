@@ -1,0 +1,42 @@
+Mingw32 on Mandriva How To
+---------------------------
+
+This may apply to other redhat-like distributions.
+
+1) Download some Debian packages:
+
+For Mandriva x86 (32-bit):
+http://packages.debian.org/etch/i386/mingw32/download
+http://packages.debian.org/etch/i386/mingw32-binutils/download
+http://packages.debian.org/etch/all/mingw32-runtime/download
+
+For Mandriva AMD64/x86_64 (64-bit):
+http://packages.debian.org/etch/amd64/mingw32/download
+http://packages.debian.org/etch/amd64/mingw32-binutils/download
+http://packages.debian.org/etch/all/mingw32-runtime/download
+
+2) Convert the Debian packages to Mandriva packages:
+
+You need to install "alien" (try urmpi alien), and use option "--to-rpm".
+
+For Mandriva x86 (32-bit):
+$ alien --to-rpm mingw32_3.4.5.20060117.1.dfsg-2_i386.deb
+$ alien --to-rpm mingw32-binutils_2.16.91-20060119.1-1_i386.deb
+$ alien --to-rpm mingw32-runtime_3.9-4_all.deb
+
+For Mandriva AMD64/x86_64 (64-bit):
+$ alien --to-rpm mingw32_3.4.5.20060117.1.dfsg-2_amd64.deb
+$ alien --to-rpm mingw32-binutils_2.16.91-20060119.1-1_amd64.deb
+$ alien --to-rpm mingw32-runtime_3.9-4_all.deb
+
+3) install the converted packages
+
+For Mandriva x86 (32-bit):
+$ rpm -i mingw32-runtime-3.9-5.noarch.rpm
+$ rpm -i mingw32-binutils-2.16.91_20060119.1-2.i386.rpm
+$ rpm -i mingw32-3.4.5.20060117.1.dfsg-3.i386.rpm
+
+For Mandriva AMD64/x86_64 (64-bit):
+$ rpm -i mingw32-runtime-3.9-5.noarch.rpm
+$ rpm -i mingw32-binutils-2.16.91_20060119.1-2.amd64.rpm
+$ rpm -i mingw32-3.4.5.20060117.1.dfsg-3.amd64.rpm

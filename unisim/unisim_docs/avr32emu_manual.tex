@@ -1,0 +1,46 @@
+\documentclass[a4paper,11pt]{article}
+\usepackage{graphicx}
+\usepackage{pifont}
+\usepackage{ulem}
+\usepackage{supertabular}
+\usepackage{fancyhdr}
+\usepackage{rotating}
+\usepackage{verbatim}
+\usepackage{appendix}
+
+\voffset -1.5cm
+\hoffset 0.0cm
+\textheight 25cm
+\textwidth 16cm
+\topmargin 0.0cm
+\oddsidemargin 0.0cm
+\evensidemargin 0.0cm
+
+\newcommand{\VROT}[1]{\begin{turn}{90}#1\end{turn}}     % vertical text
+\def\X{$\surd$}     % tick symbol
+
+\newenvironment{script}{\endgraf\footnotesize\verbatim}{\endverbatim}
+
+\usepackage{hyperref}%                   % Utilisation de HyperTeX
+
+\hypersetup{
+    pdfauthor   = {Gilles Mouchard},%
+    pdftitle    = {UNISIM avr32emu Simulator Manual},%
+    pdfsubject  = {UNISIM},%
+    pdfkeywords = {simulation framework, architectural exploration, embedded system design, system verification},%
+    pdfcreator  = {rubber},%
+    pdfproducer = {rubber}
+}
+
+\begin{document}
+% \addtolength{\hoffset}{-2.0cm}
+% \addtolength{\voffset}{-2.0cm}
+\title{UNISIM\\ avr32emu Simulator Manual}
+\author{Gilles Mouchard}
+\date{}
+
+\maketitle
+\section{Simulator technical reference (generated)}
+\input{avr32emu/avr32emu}
+
+\end{document}

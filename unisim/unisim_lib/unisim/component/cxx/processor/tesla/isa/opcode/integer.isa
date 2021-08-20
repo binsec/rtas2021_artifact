@@ -1,0 +1,1594 @@
+/*
+ *  Copyright (c) 2009,
+ *  University of Perpignan (UPVD),
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without modification,
+ *  are permitted provided that the following conditions are met:
+ *
+ *   - Redistributions of source code must retain the above copyright notice, this
+ *     list of conditions and the following disclaimer.
+ *
+ *   - Redistributions in binary form must reproduce the above copyright notice,
+ *     this list of conditions and the following disclaimer in the documentation
+ *     and/or other materials provided with the distribution.
+ *
+ *   - Neither the name of UPVD nor the names of its contributors may be used to
+ *     endorse or promote products derived from this software without specific prior
+ *     written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ *  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *  DISCLAIMED.
+ *  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ *  INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ *  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+ *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ *  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Authors: Sylvain Collange (sylvain.collange@univ-perp.fr)
+ */
+
+
+/***************************************************
+
+	ARITHMETIC AND LOGICAL INSTRUCTIONS
+
+****************************************************/
+
+
+op iadd_full_normal( \
+	/*subop*/0[3]:/*?*/0[1]:sat[1]:w32[1]:/*seg[4]*/?[24]:/*marker*/0[2]: \
+	0x2[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src3_cm*/?[1]:/*src2_cm*/?[1]:src3_neg[1]:/*src2*/0[6]:\
+	/*src1*/?[7]:/*dest*/?[7]:/*flow*/0[1]:/*IWidth*/1[1] \
+)
+
+op iadd_full_end( \
+	/*subop*/0[3]:/*?*/0[1]:sat[1]:w32[1]:?[24]:/*marker*/1[2]: \
+	0x2[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src3_cm*/?[1]:/*src2_cm*/?[1]:src3_neg[1]:/*src2*/0[6]:\
+	/*src1*/?[7]:/*dest*/?[7]:/*flow*/0[1]:/*IWidth*/1[1] \
+)
+
+op iadd_full_join( \
+	/*subop*/0[3]:/*?*/0[1]:sat[1]:w32[1]:?[24]:/*marker*/2[2]: \
+	0x2[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src3_cm*/?[1]:/*src2_cm*/?[1]:src3_neg[1]:/*src2*/0[6]:\
+	/*src1*/?[7]:/*dest*/?[7]:/*flow*/0[1]:/*IWidth*/1[1] \
+)
+
+group iadd_full(iadd_full_normal, iadd_full_end, iadd_full_join)
+
+iadd_full.disasm = {
+	buffer << "add";
+	insn->DisasmControl(buffer);
+	DisasmSignWidth(true, w32, buffer);
+	// no unsigned saturation, so always signed
+	if(sat)
+		buffer << ".sat";
+		
+	buffer << " ";
+	insn->DisasmDest(buffer);
+
+	buffer << ", ";
+	//DisasmSign(src1_neg, buffer);
+	insn->DisasmSrc1(buffer);
+	
+	buffer << ", ";
+	DisasmSign(src3_neg, buffer);
+	insn->DisasmSrc3(buffer);
+}
+
+iadd_full.execute = {
+	typedef VectorRegister<CONFIG> reg_t;
+
+	// dest = a + c
+	reg_t & a = insn->GetSrc1();
+	reg_t & c = insn->GetSrc3();
+	
+	insn->GetDest() = IAdd(a, c, insn->Flags(), sat, /*src1_neg*/0, src3_neg, w32);
+}
+
+//specialize iadd_full_normal(sat=0, w32=1, src3_neg=0)
+
+
+op iadd_half( \
+	0x2[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src1_sh*/?[1]:/*src2_cm*/?[1]:src3_neg[1]:/*imm_lo*/?[6]:\
+	w32[1]:/*src1*/?[6]:/*dest*/?[7]:/*flow*/0[1]:/*IWidth*/0[1] \
+)
+
+op iadd_imm( \
+	/*subop*/0[3]:/*?*/0[1]:/*imm_hi*/?[26]:/*marker*/3[2]: \
+	0x2[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src1_sh*/?[1]:/*src2_cm*/?[1]:src3_neg[1]:/*imm_lo*/?[6]:\
+	w32[1]:/*src1*/?[6]:/*dest*/?[7]:/*flow*/0[1]:/*IWidth*/1[1] \
+)
+
+group iadd_halfimm(iadd_half, iadd_imm)
+
+//specialize iadd_half(w32=1, src3_neg=0)
+
+iadd_halfimm.disasm = {
+	buffer << "add";
+	insn->DisasmControl(buffer);
+	DisasmSignWidth(true, w32, buffer);
+		
+	buffer << " ";
+	insn->DisasmDest(buffer);
+
+	buffer << ", ";
+	insn->DisasmSrc1(buffer);
+	
+	buffer << ", ";
+	DisasmSign(src3_neg, buffer);
+	insn->DisasmSrc2(buffer);
+}
+
+iadd_halfimm.execute = {
+	typedef VectorRegister<CONFIG> reg_t;
+
+	// dest = a + b
+	reg_t & a = insn->GetSrc1();
+	reg_t & b = insn->GetSrc2();
+	
+	insn->GetDest() = IAdd(a, b, insn->Flags(), false, false, src3_neg, w32);
+}
+
+op isubr_full_normal( \
+	/*subop*/0[3]:/*?*/0[1]:sat[1]:w32[1]:/*seg[4]*/?[24]:/*marker*/0[2]: \
+	0x3[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src3_cm*/?[1]:/*src2_cm*/?[1]:/*addc*/0[1]:/*src2*/0[6]:\
+	/*src1*/?[7]:/*dest*/?[7]:/*flow*/0[1]:/*IWidth*/1[1] \
+)
+
+op isubr_full_end( \
+	/*subop*/0[3]:/*?*/0[1]:sat[1]:w32[1]:/*seg[4]*/?[24]:/*marker*/1[2]: \
+	0x3[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src3_cm*/?[1]:/*src2_cm*/?[1]:/*addc*/0[1]:/*src2*/0[6]:\
+	/*src1*/?[7]:/*dest*/?[7]:/*flow*/0[1]:/*IWidth*/1[1] \
+)
+
+op isubr_full_join( \
+	/*subop*/0[3]:/*?*/0[1]:sat[1]:w32[1]:/*seg[4]*/?[24]:/*marker*/2[2]: \
+	0x3[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src3_cm*/?[1]:/*src2_cm*/?[1]:/*addc*/0[1]:/*src2*/0[6]:\
+	/*src1*/?[7]:/*dest*/?[7]:/*flow*/0[1]:/*IWidth*/1[1] \
+)
+
+group isubr_full(isubr_full_normal, isubr_full_end, isubr_full_join)
+
+isubr_full.disasm = {
+	buffer << "add";
+	insn->DisasmControl(buffer);
+	DisasmSignWidth(true, w32, buffer);
+	// no unsigned saturation, so always signed
+	if(sat)
+		buffer << ".sat";
+		
+	buffer << " ";
+	insn->DisasmDest(buffer);
+
+	buffer << ", ";
+	buffer << "-";
+	insn->DisasmSrc1(buffer);
+	
+	buffer << ", ";
+	insn->DisasmSrc3(buffer);
+}
+
+isubr_full.execute = {
+	typedef VectorRegister<CONFIG> reg_t;
+
+	// dest = a + c
+	reg_t & a = insn->GetSrc1();
+	reg_t & c = insn->GetSrc3();
+	
+	insn->GetDest() = IAdd(a, c, insn->Flags(), sat, true, false, w32);
+}
+
+op isubr_half( \
+	0x3[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src1_sh*/?[1]:/*src2_cm*/?[1]:/*addc*/0[1]:/*imm_lo*/?[6]:\
+	w32[1]:/*src1*/?[6]:/*dest*/?[7]:/*flow*/0[1]:/*IWidth*/0[1] \
+)
+
+op isubr_imm( \
+	/*subop*/0[3]:/*?*/0[1]:/*imm_hi*/?[26]:/*marker*/3[2]: \
+	0x3[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src1_sh*/?[1]:/*src2_cm*/?[1]:/*addc*/0[1]:/*imm_lo*/?[6]:\
+	w32[1]:/*src1*/?[6]:/*dest*/?[7]:/*flow*/0[1]:/*IWidth*/1[1] \
+)
+
+group isubr_halfimm(isubr_half, isubr_imm)
+
+isubr_halfimm.disasm = {
+	buffer << "add";
+	insn->DisasmControl(buffer);
+	DisasmSignWidth(true, w32, buffer);
+		
+	buffer << " ";
+	insn->DisasmDest(buffer);
+
+	buffer << ", ";
+	buffer << "-";
+	insn->DisasmSrc1(buffer);
+	
+	buffer << ", ";
+	insn->DisasmSrc2(buffer);
+}
+
+isubr_halfimm.execute = {
+	typedef VectorRegister<CONFIG> reg_t;
+
+	// dest = a + c
+	reg_t & a = insn->GetSrc1();
+	reg_t & c = insn->GetSrc2();
+	
+	reg_t output = IAdd(a, c, insn->Flags(), false, true, false, w32);
+	
+	insn->SetDest(output);
+	//insn->SetPredI32(output, flags);
+}
+
+
+op iaddc_full_normal( \
+	/*subop*/0[3]:/*?*/0[1]:sat[1]:w32[1]:/*seg[4]*/?[24]:/*marker*/0[2]: \
+	0x3[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src3_cm*/?[1]:/*src2_cm*/?[1]:1[1]:/*src2*/0[6]:\
+	/*src1*/?[7]:/*dest*/?[7]:/*flow*/0[1]:/*IWidth*/1[1] \
+)
+op iaddc_full_end( \
+	/*subop*/0[3]:/*?*/0[1]:sat[1]:w32[1]:/*seg[4]*/?[24]:/*marker*/1[2]: \
+	0x3[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src3_cm*/?[1]:/*src2_cm*/?[1]:1[1]:/*src2*/0[6]:\
+	/*src1*/?[7]:/*dest*/?[7]:/*flow*/0[1]:/*IWidth*/1[1] \
+)
+op iaddc_full_join( \
+	/*subop*/0[3]:/*?*/0[1]:sat[1]:w32[1]:/*seg[4]*/?[24]:/*marker*/2[2]: \
+	0x3[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src3_cm*/?[1]:/*src2_cm*/?[1]:1[1]:/*src2*/0[6]:\
+	/*src1*/?[7]:/*dest*/?[7]:/*flow*/0[1]:/*IWidth*/1[1] \
+)
+
+group iaddc_full(iaddc_full_normal, iaddc_full_end, iaddc_full_join)
+
+iaddc_full.disasm = {
+	buffer << "addc";
+	insn->DisasmControl(buffer);
+	DisasmSignWidth(true, w32, buffer);
+	// no unsigned saturation, so always signed
+	if(sat)
+		buffer << ".sat";
+		
+	buffer << " ";
+	insn->DisasmDest(buffer);
+
+	buffer << ", ";
+	insn->DisasmSrc1(buffer);
+	
+	buffer << ", ";
+	insn->DisasmSrc3(buffer);
+}
+
+iaddc_full.execute = {
+	typedef VectorRegister<CONFIG> reg_t;
+
+	// dest = a + c
+	reg_t & a = insn->GetSrc1();
+	reg_t & c = insn->GetSrc3();
+	
+	VectorFlags<CONFIG> & inputflags = cpu->GetFlags(0);	// TODO: move to read stage
+	insn->GetDest() = IAddC(a, c, insn->Flags(), inputflags, sat, false, false, w32);
+}
+
+op iaddc_half( \
+	0x3[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src1_sh*/?[1]:/*src2_cm*/?[1]:/*addc*/1[1]:/*imm_lo*/?[6]:\
+	w32[1]:/*src1*/?[6]:/*dest*/?[7]:/*flow*/0[1]:/*IWidth*/0[1] \
+)
+
+op iaddc_imm( \
+	/*subop*/0[3]:/*?*/0[1]:/*imm_hi*/?[26]:/*marker*/3[2]: \
+	0x3[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src1_sh*/?[1]:/*src2_cm*/?[1]:/*addc*/1[1]:/*imm_lo*/?[6]:\
+	w32[1]:/*src1*/?[6]:/*dest*/?[7]:/*flow*/0[1]:/*IWidth*/1[1] \
+)
+
+group iaddc_halfimm(iaddc_half, iaddc_imm)
+
+iaddc_halfimm.disasm = {
+	buffer << "addc";
+	insn->DisasmControl(buffer);
+	DisasmSignWidth(true, w32, buffer);
+	
+	buffer << " ";
+	insn->DisasmDest(buffer);
+
+	buffer << ", ";
+	insn->DisasmSrc1(buffer);
+	
+	buffer << ", ";
+	insn->DisasmSrc2(buffer);
+}
+
+iaddc_halfimm.execute = {
+	typedef VectorRegister<CONFIG> reg_t;
+
+	// dest = a + c
+	reg_t & a = insn->GetSrc1();
+	reg_t & b = insn->GetSrc2();
+	
+	VectorFlags<CONFIG> flags;
+	
+	VectorFlags<CONFIG> & inputflags = cpu->GetFlags(0);	// TODO: move to read stage
+	reg_t output = IAddC(a, b, insn->Flags(), inputflags, false, true, false, w32);
+	
+	insn->SetDest(output);
+}
+
+group iaddsub(iadd_full, iadd_halfimm, isubr_full, isubr_halfimm, iaddc_full)
+
+iaddsub.classify = {
+	stats->SetInteger();
+}
+
+
+
+op imad_full_normal( \
+	subop[3]:/*?*/0[1]:carry[2]:0[2]:?[22]:/*marker*/0[2]: \
+	0x6[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src3_cm*/?[1]:/*src2_cm*/?[1]:/*src2*/?[7]:\
+	/*src1*/?[7]:/*dest*/?[7]:/*flow*/0[1]:/*IWidth*/1[1] \
+)
+
+op imad_full_end( \
+	subop[3]:/*?*/0[1]:carry[2]:0[2]:?[22]:/*marker*/1[2]: \
+	0x6[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:?[1]:/*src2_cm*/?[1]:/*src2*/?[7]:\
+	/*src1*/?[7]:/*dest*/?[7]:/*flow*/0[1]:/*IWidth*/1[1] \
+)
+
+op imad_full_join( \
+	subop[3]:/*?*/0[1]:carry[2]:0[2]:?[22]:/*marker*/2[2]: \
+	0x6[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:?[1]:/*src2_cm*/?[1]:/*src2*/?[7]:\
+	/*src1*/?[7]:/*dest*/?[7]:/*flow*/0[1]:/*IWidth*/1[1] \
+)
+
+//specialize imad_full_normal(subop=0, src1_neg=0, src3_neg=0)
+
+group imad_full(imad_full_normal, imad_full_end, imad_full_join)
+
+imad_full.init = {
+	typedef Operation<CONFIG> inherited;
+	DataType dt;
+	switch(subop) {
+	case 0:
+		dt = DT_U16;
+		break;
+	case 1:
+	// TODO: CHECK semantics of 1, 2
+	case 2:
+		dt = DT_S16;
+		break;
+	case 3:
+	case 6:
+		dt = DT_U32;
+		break;
+	case 4:
+	case 5:
+	case 7:
+		dt = DT_S32;
+		break;
+	default:
+		dt = DT_UNKNOWN;
+	}
+	inherited::op_type[OpDest] = DT_U32;
+	inherited::op_type[OpSrc1] = dt;
+	inherited::op_type[OpSrc2] = dt;
+	inherited::op_type[OpSrc3] = DT_U32;	// always 32-bit
+}
+
+imad_full.disasm = {
+	buffer << "mad24";
+	if(carry)
+		buffer << "c";
+		
+	insn->DisasmControl(buffer);
+	switch(subop) {
+	case 0:
+		buffer << ".u16.lo";
+		break;
+	// TODO: CHECK semantics of 1, 2
+	case 1:
+		buffer << ".s16";	// ?
+		break;
+	case 2:
+		buffer << ".??2?";
+		break;
+	case 3:
+		buffer << ".u32.lo";
+		break;
+	case 4:
+		buffer << ".s32.lo";
+		break;
+	case 5:
+		buffer << ".s32.lo.sat";
+		break;
+	case 6:
+		buffer << ".u32.hi";
+		break;
+	case 7:
+		buffer << ".s32.hi";
+		break;
+	default:
+		buffer << ".?" << subop << "?";
+	}
+
+	//if(aba) {
+	//	buffer << ".232";	// 4th operand is 2nd (d=a*b+a)
+	//}
+		
+	buffer << " ";
+	insn->DisasmDest(buffer);
+
+	buffer << ", ";
+	
+	insn->DisasmSrc1(buffer);
+
+	buffer << ", ";
+	insn->DisasmSrc2(buffer);
+	
+	//if(!aba) {
+		buffer << ", ";
+		insn->DisasmSrc3(buffer);
+	//}
+	
+	if(carry == 3) {
+		buffer << ", p1";
+	}
+	else if(carry != 0) {
+		buffer << ", ???";
+	}
+}
+
+imad_full.read = {
+	this->src1->read(cpu, insn);
+	this->src2->read(cpu, insn);
+	//if(aba)
+	//	insn->GetSrc3() = insn->GetSrc1();
+	//else
+		this->src3->read(cpu, insn);
+}
+
+imad_full.execute = {
+	typedef VectorRegister<CONFIG> reg_t;
+
+	RegType rt = RT_U32;
+	bool issigned = false, hi = false, sat = false;
+	switch(subop) {
+	case 0:
+		rt = RT_U16;
+		break;
+	case 1:
+		rt = RT_U16;
+		issigned = true;
+		break;
+	case 3:
+		break;
+	case 5:	// s32.lo.sat
+		sat = true;
+	case 4:	// s32.lo
+		issigned = true;
+		break;
+	case 7:	// s32.hi
+		issigned = true;
+	case 6:	// u32.hi
+		hi = true;
+		break;
+	default:
+		assert(false);
+	}
+	// dest = a * b + c
+	reg_t & a = insn->GetSrc1();
+	reg_t & b = insn->GetSrc2();
+	reg_t & c = insn->GetSrc3();	// Always 32-bit
+	
+	reg_t output;
+	if(carry == 3) {
+		VectorFlags<CONFIG> & inputflags = cpu->GetFlags(1);
+		output = Mad24C(a, b, c, insn->Flags(), inputflags, sat, /*src1_neg*/0, /*src3_neg*/0, rt, issigned, hi);
+	}
+	else if(carry == 0) {
+		output = Mad24(a, b, c, insn->Flags(), sat, /*src1_neg*/0, /*src3_neg*/0, rt, issigned, hi);
+	}
+	else
+		assert(false);
+	
+	insn->SetDest(output);
+}
+
+op imac_imm( \
+	/*subop*/subop[3]:/*?*/0[1]:/*imm_hi*/?[26]:/*marker*/3[2]: \
+	0x6[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src3_cm*/?[1]:/*src2_cm*/?[1]:src3_neg[1]:/*imm_lo*/?[6]:\
+	/*src1*/?[7]:/*??*/full[1]:dest[6]:/*flow*/0[1]:/*IWidth*/1[1] \
+)
+
+// TODO: Full = 16 * 24 -> 32??
+
+imac_imm.init = {
+	typedef Operation<CONFIG> inherited;
+	DataType dt;
+	switch(subop) {
+	case 0:
+		dt = DT_U16;
+		break;
+	case 1:
+	// TODO: CHECK semantics of 1, 2
+	case 2:
+		dt = DT_S16;
+		break;
+	case 3:
+	case 6:
+		dt = DT_U32;
+		break;
+	case 4:
+	case 5:
+	case 7:
+		dt = DT_S32;
+	default:
+		dt = DT_UNKNOWN;
+	}
+	inherited::op_type[OpDest] = DT_U32;	// ???
+	inherited::op_type[OpSrc1] = dt;
+	inherited::op_type[OpSrc2] = dt;
+	inherited::op_type[OpSrc3] = DT_NONE;
+}
+
+imac_imm.disasm = {
+	// r <- a * b + r
+	buffer << "mac24";
+	insn->DisasmControl(buffer);
+	switch(subop) {
+	case 0:
+		buffer << ".u16.lo";
+		break;
+	// TODO: CHECK semantics of 1, 2
+	case 1:
+		buffer << ".s16";	// ?
+		break;
+	case 2:
+		buffer << ".??2?";
+		break;
+	case 3:
+		buffer << ".u32.lo";
+		break;
+	case 4:
+		buffer << ".s32.lo";
+		break;
+	case 5:
+		buffer << ".s32.lo.sat";
+		break;
+	case 6:
+		buffer << ".u32.hi";
+		break;
+	case 7:
+		buffer << ".s32.hi";
+		break;
+	default:
+		buffer << ".?" << subop << "?";
+	}
+		
+	buffer << " ";
+	insn->DisasmDest(buffer);
+
+	buffer << ", ";
+	//DisasmSign(src1_neg, buffer);
+	insn->DisasmSrc1(buffer);
+
+	buffer << ", ";
+	DisasmSign(src3_neg, buffer);
+	insn->DisasmSrc2(buffer);
+}
+
+imac_imm.execute = {
+	typedef VectorRegister<CONFIG> reg_t;
+
+	RegType rt = RT_U32;
+	bool issigned = false, hi = false, sat = false;
+	switch(subop) {
+	case 0:
+		rt = RT_U16;
+		break;
+	case 1:
+	// TODO: CHECK semantics of 1, 2
+		rt = RT_U16;
+		issigned = true;
+		break;
+	case 3:
+		break;
+	case 5:	// s32.lo.sat
+		sat = true;
+	case 4:	// s32.lo
+		issigned = true;
+		break;
+	case 7:	// s32.hi
+		issigned = true;
+	case 6:	// u32.hi
+		hi = true;
+		break;
+	default:
+		assert(false);
+	}
+
+	// dest = a * b + c
+	reg_t & a = insn->GetSrc1();
+	reg_t & b = insn->GetSrc2();
+	reg_t & c = cpu->GetGPR(dest);
+	
+	reg_t output = Mad24(a, b, c, insn->Flags(), sat, /*src1_neg*/0, src3_neg, rt, issigned, hi);
+	
+	insn->SetDest(output);
+}
+
+
+group imad(imad_full, imac_imm)
+
+imad.classify = {
+	stats->SetInteger();
+}
+
+
+//--------------------------------------------------------------------
+
+op imul24_full_normal( \
+	/*subop*/0[3]:/*?*/0[1]:sat[1]:src1_neg[1]:/*const_seg*/?[4]:/*src1_sh*/?[1]:/*?*/0[4]:w32[1]:issigned[1]:hi[1]:?[12]:/*marker*/0[2]: \
+	0x4[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src3_cm*/?[1]:/*src2_cm*/?[1]:src2_neg[1]:/*src2*/?[6]:\
+	/*src1*/?[7]:/*dest*/?[7]:/*flow*/0[1]:/*IWidth*/1[1] \
+)
+
+//specialize imul24_full_normal(sat=0, src1_neg=0, src2_neg=0, w32=1, issigned=1, hi=0)
+//specialize imul24_full_normal(sat=0, src1_neg=0, src2_neg=0, w32=1, issigned=0, hi=0)
+
+op imul24_full_end( \
+	/*subop*/0[3]:/*?*/0[1]:sat[1]:src1_neg[1]:/*const_seg*/?[4]:/*src1_sh*/?[1]:/*?*/0[4]:w32[1]:issigned[1]:hi[1]:?[12]:/*marker*/1[2]: \
+	0x4[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src3_cm*/?[1]:/*src2_cm*/?[1]:src2_neg[1]:/*src2*/?[6]:\
+	/*src1*/?[7]:/*dest*/?[7]:/*flow*/0[1]:/*IWidth*/1[1] \
+)
+
+op imul24_full_join( \
+	/*subop*/0[3]:/*?*/0[1]:sat[1]:src1_neg[1]:/*const_seg*/?[4]:/*src1_sh*/?[1]:/*?*/0[4]:w32[1]:issigned[1]:hi[1]:?[12]:/*marker*/2[2]: \
+	0x4[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src3_cm*/?[1]:/*src2_cm*/?[1]:src2_neg[1]:/*src2*/?[6]:\
+	/*src1*/?[7]:/*dest*/?[7]:/*flow*/0[1]:/*IWidth*/1[1] \
+)
+
+op imul24_half( \
+	0x4[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src1_sm*/?[1]:/*src2_cm*/?[1]:w32[1]:/*src2*/?[6]:\
+	issigned[1]:/*src1*/?[6]:/*?*/0[1]:/*dest*/?[6]:/*flow*/0[1]:/*IWidth*/0[1] \
+)
+
+//specialize imul24_half(w32=1, issigned=1)
+
+
+op imul24_imm( \
+	/*subop*/0[3]:/*?*/0[1]:/*imm_hi*/?[26]:/*marker*/3[2]: \
+	0x4[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src1_sm*/?[1]:/*src2_cm*/?[1]:w32[1]:/*src2*/?[6]:\
+	issigned[1]:/*src1*/?[6]:/*?*/full[1]:/*dest*/?[6]:/*flow*/0[1]:/*IWidth*/1[1] \
+)
+
+// TODO: Full = 16 * 24 -> 32??
+
+group imul24(imul24_full_normal, imul24_full_end, imul24_full_join)
+
+group imul24_halfimm(imul24_half, imul24_imm)
+
+
+imul24.init = {
+	typedef Operation<CONFIG> inherited;
+	DataType dt = RegTypeToDataType(RegType(w32));
+	inherited::op_type[OpDest] = DT_U32;
+//	inherited::op_type[OpDest] = dt;	// ???
+	inherited::op_type[OpSrc1] = dt;
+	inherited::op_type[OpSrc2] = dt;
+	inherited::op_type[OpSrc3] = DT_NONE;
+}
+
+imul24.disasm = {
+	buffer << "mul24";
+	insn->DisasmControl(buffer);
+	buffer << ".";
+	buffer << (issigned ? "s" : "u");
+	buffer << (w32 ? "32" : "16");
+	buffer << (hi ? ".hi" : ".lo");
+
+	// no unsigned saturation
+//	assert(issigned || !sat);
+	if(sat)
+		buffer << ".sat";
+		
+	buffer << " ";
+	insn->DisasmDest(buffer);
+
+	buffer << ", ";
+	DisasmSign(src1_neg, buffer);
+	insn->DisasmSrc1(buffer);
+	
+	buffer << ", ";
+	DisasmSign(src2_neg, buffer);
+	insn->DisasmSrc2(buffer);
+}
+
+imul24.execute = {
+	typedef VectorRegister<CONFIG> reg_t;
+
+	// dest = a * b
+	reg_t & a = insn->GetSrc1();
+	reg_t & b = insn->GetSrc2();
+	
+	reg_t output = Mul24(a, b, sat, src1_neg, src2_neg, w32, issigned, hi);
+	
+	insn->SetDest(output);
+}
+
+imul24_halfimm.init = {
+	typedef Operation<CONFIG> inherited;
+	DataType dt = RegTypeToDataType(RegType(w32));
+	inherited::op_type[OpDest] = DT_U32;
+	inherited::op_type[OpSrc1] = dt;
+	inherited::op_type[OpSrc2] = dt;
+	inherited::op_type[OpSrc3] = DT_NONE;
+}
+
+imul24_halfimm.disasm = {
+	buffer << "mul24";
+	insn->DisasmControl(buffer);
+	buffer << ".";
+	buffer << (issigned ? "s" : "u");
+	buffer << (w32 ? "32" : "16");
+	buffer << ".lo";
+		
+	buffer << " ";
+	insn->DisasmDest(buffer);
+
+	buffer << ", ";
+	insn->DisasmSrc1(buffer);
+	
+	buffer << ", ";
+	insn->DisasmSrc2(buffer);
+}
+
+imul24_halfimm.execute = {
+	typedef VectorRegister<CONFIG> reg_t;
+
+	// dest = a * b
+	reg_t & a = insn->GetSrc1();
+	reg_t & b = insn->GetSrc2();
+	
+	reg_t output = Mul24(a, b, 0, 0, 0, w32, issigned, 0);
+	
+	insn->SetDest(output);
+}
+
+group imul(imul24, imul24_halfimm)
+
+imul.classify = {
+	stats->SetInteger();
+}
+
+//--------------------------------------------------------------------
+
+op i2i_full_normal( \
+	/*subop*/0[3]:/*?*/0[1]:sign[1]:data_32[1]:/*?*/0[3]:/*f64*/0[1]:/*src1_sh*/?[1]:abs_sat[2]:cvt_round[2]:cvt_type[3]:\
+	/*pred_reg*/?[2]:/*pred_cond*/?[5]:/*set_pred*/?[1]:/*set_pred_reg*/?[2]:/*output*/?[1]:/*addr_hi*/?[1]:/*marker*/0[2]: \
+	0xa[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src3_cm*/0[1]:/*src2_cm*/0[1]:/*?*/0[7]:\
+	/*src1*/?[7]:/*dest*/?[7]:/*flow*/0[1]:/*IWidth*/1[1]\
+)
+
+// cvt.u32.u16.rn
+//specialize i2i_full_normal(sign=1, data_32=1, abs_sat=0, cvt_round=0, cvt_type=0,f64=0)
+
+op i2i_full_end( \
+	/*subop*/0[3]:/*?*/0[1]:sign[1]:data_32[1]:/*?*/0[3]:/*f64*/0[1]:/*src1_sh*/?[1]:abs_sat[2]:cvt_round[2]:cvt_type[3]:\
+	/*pred_reg*/?[2]:/*pred_cond*/?[5]:/*set_pred*/?[1]:/*set_pred_reg*/?[2]:/*output*/?[1]:/*addr_hi*/?[1]:/*marker*/1[2]: \
+	0xa[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src3_cm*/0[1]:/*src2_cm*/0[1]:/*?*/0[7]:\
+	/*src1*/?[7]:/*dest*/?[7]:/*flow*/0[1]:/*IWidth*/1[1]\
+)
+
+op i2i_full_join( \
+	/*subop*/0[3]:/*?*/0[1]:sign[1]:data_32[1]:/*?*/0[3]:/*f64*/0[1]:/*src1_sh*/?[1]:abs_sat[2]:cvt_round[2]:cvt_type[3]:\
+	/*pred_reg*/?[2]:/*pred_cond*/?[5]:/*set_pred*/?[1]:/*set_pred_reg*/?[2]:/*output*/?[1]:/*addr_hi*/?[1]:/*marker*/2[2]: \
+	0xa[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src3_cm*/0[1]:/*src2_cm*/0[1]:/*?*/0[7]:\
+	/*src1*/?[7]:/*dest*/?[7]:/*flow*/0[1]:/*IWidth*/1[1]\
+)
+
+
+group i2i_full_noimm(i2i_full_normal, i2i_full_end, i2i_full_join)
+
+// No immediate : dest = conv(src1)
+
+i2i_full_noimm.init = {
+	typedef Operation<CONFIG> inherited;
+	DataType dt = RegTypeToDataType(RegType(data_32));
+	inherited::op_type[OpDest] = dt;
+	inherited::op_type[OpSrc1] = CvtTypeToDataType(ConvType(cvt_type));	// Or always 32??
+	inherited::op_type[OpSrc2] = DT_NONE;
+	inherited::op_type[OpSrc3] = DT_NONE;
+}
+
+i2i_full_noimm.disasm = {
+	// data_32 = 0 -> mov.b16
+	// data_32 = 1 -> mov.b32
+	// cvt_round = 1 -> default, round down?
+	// cvt_type = 7 -> default, no conv
+	// pred_cond = 15 -> default, true
+	buffer << "cvt";
+	insn->DisasmControl(buffer);
+
+	DisasmConvert(cvt_round, cvt_type, sign, data_32, abs_sat, buffer);
+	buffer << " ";
+	insn->DisasmDest(buffer);
+
+	buffer << ", ";
+	insn->DisasmSrc1(buffer);
+}
+
+i2i_full_noimm.execute = {
+	typedef VectorRegister<CONFIG> reg_t;
+	// dest = a
+	// TODO: Read 2 regs if 64-bit
+	//assert(!f64);
+	reg_t & a = insn->GetSrc1();
+	reg_t output = ConvertIntInt(a, cvt_round, cvt_type, data_32, AbsSat(abs_sat));
+
+	insn->SetDest(output);
+}
+
+//--------------------------------------------------------------------
+
+op i2in_full_normal( \
+	/*subop*/1[3]:/*?*/0[1]:sign[1]:data_32[1]:/*const_seg*/0[4]:/*src1_sh*/?[1]:abs_sat[2]:cvt_round[2]:cvt_type[3]:\
+	/*pred_reg*/?[2]:/*pred_cond*/?[5]:/*set_pred*/?[1]:/*set_pred_reg*/?[2]:/*output*/?[1]:/*addr_hi*/?[1]:/*marker*/0[2]: \
+	0xa[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src3_cm*/0[1]:/*src2_cm*/0[1]:f64[1]:/*?*/0[6]:\
+	/*src1*/?[7]:/*dest*/?[7]:/*flow*/0[1]:/*IWidth*/1[1]\
+)
+
+op i2in_full_end( \
+	/*subop*/1[3]:/*?*/0[1]:sign[1]:data_32[1]:/*const_seg*/0[4]:/*src1_sh*/?[1]:abs_sat[2]:cvt_round[2]:cvt_type[3]:\
+	/*pred_reg*/?[2]:/*pred_cond*/?[5]:/*set_pred*/?[1]:/*set_pred_reg*/?[2]:/*output*/?[1]:/*addr_hi*/?[1]:/*marker*/1[2]: \
+	0xa[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src3_cm*/0[1]:/*src2_cm*/0[1]:f64[1]:/*?*/0[6]:\
+	/*src1*/?[7]:/*dest*/?[7]:/*flow*/0[1]:/*IWidth*/1[1]\
+)
+
+op i2in_full_join( \
+	/*subop*/1[3]:/*?*/0[1]:sign[1]:data_32[1]:/*const_seg*/0[4]:/*src1_sh*/?[1]:abs_sat[2]:cvt_round[2]:cvt_type[3]:\
+	/*pred_reg*/?[2]:/*pred_cond*/?[5]:/*set_pred*/?[1]:/*set_pred_reg*/?[2]:/*output*/?[1]:/*addr_hi*/?[1]:/*marker*/2[2]: \
+	0xa[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src3_cm*/0[1]:/*src2_cm*/0[1]:f64[1]:/*?*/0[6]:\
+	/*src1*/?[7]:/*dest*/?[7]:/*flow*/0[1]:/*IWidth*/1[1]\
+)
+
+
+group i2in_full_noimm(i2in_full_normal, i2in_full_end, i2in_full_join)
+
+// No immediate : dest = conv(src1)
+
+i2in_full_noimm.init = {
+	typedef Operation<CONFIG> inherited;
+	DataType dt = RegTypeToDataType(RegType(data_32));
+	inherited::op_type[OpDest] = dt;
+	inherited::op_type[OpSrc1] = CvtTypeToDataType(ConvType(cvt_type));	// Or always 32??
+	inherited::op_type[OpSrc2] = DT_NONE;
+	inherited::op_type[OpSrc3] = DT_NONE;
+}
+
+i2in_full_noimm.disasm = {
+	// data_32 = 0 -> mov.b16
+	// data_32 = 1 -> mov.b32
+	// cvt_round = 1 -> default, round down?
+	// cvt_type = 7 -> default, no conv
+	// pred_cond = 15 -> default, true
+	buffer << "cvt";
+	//DisasmSignWidth(sign, data_32, buffer);
+	insn->DisasmControl(buffer);
+	DisasmConvert(cvt_round, cvt_type, sign, data_32, abs_sat, buffer);
+	buffer << ".neg";
+	buffer << " ";
+	insn->DisasmDest(buffer);
+
+	buffer << ", ";
+	insn->DisasmSrc1(buffer);
+}
+
+i2in_full_noimm.execute = {
+	typedef VectorRegister<CONFIG> reg_t;
+	// dest = a
+	// TODO: Read 2 regs if 64-bit
+	assert(!f64);
+//	assert(!sign);
+	// ignore sign. TODO: check??
+	reg_t & a = insn->GetSrc1();
+	reg_t output = ConvertIntInt(a, cvt_round, cvt_type, data_32, AbsSat(abs_sat), true);
+
+	insn->SetDest(output);
+}
+
+
+//--------------------------------------------------------------------
+
+// 1:0x00400000 -> FP64?
+// Int to float
+op i2f_full_normal( \
+	/*subop*/2[3]:/*?*/0[1]:sign[1]:data_32[1]:/*?*/0[3]:f64[1]:/*src1_sh*/?[1]:/*abs_sat*/0[2]:cvt_round[2]:cvt_type[3]:\
+	/*pred_reg*/?[2]:/*pred_cond*/?[5]:/*set_pred*/?[1]:/*set_pred_reg*/?[2]:/*output*/?[1]:/*addr_hi*/?[1]:/*marker*/0[2]: \
+	0xa[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src3_cm*/0[1]:/*src2_cm*/0[1]:/*?*/0[7]:\
+	/*src1*/?[7]:/*dest*/?[7]:/*flow*/0[1]:/*IWidth*/1[1]\
+)
+
+//specialize icvtf_full_normal(sign=1, data_32=1, cvt_round=0, cvt_type=7,f64=0)
+
+op i2f_full_end( \
+	/*subop*/2[3]:/*?*/0[1]:sign[1]:data_32[1]:/*?*/0[3]:f64[1]:/*src1_sh*/?[1]:/*abs_sat*/0[2]:cvt_round[2]:cvt_type[3]:\
+	/*pred_reg*/?[2]:/*pred_cond*/?[5]:/*set_pred*/?[1]:/*set_pred_reg*/?[2]:/*output*/?[1]:/*addr_hi*/?[1]:/*marker*/1[2]: \
+	0xa[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src3_cm*/0[1]:/*src2_cm*/0[1]:/*?*/0[7]:\
+	/*src1*/?[7]:/*dest*/?[7]:/*flow*/0[1]:/*IWidth*/1[1]\
+)
+
+op i2f_full_join( \
+	/*subop*/2[3]:/*?*/0[1]:sign[1]:data_32[1]:/*?*/0[3]:f64[1]:/*src1_sh*/?[1]:/*abs_sat*/0[2]:cvt_round[2]:cvt_type[3]:\
+	/*pred_reg*/?[2]:/*pred_cond*/?[5]:/*set_pred*/?[1]:/*set_pred_reg*/?[2]:/*output*/?[1]:/*addr_hi*/?[1]:/*marker*/2[2]: \
+	0xa[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src3_cm*/0[1]:/*src2_cm*/0[1]:/*?*/0[7]:\
+	/*src1*/?[7]:/*dest*/?[7]:/*flow*/0[1]:/*IWidth*/1[1]\
+)
+
+
+group i2f_full(i2f_full_normal, i2f_full_end, i2f_full_join)
+
+// No immediate : dest = conv(src1)
+
+i2f_full.init = {
+	typedef Operation<CONFIG> inherited;
+	//DataType dt = RegTypeToDataType(RegType(data_32));
+	
+	inherited::op_type[OpDest] = f64 ? DT_F64 : DT_F32; //dt;
+	inherited::op_type[OpSrc1] = CvtTypeToDataType(ConvType(cvt_type));	// Or always 32??
+	inherited::op_type[OpSrc2] = DT_NONE;
+	inherited::op_type[OpSrc3] = DT_NONE;
+}
+
+i2f_full.disasm = {
+	// data_32 = 0 -> mov.b16
+	// data_32 = 1 -> mov.b32
+	// cvt_round = 1 -> default, round down?
+	// cvt_type = 7 -> default, no conv
+	// pred_cond = 15 -> default, true
+	buffer << "cvt";
+	insn->DisasmControl(buffer);
+	
+	if(f64)
+		buffer << ".f64";
+	else
+		buffer << ".f32";
+
+	DisasmConvert(cvt_round, cvt_type, sign, data_32, AS_NONE, buffer);
+	buffer << " ";
+	insn->DisasmDest(buffer);
+
+	buffer << ", ";
+	insn->DisasmSrc1(buffer);
+}
+
+i2f_full.execute = {
+	typedef VectorRegister<CONFIG> reg_t;
+	// dest = a
+	// TODO: Read 2 regs if 64-bit
+	assert(!f64);
+	reg_t & a = insn->GetSrc1();
+	reg_t output = CONFIG::vfp32::ConvertI2F(a, cvt_round, cvt_type, data_32);
+
+	insn->SetDest(output);
+	//insn->SetPredFP32(output);
+}
+
+
+group icvt(i2i_full_noimm, i2f_full)
+
+icvt.classify = {
+	stats->SetInteger();
+}
+
+
+
+////////////////////////////////////////////////////////////////
+// logic instructions
+
+
+// No need to check for "immediate" marker,
+// shift amount fits in 7 bits.
+op shl_full( \
+	/*subop*/6[3]:/*?*/0[1]:issigned[1]:w32[1]:?[5]:/*imm*/0[1]:?[18]:/*marker*/?[2]: \
+	0x3[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src3_cm*/?[1]:/*src2_cm*/?[1]:/*src3_neg*/?[1]:/*src2*/?[6]:\
+	/*src1*/?[7]:/*dest*/?[7]:/*flow*/0[1]:/*IWidth*/1[1] \
+)
+
+
+op shl_full_imm2( \
+	/*subop*/6[3]:/*?*/0[1]:issigned[1]:w32[1]:?[5]:/*imm*/1[1]:?[18]:/*marker*/?[2]: \
+	0x3[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src3_cm*/?[1]:/*src2_cm*/?[1]:/*src3_neg*/?[1]:src2[6]:\
+	/*src1*/?[7]:/*dest*/?[7]:/*flow*/0[1]:/*IWidth*/1[1] \
+)
+
+//specialize shl_full_imm2(issigned=0, w32=1)
+
+// TODO: end, join
+
+//group shl_full(shl_full_normal)
+
+//group shl_full_imm2(shl_full_imm2_normal)
+
+shl_full.disasm = {
+	buffer << "shl";
+	insn->DisasmControl(buffer);
+	DisasmSignWidth(issigned, w32, buffer);
+
+	buffer << " ";
+	insn->DisasmDest(buffer);
+
+	buffer << ", ";
+	insn->DisasmSrc1(buffer);
+	
+	buffer << ", ";
+	insn->DisasmSrc2(buffer);
+}
+
+shl_full.execute = {
+	typedef VectorRegister<CONFIG> reg_t;
+	
+	// dest = a << c
+	reg_t & a = insn->GetSrc1();
+	reg_t & c = insn->GetSrc2();
+	
+	reg_t output = ShiftLeft(a, c, w32, issigned);
+	
+	insn->SetDest(output);
+	//insn->SetPredI32(output);
+}
+
+shl_full_imm2.disasm = {
+	buffer << "shl";
+	insn->DisasmControl(buffer);
+	DisasmSignWidth(issigned, w32, buffer);
+
+	buffer << " ";
+	insn->DisasmDest(buffer);
+
+	buffer << ", ";
+	insn->DisasmSrc1(buffer);
+	
+	buffer << ", ";
+	buffer << src2;
+}
+
+shl_full_imm2.execute = {
+	typedef VectorRegister<CONFIG> reg_t;
+	
+	// dest = a << c
+	reg_t & a = insn->GetSrc1();
+	//reg_t c = reg_t(src2);
+	
+	reg_t output = ShiftLeft(a, src2, w32);
+	
+	insn->SetDest(output);
+	//insn->SetPredI32(output);
+}
+
+//--------------------------------------------------------------------
+
+op shr_full( \
+	/*subop*/7[3]:/*?*/0[1]:issigned[1]:w32[1]:?[5]:/*imm*/0[1]:?[18]:/*marker*/?[2]: \
+	0x3[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src3_cm*/?[1]:/*src2_cm*/?[1]:/*src3_neg*/?[1]:/*src2*/?[6]:\
+	/*src1*/?[7]:/*dest*/?[7]:/*flow*/0[1]:/*IWidth*/1[1] \
+)
+
+op shr_full_imm2( \
+	/*subop*/7[3]:/*?*/0[1]:issigned[1]:w32[1]:?[5]:/*imm*/1[1]:?[18]:/*marker*/?[2]: \
+	0x3[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src3_cm*/?[1]:/*src2_cm*/?[1]:/*src3_neg*/?[1]:src2[6]:\
+	/*src1*/?[7]:/*dest*/?[7]:/*flow*/0[1]:/*IWidth*/1[1] \
+)
+
+//specialize shr_full_imm2(issigned=0, w32=1)
+
+// TODO: end, join?
+
+
+shr_full.disasm = {
+	buffer << "shr";
+	insn->DisasmControl(buffer);
+	DisasmSignWidth(issigned, w32, buffer);
+
+	buffer << " ";
+	insn->DisasmDest(buffer);
+
+	buffer << ", ";
+	insn->DisasmSrc1(buffer);
+	
+	buffer << ", ";
+	insn->DisasmSrc2(buffer);
+}
+
+shr_full.execute = {
+	typedef VectorRegister<CONFIG> reg_t;
+	
+	// dest = a << c
+	reg_t & a = insn->GetSrc1();
+	reg_t & c = insn->GetSrc2();
+	
+	reg_t output = ShiftRight(a, c, w32, issigned);
+	
+	insn->SetDest(output);
+	//insn->SetPredI32(output);
+}
+
+shr_full_imm2.disasm = {
+	buffer << "shr";
+	insn->DisasmControl(buffer);
+	DisasmSignWidth(issigned, w32, buffer);
+
+	buffer << " ";
+	insn->DisasmDest(buffer);
+
+	buffer << ", ";
+	insn->DisasmSrc1(buffer);
+	
+	buffer << ", ";
+	buffer << src2;
+}
+
+shr_full_imm2.execute = {
+	typedef VectorRegister<CONFIG> reg_t;
+	
+	// dest = a << c
+	reg_t & a = insn->GetSrc1();
+	//reg_t c = reg_t(src2);
+	
+	reg_t output = ShiftRight(a, src2, w32, issigned);
+	
+	insn->SetDest(output);
+	//insn->SetPredI32(output);
+}
+
+group shift(shl_full, shl_full_imm2, shr_full, shr_full_imm2)
+
+shift.classify = {
+	stats->SetInteger();
+}
+
+//--------------------------------------------------------------------
+// and, or, xor, 2nd
+
+// TODO: forbid immediate
+
+op and_full( \
+	/*subop*/0[3]:/*?*/0[1]:?[1]:w32[1]:?[5]:/*imm*/0[1]:0[2]:src2_not[1]:src1_not[1]:/*lop*/0[2]:?[12]:/*marker*/?[2]: \
+	0xd[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src3_cm*/?[1]:/*src2_cm*/?[1]:/*src3_neg*/?[1]:/*src2*/?[6]:\
+	/*src1*/?[7]:/*dest*/?[7]:/*flow*/0[1]:/*IWidth*/1[1] \
+)
+
+//specialize and_full(w32=1, src1_not=0, src2_not=0)
+
+and_full.disasm = {
+	buffer << "and";
+	insn->DisasmControl(buffer);
+	DisasmSignWidth(false, w32, buffer);
+
+	buffer << " ";
+	insn->DisasmDest(buffer);
+
+	buffer << ", ";
+	DisasmNot(src1_not, buffer);
+	insn->DisasmSrc1(buffer);
+	
+	buffer << ", ";
+	DisasmNot(src2_not, buffer);
+	insn->DisasmSrc2(buffer);
+}
+
+and_full.execute = {
+	typedef VectorRegister<CONFIG> reg_t;
+	
+	// dest = (neg?)a & (neg?)b
+	reg_t & a = insn->GetSrc1();
+	if(src1_not) {
+		a = BinNeg(a);
+	}
+	reg_t & b = insn->GetSrc2();
+	if(src2_not) {
+		b = BinNeg(b);
+	}
+	
+	reg_t output = BinAnd(a, b);
+	
+	insn->SetDest(output);
+	//insn->SetPredI32(output);
+}
+
+//--------------------------------------------------------------------
+op or_full( \
+	/*subop*/0[3]:/*?*/0[1]:?[1]:w32[1]:0[2]:?[3]:/*imm*/0[1]:0[2]:src2_not[1]:src1_not[1]:/*lop*/1[2]:?[12]:/*marker*/?[2]: \
+	0xd[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src3_cm*/?[1]:/*src2_cm*/?[1]:/*src3_neg*/?[1]:/*src2*/?[6]:\
+	/*src1*/?[7]:/*dest*/?[7]:/*flow*/0[1]:/*IWidth*/1[1] \
+)
+
+//specialize or_full(w32=1, src1_not=0, src2_not=0)
+
+or_full.disasm = {
+	buffer << "or";
+	insn->DisasmControl(buffer);
+	DisasmSignWidth(false, w32, buffer);
+
+	buffer << " ";
+	insn->DisasmDest(buffer);
+
+	buffer << ", ";
+	DisasmNot(src1_not, buffer);
+	insn->DisasmSrc1(buffer);
+	
+	buffer << ", ";
+	DisasmNot(src2_not, buffer);
+	insn->DisasmSrc2(buffer);
+}
+
+or_full.execute = {
+	typedef VectorRegister<CONFIG> reg_t;
+	
+	// dest = (neg?)a & (neg?)b
+	reg_t & a = insn->GetSrc1();
+	if(src1_not) {
+		a = BinNeg(a);
+	}
+	reg_t & b = insn->GetSrc2();
+	if(src2_not) {
+		b = BinNeg(b);
+	}
+	
+	reg_t output = BinOr(a, b);
+	
+	insn->SetDest(output);
+	//insn->SetPredI32(output);
+}
+
+//--------------------------------------------------------------------
+op xor_full( \
+	/*subop*/0[3]:/*?*/0[1]:?[1]:w32[1]:0[2]:?[3]:/*imm*/0[1]:0[2]:src2_not[1]:src1_not[1]:/*lop*/2[2]:?[12]:/*marker*/?[2]: \
+	0xd[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src3_cm*/?[1]:/*src2_cm*/?[1]:/*src3_neg*/?[1]:/*src2*/?[6]:\
+	/*src1*/?[7]:/*dest*/?[7]:/*flow*/0[1]:/*IWidth*/1[1] \
+)
+
+//specialize xor_full(w32=1, src1_not=0, src2_not=0)
+
+xor_full.disasm = {
+	buffer << "xor";
+	insn->DisasmControl(buffer);
+	DisasmSignWidth(false, w32, buffer);
+
+	buffer << " ";
+	insn->DisasmDest(buffer);
+
+	buffer << ", ";
+	DisasmNot(src1_not, buffer);
+	insn->DisasmSrc1(buffer);
+	
+	buffer << ", ";
+	DisasmNot(src2_not, buffer);
+	insn->DisasmSrc2(buffer);
+}
+
+xor_full.execute = {
+	typedef VectorRegister<CONFIG> reg_t;
+	
+	//assert(w32);
+
+	// dest = (neg?)a & (neg?)b
+	reg_t & a = insn->GetSrc1();
+	if(src1_not) {
+		a = BinNeg(a);
+	}
+	reg_t & b = insn->GetSrc2();
+	if(src2_not) {
+		b = BinNeg(b);
+	}
+	
+	reg_t output = BinXor(a, b);
+	
+	insn->SetDest(output);
+	//insn->SetPredI32(output);
+}
+
+op bid_full( \
+	/*subop*/0[3]:/*?*/0[1]:?[1]:w32[1]:0[2]:?[3]:/*imm*/0[1]:0[2]:src2_not[1]:src1_not[1]:/*lop*/3[2]:?[12]:/*marker*/?[2]: \
+	0xd[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src3_cm*/?[1]:/*src2_cm*/?[1]:/*src3_neg*/?[1]:/*src2*/?[6]:\
+	/*src1*/?[7]:/*dest*/?[7]:/*flow*/0[1]:/*IWidth*/1[1] \
+)
+
+//specialize xor_full(w32=1, src1_not=0, src2_not=0)
+
+bid_full.disasm = {
+	buffer << "mov";
+	insn->DisasmControl(buffer);
+	DisasmSignWidth(false, w32, buffer);
+
+	buffer << " ";
+	insn->DisasmDest(buffer);
+
+	//buffer << ", ";
+	//DisasmNot(src1_not, buffer);
+	//insn->DisasmSrc1(buffer);
+	
+	buffer << ", ";
+	DisasmNot(src2_not, buffer);
+	insn->DisasmSrc2(buffer);
+}
+
+bid_full.execute = {
+	typedef VectorRegister<CONFIG> reg_t;
+	
+	//assert(w32);
+
+	// dest = (neg?)a & (neg?)b
+	//reg_t & a = insn->GetSrc1();
+	//if(src1_not) {
+	//	a = BinNeg(a);
+	//}
+	reg_t & b = insn->GetSrc2();
+	if(src2_not) {
+		b = BinNeg(b);
+	}
+	
+	reg_t output = b;
+	
+	insn->SetDest(output);
+	//insn->SetPredI32(output);
+}
+
+bid_full.init = {
+	typedef Operation<CONFIG> inherited;
+	DataType dt = RegTypeToDataType(RegType(w32));
+	inherited::op_type[OpDest] = dt;
+	inherited::op_type[OpSrc1] = DT_NONE;
+	inherited::op_type[OpSrc2] = dt;
+	inherited::op_type[OpSrc3] = DT_NONE;
+}
+
+
+group bool(and_full, or_full, xor_full, bid_full)
+
+bool.classify = {
+	stats->SetInteger();
+}
+
+//--------------------------------------------------------------------
+op set_full( \
+	/*subop*/3[3]:/*?*/0[1]:sign[1]:w32[1]:/*const_seg*/?[4]:/*src1_sh*/?[1]:abs_sat[2]:cvt_round[2]:cond[3]:?[12]:/*marker*/?[2]: \
+	0x3[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src3_cm*/?[1]:/*src2_cm*/?[1]:/*src2*/?[7]:\
+	/*src1*/?[7]:/*dest*/?[7]:/*flow*/0[1]:/*IWidth*/1[1] \
+)
+
+//specialize set_full(sign=1, w32=1, abs_sat=0)
+//specialize set_full(sign=0, w32=1, abs_sat=0)
+
+set_full.disasm = {
+	buffer << "set.";
+	buffer << SetCondString(SetCond(cond));
+	insn->DisasmControl(buffer);
+	
+	DisasmSignWidth(sign, w32, buffer);
+
+	buffer << " ";
+	insn->DisasmDest(buffer);
+
+	buffer << ", ";
+	insn->DisasmSrc1(buffer);
+	
+	buffer << ", ";
+	insn->DisasmSrc2(buffer);
+}
+
+set_full.execute = {
+	typedef VectorRegister<CONFIG> reg_t;
+	
+	assert(abs_sat == 0);
+	
+	// dest = cond(a, b)
+	reg_t & a = insn->GetSrc1();
+	reg_t & b = insn->GetSrc2();
+	
+	reg_t output;
+	//VectorFlags<CONFIG> vf;
+
+	insn->Flags() = ComputePredSetI(output, a, b, SetCond(cond), sign, w32);
+	
+	insn->SetDest(output);
+	//insn->SetPred(vf);
+}
+
+group set_(set_full)
+
+set_.classify = {
+	stats->SetInteger();
+}
+
+//--------------------------------------------------------------------
+op min_full_normal( \
+	/*subop*/5[3]:/*?*/0[1]:sign[1]:w32[1]:?[24]:/*marker*/0[2]: \
+	0x3[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src3_cm*/?[1]:/*src2_cm*/?[1]:/*src2*/?[7]:\
+	/*src1*/?[7]:/*dest*/?[7]:/*flow*/0[1]:/*IWidth*/1[1] \
+)
+
+//specialize min_full_normal(sign=1, w32=1)
+
+op min_full_end( \
+	/*subop*/5[3]:/*?*/0[1]:sign[1]:w32[1]:?[24]:/*marker*/1[2]: \
+	0x3[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src3_cm*/?[1]:/*src2_cm*/?[1]:/*src2*/?[7]:\
+	/*src1*/?[7]:/*dest*/?[7]:/*flow*/0[1]:/*IWidth*/1[1] \
+)
+
+op min_full_join( \
+	/*subop*/5[3]:/*?*/0[1]:sign[1]:w32[1]:?[24]:/*marker*/2[2]: \
+	0x3[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src3_cm*/?[1]:/*src2_cm*/?[1]:/*src2*/?[7]:\
+	/*src1*/?[7]:/*dest*/?[7]:/*flow*/0[1]:/*IWidth*/1[1] \
+)
+
+
+
+group min(min_full_normal, min_full_end, min_full_join)
+
+
+min.disasm = {
+	buffer << "min";
+	insn->DisasmControl(buffer);
+	DisasmSignWidth(sign, w32, buffer);
+
+	buffer << " ";
+	insn->DisasmDest(buffer);
+
+	buffer << ", ";
+	insn->DisasmSrc1(buffer);
+	
+	buffer << ", ";
+	insn->DisasmSrc2(buffer);
+}
+
+min.execute = {
+	typedef VectorRegister<CONFIG> reg_t;
+	
+	 assert(w32);	// TODO
+
+	// dest = cond(a, b)
+	reg_t & a = insn->GetSrc1();
+	reg_t & b = insn->GetSrc2();
+	
+	reg_t output = Min(a, b, w32, sign);
+	
+	insn->SetDest(output);
+	//insn->SetPredI32(output);
+}
+
+//--------------------------------------------------------------------
+op max_full_normal( \
+	/*subop*/4[3]:/*?*/0[1]:sign[1]:w32[1]:?[24]:/*marker*/0[2]: \
+	0x3[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src3_cm*/?[1]:/*src2_cm*/?[1]:/*src2*/?[7]:\
+	/*src1*/?[7]:/*dest*/?[7]:/*flow*/0[1]:/*IWidth*/1[1] \
+)
+
+//specialize max_full_normal(sign=1, w32=1)
+
+op max_full_end( \
+	/*subop*/4[3]:/*?*/0[1]:sign[1]:w32[1]:?[24]:/*marker*/1[2]: \
+	0x3[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src3_cm*/?[1]:/*src2_cm*/?[1]:/*src2*/?[7]:\
+	/*src1*/?[7]:/*dest*/?[7]:/*flow*/0[1]:/*IWidth*/1[1] \
+)
+
+op max_full_join( \
+	/*subop*/4[3]:/*?*/0[1]:sign[1]:w32[1]:?[24]:/*marker*/2[2]: \
+	0x3[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src3_cm*/?[1]:/*src2_cm*/?[1]:/*src2*/?[7]:\
+	/*src1*/?[7]:/*dest*/?[7]:/*flow*/0[1]:/*IWidth*/1[1] \
+)
+
+
+
+group max(max_full_normal, max_full_end, max_full_join)
+
+
+max.disasm = {
+	buffer << "max";
+	insn->DisasmControl(buffer);
+	DisasmSignWidth(sign, w32, buffer);
+
+	buffer << " ";
+	insn->DisasmDest(buffer);
+
+	buffer << ", ";
+	insn->DisasmSrc1(buffer);
+	
+	buffer << ", ";
+	insn->DisasmSrc2(buffer);
+}
+
+max.execute = {
+	typedef VectorRegister<CONFIG> reg_t;
+	
+	 assert(w32);	// TODO
+
+	// dest = cond(a, b)
+	reg_t & a = insn->GetSrc1();
+	reg_t & b = insn->GetSrc2();
+	
+	reg_t output = Max(a, b, w32, sign);
+	
+	insn->SetDest(output);
+	//insn->SetPredI32(output);
+}
+
+group minmax(min, max)
+
+minmax.classify = {
+	stats->SetInteger();
+}
+
+//--------------------------------------------------------------------
+
+op nop_full_normal( \
+	/*subop*/7[3]:/*?*/0[1]:?[26]:/*marker*/0[2]: \
+	0xf[4]:?[28] \
+)
+
+op nop_full_end( \
+	/*subop*/7[3]:/*?*/0[1]:?[26]:/*marker*/1[2]: \
+	0xf[4]:?[28] \
+)
+
+op nop_full_join( \
+	/*subop*/7[3]:/*?*/0[1]:?[26]:/*marker*/2[2]: \
+	0xf[4]:?[28] \
+)
+
+group nop_full(nop_full_normal, nop_full_end, nop_full_join)
+
+nop_full.init = {
+	typedef Operation<CONFIG> inherited;
+	inherited::op_type[OpDest] = DT_NONE;
+	inherited::op_type[OpSrc1] = DT_NONE;
+	inherited::op_type[OpSrc2] = DT_NONE;
+	inherited::op_type[OpSrc3] = DT_NONE;
+}
+
+nop_full.disasm = {
+	buffer << "nop";
+	insn->DisasmControl(buffer);
+}
+
+nop_full.execute = {
+}
+
+// Input operands 1, 2 and output operand of type w32
+group intd12(iadd_halfimm, isubr_halfimm, iaddc_halfimm, shl_full, shr_full, \
+	and_full, or_full, xor_full, min, max, set_full)
+
+intd12.init = {
+	typedef Operation<CONFIG> inherited;
+	DataType dt = RegTypeToDataType(RegType(w32));
+	inherited::op_type[OpDest] = dt;
+	inherited::op_type[OpSrc1] = dt;
+	inherited::op_type[OpSrc2] = dt;
+	inherited::op_type[OpSrc3] = DT_NONE;
+}
+
+// Input operands 1, 3 and output operand of type w32
+group intd13(iadd_full, isubr_full, iaddc_full)
+
+intd13.init = {
+	typedef Operation<CONFIG> inherited;
+	DataType dt = RegTypeToDataType(RegType(w32));
+	inherited::op_type[OpDest] = dt;
+	inherited::op_type[OpSrc1] = dt;
+	inherited::op_type[OpSrc2] = DT_NONE;
+	inherited::op_type[OpSrc3] = dt;
+}
+
+// Input operand 1 and output operand of type w32
+group intd1(shr_full_imm2, shl_full_imm2)
+
+intd1.init = {
+	typedef Operation<CONFIG> inherited;
+	DataType dt = RegTypeToDataType(RegType(w32));
+	inherited::op_type[OpDest] = dt;
+	inherited::op_type[OpSrc1] = dt;
+	inherited::op_type[OpSrc2] = DT_NONE;
+	inherited::op_type[OpSrc3] = DT_NONE;
+}
+

@@ -1,0 +1,2 @@
+unisim/util/debug/elf_symtab/elf_symtab32.cc
+unisim/util/debug/elf_symtab/elf_symtab64.cc

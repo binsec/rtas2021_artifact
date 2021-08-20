@@ -1,0 +1,8 @@
+m4/systemc
+std/cstring
+std/string
+unisim/component/cxx/isa/i8042
+unisim/component/tlm/message
+unisim/kernel
+unisim/kernel/tlm
+unisim/util/garbage_collector

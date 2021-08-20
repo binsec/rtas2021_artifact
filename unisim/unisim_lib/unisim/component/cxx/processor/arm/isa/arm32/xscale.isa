@@ -1,0 +1,66 @@
+/*
+ *  Copyright (c) 2007-2016,
+ *  Commissariat a l'Energie Atomique (CEA)
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without modification,
+ *  are permitted provided that the following conditions are met:
+ *
+ *   - Redistributions of source code must retain the above copyright notice, this
+ *     list of conditions and the following disclaimer.
+ *
+ *   - Redistributions in binary form must reproduce the above copyright notice,
+ *     this list of conditions and the following disclaimer in the documentation
+ *     and/or other materials provided with the distribution.
+ *
+ *   - Neither the name of CEA nor the names of its contributors may be used to
+ *     endorse or promote products derived from this software without specific prior
+ *     written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ *  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *  DISCLAIMED.
+ *  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ *  INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ *  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+ *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ *  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Authors: Yves Lhuillier (yves.lhuillier@cea.fr), Daniel Gracia Perez (daniel.gracia-perez@cea.fr)
+ */
+
+op mar( cond[4]: 0b11000100[8]: r1[4]: r0[4]: 0b0000[4]: 0b0000[4]: 0b0000[4] );
+
+mar.disasm = {
+  buffer << "mar" << DisasmCondition(cond) << "\tacc0, " << DisasmRegister(r0) << ", " << DisasmRegister(r1);
+};
+
+op mia( cond[4]: 0b111000100000[12]: r1[4]: 0b00000001[8]: r0[4] );
+
+mia.disasm = {
+  buffer << "mia" << DisasmCondition(cond) << "\tacc0, " << DisasmRegister(r0) << ", " << DisasmRegister(r1);
+};
+
+op miaph( cond[4]: 0b111000101000[12]: r1[4]: 0b00000001[8]: r0[4] );
+
+miaph.disasm = {
+  buffer << "miaph" << DisasmCondition(cond) << "\tacc0, " << DisasmRegister(r0) << ", " << DisasmRegister(r1);
+};
+
+op miaXY( cond[4]: 0b1110001011[10]: n[1]: m[1]: rm[4]: 0b00000001[8]: rn[4] );
+
+miaXY.disasm = {
+  buffer << "mia" << (n?"T":"B") << (m?"T":"B") << DisasmCondition(cond) << "\tacc0, " << DisasmRegister(rn) << ", " << DisasmRegister(rm);
+};
+
+op mra( cond[4]: 0b11000101[8]: r1[4]: r0[4]: 0b0000[4]: 0b0000[4]: 0b0000[4] );
+
+mra.disasm = {
+  buffer << "mra" << DisasmCondition(cond) << "\t" << DisasmRegister(r0) << ", " << DisasmRegister(r1) << ", acc0";
+};
+
+group xscale_cond( mar,mia,miaph,miaXY,mra );
+unconditional.specialize( xscale_cond );

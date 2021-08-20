@@ -1,0 +1,7 @@
+SYStem.GDBconfig GDBSERVER OFF
+SYStem.CPU MPC5777M
+SYStem.PORT 127.0.0.1:12346
+SYStem.GDBFILE C:\unisim-mpc5777m-@PACKAGE_VERSION@\sim\share\unisim-mpc5777m-@PACKAGE_VERSION@\soft\app\Z7_1\boot.elf
+SYStem.Mode Attach
+Data.LOAD.ELF C:\unisim-mpc5777m-@PACKAGE_VERSION@\sim\share\unisim-mpc5777m-@PACKAGE_VERSION@\soft\app\Z7_1\boot.elf /NOCODE
+sYmbol.SourcePATH.Set C:\unisim-mpc5777m-@PACKAGE_VERSION@\sim\share\unisim-mpc5777m-@PACKAGE_VERSION@\soft

@@ -1,0 +1,2 @@
+unisim/component/cxx/chipset/mpc107/dma/buffer.tcc
+unisim/component/cxx/chipset/mpc107/dma/dma.tcc

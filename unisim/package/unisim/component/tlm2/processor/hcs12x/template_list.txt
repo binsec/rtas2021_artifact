@@ -1,0 +1,6 @@
+unisim/component/tlm2/processor/hcs12x/atd10b.tcc
+unisim/component/tlm2/processor/hcs12x/pwm.tcc
+unisim/component/tlm2/processor/hcs12x/s12pit24b.tcc
+unisim/component/tlm2/processor/hcs12x/s12spi.tcc
+unisim/component/tlm2/processor/hcs12x/s12xeetx.tcc
+unisim/component/tlm2/processor/hcs12x/s12xftmx.tcc

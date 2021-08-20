@@ -1,0 +1,14 @@
+libc/inttypes
+libc/string
+std/fstream
+std/iostream
+std/set
+std/sstream
+std/string
+unisim/kernel
+unisim/kernel/logger
+unisim/kernel/variable
+unisim/kernel/variable/endian
+unisim/service/interfaces/memory
+unisim/util/endian
+unisim/util/likely

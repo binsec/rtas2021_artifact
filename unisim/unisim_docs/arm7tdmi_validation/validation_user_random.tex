@@ -1,0 +1,62 @@
+\subsection{Random Tests}
+\label{sec:random_tests}
+
+The validation of all the instructions is an impossible task as it would mean to check all the instructions with all the possible inputs.
+So in order to create an extensive and systematic validation of all the instructions we have created a small tool to generate random tests.
+The tool takes as input a template describing the instruction to test, but not defining the instruction inputs.
+The tool then creates multiple tests of the instruction defining random inputs.
+The outputs of the tests are printed on the screen, so we can compare the outputs of the simulator against those of the target platform.
+
+\begin{figure}[!h]
+	\input{arm7tdmi_validation/adc_imm}
+	\caption{\texttt{adc} with immediate input template.}
+	\label{fig:adc_imm_template}
+\end{figure}
+
+Figure~\ref{fig:adc_imm_template} shows an example of template for the \texttt{adc} instruction using an immediate as input.
+Line \texttt{1} sets to 0 the \texttt{r9} register which will be used later for storing the result of the \texttt{adc} instruction.
+Lines \texttt{2}, \texttt{3} and \texttt{4} set randomly the status bits of the \texttt{cpsr} register which may influence the computation of the \texttt{adc} instruction.
+Line \texttt{5} is the actual test of the \texttt{adc} instruction. 
+The \texttt{\%(,eq,ne,...)} string appends nothing or one of the guarding pnemonics to the \texttt{adc} instruction, which one is selected randomly by the random tests generator.
+Similarly the \texttt{\%(,s)} string appends nothing or the ``\texttt{s}'' string to the \texttt{adc} instruction.
+The ``\texttt{s}'' flag indicates that the \texttt{cpsr} register should be updated if present, or leaved untouched otherwise.
+The result of the \texttt{adc} instruction is stored in the \texttt{r9} register.
+The \texttt{adc} uses two different inputs: a register and an immediate.
+The register input is generated randomly by the test generator with the ``\texttt{\%r}'' string, choosing randomly one of the available registers and setting it to a random generated value.
+The immediate input is generated randomly with the ``\texttt{\%s8,4,2}'' string\footnote{We are not going to get into details on how the immediate value is defined, just mention that it generates an integer that can be accepted by the ARM7 compiler.}.
+Finally, lines \texttt{6}, \texttt{7} and \texttt{8} store the maybe modified \texttt{cpsr} status flags into a register chosen by the test generator (indicated with the ``\texttt{\%R}'').
+Similarly, in line \texttt{9}, the register \texttt{r9} is copied into a register chosen by the test generator.
+The registers marked with the ``\texttt{\%R}'' are then printed into the terminal, so we can compare the outputs from the simulation and the execution on ARM9 platform.
+For each instruction test we check that the output register and the \texttt{cpsr} flags are correctly set.
+
+\subsubsection{Results}
+
+Test templates as the one presented in Figure~\ref{fig:adc_imm_template} have been developed for all the versions of the \texttt{adc} instruction (i.e., with two input registers, with a shifted immediate as input, and with a shifted register as input), and for all of the versions of most of the \textit{user level} instructions of the ARM7TDMI.
+A total of 100,000 tests were generated from each template (making an average of 400,000 tests for instruction), and all the tests were succesfully passed. The following is a list of the validated instructions:
+\begin{enumerate}
+	\item adc
+	\item add
+	\item and
+	\item bic
+	\item cmn
+	\item cmp
+	\item eor
+	\item mla
+	\item mov
+	\item mul
+	\item mvn
+	\item orr
+	\item rsb
+	\item rsc
+	\item sbc
+	\item smlal
+	\item smull
+	\item sub
+	\item teq
+	\item tst
+	\item umlal
+	\item umull
+\end{enumerate}
+
+This list includes all the \textit{user level} instructions of the ARM7TDMI processor, with the exception of memory instructions, branch instructions, and the system call instruction.
+To validate those instructions (and complete the validation of the \textit{user level} instructions tested by the random tests), we performed tests over full applications presented in the following section.

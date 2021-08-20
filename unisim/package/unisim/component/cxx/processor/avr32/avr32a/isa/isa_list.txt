@@ -1,0 +1,2 @@
+unisim/component/cxx/processor/avr32/avr32a/isa/avr32a.isa
+unisim/component/cxx/processor/avr32/avr32a/isa/instruction_flow.isa

@@ -1,0 +1,11 @@
+The source code of UNISIM is composed of three different packages located in their own sub-directory.
+    * unisim_tools: utilities used by the simulators and other external tools
+    * unisim_lib: library with all the modules available in UNISIM, and the core libraries of the UNISIM framework
+    * unisim_simulators: different simulators built using modules from the unisim_lib
+You may also find a fourth sub-directory: unisim_tests. This sub-directory is used by UNISIM developpers to write individual modules tests.
+
+You *must* compile/build/install them in this order: unisim_tools, unisim_lib and then unisim_simulators (and optionally unisim_tests).
+Each package has its own installation procedure you *must* follow (see file INSTALL in each sub-directory).
+
+idkasdjfjdsalkf;
+

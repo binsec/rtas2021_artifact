@@ -1,0 +1,50 @@
+1. Requirements
+---------------
+    * GNU Bash shell (3.2.25 recommended)
+    * GNU Make (3.81 recommended)
+    * GNU C++ Compiler (g++) (>= 3.x)
+    * automake (>= 1.9.6 recommended)
+    * autoconf (>= 2.59 recommended)
+    * bison (2.3 recommended) or Berkeley YACC (1.9 recommended)
+    * flex (2.5.4 recommended)
+
+More details on installing these softwares are available at http://unisim.org/site/unisim_tools/start
+The last version of the UNISIM Tools is available for download at http://unisim.org/site/download/start
+
+2. Building the 'configure' scripts
+-----------------------------------
+
+If you’ve downloaded the source code as a tarball, you can ignore this paragraph.
+If you’ve downloaded the source code with subversion, you first need to build the configure scripts:
+
+$ cd unisim_tools
+$ ./build-configure.sh
+
+In case of failure while running ‘build-configure.sh’, check that ‘find’, ‘autoconf’ and ‘automake’ are correctly installed.
+
+3. Configuring
+--------------
+
+$ cd unisim_tools
+$ ./configure --prefix=${HOME}/unisim
+
+Script configure also supports the following options:
+
+    * --disable-<directory>: Disable compilation of a whole subdirectory (e.g. --disable-build_tool-genisslib prevents configure and make from entering directory genisslib)
+
+4. Compiling the source code
+----------------------------
+
+$ make
+
+5. Installing the UNISIM Tools
+------------------------------
+
+$ make install
+
+Installation tree is the following:
+
+    * bin...................... : All the UNISIM Tools executable are there
+          o genisslib.......... : Instruction Set Simulator Generator (GPL)
+          o mkinitrd.sh........ : A bash script to build an initial ramdrive for ppcemu-system simulator
+    * share.................... : Licenses and other documents are there

@@ -1,0 +1,21 @@
+See unisim_lib/unisim/component/cxx/processor/tesla/ChangeLog for the simulator changelog.
+
+* CUDA 3.0 Beta support, no ELF yet
+* Events support (still synchronous)
+
+Version 0.3, 16 June 2009
+* Multiple GPU cores and multithreaded simulation supported
+* Stats are preserved across kernel calls
+
+Version 0.2, 04 May 2009
+* Device <-> Device linear memory copy
+* Support for exporting statistics in CSV format
+* Traces of reset, kernel parsing and loading can be disabled
+
+Version 0.1, 09 April 2009
+* Initial release
+* Support of most of the CUDA Driver API
+* CUDA runtime API, through NVidia-provided libcudart.so/cudart.dll
+* Support for cubin files and Fat Executables (through CUDA Runtime)
+* Host <-> Device linear memory copy
+

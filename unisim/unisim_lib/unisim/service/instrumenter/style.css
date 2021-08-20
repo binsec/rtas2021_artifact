@@ -1,0 +1,85 @@
+html { box-sizing:border-box; }
+*, *:before, *:after { box-sizing: inherit; }
+
+body{ font-family:Arial, Helvetica, sans-serif;font-style:normal;font-size:14px;text-align:left;font-weight:400;color:#000;margin:0; padding:0.25em 0.25em 0 0.25em; background:#FFF; }
+th.status, td.status { text-align:left; width:100px; }
+th.time, td.time { text-align:left; width:120px; }
+table.command-table { width:700px; text-align:center; }
+div.instruments-table { display:flex; flex-direction:column; width:640px; }
+div.instruments-table-head { display:flex; flex-direction:row; }
+div.signal { display:flex; flex-direction:row; }
+div.signal-enable { padding:0; width: 48px; text-align:center; }
+div.signal-brkpt-enable { padding:0; width: 48px; text-align:center; }
+div.signal-name { padding:0; width:380px; }
+div.instruments-table-head div.signal-name { padding:0; text-align:center; }
+div.instruments-table-body div.signal-name { padding:0; text-align:right; }
+div.signal-value { padding:0; width: 90px; text-align:center; }
+div.signal-toggle { padding:0; width: 60px; text-align:center; }
+div.signal-value { padding:1px 0 1px 0; }
+input.step-time { width: 120px; }
+button#timed-step { width: 120px; }
+button#delta-step { width: 50px; }
+button#intr { width: 140px; }
+button#cont { width: 140px; }
+button#halt { width: 140px; }
+div.brkpt-cond { background-color:#ffbfbf; }
+input.signal-value-text { width:80px; height:21px; border: 1px solid #a9a5a2; border-radius: 3px; box-shadow:inset 0px 2px 0px #e4e3e1; }
+input.disabled { background-color:#edeceb; width:80px; height:21px; border: 1px solid #a9a5a2; border-radius: 3px; box-shadow:inset 0px 2px 0px #dedddd; }
+
+button.signal-disable-all,
+button.signal-enable-all,
+button.signal-brkpt-disable-all,
+button.signal-brkpt-enable-all,
+button.signal-enable,
+button.signal-brkpt-enable
+{
+	background-color:#ffffff;
+	border-radius:0.25em;
+	border:1px solid #808080;
+	display:inline-block;
+	padding:0;
+	text-decoration:none;
+	font-size:8px;
+	width:12px;
+	height:12px;
+	line-height:8px;
+}
+
+button.signal-toggle-button
+{
+	background-color:#ffffff;
+	border-radius:0.25em;
+	border:1px solid #808080;
+	display:inline-block;
+	padding:0.125em 0.25em;
+	text-decoration:none;
+	font-size:8px;
+}
+
+button.unchecked:before
+{
+	content:'\00a0';
+}
+
+button.checked:before
+{
+	content:'\2714';
+}
+
+button.signal-off {
+	background-color:#fe1c32;
+	color:#ffffff;
+	font-weight: bold;
+}
+
+button.signal-on {
+	background-color:#00f78d;
+	color:#000000;
+	font-weight: bold;
+}
+
+table.instruments-table1 { border-collapse: collapse; width:722px; table-layout:fixed; }
+table.instruments-table2 { border-collapse: collapse; width:700px; table-layout:fixed; }
+div.scroller { height:100%; overflow-y:auto; }
+
+th.scrollbar { width:16px; }

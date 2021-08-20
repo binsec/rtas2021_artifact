@@ -1,0 +1,3 @@
+unisim/service/debug/monitor/monitor_32.cc
+unisim/service/debug/monitor/monitor_64.cc
+unisim/service/debug/monitor/monitor.cc

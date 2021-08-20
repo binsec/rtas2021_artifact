@@ -1,0 +1,351 @@
+/*
+ *  Copyright (c) 2008,
+ *  Commissariat a l'Energie Atomique (CEA)
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without modification,
+ *  are permitted provided that the following conditions are met:
+ *
+ *   - Redistributions of source code must retain the above copyright notice, this
+ *     list of conditions and the following disclaimer.
+ *
+ *   - Redistributions in binary form must reproduce the above copyright notice,
+ *     this list of conditions and the following disclaimer in the documentation
+ *     and/or other materials provided with the distribution.
+ *
+ *   - Neither the name of CEA nor the names of its contributors may be used to
+ *     endorse or promote products derived from this software without specific prior
+ *     written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ *  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *  DISCLAIMED.
+ *  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ *  INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ *  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+ *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ *  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Authors: Reda   Nouacer  (reda.nouacer@cea.fr)
+ */
+
+
+/* ********** Stack Pointer instructions ******** */
+
+// CPS: Compare SP to memory
+// is emulated in compare_test.isa
+
+// DES: Decrement Sp
+// is emulated in decrement_increment.isa
+
+// INS: Increment SP
+// is emulated in decrement_increment.isa
+
+// LDS: load SP
+// is emulated in load_store.isa
+
+// LEAS: load effective address into SP
+// is emulated in load_store.isa
+
+// STS: store SP
+// is emulated in load_store.isa
+
+// TSX: transfer SP to X
+// is emulated in transfer_exchange.isa
+
+// TSY: transfer SP to Y
+// is emulated in transfer_exchange.isa
+
+// TXS: transfer X to SP
+// is emulated in transfer_exchange.isa
+
+// TYS: transfer Y to Sp
+// is emulated in transfer_exchange.isa
+
+
+/* ********** stack Operation instructions ********** */
+
+// PSHA: Push A
+
+op psha(0x36[8])
+
+psha.getCycles = { return 2; }
+
+psha.disasm = {
+	string mnem = "PSHA";
+	
+	sink << mnem;
+	return mnem;
+}
+
+psha.execute = {
+
+	cpu->setRegSP(cpu->getRegSP()-1);
+	cpu->memWrite8(cpu->getRegSP(), cpu->getRegA());
+
+	return getCycles();
+}
+
+// PSHB: Push B
+
+op pshb(0x37[8])
+
+pshb.getCycles = { return 2; }
+
+pshb.disasm = {
+	string mnem = "PSHB";
+	
+	sink << mnem;
+	return mnem;
+}
+
+pshb.execute = {
+	cpu->setRegSP(cpu->getRegSP()-1);
+	cpu->memWrite8(cpu->getRegSP(), cpu->getRegB());
+
+	return getCycles();
+}
+
+// PSHC: Push CCR (8 lower bits)
+
+op pshc(0x39[8])
+
+pshc.getCycles = { return 2; }
+
+pshc.disasm = {
+	string mnem = "PSHC";
+	
+	sink << mnem;
+	return mnem;
+}
+
+pshc.execute = {
+	cpu->setRegSP(cpu->getRegSP()-1);
+	cpu->memWrite8(cpu->getRegSP(), cpu->ccr->getCCRLow());
+
+	return getCycles();
+}
+
+// PSHCW: Push CCR word (16 bits)
+
+op pshcw(0x18[8]:0x39[8])
+
+pshcw.getCycles = { return 3; }
+
+pshcw.disasm = {
+	string mnem = "PSHCW";
+	
+	sink << mnem;
+	return mnem;
+}
+
+pshcw.execute = {
+	cpu->setRegSP(cpu->getRegSP()-2);
+	cpu->memWrite16(cpu->getRegSP(), cpu->ccr->getCCR());
+
+	return getCycles();
+}
+
+// PSHD: Push D
+
+op pshd(0x3B[8])
+
+pshd.getCycles = { return 2; }
+
+pshd.disasm = {
+	string mnem = "PSHD";
+	
+	sink << mnem;
+	return mnem;
+}
+
+pshd.execute = {
+	cpu->setRegSP(cpu->getRegSP()-2);
+	cpu->memWrite16(cpu->getRegSP(), cpu->getRegD());
+
+	return getCycles();
+}
+
+// PSHX: Push X
+
+op pshx(0x34[8])
+
+pshx.getCycles = { return 2; }
+
+pshx.disasm = {
+	string mnem = "PSHX";
+	
+	sink << mnem;
+	return mnem;
+}
+
+pshx.execute = {
+	cpu->setRegSP(cpu->getRegSP()-2);
+	cpu->memWrite16(cpu->getRegSP(), cpu->getRegX());
+
+	return getCycles();
+}
+
+// PSHY: Push Y
+
+op pshy(0x35[8])
+
+pshy.getCycles = { return 2; }
+
+pshy.disasm = {
+	string mnem = "PSHY";
+	
+	sink << mnem;
+	return mnem;
+}
+
+pshy.execute = {
+	cpu->setRegSP(cpu->getRegSP()-2);
+	cpu->memWrite16(cpu->getRegSP(), cpu->getRegY());
+
+	return getCycles();
+}
+
+// PULA: Pull A
+
+op pula(0x32[8])
+
+pula.getCycles = { return 3; }
+
+pula.disasm = {
+	string mnem = "PULA";
+	
+	sink << mnem;
+	return mnem;
+}
+
+pula.execute = {
+	cpu->setRegA(cpu->memRead8(cpu->getRegSP()));
+	cpu->setRegSP(cpu->getRegSP()+1);
+
+	return getCycles();
+}
+
+// PULB: Pull B
+
+op pulb(0x33[8])
+
+pulb.getCycles = { return 3; }
+
+pulb.disasm = {
+	string mnem = "PULB";
+	
+	sink << mnem;
+	return mnem;
+}
+
+pulb.execute = {
+	cpu->setRegB(cpu->memRead8(cpu->getRegSP()));
+	cpu->setRegSP(cpu->getRegSP()+1);
+
+	return getCycles();
+}
+
+// PULC: Pull CCR (16 lower bits)
+
+op pulc(0x38[8])
+
+pulc.getCycles = { return 3; }
+
+pulc.disasm = {
+	string mnem = "PULC";
+	
+	sink << mnem;
+	return mnem;
+}
+
+pulc.execute = {
+	cpu->ccr->setCCRLow(cpu->memRead8(cpu->getRegSP()));
+	cpu->setRegSP(cpu->getRegSP()+1);
+
+	return getCycles();
+}
+
+// PULCW: Pull CCR word
+
+op pulcw(0x18[8]:0x38[8])
+
+pulcw.getCycles = { return 4; }
+
+pulcw.disasm = {
+	string mnem = "PULCW";
+
+	sink << mnem;
+	return mnem;
+}
+
+pulcw.execute = {
+	cpu->ccr->setCCR(cpu->memRead16(cpu->getRegSP()));
+	cpu->setRegSP(cpu->getRegSP()+2);
+
+	return getCycles();
+}
+
+// PULD: Pull D
+
+op puld(0x3A[8])
+
+puld.getCycles = { return 3; }
+
+puld.disasm = {
+	string mnem = "PULD";
+	
+	sink << mnem;
+	return mnem;
+}
+
+puld.execute = {
+	cpu->setRegD(cpu->memRead16(cpu->getRegSP()));
+	cpu->setRegSP(cpu->getRegSP()+2);
+
+	return getCycles();
+}
+
+// PULX: Pull X
+
+op pulx(0x30[8])
+
+pulx.getCycles = { return 3; }
+
+pulx.disasm = {
+	string mnem = "PULX";
+	
+	sink << mnem;
+	return mnem;
+}
+
+pulx.execute = {
+	cpu->setRegX(cpu->memRead16(cpu->getRegSP()));
+	cpu->setRegSP(cpu->getRegSP()+2);
+
+	return getCycles();
+}
+
+// PULY: Pull Y
+
+op puly(0x31[8])
+
+puly.getCycles = { return 3; }
+
+puly.disasm = {
+	string mnem = "PULY";
+	
+	sink << mnem;
+	return mnem;
+}
+
+puly.execute = {
+	cpu->setRegY(cpu->memRead16(cpu->getRegSP()));
+	cpu->setRegSP(cpu->getRegSP()+2);
+
+	return getCycles();
+}
+

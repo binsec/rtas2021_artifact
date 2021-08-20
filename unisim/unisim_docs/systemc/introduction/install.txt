@@ -1,0 +1,9 @@
+~/systemc-2.3.1$ mkdir obj; cd obj
+~/systemc-2.3.1$ mkdir /opt/systemc
+~/systemc-2.3.1/obj$ ../configure --prefix=/opt/systemc \
+                                  --disable-shared
+~/systemc-2.3.1/obj$ make
+~/systemc-2.3.1/obj$ make install
+~/systemc-2.3.1/obj$ ls /opt/systemc
+AUTHORS    COPYING  examples  INSTALL    LICENSE  README
+ChangeLog  docs     include   lib-linux  NEWS     RELEASENOTES

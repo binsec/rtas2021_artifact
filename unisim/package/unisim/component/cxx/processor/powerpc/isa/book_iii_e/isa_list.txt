@@ -1,0 +1,16 @@
+unisim/component/cxx/processor/powerpc/isa/book_iii_e/dcbi.isa
+unisim/component/cxx/processor/powerpc/isa/book_iii_e/mfdcr.isa
+unisim/component/cxx/processor/powerpc/isa/book_iii_e/mfdcrux.isa
+unisim/component/cxx/processor/powerpc/isa/book_iii_e/mfdcrx.isa
+unisim/component/cxx/processor/powerpc/isa/book_iii_e/mfmsr.isa
+unisim/component/cxx/processor/powerpc/isa/book_iii_e/mfspr.isa
+unisim/component/cxx/processor/powerpc/isa/book_iii_e/mtdcr.isa
+unisim/component/cxx/processor/powerpc/isa/book_iii_e/mtdcrux.isa
+unisim/component/cxx/processor/powerpc/isa/book_iii_e/mtdcrx.isa
+unisim/component/cxx/processor/powerpc/isa/book_iii_e/mtspr.isa
+unisim/component/cxx/processor/powerpc/isa/book_iii_e/rfci.isa
+unisim/component/cxx/processor/powerpc/isa/book_iii_e/rfi.isa
+unisim/component/cxx/processor/powerpc/isa/book_iii_e/rfmci.isa
+unisim/component/cxx/processor/powerpc/isa/book_iii_e/tlbsync.isa
+unisim/component/cxx/processor/powerpc/isa/book_iii_e/wrteei.isa
+unisim/component/cxx/processor/powerpc/isa/book_iii_e/wrtee.isa

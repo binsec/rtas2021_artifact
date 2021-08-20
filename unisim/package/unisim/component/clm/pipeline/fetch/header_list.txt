@@ -1,0 +1,6 @@
+unisim/component/clm/pipeline/fetch/branch_history_table.hh
+unisim/component/clm/pipeline/fetch/branch_target_buffer.hh
+unisim/component/clm/pipeline/fetch/fetcher.hh
+unisim/component/clm/pipeline/fetch/fetcher_mc.hh
+unisim/component/clm/pipeline/fetch/fetcher_perfect.hh
+unisim/component/clm/pipeline/fetch/return_address_stack.hh

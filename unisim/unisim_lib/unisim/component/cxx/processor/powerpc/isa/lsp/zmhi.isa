@@ -1,0 +1,116 @@
+/*
+ *  Copyright (c) 2017,
+ *  Commissariat a l'Energie Atomique (CEA)
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without modification,
+ *  are permitted provided that the following conditions are met:
+ *
+ *   - Redistributions of source code must retain the above copyright notice, this
+ *     list of conditions and the following disclaimer.
+ *
+ *   - Redistributions in binary form must reproduce the above copyright notice,
+ *     this list of conditions and the following disclaimer in the documentation
+ *     and/or other materials provided with the distribution.
+ *
+ *   - Neither the name of CEA nor the names of its contributors may be used to
+ *     endorse or promote products derived from this software without specific prior
+ *     written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ *  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *  DISCLAIMED.
+ *  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ *  INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ *  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+ *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ *  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Authors: Gilles Mouchard (gilles.mouchard@cea.fr)
+ */
+
+impl {
+#include <unisim/component/cxx/processor/powerpc/isa/lsp/lsp.hh>
+}
+
+/* Multiply halfwords, {even, even/odd, odd}, {signed, signed by unsigned,
+   unsigned} integer [and {accumulate, accumulate negative}]
+   (zmh{e,eo,o}{s,su,u}i[{aa,an}]):
+ * - zmheui
+ * - zmheuiaa
+ * - zmheuian
+ * - zmhesi
+ * - zmhesiaa
+ * - zmhesian
+ * - zmhesui
+ * - zmhesuiaa
+ * - zmhesuian
+ * - zmheoui
+ * - zmheouiaa
+ * - zmheouian
+ * - zmheosi
+ * - zmheosiaa
+ * - zmheosian
+ * - zmheosui
+ * - zmheosuiaa
+ * - zmheosuian
+ * - zmhoui
+ * - zmhouiaa
+ * - zmhouian
+ * - zmhosi
+ * - zmhosiaa
+ * - zmhosian
+ * - zmhosui
+ * - zmhosuiaa
+ * - zmhosuian
+ */
+op zmhi(4[6]:rd[5]:ra[5]:rb[5]:0b1100[4]:hs[2]:ty[2]:acc[2]:0b0[1]) /* hs in {00="e",01="eo",10="o"}, ty in {00="ui",01="si",10="sui"}, acc in {00="",01="aa",10="an"} */
+zmhi.var ill : {bool} = {
+	   (hs == 3)  // hs=0b11 is illegal
+	|| (ty == 3)  // ty=0b11 is illegal
+	|| (acc == 3) // acc=0b11 is illegal
+}
+zmhi.execute = {
+	if(unlikely(ill))
+	{
+		cpu->ThrowException<CPU::ProgramInterrupt::IllegalInstruction>();
+		return false;
+	}
+
+	cpu->ThrowException<CPU::ProgramInterrupt::UnimplementedInstruction>();
+	return false;
+}
+zmhi.disasm = {
+	os << "zmh" << LSP_HS_EVEN_ODD(hs) << LSP_TY(ty) << LSP_ACC(acc) << " " << GPRPrint(rd) << ", " << GPRPrint(ra) << ", " << GPRPrint(rb);
+}
+
+specialize zmhi(hs=0,ty=0,acc=0)
+specialize zmhi(hs=0,ty=0,acc=1)
+specialize zmhi(hs=0,ty=0,acc=2)
+specialize zmhi(hs=0,ty=1,acc=0)
+specialize zmhi(hs=0,ty=1,acc=1)
+specialize zmhi(hs=0,ty=1,acc=2)
+specialize zmhi(hs=0,ty=2,acc=0)
+specialize zmhi(hs=0,ty=2,acc=1)
+specialize zmhi(hs=0,ty=2,acc=2)
+specialize zmhi(hs=1,ty=0,acc=0)
+specialize zmhi(hs=1,ty=0,acc=1)
+specialize zmhi(hs=1,ty=0,acc=2)
+specialize zmhi(hs=1,ty=1,acc=0)
+specialize zmhi(hs=1,ty=1,acc=1)
+specialize zmhi(hs=1,ty=1,acc=2)
+specialize zmhi(hs=1,ty=2,acc=0)
+specialize zmhi(hs=1,ty=2,acc=1)
+specialize zmhi(hs=1,ty=2,acc=2)
+specialize zmhi(hs=2,ty=0,acc=0)
+specialize zmhi(hs=2,ty=0,acc=1)
+specialize zmhi(hs=2,ty=0,acc=2)
+specialize zmhi(hs=2,ty=1,acc=0)
+specialize zmhi(hs=2,ty=1,acc=1)
+specialize zmhi(hs=2,ty=1,acc=2)
+specialize zmhi(hs=2,ty=2,acc=0)
+specialize zmhi(hs=2,ty=2,acc=1)
+specialize zmhi(hs=2,ty=2,acc=2)

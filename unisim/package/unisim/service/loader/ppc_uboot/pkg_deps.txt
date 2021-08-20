@@ -1,0 +1,8 @@
+libc/inttypes
+unisim/kernel
+unisim/kernel/logger
+unisim/service/interfaces/blob
+unisim/service/interfaces/loader
+unisim/service/interfaces/memory
+unisim/service/interfaces/registers
+unisim/util/blob

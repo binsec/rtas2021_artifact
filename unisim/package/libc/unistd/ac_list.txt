@@ -1,0 +1,1 @@
+AC_CHECK_HEADER([unistd.h],, AC_MSG_ERROR([unistd.h is missing])) 

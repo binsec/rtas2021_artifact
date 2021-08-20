@@ -1,0 +1,135 @@
+/*
+ *  Copyright (c) 2007-2016,
+ *  Commissariat a l'Energie Atomique (CEA)
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without modification,
+ *  are permitted provided that the following conditions are met:
+ *
+ *   - Redistributions of source code must retain the above copyright notice, this
+ *     list of conditions and the following disclaimer.
+ *
+ *   - Redistributions in binary form must reproduce the above copyright notice,
+ *     this list of conditions and the following disclaimer in the documentation
+ *     and/or other materials provided with the distribution.
+ *
+ *   - Neither the name of CEA nor the names of its contributors may be used to
+ *     endorse or promote products derived from this software without specific prior
+ *     written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ *  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *  DISCLAIMED.
+ *  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ *  INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ *  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+ *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ *  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Authors: Yves Lhuillier (yves.lhuillier@cea.fr), Daniel Gracia Perez (daniel.gracia-perez@cea.fr)
+ */
+ 
+/*******************************************************************
+ * sxtb (Signed Extend Byte) instruction
+ *
+ * SXTB extracts an 8-bit value from a register, sign-extends it to 32 bits, and writes the result to the destination register. You can specify a rotation by 0, 8, 16, or 24 bits before extracting the 8-bit value.
+ */
+
+{ ARCH::Config::insns6 }:                               \
+op sxtb( 0b1011001001[10]: rm[3]: rd[3] );
+
+sxtb.disasm = {
+  buffer << "sxtb\t" << DisasmRegister(rd) << ", " << DisasmRegister(rm);
+}
+
+sxtb.execute = {
+  if (unlikely( not CheckCondition(cpu, cpu.itcond()) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  typedef typename ARCH::S32 S32;
+  typedef typename ARCH::S8  S8;
+  cpu.SetGPR( rd, U32( S32( S8( cpu.GetGPR( rm ) ) ) ) );
+};
+
+/*
+ * end of sxtb instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * sxth (Signed Extend Halfword) instruction
+ *
+ * SXTH extracts a 16-bit value from a register, sign-extends it to 32 bits, and writes the result to the destination register. You can specify a rotation by 0, 8, 16, or 24 bits before extracting the 16-bit value.
+ */
+
+{ ARCH::Config::insns6 }:                               \
+op sxth( 0b1011001000[10]: rm[3]: rd[3] );
+
+sxth.disasm = {
+  buffer << "sxth\t" << DisasmRegister(rd) << ", " << DisasmRegister(rm);
+};
+
+sxth.execute = {
+  if (unlikely( not CheckCondition(cpu, cpu.itcond()) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  typedef typename ARCH::S32 S32;
+  typedef typename ARCH::S16 S16;
+  cpu.SetGPR( rd, U32( S32( S16( cpu.GetGPR( rm ) ) ) ) );
+};
+
+/*
+ * end of sxth instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * uxtb (Unsigned Extend Byte) instruction
+ *
+ * UXTB extracts an 8-bit value from a register, zero-extends it to 32 bits, and writes the result to the destination register. You can specify a rotation by 0, 8, 16, or 24 bits before extracting the 8-bit value.
+ */
+
+{ ARCH::Config::insns6 }:                               \
+op uxtb( 0b1011001011[10]: rm[3]: rd[3] );
+
+uxtb.disasm = {
+  buffer << "uxtb\t" << DisasmRegister(rd) << ", " << DisasmRegister(rm);
+};
+
+uxtb.execute = {
+  if (unlikely( not CheckCondition(cpu, cpu.itcond()) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  typedef typename ARCH::U8  U8;
+  cpu.SetGPR( rd, U32( U8( cpu.GetGPR( rm ) ) ) );
+};
+
+/*
+ * end of uxtb instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * uxth (Unsigned Extend Halfword) instruction
+ *
+ * UXTH extracts a 16-bit value from a register, zero-extends it to 32 bits, and writes the result to the destination register. You can specify a rotation by 0, 8, 16, or 24 bits before extracting the 16-bit value.
+ */
+
+{ ARCH::Config::insns6 }:                               \
+op uxth( 0b1011001010[10]: rm[3]: rd[3] );
+
+uxth.disasm = {
+  buffer << "uxth\t" << DisasmRegister(rd) << ", " << DisasmRegister(rm);
+};
+
+uxth.execute = {
+  if (unlikely( not CheckCondition(cpu, cpu.itcond()) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  typedef typename ARCH::U16 U16;
+  cpu.SetGPR( rd, U32( U16( cpu.GetGPR( rm ) ) ) );
+};
+
+/*
+ * end of uxth instruction
+ *******************************************************************/

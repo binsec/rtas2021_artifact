@@ -1,0 +1,7 @@
+unisim/component/clm/fsb/bus.hh
+unisim/component/clm/fsb/bus_mc.hh
+unisim/component/clm/fsb/bus_multiqueue2_mc.hh
+unisim/component/clm/fsb/bus_multiqueue3.hh
+unisim/component/clm/fsb/bus_multiqueue3_mc.hh
+unisim/component/clm/fsb/bus_multiqueue.hh
+unisim/component/clm/fsb/bus_multiqueue_mc.hh

@@ -1,0 +1,8 @@
+libc/inttypes
+libc/stdlib
+libc/string
+std/iostream
+std/string
+std/vector
+unisim/service/interfaces/memory
+unisim/util/endian

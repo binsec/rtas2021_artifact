@@ -1,0 +1,31 @@
+#!/bin/bash
+VERSION=@PACKAGE_VERSION@
+HERE=$(pwd)
+MY_DIR=$(cd $(dirname $0); pwd)
+export UNISIM_MOCKUP="${MY_DIR}/../../.."
+
+cd "${MY_DIR}"
+
+VCD_TRACE_FILE=trace
+
+if test -n "${VCD_TRACE_FILE}"; then
+	if test ! -p "${VCD_TRACE_FILE}.vcd"; then
+		if test -f "${VCD_TRACE_FILE}.vcd"; then
+			rm -f "${VCD_TRACE_FILE}.vcd"
+		fi
+		
+		mkfifo "${VCD_TRACE_FILE}.vcd"
+	fi
+	
+	echo "Starting gtkwave"
+	( shmidcat "${VCD_TRACE_FILE}.vcd" | gtkwave -v -I -S "${UNISIM_MOCKUP}/mpc5777m/share/unisim-mpc5777m-${VERSION}/gtkwave_init_script.tcl" -r gtkwaverc -c 8 2>&1 | tee "gtkwave.out") &> /dev/null &
+fi
+
+echo "Starting simulator"
+"${UNISIM_MOCKUP}/mpc5777m/bin/unisim-mpc5777m-${VERSION}" -c sim_config.xml -s enable-press-enter-at-exit=0
+
+rm -f ${VCD_TRACE_FILE}.vcd
+
+cd "${HERE}"
+
+exit 0

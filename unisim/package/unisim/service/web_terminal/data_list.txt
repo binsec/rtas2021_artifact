@@ -1,0 +1,8 @@
+unisim/service/web_terminal/icon_term0.svg
+unisim/service/web_terminal/icon_term14.svg
+unisim/service/web_terminal/icon_term15.svg
+unisim/service/web_terminal/icon_term16.svg
+unisim/service/web_terminal/icon_term1.svg
+unisim/service/web_terminal/icon_term2.svg
+unisim/service/web_terminal/style.css
+unisim/service/web_terminal/script.js

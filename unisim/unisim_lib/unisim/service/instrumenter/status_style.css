@@ -1,0 +1,55 @@
+.instrumenter-status
+{
+/* 	width:370px; */
+	height:24px;
+}
+
+.instrumenter-status .name
+{
+	text-align:left;
+	padding-right:6px;
+}
+
+.instrumenter-status .name span
+{
+    line-height:24px;
+}
+
+.instrumenter-status .state
+{
+	width:50px;
+	text-align:left;
+}
+
+.instrumenter-status .state span
+{
+	display:inline-block;
+    line-height:24px;
+	white-space:nowrap;
+}
+
+.instrumenter-status .time
+{
+	width:130px; /* should be enough for priting "18446.744 seconds" */
+	text-align:right;
+}
+
+.instrumenter-status .time span
+{
+	display:inline-block;
+    line-height:24px;
+	white-space:nowrap;
+}
+
+.instrumenter-status .time-exact
+{
+	width:190px; /* should be enough for printing "(18446744073709551615 fs)" */
+	text-align:right;
+}
+
+.instrumenter-status .time-exact span
+{
+	display:inline-block;
+    line-height:24px;
+	white-space:nowrap;
+}

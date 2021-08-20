@@ -1,0 +1,440 @@
+/*
+ *  Copyright (c) 2007-2016,
+ *  Commissariat a l'Energie Atomique (CEA)
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without modification,
+ *  are permitted provided that the following conditions are met:
+ *
+ *   - Redistributions of source code must retain the above copyright notice, this
+ *     list of conditions and the following disclaimer.
+ *
+ *   - Redistributions in binary form must reproduce the above copyright notice,
+ *     this list of conditions and the following disclaimer in the documentation
+ *     and/or other materials provided with the distribution.
+ *
+ *   - Neither the name of CEA nor the names of its contributors may be used to
+ *     endorse or promote products derived from this software without specific prior
+ *     written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ *  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *  DISCLAIMED.
+ *  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ *  INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ *  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+ *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ *  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Authors: Yves Lhuillier (yves.lhuillier@cea.fr), Daniel Gracia Perez (daniel.gracia-perez@cea.fr), 
+ */
+ 
+/**********************************************
+
+         COPROCESSOR INSTRUCTIONS
+
+**********************************************/
+
+/*******************************************************************
+ * cdp instruction
+ */
+
+op cdp( cond[4]: 0b1110[4]: opc1[4]: crn[4]: crd[4]: cp_num[4]: opc2[3]: 0b0[1]: crm[4] );
+
+cdp.disasm = {
+  buffer << "cdp" << DisasmCondition(cond) << '\t' << unsigned( cp_num ) << ", " << unsigned( opc1 ) << ", "
+         << DisasmCPR(crd) << ", " << DisasmCPR(crn) << ", " << DisasmCPR(crm)
+         << ", {" << std::dec << unsigned( opc2 ) << "}";
+};
+
+cdp.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+	
+  cpu.UnpredictableInsnBehaviour();
+};
+
+/*
+ * end of cdp instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * ldc instruction
+ */
+
+op ldc( cond[4]: 0b110[3]: p[1]: u[1]: d[1]: w[1]: 0b1[1]: rn[4]: crd[4]: cp_num[4]: shl<2> offset[8] );
+ldc.var imm : {int32_t} = {u?offset:-offset};
+ldc.var reject : {Reject} = {(not p) and (not u) and (not d) and (not w)};
+
+ldc.disasm = {
+  buffer << "ldc" << (d?"l":"") << DisasmCondition(cond) << '\t' << unsigned( cp_num ) << ", " << DisasmCPR(crd) << ", "
+         << DisasmMemoryRI( rn, imm, p, w );
+};
+
+ldc.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+	
+  cpu.UnpredictableInsnBehaviour();
+};
+
+op ldc_unindexed( cond[4]: 0b110[3]: 0b0[1]: 0b1[1]: d[1]: 0b0[1]: 0b1[1]: rn[4]: crd[4]: cp_num[4]: option[8] );
+
+ldc_unindexed.disasm = {
+  buffer << "ldc" << (d?"l":"") << DisasmCondition(cond) << '\t'
+         << unsigned( cp_num ) << ", " << DisasmCPR(crd) << ", "
+         << "[" << DisasmRegister(rn) << "]"
+         << ", {" << unsigned( option ) << "}";
+};
+
+ldc_unindexed.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+	
+  cpu.UnpredictableInsnBehaviour();
+};
+
+/*
+ * end of ldc instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * mcr instruction
+ */
+
+op mcr( cond[4]: 0b1110[4]: opc1[3]: 0b0[1]: crn[4]: rd[4]: cp_num[4]: opc2[3]: 0b1[1]: crm[4] );
+
+mcr.disasm = {
+  buffer << "mcr" << DisasmCondition(cond) << '\t' << unsigned( cp_num ) << ", " << unsigned( opc1 ) << ", "
+         << DisasmRegister(rd) << ", " << DisasmCPR(crn) << ", " << DisasmCPR(crm) << ", {" << unsigned( opc2 ) << "}";
+};
+
+mcr.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+
+  cpu.UnpredictableInsnBehaviour();
+};
+
+/*
+ * end of mcr instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * mrc instruction
+ */
+
+op mrc( cond[4]: 0b1110[4]: opc1[3]: 0b1[1]: crn[4]: rt[4]: cp_num[4]: opc2[3]: 0b1[1]: crm[4] );
+
+mrc.disasm = {
+  buffer << "mrc" << DisasmCondition(cond) << '\t' << unsigned( cp_num ) << ", " << unsigned( opc1 ) << ", ";
+  if (rt == 15) buffer << "APSR_nzcv";
+  else          buffer << DisasmRegister(rt);
+  buffer << ", " << DisasmCPR(crn) << ", " << DisasmCPR(crm) << ", {" << unsigned( opc2 ) << "}";
+};
+
+mrc.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+  
+  cpu.UnpredictableInsnBehaviour();
+};
+
+/*
+ * end of mrc instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * stc instruction
+ */
+
+op stc( cond[4]: 0b110[3]: p[1]: u[1]: d[1]: w[1]: 0b0[1]: rn[4]: crd[4]: cp_num[4]: shl<2> offset[8] );
+stc.var imm : {int32_t} = {u?offset:-offset};
+stc.var reject : {Reject} = {(not p) and (not u) and (not d) and (not w)};
+
+stc.disasm = {
+  buffer << "stc" << (d?"l":"") << DisasmCondition(cond) << '\t' << unsigned( cp_num ) << ", " << DisasmCPR(crd) << ", "
+         << DisasmMemoryRI( rn, imm, p, w );
+};
+
+stc.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+  
+  cpu.UnpredictableInsnBehaviour();
+};
+
+op stc_unindexed( cond[4]: 0b110[3]: 0b0[1]: 0b1[1]: d[1]: 0b0[1]: 0b0[1]: rn[4]: crd[4]: cp_num[4]: option[8] );
+
+stc_unindexed.disasm = {
+  buffer << "stc" << (d?"l":"") << DisasmCondition(cond) << '\t'
+         << unsigned( cp_num ) << ", " << DisasmCPR(crd) << ", "
+         << "[" << DisasmRegister(rn) << "]"
+         << ", {" << unsigned( option ) << "}";
+};
+
+stc_unindexed.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+	
+  cpu.UnpredictableInsnBehaviour();
+};
+
+/*
+ * end of stc instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * cdp2 instruction
+ */
+
+{ ARCH::Config::insns5T }: \
+op cdp2( 0b1111[4]: 0b1110[4]: opc1[4]: crn[4]: crd[4]: cp_num[4]: opc2[3]: 0b0[1]: crm[4] );
+
+cdp2.disasm = {
+  buffer << "cdp2\t" << std::dec << unsigned( cp_num ) << ", " << std::dec << unsigned( opc1 )
+         << ", " << DisasmCPR(crd) << ", " << DisasmCPR(crn) << ", " << DisasmCPR(crm)
+         << ", {" << unsigned( opc2 ) << "}";
+};
+
+cdp2.execute = {
+  cpu.UnpredictableInsnBehaviour();
+};
+
+/*
+ * end of cdp2 instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * ldc2 instruction
+ */
+
+{ ARCH::Config::insns5T }: \
+op ldc2( 0b1111[4]: 0b110[3]: p[1]: u[1]: d[1]: w[1]: 0b1[1]: rn[4]: crd[4]: cp_num[4]: shl<2> offset[8] );
+ldc2.var imm : {int32_t} = {u?offset:-offset};
+ldc2.var reject : {Reject} = {(not p) and (not u) and (not d) and (not w)};
+
+ldc2.disasm = {
+  buffer << "ldc2" << (d?"l":"") << '\t' << unsigned( cp_num ) << ", " << DisasmCPR(crd) << ", "
+         << DisasmMemoryRI( rn, imm, p, w );
+};
+
+ldc2.execute = {
+  cpu.UnpredictableInsnBehaviour();
+};
+
+{ ARCH::Config::insns5T }: \
+op ldc2_unindexed( 0b1111[4]: 0b110[3]: 0b0[1]: 0b1[1]: d[1]: 0b0[1]: 0b1[1]: rn[4]: crd[4]: cp_num[4]: option[8] );
+
+ldc2_unindexed.disasm = {
+  buffer << "ldc2" << (d?"l":"") << '\t' << unsigned( cp_num ) << ", " << DisasmCPR(crd) << ", "
+         << "[" << DisasmRegister(rn) << "]"
+         << ", {" << unsigned( option ) << "}";
+};
+
+ldc2_unindexed.execute = {
+  cpu.UnpredictableInsnBehaviour();
+};
+
+/*
+ * end of ldc2 instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * mcr2 instruction
+ */
+
+{ ARCH::Config::insns5T }: \
+op mcr2( 0b1111[4]: 0b1110[4]: opc1[3]: 0b0[1]: crn[4]: rd[4]: cp_num[4]: opc2[3]: 0b1[1]: crm[4] );
+
+mcr2.disasm = {
+  buffer << "mcr2\t" << unsigned( cp_num ) << ", " << unsigned( opc1 ) << ", "
+         << DisasmRegister(rd) << ", " << DisasmCPR(crn) << ", " << DisasmCPR(crm)
+         << ", {" << unsigned( opc2 ) << "}";
+};
+
+mcr2.execute = {
+  cpu.UnpredictableInsnBehaviour();
+};
+
+/*
+ * end of mcr2 instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * mrc2 instruction
+ */
+
+{ ARCH::Config::insns5T }: \
+op mrc2( 0b1111[4]: 0b1110[4]: opc1[3]: 0b1[1]: crn[4]: rt[4]: cp_num[4]: opc2[3]: 0b1[1]: crm[4] );
+
+mrc2.disasm = {
+  buffer << "mrc2\t" << unsigned( cp_num ) << ", " << unsigned( opc1 ) << ", "
+         << DisasmRegister(rt) << ", " << DisasmCPR(crn) << ", " << DisasmCPR(crm)
+         << ", {" << unsigned( opc2 ) << "}";
+};
+
+mrc2.execute = {
+  cpu.UnpredictableInsnBehaviour();
+}
+
+/*
+ * end of mrc2 instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * stc2 instruction
+ */
+
+{ ARCH::Config::insns5T }: \
+op stc2( 0b1111[4]: 0b110[3]: p[1]: u[1]: d[1]: w[1]: 0b0[1]: rn[4]: crd[4]: cp_num[4]: shl<2> offset[8] );
+stc2.var imm : {int32_t} = {u?offset:-offset};
+stc2.var reject : {Reject} = {(not p) and (not u) and (not d) and (not w)};
+
+stc2.disasm = {
+  buffer << "stc2" << (d?"l":"") << '\t' << unsigned( cp_num ) << ", " << DisasmCPR(crd) << ", "
+         << DisasmMemoryRI( rn, imm, p, w );
+};
+
+stc2.execute = {
+  cpu.UnpredictableInsnBehaviour();
+};
+
+{ ARCH::Config::insns5T }: \
+op stc2_unindexed( 0b1111[4]: 0b110[3]: 0b0[1]: 0b1[1]: d[1]: 0b0[1]: 0b0[1]: rn[4]: crd[4]: cp_num[4]: option[8] );
+
+stc2_unindexed.disasm = {
+  buffer << "stc2" << (d?"l":"") << '\t' << unsigned( cp_num ) << ", " << DisasmCPR(crd) << ", "
+         << "[" << DisasmRegister(rn) << "]"
+         << ", {" << unsigned( option ) << "}";
+};
+
+stc2_unindexed.execute = {
+  cpu.UnpredictableInsnBehaviour();
+};
+
+/*
+ * end of stc2 instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * mcrr instruction
+ */
+
+{ ARCH::Config::insns5E }: \
+op mcrr( cond[4]: 0b11000100[8]: rn[4]: rd[4]: cp_num[4]: opc1[4]: crm[4] );
+
+mcrr.disasm = {
+  buffer << "mcrr" << DisasmCondition(cond) << '\t'
+         << unsigned( cp_num ) << ", " << unsigned( opc1 ) << ", "
+         << DisasmRegister(rd) << ", " << DisasmRegister(rn) << ", " << DisasmCPR(crm);
+};
+
+mcrr.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+
+  cpu.UnpredictableInsnBehaviour();
+};
+
+/*
+ * end of mcrr instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * mrrc instruction
+ */
+
+{ ARCH::Config::insns5E }: \
+op mrrc( cond[4]: 0b11000101[8]: rn[4]: rd[4]: cp_num[4]: opc1[4]: crm[4] );
+
+mrrc.disasm = {
+  buffer << "mrrc" << DisasmCondition(cond) << '\t' << unsigned( cp_num ) << ", " << unsigned( opc1 ) << ", "
+         << DisasmRegister(rd) << ", " << DisasmRegister(rn) << ", " << DisasmCPR(crm);
+};
+
+mrrc.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+
+  cpu.UnpredictableInsnBehaviour();
+};
+
+/*
+ * end of mrrc instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * mcrr2 instruction
+ */
+
+{ ARCH::Config::insns5E }: \
+op mcrr2( 0b1111[4]: 0b11000100[8]: rn[4]: rd[4]: cp_num[4]: opc1[4]: crm[4] );
+
+mcrr2.disasm = {
+  buffer << "mcrr2\t" << unsigned( cp_num ) << ", " << unsigned( opc1 ) << ", "
+         << DisasmRegister(rd) << ", " << DisasmRegister(rn) << ", " << DisasmCPR(crm);
+};
+
+mcrr2.execute = {
+  cpu.UnpredictableInsnBehaviour();
+};
+
+/*
+ * end of mcrr2 instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * mrrc2 instruction
+ */
+
+{ ARCH::Config::insns5E }: \
+op mrrc2( 0b1111[4]: 0b11000101[8]: rn[4]: rd[4]: cp_num[4]: opc1[4]: crm[4] );
+
+mrrc2.disasm = {
+  buffer << "mrrc2\t" << unsigned( cp_num ) << ", " << unsigned( opc1 ) << ", "
+         << DisasmRegister(rd) << ", " << DisasmRegister(rn) << ", " << DisasmCPR(crm);
+};
+
+mrrc2.execute = {
+  cpu.UnpredictableInsnBehaviour();
+};
+
+/*
+ * end of mrrc2 instruction
+ *******************************************************************/
+
+/********************/
+/* Coprocessor CP15 */
+/********************/
+
+op cp15_mcr( cond[4]: 0b1110[4]: opc1[3]: 0b0[1]: crn[4]: rt[4]: 0b1111[4]: opc2[3]: 0b1[1]: crm[4] );
+cp15_mcr.var reject : {Reject} = {(rt == 15)};
+
+cp15_mcr.disasm = {
+  buffer << "mcr" << DisasmCondition(cond) << "\t15, " << unsigned( opc1 ) << ", " << DisasmRegister(rt)
+         << ", " << DisasmCPR(crn) << ", " << DisasmCPR(crm) << ", {" << unsigned( opc2 ) << "} ; Write "
+         << cpu.CP15DescribeRegister( crn, opc1, crm, opc2 );
+};
+
+cp15_mcr.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+
+  cpu.CP15WriteRegister( crn, opc1, crm, opc2, cpu.GetGPR(rt) );
+};
+
+op cp15_mrc( cond[4]: 0b1110[4]: opc1[3]: 0b1[1]: crn[4]: rt[4]: 0b1111[4]: opc2[3]: 0b1[1]: crm[4] );
+
+cp15_mrc.disasm = {
+  buffer << "mrc" << DisasmCondition(cond) << "\t15, " << unsigned( opc1 ) << ", ";
+  if (rt == 15) buffer << "APSR_nzcv";
+  else          buffer << DisasmRegister(rt);
+  buffer << ", " << DisasmCPR(crn) << ", " << DisasmCPR(crm) << ", {" << unsigned( opc2 ) << "} ; Read "
+         << cpu.CP15DescribeRegister( crn, opc1, crm, opc2 );
+};
+
+cp15_mrc.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  U32 value = cpu.CP15ReadRegister( crn, opc1, crm, opc2 );
+  if (rt != 15)
+    cpu.SetGPR( rt, value );
+  else
+    cpu.CPSR().Set( NZCV, value >> 28 );
+};
+

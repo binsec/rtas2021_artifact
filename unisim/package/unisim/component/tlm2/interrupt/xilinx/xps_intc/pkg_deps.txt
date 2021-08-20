@@ -1,0 +1,5 @@
+m4/systemc
+unisim/component/cxx/interrupt/xilinx/xps_intc
+unisim/component/tlm2/interrupt
+unisim/kernel/tlm2
+unisim/kernel/variable/sc_time

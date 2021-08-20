@@ -1,0 +1,4 @@
+unisim/component/cxx/chipset/mpc107/address_map_entry.hh
+unisim/component/cxx/chipset/mpc107/address_maps.hh
+unisim/component/cxx/chipset/mpc107/config_regs.hh
+unisim/component/cxx/chipset/mpc107/pci_controller.hh

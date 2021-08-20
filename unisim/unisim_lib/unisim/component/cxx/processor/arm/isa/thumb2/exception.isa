@@ -1,0 +1,162 @@
+/*
+ *  Copyright (c) 2007-2016,
+ *  Commissariat a l'Energie Atomique (CEA)
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without modification,
+ *  are permitted provided that the following conditions are met:
+ *
+ *   - Redistributions of source code must retain the above copyright notice, this
+ *     list of conditions and the following disclaimer.
+ *
+ *   - Redistributions in binary form must reproduce the above copyright notice,
+ *     this list of conditions and the following disclaimer in the documentation
+ *     and/or other materials provided with the distribution.
+ *
+ *   - Neither the name of CEA nor the names of its contributors may be used to
+ *     endorse or promote products derived from this software without specific prior
+ *     written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ *  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *  DISCLAIMED.
+ *  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ *  INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ *  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+ *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ *  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Authors: Yves Lhuillier (yves.lhuillier@cea.fr), Daniel Gracia Perez (daniel.gracia-perez@cea.fr)
+ */
+
+/**********************************************
+
+      EXCEPTION-GENERATING INSTRUCTIONS
+
+**********************************************/
+
+/*******************************************************************
+ * rfe (Return From Exception) instruction
+ * 
+ * RFE loads the PC and the CPSR from the word at the specified
+ * address and the following word respectively.
+ */ 
+
+op rfedb( 0b11101000[8]: 0b00[2]: x[1]: 0b1[1]: r0[4]:> <: 0b1100000000000000[16] );
+
+rfedb.disasm = {
+  buffer << "rfedb\t" << DisasmRegister(r0) << (x ? "!" : "");
+};
+
+op rfeia( 0b11101001[8]: 0b10[2]: x[1]: 0b1[1]: r0[4]:> <: 0b1100000000000000[16] );
+
+rfeia.disasm = {
+  buffer << "rfeia\t" << DisasmRegister(r0) << (x ? "!" : "");
+};
+
+/*
+ * end of rfe (Return From Exception) instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * srs (Store Return State) instruction
+ * 
+ * SRS stores the LR and SPSR of the current mode to the stack of a
+ * specified mode.
+ */ 
+
+op srsdb( 0b11101000[8]: 0b00[2]: x[1]: 0b0[1]: r0[4]:> <: 0b11000000000[11]: imm[5] );
+
+srsdb.disasm = {
+  buffer << "srsdb\t" << DisasmRegister(r0) << (x ? "!" : "") << ", " << DisasmI(imm);
+};
+
+op srsia( 0b11101001[8]: 0b10[2]: x[1]: 0b0[1]: r0[4]:> <: 0b11000000000[11]: imm[5] );
+
+srsia.disasm = {
+  buffer << "srsia\t" << DisasmRegister(r0) << (x ? "!" : "") << ", " << DisasmI(imm);
+};
+
+/*
+ * end of srs (Store Return State) instruction
+ *******************************************************************/
+
+op smc_i( 0b111101111111[12]: imm0[4]:> <: 0b1000[4]: shl<4> imm1[8]: shl<12> imm2[4] );
+smc_i.var imm : {uint32_t} = {imm2|imm1|imm0};
+smc_i.disasm = { buffer << "smc\t" << DisasmI(imm); };
+
+op hvc_i( 0b111101111110[12]: shl<12> imm1[4]:> <: 0b1000[4]: imm0[12] );
+hvc_i.var imm : {uint32_t} = {imm1|imm0};
+hvc_i.disasm = { buffer << "hvc\t" << DisasmI(imm); };
+
+/*******************************************************************
+ * cps (Change Processor State) instruction
+ * 
+ * CPS changes one or more of the CPSR.{A, I, F} interrupt mask bits
+ * and the CPSR.M mode field, without changing the other CPSR bits.
+ */ 
+
+op cps( 0b11110[5]: 0b0[1]: 0b1110[4]: 0b101111[6]:> <: 0b10000[5]: chitm[1]: dis[1]: chmod[1]: a[1]: i[1]: f[1]: mode[5] );
+cps.var reject : {Reject} = {(not chmod and (mode != 0)) or
+                             (chitm xor (a or i or f)) or
+                             (not (chmod or chitm)) or
+                             (not chitm and dis)};
+cps.var psr_mask : {uint32_t} = {a*A.getmask<uint32_t>()|i*I.getmask<uint32_t>()|f*F.getmask<uint32_t>()|chmod*M.getmask<uint32_t>()};
+cps.var psr_bits : {uint32_t} = {dis*(A.getmask<uint32_t>()|I.getmask<uint32_t>()|F.getmask<uint32_t>())|mode};
+
+cps.disasm = {
+  buffer << "cps";
+  char const* sep = "\t";
+  if (chitm) {
+    buffer << (dis?"id":"ie") << '\t' << (a?"a":"") << (i?"i":"") << (f?"f":"");
+    sep = ", ";
+  }
+  if (chmod)
+    buffer << sep << DisasmI( mode );
+};
+
+cps.execute = {
+  typedef typename ARCH::U32 U32;
+  
+  if (cpu.Test(cpu.CPSR().Get(M) == U32(cpu.USER_MODE)))
+    return;
+  
+  // CPSRWriteByInstr() checks for illegal mode changes
+  CPSRWriteByInstr( cpu, U32(psr_bits), psr_mask );
+};
+
+/*
+ * end of cps (Change Processor State) instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * SUBS PC, LR and related instructions
+ * 
+ * The SUBS PC, LR, #<const> instruction provides an exception return
+ * without the use of the stack.
+ */ 
+
+op subspc( 0b1111001111011110[16]:> <: 0b10001111[8]: imm[8] );
+
+subspc.disasm = {
+  buffer << "subs\tpc, lr, " << DisasmI(imm);
+};
+
+subspc.execute = {
+  if (unlikely( not CheckCondition(cpu, cpu.itcond()) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  U32 op1 = cpu.GetGPR( 14 ), op2 = U32(imm), res = op1 - op2;
+  
+  CPSRWriteByInstr( cpu, cpu.CurrentMode().GetSPSR(), 0xffffffff );
+  
+  cpu.SetGPR( 15, res );
+};
+
+/*
+ * end of SUBS PC, LR and related instructions
+ *******************************************************************/
+

@@ -1,0 +1,18 @@
+INSTALLATION
+------------
+
+Requirements:
+  - GNU bash
+  - boost (http://www.boost.org) development package (libboost-devel for Redhat/Mandriva, libboost-graph-dev for Debian/Ubuntu)
+  - libxml2 (http://xmlsoft.org/libxml2) development package (libxml2-devel for Redhat/Mandriva, libxml2-dev for Debian/Ubuntu)
+  - zlib (http://www.zlib.net) development package (zlib1g-devel for Redhat/Mandriva, zlib1g-devel for Debian/Ubuntu)
+  - libedit (http://www.thrysoee.dk/editline) development package (libedit-devel for Redhat/Mandriva, libedit-dev for Debian/Ubuntu)
+
+Building instructions:
+  $ cd <my-build-dir>
+  $ ./configure <options>
+  $ make
+  
+Installing (optional):
+  $ make install
+

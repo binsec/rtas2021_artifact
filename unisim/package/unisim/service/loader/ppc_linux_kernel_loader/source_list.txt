@@ -1,0 +1,2 @@
+unisim/service/loader/ppc_linux_kernel_loader/ppc_linux_kernel_loader32.cc
+unisim/service/loader/ppc_linux_kernel_loader/ppc_linux_kernel_loader64.cc

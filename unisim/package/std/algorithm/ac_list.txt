@@ -1,0 +1,1 @@
+AC_CHECK_HEADER([algorithm],, AC_MSG_ERROR([algorithm is missing]))

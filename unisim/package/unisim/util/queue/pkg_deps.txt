@@ -1,0 +1,6 @@
+libc/inttypes
+libc/string
+std/iosfwd
+std/iostream
+std/sstream
+std/stdexcept

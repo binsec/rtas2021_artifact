@@ -1,0 +1,12 @@
+SimFloat++ is a library of template classes implementing IEEE 754 floating point numbers.
+The implementation is sufficiently complete to allow simulating precisely floating point computation
+of a processor (overflow, underflow, ...).
+The library has been extensively tested for all operations, all rounding modes
+(about 100000 smartly selected random tests per operation and per rounding mode) on a POWERPC G3 processor.
+Visit http://www.microlib.org for more informations about SimFloat++.
+
+The library is distributed under the GNU Lesser General Public License version 2.1, see the file LICENSE.
+
+Compilation:
+As all the classes are templated, so compilation is made only at the instanciation.
+Just include Floating.h or PPCFloating.h and instanciate the classes in your C++ code.

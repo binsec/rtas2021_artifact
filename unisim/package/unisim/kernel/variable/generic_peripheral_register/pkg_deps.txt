@@ -1,0 +1,8 @@
+libc/inttypes
+std/cstdlib
+std/cstring
+std/sstream
+std/string
+unisim/kernel
+unisim/kernel/variable
+unisim/util/generic_peripheral_register

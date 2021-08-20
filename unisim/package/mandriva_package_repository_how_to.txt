@@ -1,0 +1,23 @@
+This document is intended for the mandriva repository maintainers
+
+1) Building the packages
+------------------------
+
+IMPORTANT: You must have the source tarballs in the current directory.
+
+$ <path-to-unisim-devel>/package/build-packages.sh i586-rpm <version> <path-to-systemc-install> <path-to-TLM2.0-install>
+
+You finally get unisim-tools*.rpm, and unisim-simulators*.rpm
+Move these packages to <path-to-unisim.org/distributions/binary/rpm>
+
+2) Building the package list
+----------------------------
+
+Go into the mandriva repository, and run genhdlist2:
+$ cd <path-to-unisim.org/distributions/binary/rpm>
+$ genhdlist2 .
+
+3) Using the repository
+-----------------------
+
+$ urpmi.addmedia UNISIM http://unisim.org/distributions/binary/rpm

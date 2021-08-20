@@ -1,0 +1,45 @@
+\section{User Level ISA Validation}
+\label{sec:user_level}
+
+When performing the validation of the ISA at the \textit{user level} we are only interested in the instructions that the processor can execute when running at the \textit{user mode}.
+The \textit{user mode} is usually the most used mode on a processor (whenever the processor has multiple execution modes, which the ARM7TDMI has).
+It is used to run the non-system dependent part of the applications.
+Whenever an application needs to access the system (write on the screen, read the input from the keyboard, etc), it executes an special instruction (usually we call it \textit{system call}) which switches the processor to \textit{system mode} to perform the required operation.
+
+The interest on performing a validation of \textit{user level} instructions resides on the difficulty to perform complete tests when using the \textit{system level} instructions (as we will see on Section~\ref{sec:system_level}).
+
+\begin{figure}[!h]
+	\begin{center}
+		\includegraphics[width=\textwidth]{arm7tdmi_validation/figures/ARM7TDMI_user_level.pdf}
+	\end{center}
+	\caption{ARM7TDMI schematic architecture to run applications at user level.}
+	\label{fig:arm7tdmi_user_level}
+\end{figure}
+
+In order to validate only the \textit{user level} ISA, the simulator is run with a special configuration, see Figure~\ref{fig:arm7tdmi_user_level}.
+To the \textit{ELF Loader} and the \textit{GDB Server} services a third service has been added: the \textit{Linux System Call Translator}.
+This service takes control of the simulation when a system call is executed, providing the program being executed by the simulator a translation of the system calls, without having to execute any system level instruction.
+More concreatelly, the \textit{Linux System Call Translator} provides a traduction to Linux programs, which means that programs running under this configuration need to be compiled for ARM Linux.
+
+\begin{figure}[!h]
+	\begin{center}
+		\includegraphics[width=\textwidth]{arm7tdmi_validation/figures/random_tests_methodology.pdf}
+	\end{center}
+	\caption{Random tests methodology.}
+	\label{fig:random_tests_methodology}
+\end{figure}
+
+Figure~\ref{fig:random_tests_methodology} shows the steps taken to perform the validation of the user level ISA.
+Once the simulator is written an application is run into booth the simulator and the target platform.
+The output results of the simulator and the target platform are then compared.
+If results match then it means that the simulator is correctly implemented.
+If the results do not match we debug the simulator to fix it using the results differences, and the previous steps are repeated until the results match.
+
+The following two subsections presents different validation tests performed under this configuration.
+As target platform we used an ARM9 platform.
+While it is not an ARM7TDMI platform, the ARM9 shares the same instructions at the user level, making it a valid target platform for the ARM7TDMI simulator at the user level.
+
+\input{arm7tdmi_validation/validation_user_random}
+
+\input{arm7tdmi_validation/validation_user_benchmark}
+

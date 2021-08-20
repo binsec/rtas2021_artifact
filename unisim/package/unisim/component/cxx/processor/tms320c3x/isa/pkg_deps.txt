@@ -1,0 +1,4 @@
+std/iosfwd
+std/iostream
+std/string
+unisim/component/cxx/processor/tms320c3x

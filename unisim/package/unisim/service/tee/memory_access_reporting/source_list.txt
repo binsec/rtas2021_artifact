@@ -1,0 +1,2 @@
+unisim/service/tee/memory_access_reporting/tee_32.cc
+unisim/service/tee/memory_access_reporting/tee_64.cc

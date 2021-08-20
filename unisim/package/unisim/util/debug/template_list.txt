@@ -1,0 +1,7 @@
+unisim/util/debug/breakpoint_registry.tcc
+unisim/util/debug/data_object_initializer.tcc
+unisim/util/debug/profile.tcc
+unisim/util/debug/stmt.tcc
+unisim/util/debug/symbol_table.tcc
+unisim/util/debug/symbol.tcc
+unisim/util/debug/watchpoint_registry.tcc

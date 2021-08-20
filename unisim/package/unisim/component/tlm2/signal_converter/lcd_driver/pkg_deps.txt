@@ -1,0 +1,7 @@
+libc/inttypes
+m4/systemc
+unisim/component/tlm2/interrupt
+unisim/kernel
+unisim/kernel/logger
+unisim/kernel/tlm2
+unisim/service/interfaces/trap_reporting

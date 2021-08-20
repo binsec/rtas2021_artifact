@@ -1,0 +1,58 @@
+<div class="content-item">
+	<div class="content-item-title"><h2>Build a sample GCC cross compiler using crosstool-NG</h2></div>
+	<div class="content-item-body">
+		<p>
+			Prerequisite: crosstool-NG should be preliminarly installed, see tutorial <a class="online-document" href="how-to-build-cross-gcc.html">How to build a GCC cross compiler ?</a>.
+		</p>
+		<h3>1. Choose a GCC cross compiler to build</h3>
+		<p>
+			List the sample configurations and choose the one you want to use (e.g. powerpc-unknown-linux-gnu):
+		</p>
+		<pre>
+			$ ./ct-ng list-samples
+			alphaev56-unknown-linux-gnu                                  
+			arm-cortex_a8-linux-gnueabi                                  
+			armeb-unknown-eabi                                           
+			armeb-unknown-linux-gnu                                      
+			armeb-unknown-linux-gnueabi                                  
+			armeb-unknown-linux-uclibc                                   
+			armeb-unknown-linux-uclibcgnueabi                            
+			arm-iphone-linux-gnueabi                                     
+			arm-unknown-eabi                                             
+			arm-unknown-elf                                              
+			arm-unknown-linux-gnu                                        
+			arm-unknown-linux-gnueabi                                    
+			arm-unknown-linux-uclibc                                     
+			arm-unknown-linux-uclibcgnueabi                              
+			avr32-unknown-none                                           
+			i586-geode-linux-uclibc                                      
+			i686-nptl-linux-gnu                                          
+			ia64-unknown-linux-gnu
+			mingw32,i686-none-linux-gnu
+			mips-ar2315-linux-gnu
+			mipsel-unknown-linux-gnu
+			mips-unknown-elf
+			mips-unknown-linux-uclibc
+			powerpc-405-linux-gnu
+			powerpc64-unknown-linux-gnu
+			powerpc-860-linux-gnu
+			powerpc-e500v2-linux-gnuspe
+			powerpc-unknown-linux-gnu
+			powerpc-unknown-linux-uclibc
+			powerpc-unknown_nofpu-linux-gnu
+			sh4-unknown-linux-gnu
+			x86_64-unknown-linux-gnu
+			x86_64-unknown-linux-uclibc
+		</pre>
+
+		<h3>2. Select the choosen GCC cross compiler</h3>
+		<pre>
+			$ ./ct-ng powerpc-unknown-linux-gnu
+		</pre>
+
+		<h3>3. Build the GCC cross compiler</h3>
+		<pre>
+			$ ./ct-ng build
+		</pre>
+	</div>
+</div>

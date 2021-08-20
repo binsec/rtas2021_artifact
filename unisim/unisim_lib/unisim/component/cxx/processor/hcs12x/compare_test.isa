@@ -1,0 +1,1235 @@
+/*
+ *  Copyright (c) 2008,
+ *  Commissariat a l'Energie Atomique (CEA)
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without modification,
+ *  are permitted provided that the following conditions are met:
+ *
+ *   - Redistributions of source code must retain the above copyright notice, this
+ *     list of conditions and the following disclaimer.
+ *
+ *   - Redistributions in binary form must reproduce the above copyright notice,
+ *     this list of conditions and the following disclaimer in the documentation
+ *     and/or other materials provided with the distribution.
+ *
+ *   - Neither the name of CEA nor the names of its contributors may be used to
+ *     endorse or promote products derived from this software without specific prior
+ *     written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ *  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *  DISCLAIMED.
+ *  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ *  INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ *  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+ *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ *  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Authors: Reda   Nouacer  (reda.nouacer@cea.fr)
+ */
+
+
+// CBA
+op cba(0x18[8]:0x17[8])
+
+cba.getCycles = { return 2; }
+
+cba.disasm = {
+	string mnem;
+	
+	mnem = "CBA";
+	sink << mnem;
+	
+	return mnem;
+}
+
+cba.execute = {
+	uint8_t result, carry_out, overflow, carry_in, sign;
+	
+	carry_in = 0;
+	SignedSub8(result, carry_out, overflow, sign, cpu->getRegA(), cpu->getRegB(), carry_in);
+	
+	if (carry_out) { cpu->ccr->setC();} else { cpu->ccr->clrC();}
+	if (overflow) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x80) == 0x80) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+//  CMPab  IMM
+op cmp_ab_imm(0b1[1]:b[1]:0x01[6]:opr8i[8])
+
+cmp_ab_imm.getCycles = { return 1; }
+
+cmp_ab_imm.disasm = {
+	string mnem;
+	
+	if (b==0) {
+		mnem = "CMPA";
+	} else {
+		mnem = "CMPB";
+	}
+	sink << mnem << " #0x" << std::hex << opr8i;
+	
+	return mnem;
+}
+
+cmp_ab_imm.execute = {
+	uint8_t result, carry_out, overflow, carry_in, sign;
+	uint8_t regVal;
+	
+	carry_in = 0;
+	if (b==0) {
+		regVal = cpu->getRegA();
+	} else {
+		regVal = cpu->getRegB();
+	}
+	
+	SignedSub8(result, carry_out, overflow, sign, regVal, opr8i, carry_in);
+	
+	if (carry_out) { cpu->ccr->setC();} else { cpu->ccr->clrC();}
+	if (overflow) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x80) == 0x80) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+// CMPab  DIR
+op cmp_ab_dir(0b1[1]:b[1]:0x11[6]:opr8a[8])
+
+cmp_ab_dir.getCycles = { return 3; }
+
+cmp_ab_dir.disasm = {
+	string mnem;
+	
+	if (b==0) {
+		mnem = "CMPA";
+	} else {
+		mnem = "CMPB";
+	}
+	sink << mnem << " 0x" << std::hex << opr8a;
+	
+	return mnem;
+}
+
+cmp_ab_dir.execute = {
+	uint8_t result, carry_out, overflow, carry_in, sign;
+	uint8_t regVal;
+	
+	uint8_t opr8aVal = cpu->memRead8(opr8a, ADDRESS::DIRECT, false);
+	
+	carry_in = 0;
+	if (b==0) {
+		regVal = cpu->getRegA();
+	} else {
+		regVal = cpu->getRegB();
+	}
+	
+	SignedSub8(result, carry_out, overflow, sign, regVal, opr8aVal, carry_in);
+	
+	if (carry_out) { cpu->ccr->setC();} else { cpu->ccr->clrC();}
+	if (overflow) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x80) == 0x80) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+// CMPab  EXT
+op cmp_ab_ext(0b1[1]:b[1]:0x31[6]:><:opr16a[16])
+
+cmp_ab_ext.getCycles = { return 3; }
+
+cmp_ab_ext.disasm = {
+	string mnem;
+	
+	if (b==0) {
+		mnem = "CMPA";
+	} else {
+		mnem = "CMPB";
+	}
+	sink << mnem << " 0x" << std::hex << opr16a;
+	
+	return mnem;
+}
+
+cmp_ab_ext.execute = {
+	uint8_t result, carry_out, overflow, carry_in, sign;
+	uint8_t regVal;
+	physical_address_t addr = opr16a;
+		
+	uint8_t opr16aVal = cpu->memRead8(addr);
+	
+	carry_in = 0;
+	if (b==0) {
+		regVal = cpu->getRegA();
+	} else {
+		regVal = cpu->getRegB();
+	}
+	
+	SignedSub8(result, carry_out, overflow, sign, regVal, opr16aVal, carry_in);
+	
+	if (carry_out) { cpu->ccr->setC();} else { cpu->ccr->clrC();}
+	if (overflow) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x80) == 0x80) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+// CMPab  IDX or IDX1 or IDX2 or [D,IDX] or [IDX2] 
+op cmp_ab_idx(0b1[1]:b[1]:0x21[6]:> <:*xb[XB])
+
+cmp_ab_idx.pre_execute = {
+	
+	xb->pre_execute(sink);
+	// after: other specific actions
+}
+
+cmp_ab_idx.post_execute = {
+
+	// before: other specific actions
+	xb->post_execute(sink);
+}
+
+cmp_ab_idx.getCycles = { return XbModes::GetIDXCycles(xb->getXbMode(), 3, 3, 4, 6, 6); }
+
+cmp_ab_idx.disasm = {
+	string mnem;
+	
+	if (b==0) {
+		mnem = "CMPA";
+	} else {
+		mnem = "CMPB";
+	}
+	sink << mnem << " ";
+	xb->disasm(sink);
+	
+	return mnem;
+}
+
+cmp_ab_idx.execute = {
+	uint8_t result, carry_out, overflow, carry_in, sign;
+	uint8_t regVal;
+	physical_address_t addr = xb->getEAddr(cpu);
+	uint8_t xbVal = cpu->memRead8(addr);
+	
+	carry_in = 0;
+	if (b==0) {
+		regVal = cpu->getRegA();
+	} else {
+		regVal = cpu->getRegB();
+	}
+	
+	SignedSub8(result, carry_out, overflow, sign, regVal, xbVal, carry_in);
+	
+	if (carry_out) { cpu->ccr->setC();} else { cpu->ccr->clrC();}
+	if (overflow) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x80) == 0x80) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+// CPdyxs  IMM
+op cp_dyxs_imm(0x23[6]:dyxs[2]:> <:opr16i[16])
+
+cp_dyxs_imm.getCycles = { return 2; }
+
+cp_dyxs_imm.disasm = {
+	string mnem;
+	
+	switch (dyxs) {
+		case 0: mnem = "CPD"; break;
+		case 1: mnem = "CPY"; break;
+		case 2: mnem = "CPX"; break;
+		case 3: mnem = "CPS";  
+	}
+	sink << mnem << " #0x" << std::hex << opr16i;
+	
+	return mnem;
+}
+
+cp_dyxs_imm.execute = {
+	uint8_t carry_out, overflow, carry_in, sign;
+	uint16_t result, regVal = 0;
+	
+	carry_in = 0;
+	switch (dyxs) {
+		case 0: regVal = cpu->getRegD(); break;
+		case 1: regVal = cpu->getRegY(); break;
+		case 2: regVal = cpu->getRegX(); break;
+		case 3: regVal = cpu->getRegSP();  
+	}
+
+	SignedSub16(result, carry_out, overflow, sign, regVal, opr16i, carry_in);
+
+	if (carry_out) { cpu->ccr->setC();} else { cpu->ccr->clrC();}
+	if (overflow) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x8000) == 0x8000) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+// CPdyxs DIR
+op cp_dyxs_dir(0x27[6]:dyxs[2]:opr8a[8])
+
+cp_dyxs_dir.getCycles = { return 3; }
+
+cp_dyxs_dir.disasm = {
+	string mnem;
+	
+	switch (dyxs) {
+		case 0: mnem = "CPD"; break;
+		case 1: mnem = "CPY"; break;
+		case 2: mnem = "CPX"; break;
+		case 3: mnem = "CPS";  
+	}
+	sink << mnem << " 0x" << std::hex << opr8a;
+	
+	return mnem;
+}
+
+cp_dyxs_dir.execute = {
+	uint8_t carry_out, overflow, carry_in, sign;
+	uint16_t result, regVal = 0;
+	uint16_t opr8aVal;
+	
+	opr8aVal = cpu->memRead16(opr8a, ADDRESS::DIRECT, false);
+	
+	carry_in = 0;
+	switch (dyxs) {
+		case 0: regVal = cpu->getRegD(); break;
+		case 1: regVal = cpu->getRegY(); break;
+		case 2: regVal = cpu->getRegX(); break;
+		case 3: regVal = cpu->getRegSP();  
+	}
+	
+	SignedSub16(result, carry_out, overflow, sign, regVal, opr8aVal, carry_in);
+	
+	if (carry_out) { cpu->ccr->setC();} else { cpu->ccr->clrC();}
+	if (overflow) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x8000) == 0x8000) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+// CPdyxs EXT
+op cp_dyxs_ext(0x2F[6]:dyxs[2]:> <:opr16a[16])
+
+cp_dyxs_ext.getCycles = { return 3; }
+
+cp_dyxs_ext.disasm = {
+	string mnem;
+	
+	switch (dyxs) {
+		case 0: mnem = "CPD"; break;
+		case 1: mnem = "CPY"; break;
+		case 2: mnem = "CPX"; break;
+		case 3: mnem = "CPS";  
+	}
+	sink << mnem << " 0x" << std::hex << opr16a;
+	
+	return mnem;
+}
+
+cp_dyxs_ext.execute = {
+	uint8_t carry_out, overflow, carry_in, sign;
+	uint16_t result, regVal = 0;
+	uint16_t opr16aVal = cpu->memRead16(opr16a);
+	
+	carry_in = 0;
+	switch (dyxs) {
+		case 0: regVal = cpu->getRegD(); break;
+		case 1: regVal = cpu->getRegY(); break;
+		case 2: regVal = cpu->getRegX(); break;
+		case 3: regVal = cpu->getRegSP();  
+	}
+	
+	SignedSub16(result, carry_out, overflow, sign, regVal, opr16aVal, carry_in);
+	
+	if (carry_out) { cpu->ccr->setC();} else { cpu->ccr->clrC();}
+	if (overflow) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x8000) == 0x8000) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+// CPdyxs  IDX or IDX1 or IDX2 or [D,IDX] or [IDX2]
+op cp_dyxs_idx(0x2B[6]:dyxs[2]:> <:*xb[XB])
+
+cp_dyxs_idx.pre_execute = {
+	
+	xb->pre_execute(sink);
+	// after: other specific actions
+}
+
+cp_dyxs_idx.post_execute = {
+
+	// before: other specific actions
+	xb->post_execute(sink);
+}
+
+cp_dyxs_idx.getCycles = { return XbModes::GetIDXCycles(xb->getXbMode(), 3, 3, 4, 6, 6); }
+
+cp_dyxs_idx.disasm = {
+	string mnem;
+	
+	switch (dyxs) {
+		case 0: mnem = "CPD"; break;
+		case 1: mnem = "CPY"; break;
+		case 2: mnem = "CPX"; break;
+		case 3: mnem = "CPS";  
+	}
+	
+	sink << mnem << " ";
+	xb->disasm(sink);
+	
+	return mnem;
+}
+
+cp_dyxs_idx.execute = {
+	uint8_t carry_out, overflow, carry_in, sign;
+	uint16_t result, regVal = 0;
+	physical_address_t addr = xb->getEAddr(cpu);
+	uint16_t xbVal = cpu->memRead16(addr);
+	
+	carry_in = 0;
+	switch (dyxs) {
+		case 0: regVal = cpu->getRegD(); break;
+		case 1: regVal = cpu->getRegY(); break;
+		case 2: regVal = cpu->getRegX(); break;
+		case 3: regVal = cpu->getRegSP();  
+	}
+	
+	SignedSub16(result, carry_out, overflow, sign, regVal, xbVal, carry_in);
+	
+	if (carry_out) { cpu->ccr->setC();} else { cpu->ccr->clrC();}
+	if (overflow) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x8000) == 0x8000) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+/* ****** Compare to memory with Borrow ********** */
+
+// CPE_dyxs  IMM
+op cpe_dyxs_imm(0x18[8]:0x23[6]:dyxs[2]:> <:opr16i[16])
+
+cpe_dyxs_imm.getCycles = { return 3; }
+
+cpe_dyxs_imm.disasm = {
+	string mnem;
+	
+	switch (dyxs) {
+		case 0: mnem = "CPED"; break;
+		case 1: mnem = "CPEY"; break;
+		case 2: mnem = "CPEX"; break;
+		case 3: mnem = "CPES";  
+	}
+	sink << mnem << " #0x" << std::hex << opr16i;
+	return mnem;
+}
+
+cpe_dyxs_imm.execute = {
+	uint8_t carry_out, overflow, carry_in, zeroBit, sign;
+	uint16_t result, regVal = 0;
+	
+	zeroBit = cpu->ccr->getZ(); 
+	carry_in = cpu->ccr->getC();
+	switch (dyxs) {
+		case 0: regVal = cpu->getRegD(); break;
+		case 1: regVal = cpu->getRegY(); break;
+		case 2: regVal = cpu->getRegX(); break;
+		case 3: regVal = cpu->getRegSP();  
+	}
+
+	SignedSub16(result, carry_out, overflow, sign, regVal, opr16i, carry_in);
+
+	if (carry_out) { cpu->ccr->setC();} else { cpu->ccr->clrC();}
+	if (overflow) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+	if (zeroBit && (result == 0)) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x8000) == 0x8000) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+// CPE_dyxs DIR
+op cpe_dyxs_dir(0x18[8]:> <:0x27[6]:dyxs[2]:opr8a[8])
+
+cpe_dyxs_dir.getCycles = { return 4; }
+
+cpe_dyxs_dir.disasm = {
+	string mnem;
+	
+	switch (dyxs) {
+		case 0: mnem = "CPED"; break;
+		case 1: mnem = "CPEY"; break;
+		case 2: mnem = "CPEX"; break;
+		case 3: mnem = "CPES";  
+	}
+	sink << mnem << " 0x" << std::hex << opr8a;
+	return mnem;
+}
+
+cpe_dyxs_dir.execute = {
+	uint8_t carry_out, overflow, carry_in, zeroBit, sign;
+	uint16_t result, regVal = 0;
+	uint16_t opr8aVal;
+
+	opr8aVal = cpu->memRead16(opr8a, ADDRESS::DIRECT, false);
+	
+	zeroBit =  cpu->ccr->getZ();
+	carry_in = cpu->ccr->getC();
+	switch (dyxs) {
+		case 0: regVal = cpu->getRegD(); break;
+		case 1: regVal = cpu->getRegY(); break;
+		case 2: regVal = cpu->getRegX(); break;
+		case 3: regVal = cpu->getRegSP();  
+	}
+	
+	SignedSub16(result, carry_out, overflow, sign, regVal, opr8aVal, carry_in);
+	
+	if (carry_out) { cpu->ccr->setC();} else { cpu->ccr->clrC();}
+	if (overflow) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+	if (zeroBit && (result == 0)) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x8000) == 0x8000) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+// CPE_dyxs EXT
+op cpe_dyxs_ext(0x18[8]:0x2F[6]:dyxs[2]:> <:opr16a[16])
+
+cpe_dyxs_ext.getCycles = { return 4; }
+
+cpe_dyxs_ext.disasm = {
+	string mnem;
+	
+	switch (dyxs) {
+		case 0: mnem = "CPED"; break;
+		case 1: mnem = "CPEY"; break;
+		case 2: mnem = "CPEX"; break;
+		case 3: mnem = "CPES";  
+	}
+	sink << mnem << " 0x" << std::hex << opr16a;
+	return mnem;
+}
+
+cpe_dyxs_ext.execute = {
+	uint8_t carry_out, overflow, carry_in, zeroBit, sign;
+	uint16_t result, regVal = 0;
+	uint16_t opr16aVal = cpu->memRead16(opr16a);
+	
+	zeroBit =  cpu->ccr->getZ();
+	carry_in = cpu->ccr->getC();
+	switch (dyxs) {
+		case 0: regVal = cpu->getRegD(); break;
+		case 1: regVal = cpu->getRegY(); break;
+		case 2: regVal = cpu->getRegX(); break;
+		case 3: regVal = cpu->getRegSP();  
+	}
+	
+	SignedSub16(result, carry_out, overflow, sign, regVal, opr16aVal, carry_in);
+	
+	if (carry_out) { cpu->ccr->setC();} else { cpu->ccr->clrC();}
+	if (overflow) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+	if (zeroBit && (result == 0)) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x8000) == 0x8000) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+// CPE_dyxs  IDX or IDX1 or IDX2 or [D,IDX] or [IDX2]
+op cpe_dyxs_idx(0x18[8]:0x2B[6]:dyxs[2]:> <:*xb[XB])
+
+cpe_dyxs_idx.pre_execute = {
+	
+	xb->pre_execute(sink);
+	// after: other specific actions
+}
+
+cpe_dyxs_idx.post_execute = {
+
+	// before: other specific actions
+	xb->post_execute(sink);
+}
+
+cpe_dyxs_idx.getCycles = { return XbModes::GetIDXCycles(xb->getXbMode(), 4, 4, 5, 7, 7); }
+
+cpe_dyxs_idx.disasm = {
+	string mnem;
+	
+	switch (dyxs) {
+		case 0: mnem = "CPED"; break;
+		case 1: mnem = "CPEY"; break;
+		case 2: mnem = "CPEX"; break;
+		case 3: mnem = "CPES";  
+	}
+	sink << mnem << " ";
+	xb->disasm(sink);
+	return mnem;
+}
+
+cpe_dyxs_idx.execute = {
+	uint8_t carry_out, overflow, carry_in, zeroBit, sign;
+	uint16_t result, regVal = 0;
+	physical_address_t addr = xb->getEAddr(cpu);
+	uint16_t xbVal = cpu->memRead16(addr);
+	
+	zeroBit =  cpu->ccr->getZ();
+	carry_in = cpu->ccr->getC();
+	switch (dyxs) {
+		case 0: regVal = cpu->getRegD(); break;
+		case 1: regVal = cpu->getRegY(); break;
+		case 2: regVal = cpu->getRegX(); break;
+		case 3: regVal = cpu->getRegSP();  
+	}
+	
+	SignedSub16(result, carry_out, overflow, sign, regVal, xbVal, carry_in);
+	
+	if (carry_out) { cpu->ccr->setC();} else { cpu->ccr->clrC();}
+	if (overflow) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+	if (zeroBit && (result == 0)) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x8000) == 0x8000) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+
+/* ************ Test Instructions **************** */
+
+// TST EXT
+op tst_ext(0xF7[8]:> <:opr16a[16])
+
+tst_ext.getCycles = { return 3; }
+
+tst_ext.disasm = {
+	string mnem = "TST";
+	
+	sink << mnem << " 0x" << std::hex << opr16a;
+	return mnem;
+}
+
+tst_ext.execute = {
+	uint8_t carry_out, overflow, carry_in, sign;
+	uint8_t result;
+	physical_address_t addr = opr16a;	
+	uint8_t opr16aVal = cpu->memRead8(addr);
+	carry_in = 0;
+	
+	SignedSub8(result, carry_out, overflow, sign, opr16aVal, 0, carry_in);
+	
+	cpu->ccr->clrC();
+	cpu->ccr->clrV();
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x80) == 0x80) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+// TST IDX or IDX1 or IDX2 or [D,IDX] or [IDX2]
+op tst_idx(0xE7[8]:> <:*xb[XB])
+
+tst_idx.pre_execute = {
+	
+	xb->pre_execute(sink);
+	// after: other specific actions
+}
+
+tst_idx.post_execute = {
+
+	// before: other specific actions
+	xb->post_execute(sink);
+}
+
+tst_idx.getCycles = { return XbModes::GetIDXCycles(xb->getXbMode(), 3, 3, 4, 6, 6); }
+
+tst_idx.disasm = {
+	string mnem = "TST";
+	
+	sink << mnem << " ";
+	xb->disasm(sink);
+	return mnem;
+}
+
+tst_idx.execute = {
+	uint8_t carry_out, overflow, carry_in, sign;
+	uint8_t result;
+	physical_address_t addr = xb->getEAddr(cpu);	
+	uint8_t xbVal = cpu->memRead8(addr);
+	
+	carry_in = 0;
+	
+	SignedSub8(result, carry_out, overflow, sign, xbVal, 0, carry_in);
+	
+	cpu->ccr->clrC();
+	cpu->ccr->clrV();
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x8000) == 0x8000) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+// TSTA or TSTB
+op tst_ab(0b1[1]:b[1]:0x17[6])
+
+tst_ab.getCycles = { return 1; }
+
+tst_ab.disasm = {
+	string mnem;
+	
+	if (b==0) {
+		mnem = "TSTA";
+	} else {
+		mnem = "TSTB";
+	}
+	
+	sink << mnem << " ";
+	return mnem;
+}
+
+tst_ab.execute = {
+	uint8_t result, carry_out, overflow, carry_in, sign;
+	uint8_t regVal;
+	
+	carry_in = 0;
+	if (b==0) {
+		regVal = cpu->getRegA();
+	} else {
+		regVal = cpu->getRegB();
+	}
+	
+	SignedSub8(result, carry_out, overflow, sign, regVal, 0, carry_in);
+	
+	cpu->ccr->clrC();
+	cpu->ccr->clrV();
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x80) == 0x80) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+// TSTW EXT
+op tstw_ext(0x18[8]:0xF7[8]:opr16a[16])
+
+tstw_ext.getCycles = { return 4; }
+
+tstw_ext.disasm = {
+	string mnem = "TSTW";
+	
+	sink << mnem << " 0x" << std::hex << opr16a;
+	return mnem;
+}
+
+tstw_ext.execute = {
+	uint8_t carry_out, overflow, carry_in, sign;
+	uint16_t result;
+	physical_address_t addr = opr16a;	
+	uint16_t opr16aVal = cpu->memRead16(addr);
+	
+	carry_in = 0;
+	
+	SignedSub16(result, carry_out, overflow, sign, opr16aVal, 0, carry_in);
+	
+	cpu->ccr->clrC();
+	cpu->ccr->clrV();
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x8000) == 0x8000) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+// TSTW IDX or IDX1 or IDX2 or [D, IDX] or [IDX2]
+op tstw_idx(0x18[8]:0xE7[8]:> <:*xb[XB])
+
+tstw_idx.pre_execute = {
+	
+	xb->pre_execute(sink);
+	// after: other specific actions
+}
+
+tstw_idx.post_execute = {
+
+	// before: other specific actions
+	xb->post_execute(sink);
+}
+
+tstw_idx.getCycles = { return XbModes::GetIDXCycles(xb->getXbMode(), 4, 4, 5, 7, 7); }
+
+tstw_idx.disasm = {
+	string mnem = "TSTW";
+	
+	sink << mnem << " ";
+	xb->disasm(sink);
+	return mnem;
+}
+
+tstw_idx.execute = {
+	uint8_t carry_out, overflow, carry_in, sign;
+	uint16_t result;
+	physical_address_t addr = xb->getEAddr(cpu);	
+	uint16_t xbVal = cpu->memRead16(addr);
+	
+	carry_in = 0;
+	
+	SignedSub16(result, carry_out, overflow, sign, xbVal, 0, carry_in);
+	
+	cpu->ccr->clrC();
+	cpu->ccr->clrV();
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x8000) == 0x8000) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+// TSTX or TSTY
+op tst_xy(0x18[8]:0b1[1]:b[1]:0x17[6])
+
+tst_xy.getCycles = { return 2; }
+
+tst_xy.disasm = {
+	string mnem;
+	
+	switch (b) {
+		case 0: mnem = "TSTX"; break;
+		case 1: mnem = "TSTY"; break;
+	}
+	
+	sink << mnem << " ";
+	return mnem;
+}
+
+tst_xy.execute = {
+	uint8_t carry_out, overflow, carry_in, sign;
+	uint16_t result, regVal = 0;
+	
+	carry_in = 0;
+	switch (b) {
+		case 0: regVal = cpu->getRegY(); break;
+		case 1: regVal = cpu->getRegY(); break;
+	}
+	
+	SignedSub16(result, carry_out, overflow, sign, regVal, 0, carry_in);
+	
+	cpu->ccr->clrC();
+	cpu->ccr->clrV();
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x8000) == 0x8000) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+
+/* ************ Minimum Instructions ************* */
+
+// EMIND: MIN ((D), (M : M + 1)) ⇒ D
+
+// opcode(EMIND)-> 0x18 0x1B
+op emind(0x18[8]:0x1B[8]:> <:*xb[XB])
+
+emind.getCycles = { return XbModes::GetIDXCycles(xb->getXbMode(), 4, 4, 5, 7, 7); }
+
+emind.disasm = {
+	string mnem = "EMIND";
+	
+	sink << mnem << " ";
+	xb->disasm(sink);
+	return mnem;
+}
+
+emind.execute = {
+	 
+	uint16_t dVal = cpu->getRegD();
+	physical_address_t addr = xb->getEAddr(cpu);
+	uint16_t mVal = cpu->memRead16(addr);
+	
+	uint16_t min;
+	if (dVal > mVal) { min = mVal; } else { min = dVal; }
+	 
+	uint16_t result = dVal - mVal;
+
+	cpu->setRegD(min);
+	 
+	// N: Set if MSB of result is set; cleared otherwise
+	if ((result & 0x8000) == 0x8000) { cpu->ccr->setN(); } else { cpu->ccr->clrN(); }
+	// Z: Set if result is 0x0000; cleared otherwise
+	if (result == 0) { cpu->ccr->setZ(); } else { cpu->ccr->clrZ(); }
+	 
+	/* 
+	 * V: (D15 • !M15 • !R15) + (!D15 • M15 • R15)
+	 * Set if a two’s complement overflow resulted from the operation; cleared
+	 * otherwise
+	 */
+	if (((dVal & 0x8000) & ~(mVal & 0x8000) & ~(result & 0x8000)) | (~(dVal & 0x8000) & (mVal & 0x8000) & (result & 0x8000))) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+	/*
+	 * C: !D15 • M15 + M15 • R15 + R15 • !D15
+	 * Set if the value of the content of memory is larger than the value of the
+	 * accumulator; cleared otherwise
+	 */
+	if (mVal > dVal) { cpu->ccr->setC(); } else { cpu->ccr->clrC(); }
+
+	return getCycles();
+}
+
+// EMINM: MIN ((D), (M : M + 1)) ⇒ M : M + 1
+
+// opcode(EMINM)-> 0x18 0x1F
+op eminm(0x18[8]:0x1F[8]:> <:*xb[XB])
+
+eminm.getCycles = { return XbModes::GetIDXCycles(xb->getXbMode(), 4, 5, 6, 7, 7); }
+
+eminm.disasm = {
+	string mnem = "EMINM";
+
+	sink << mnem << " ";
+	xb->disasm(sink);
+	return mnem;
+}
+
+eminm.execute = {
+	 
+	uint16_t dVal = cpu->getRegD();
+	physical_address_t addr = xb->getEAddr(cpu);
+	uint16_t mVal = cpu->memRead16(addr);
+	
+	uint16_t min;
+	if (dVal > mVal) { min = mVal; } else { min = dVal; }
+	 
+	uint16_t result = dVal - mVal;
+
+	cpu->memWrite16(addr, min);
+	 
+	// N: Set if MSB of result is set; cleared otherwise
+	if ((result & 0x8000) == 0x8000) { cpu->ccr->setN(); } else { cpu->ccr->clrN(); }
+	// Z: Set if result is 0x0000; cleared otherwise
+	if (result == 0) { cpu->ccr->setZ(); } else { cpu->ccr->clrZ(); }
+	 
+	/* 
+	 * V: (D15 • !M15 • !R15) + (!D15 • M15 • R15)
+	 * Set if a two’s complement overflow resulted from the operation; cleared
+	 * otherwise
+	 */
+	if (((dVal & 0x8000) & ~(mVal & 0x8000) & ~(result & 0x8000)) | (~(dVal & 0x8000) & (mVal & 0x8000) & (result & 0x8000))) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+	/*
+	 * C: !D15 • M15 + M15 • R15 + R15 • !D15
+	 * Set if the value of the content of memory is larger than the value of the
+	 * accumulator; cleared otherwise
+	 */
+	if (mVal > dVal) { cpu->ccr->setC(); } else { cpu->ccr->clrC(); }
+
+	return getCycles();
+}
+
+
+// MINA: MIN ((A), (M)) ⇒ A
+
+// opcode(MINA)-> 0x18 0x19 
+op mina(0x18[8]:0x19[8]:> <:*xb[XB])
+
+mina.getCycles = { return XbModes::GetIDXCycles(xb->getXbMode(), 4, 4, 5, 7, 7); }
+
+mina.disasm = {
+	string mnem = "MINA";
+
+	sink << mnem << " ";
+	
+	xb->disasm(sink);
+	return mnem;
+}
+
+mina.execute = {
+	 
+	uint8_t aVal = cpu->getRegA();
+	physical_address_t addr = xb->getEAddr(cpu);
+	uint8_t mVal = cpu->memRead8(addr);
+	
+	uint8_t min;
+	if (aVal > mVal) { min = mVal; } else { min = aVal; }
+	 
+	uint8_t result = aVal - mVal;
+
+	cpu->setRegA(min);
+	 
+	// N: Set if MSB of result is set; cleared otherwise
+	if ((result & 0x80) == 0x80) { cpu->ccr->setN(); } else { cpu->ccr->clrN(); }
+	// Z: Set if result is 0x00; cleared otherwise
+	if (result == 0) { cpu->ccr->setZ(); } else { cpu->ccr->clrZ(); }
+	 
+	/* 
+	 * V: (A7 • !M7 • !R7) + (!A7 • M7 • R7)
+	 * Set if a two’s complement overflow resulted from the operation; cleared
+	 * otherwise
+	 */
+	if (((aVal & 0x80) & ~(mVal & 0x80) & ~(result & 0x80)) | (~(aVal & 0x80) & (mVal & 0x80) & (result & 0x80))) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+	/*
+	 * C: !A7 • M7 + M7 • R7 + R7 • !A7
+	 * Set if the value of the content of memory is larger than the value of the
+	 * accumulator; cleared otherwise
+	 */
+	if (mVal > aVal) { cpu->ccr->setC(); } else { cpu->ccr->clrC(); }
+
+	return getCycles();
+}
+
+// MINM: MIN ((A), (M)) ⇒ M
+
+// opcode(MINM)->0x18 0x1D
+op minm(0x18[8]:0x1D[8]:> <:*xb[XB])
+
+minm.getCycles = { return XbModes::GetIDXCycles(xb->getXbMode(), 4, 5, 6, 7, 7); }
+
+minm.disasm = {
+	string mnem = "MINM";
+
+	sink << mnem << " ";
+	
+	xb->disasm(sink);
+	return mnem;
+}
+
+minm.execute = {
+	 
+	uint8_t aVal = cpu->getRegA();
+	physical_address_t addr = xb->getEAddr(cpu);
+	uint8_t mVal = cpu->memRead8(addr);
+	
+	uint8_t min;
+	if (aVal > mVal) { min = mVal; } else { min = aVal; }
+	 
+	uint8_t result = aVal - mVal;
+
+	cpu->memWrite8(addr, min);
+	 
+	// N: Set if MSB of result is set; cleared otherwise
+	if ((result & 0x80) == 0x80) { cpu->ccr->setN(); } else { cpu->ccr->clrN(); }
+	// Z: Set if result is 0x00; cleared otherwise
+	if (result == 0) { cpu->ccr->setZ(); } else { cpu->ccr->clrZ(); }
+	 
+	/* 
+	 * V: (A7 • !M7 • !R7) + (!A7 • M7 • R7)
+	 * Set if a two’s complement overflow resulted from the operation; cleared
+	 * otherwise
+	 */
+	if (((aVal & 0x80) & ~(mVal & 0x80) & ~(result & 0x80)) | (~(aVal & 0x80) & (mVal & 0x80) & (result & 0x80))) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+	/*
+	 * C: !A7 • M7 + M7 • R7 + R7 • !A7
+	 * Set if the value of the content of memory is larger than the value of the
+	 * accumulator; cleared otherwise
+	 */
+	if (mVal > aVal) { cpu->ccr->setC(); } else { cpu->ccr->clrC(); }
+
+	return getCycles();
+}
+
+
+/* ************ Maximum Instructions ************* */
+
+// EMAND: MAX ((D), (M : M + 1)) ⇒ D
+
+// opcode(EMAXD)-> 0x18 0x1A
+op emaxd(0x18[8]:0x1A[8]:> <:*xb[XB])
+
+emaxd.getCycles = { return XbModes::GetIDXCycles(xb->getXbMode(), 4, 4, 5, 7, 7); }
+
+emaxd.disasm = {
+	string mnem = "EMAXD";
+
+	sink << mnem << " ";	
+	xb->disasm(sink);
+	return mnem;
+}
+
+emaxd.execute = {
+	 
+	uint16_t dVal = cpu->getRegD();
+	physical_address_t addr = xb->getEAddr(cpu);
+	
+	uint16_t mVal = cpu->memRead16(addr);
+	
+	uint16_t max;
+	if (mVal > dVal) { max = mVal; } else { max = dVal; }
+	 
+	uint16_t result = dVal - mVal;
+
+	cpu->setRegD(max);
+		 
+	// N: Set if MSB of result is set; cleared otherwise
+	if ((result & 0x8000) == 0x8000) { cpu->ccr->setN(); } else { cpu->ccr->clrN(); }
+	// Z: Set if result is 0x0000; cleared otherwise
+	if (result == 0) { cpu->ccr->setZ(); } else { cpu->ccr->clrZ(); }
+	 
+	/* 
+	 * V: (D15 • !M15 • !R15) + (!D15 • M15 • R15)
+	 * Set if a two’s complement overflow resulted from the operation; cleared
+	 * otherwise
+	 */
+	if (((dVal & 0x8000) & ~(mVal & 0x8000) & ~(result & 0x8000)) | (~(dVal & 0x8000) & (mVal & 0x8000) & (result & 0x8000))) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+	/*
+	 * C: !D15 • M15 + M15 • R15 + R15 • !D15
+	 * Set if the value of the content of memory is larger than the value of the
+	 * accumulator; cleared otherwise
+	 */
+	if (mVal > dVal) { cpu->ccr->setC(); } else { cpu->ccr->clrC(); }
+
+	return getCycles();
+}
+
+// EMANM: MAX ((D), (M : M + 1)) ⇒ M : M + 1
+
+// opcode(EMAXM)-> 0x18 0x1E
+op emaxm(0x18[8]:0x1E[8]:> <:*xb[XB])
+
+emaxm.getCycles = { return XbModes::GetIDXCycles(xb->getXbMode(), 4, 5, 6, 7, 7); }
+
+emaxm.disasm = {
+	string mnem = "EMAXM";
+
+	sink << mnem << " ";	
+	xb->disasm(sink);
+	return mnem;
+}
+
+emaxm.execute = {
+	 
+	uint16_t dVal = cpu->getRegD();
+	physical_address_t addr = xb->getEAddr(cpu);
+	
+	uint16_t mVal = cpu->memRead16(addr);
+	
+	uint16_t max;
+	if (mVal > dVal) { max = mVal; } else { max = dVal; }
+	 
+	uint16_t result = dVal - mVal;
+
+	cpu->memWrite16(addr, max);
+		 
+	// N: Set if MSB of result is set; cleared otherwise
+	if ((result & 0x8000) == 0x8000) { cpu->ccr->setN(); } else { cpu->ccr->clrN(); }
+	// Z: Set if result is 0x0000; cleared otherwise
+	if (result == 0) { cpu->ccr->setZ(); } else { cpu->ccr->clrZ(); }
+	 
+	/* 
+	 * V: (D15 • !M15 • !R15) + (!D15 • M15 • R15)
+	 * Set if a two’s complement overflow resulted from the operation; cleared
+	 * otherwise
+	 */
+	if (((dVal & 0x8000) & ~(mVal & 0x8000) & ~(result & 0x8000)) | (~(dVal & 0x8000) & (mVal & 0x8000) & (result & 0x8000))) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+	/*
+	 * C: !D15 • M15 + M15 • R15 + R15 • !D15
+	 * Set if the value of the content of memory is larger than the value of the
+	 * accumulator; cleared otherwise
+	 */
+	if (mVal > dVal) { cpu->ccr->setC(); } else { cpu->ccr->clrC(); }
+
+	return getCycles();
+}
+
+
+// MAXA: MAX ((A), (M)) ⇒ A
+
+// opcode(MAXA)-> 0x18 0x18 
+op maxa(0x18[8]:0x18[8]:> <:*xb[XB])
+
+maxa.getCycles = { return XbModes::GetIDXCycles(xb->getXbMode(), 4, 4, 5, 7, 7); }
+
+maxa.disasm = {
+	string mnem = "MAXA";
+
+	sink << mnem << " ";	
+	xb->disasm(sink);
+	return mnem;
+}
+
+maxa.execute = {
+	 
+	uint8_t aVal = cpu->getRegA();
+	physical_address_t addr = xb->getEAddr(cpu);
+	uint8_t mVal = cpu->memRead8(addr);
+	
+	uint8_t max;
+	if (mVal > aVal) { max = mVal; } else { max = aVal; }
+	 
+	uint8_t result = aVal - mVal;
+
+	cpu->setRegA(max);
+		 
+	// N: Set if MSB of result is set; cleared otherwise
+	if ((result & 0x80) == 0x80) { cpu->ccr->setN(); } else { cpu->ccr->clrN(); }
+	// Z: Set if result is 0x00; cleared otherwise
+	if (result == 0) { cpu->ccr->setZ(); } else { cpu->ccr->clrZ(); }
+	 
+	/* 
+	 * V: (A7 • !M7 • !R7) + (!A7 • M7 • R7)
+	 * Set if a two’s complement overflow resulted from the operation; cleared
+	 * otherwise
+	 */
+	if (((aVal & 0x80) & ~(mVal & 0x80) & ~(result & 0x80)) | (~(aVal & 0x80) & (mVal & 0x80) & (result & 0x80))) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+	/*
+	 * C: !A7 • M7 + M7 • R7 + R7 • !A7
+	 * Set if the value of the content of memory is larger than the value of the
+	 * accumulator; cleared otherwise
+	 */
+	if (mVal > aVal) { cpu->ccr->setC(); } else { cpu->ccr->clrC(); }
+
+	return getCycles();
+}
+
+// MAXM: MAx ((A), (M)) ⇒ M
+
+// opcode(MAXM)->0x18 0x1C
+op maxm(0x18[8]:0x1C[8]:> <:*xb[XB])
+
+maxm.getCycles = { return XbModes::GetIDXCycles(xb->getXbMode(), 4, 5, 6, 7, 7); }
+
+maxm.disasm = {
+	string mnem = "MAXM";
+
+	sink << mnem << " ";	
+	xb->disasm(sink);
+	return mnem;
+}
+
+maxm.execute = {
+	 
+	uint8_t aVal = cpu->getRegA();
+	physical_address_t addr = xb->getEAddr(cpu);
+	uint8_t mVal = cpu->memRead8(addr);
+	
+	uint8_t max;
+	if (mVal > aVal) { max = mVal; } else { max = aVal; }
+	 
+	uint8_t result = aVal - mVal;
+
+	cpu->memWrite8(addr, max);
+	 
+	// N: Set if MSB of result is set; cleared otherwise
+	if ((result & 0x80) == 0x80) { cpu->ccr->setN(); } else { cpu->ccr->clrN(); }
+	// Z: Set if result is 0x00; cleared otherwise
+	if (result == 0) { cpu->ccr->setZ(); } else { cpu->ccr->clrZ(); }
+	 
+	/* 
+	 * V: (A7 • !M7 • !R7) + (!A7 • M7 • R7)
+	 * Set if a two’s complement overflow resulted from the operation; cleared
+	 * otherwise
+	 */
+	if (((aVal & 0x80) & ~(mVal & 0x80) & ~(result & 0x80)) | (~(aVal & 0x80) & (mVal & 0x80) & (result & 0x80))) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+	/*
+	 * C: !A7 • M7 + M7 • R7 + R7 • !A7
+	 * Set if the value of the content of memory is larger than the value of the
+	 * accumulator; cleared otherwise
+	 */
+	if (mVal > aVal) { cpu->ccr->setC(); } else { cpu->ccr->clrC(); }
+
+	return getCycles();
+}

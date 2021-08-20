@@ -1,0 +1,714 @@
+/* font family for everything */
+
+body
+{
+	font-family: Arial, Helvetica, sans-serif;
+	font-style:normal;
+	font-size:14px;
+	text-align:left;
+	font-weight:normal;
+	color:black;
+}
+
+/* text style */
+
+h1
+{
+	font-size:20px;
+	font-weight:bold;
+}
+
+h2
+{
+	font-size:18px;
+	font-weight:bold;
+}
+
+h3
+{
+	font-size:16px;
+	font-weight:bold;
+}
+
+p
+{
+}
+
+pre
+{
+	font-family:Courier, monospace;
+}
+
+li
+{
+}
+
+/* page position and size */
+ 
+.page
+{
+	margin-left: auto; 
+	margin-right: auto; 
+	width:1024px;
+	background-color:white;
+}
+
+/* page header */
+
+.header
+{
+	height:144px;
+}
+
+/* area of the unisim logo */
+
+.logo-sensitive-area
+{
+}
+
+/* an area that make visitors know more about */
+
+.beyond-sensitive-area
+{
+}
+
+.logo-sensitive-area a, .beyond-sensitive-area a
+{
+	display:block;
+	width:100%;
+	height:100%;
+	text-decoration:none;
+}
+
+/* navigation menu */
+
+.nav
+{
+	width:100%;
+	color:white;
+	font-style:normal;
+	font-size:20px;
+	text-align:center;
+	font-weight:bold;
+	text-decoration:none;
+	border-width:0;
+}
+
+.nav-table
+{
+	width:100%;
+	border-spacing:0px 0px;
+	background-color:black;
+}
+
+.nav td
+{
+	padding:0;
+	width:25%;
+}
+
+.nav-table a
+{
+	display:block;
+	width:100%;
+	height:100%;
+	color:white;
+	text-decoration:none;
+}
+
+.nav-table td a:hover
+{
+	background-color:#aa0000;
+}
+
+/* navigation markers */
+
+.nav-markers
+{
+	width:100%;
+	border-spacing:0px 0px;
+}
+
+.nav-markers td
+{
+	height:7px;
+}
+
+/* navigation markers are hidden by default */
+#nav-marker1, #nav-marker2, #nav-marker3, #nav-marker4
+{
+	background:url(nav-marker.png) no-repeat bottom center;
+	visibility:hidden;
+}
+
+/* extra small navigation bar */
+
+.extra-nav
+{
+	clear:both;
+	width:100%;
+	background-color:white;
+	color:black;
+	font-style:normal;
+	font-size:10px;
+	text-align:left;
+	font-weight:normal;
+}
+
+.extra-nav a
+{
+	text-decoration:none;
+}
+
+/* left side (content) and right side (aside) of the page */
+
+.aside
+{
+	float:right;
+	width:384px;
+}
+
+.content
+{
+	float:left;
+	width:640px;
+}
+
+.aside-item, .content-item
+{
+	margin: 0 auto;
+	font-size: 100%;
+}
+
+.aside-item-title, .content-item-title
+{
+	margin: 0;
+	padding: 0;
+	text-align: center;
+}
+
+.aside-item-title h2, .content-item-title h2
+{
+	text-align:center;
+	margin: 0;
+	padding: 20px 30px 5px;
+	color: black; 
+	font-weight: bold; 
+	/*font-size: 1.2em; */
+	/*line-height: 1em; */
+}
+
+.aside-item-body, .content-item-body
+{
+	margin: 0;
+	padding: 5px 30px 31px;
+}
+
+.aside-item-body p, .content-item-body p
+{
+	text-align:justify;
+}
+
+.aside .aside-item, .aside .content-item
+{
+	width:384px;
+}
+
+.content .aside-item, .content .content-item
+{
+	width:640px;
+}
+
+/* unvisited link */
+.aside a:link, .content a:link
+{
+	color:blue;
+}
+
+/* visited link */ 
+.aside a:visited, .content a:visited
+{
+	color:blue;
+}
+
+/* mouse over link */  
+.aside a:hover, .content a:hover
+{
+	color:red;
+}
+
+/* selected link */
+.aside a:active, .content a:active
+{
+	color:red;
+}
+
+/* news table */
+
+.news-table
+{
+	width:100%;
+}
+
+.news-table td
+{
+	padding:14px 0px 14px 0px;
+}
+
+.news-date
+{
+	width:25%;
+	text-align:left;
+}
+
+.content .news-date
+{
+	width:25%;
+}
+
+.aside .news-date
+{
+	width:42%;
+}
+
+.news-description
+{
+	text-align:justify;
+}
+
+.content .news-description
+{
+	width:75%;
+}
+
+.aside .news-description
+{
+	width:58%;
+}
+
+/* hint table */
+
+.hint-table
+{
+	width:100%;
+}
+
+.hint-table td
+{
+	padding:14px 0px 14px 14px;
+}
+
+.hint-question
+{
+	width:25%;
+	font-style:normal;
+	font-size:16px;
+	text-align:center;
+	font-weight:normal;
+	color:#aa0000;
+}
+
+.hint-question a
+{
+	text-decoration:none;
+}
+
+.hint-question a.hover
+{
+	color:#aa0000;
+}
+
+.hint-answer
+{
+	width:75%;
+	text-align:justify;
+}
+
+/* directory table */
+
+.directory-table
+{
+	width:100%;
+}
+
+.directory-table td
+{
+	padding:14px 0px 14px 0px;
+}
+
+.directory-link a
+{
+	display:block;
+	width:100%;
+	height:100%;
+	text-decoration:none;
+}
+
+.directory-link
+{
+	width:25%;
+	font-style:normal;
+	font-size:18px;
+	text-align:center;
+	font-weight:bold;
+	color:black;
+}
+
+.directory-description
+{
+	width:75%;
+	text-align:justify;
+}
+
+/* separator */
+
+.separator
+{
+	width:100%;
+	height:3px;
+	background-color:black;
+}
+
+/* bullets in lists */
+
+.content-item-body li, .aside-item-body li
+{
+	text-align:justify;
+	/*line-height:1.4em;*/
+}
+
+/* download */
+
+.download-file, .download-pdf, .download-video, .online-document, .download-win, .download-linux, .download-macosx
+{
+}
+
+.download-file
+{
+	background: url(file_icon.png) no-repeat center left;
+	padding-left: 18px;
+	height:16px;
+}
+
+.download-pdf
+{
+	background: url(pdf_icon.png) no-repeat center left;
+	padding-left: 18px;
+	height:16px;
+}
+
+.download-video
+{
+	background: url(video_icon.png) no-repeat center left;
+	padding-left: 18px;
+	height:16px;
+}
+
+.online-document
+{
+	background: url(online_document_icon.png) no-repeat center left;
+	padding-left: 18px;
+	height:16px;
+}
+
+.download-win
+{
+	background: url(win.png) no-repeat center left;
+	padding-left: 18px;
+	height:16px;
+}
+
+.download-linux
+{
+	background: url(tux.png) no-repeat center left;
+	padding-left: 18px;
+	height:16px;
+}
+
+.download-macosx
+{
+	background: url(macosx.png) no-repeat center left;
+	padding-left: 18px;
+	height:16px;
+}
+
+.download-table
+{
+}
+
+.download-table-head td
+{
+	font-weight:bold;
+	text-align:center;
+	vertical-align:bottom;
+	padding:6px 2px 4px 2px;
+}
+
+.download-table-item-title
+{
+	font-weight:bold;
+	text-align:center;
+	padding:6px 2px 6px 2px;
+}
+
+.download-table-item-description
+{
+	text-align:justify;
+	padding:6px 2px 6px 2px;
+}
+
+.download-table-link
+{
+	text-align:center;
+	padding:6px 2px 6px 2px;
+	line-height:20px;
+}
+
+/* page footer */
+
+.footer
+{
+	clear:both;
+	width:100%;
+	font-style:normal;
+	font-size:12px;
+	text-align:center;
+	font-weight:bold;
+	background-color:black;
+	color:white;
+}
+
+.footer a
+{
+	color:white;
+	text-decoration:none;
+}
+
+.footer a:hover
+{
+	background-color:#aa0000;
+}
+
+/* image gallery */
+
+.image-gallery
+{
+	width:100%;
+}
+
+.image-gallery td
+{
+	padding:2px 2px 16px 2px;
+	width:33%;
+	text-align:center;
+}
+
+.image-gallery a
+{
+	display:block;
+	width:100%;
+	height:100%;
+	text-decoration:none;
+}
+
+.image-gallery img
+{
+	width:158px;
+	border:0;
+}
+
+.image-gallery p
+{
+	margin:4px 0px 0px 0px;
+	font-size:10px;
+	text-align:center;
+}
+
+.image-gallery-nav
+{
+	width:100%;
+	margin:14px 0 14px 0;
+}
+
+.image-gallery-nav td
+{
+	text-align:center;
+}
+
+#image-gallery-nav-prev, #image-gallery-nav-next
+{
+	padding:0 0 0 0;
+	width:18px;
+	height:13px;
+}
+
+.image-gallery-nav a
+{
+	text-decoration:none;
+}
+
+#image-gallery-nav-prev a, #image-gallery-nav-next a
+{
+	display:block;
+	width:100%;
+	height:100%;
+	text-decoration:none;
+}
+
+.image-gallery-nav img
+{
+	border:0;
+}
+
+/* image view */
+
+.image-view
+{
+	width:1024px;
+}
+
+.image-view h1
+{
+	text-align:center;
+}
+
+.image-view img
+{
+	width:1024px;
+	border:0;
+}
+
+.image-view table
+{
+	width:1024px;
+}
+
+.image-view td
+{
+	padding:2px 2px 4px 2px;
+	width:33%;
+	text-align:center;
+}
+
+/* video gallery */
+
+.video-gallery
+{
+	width:100%;
+}
+
+.video-gallery td
+{
+	padding:2px 2px 16px 2px;
+	width:33%;
+	text-align:center;
+}
+
+.video-gallery a
+{
+	display:block;
+	width:100%;
+	height:100%;
+	text-decoration:none;
+}
+
+.video-gallery img
+{
+	width:158px;
+	border:0;
+}
+
+.video-gallery p
+{
+	margin:4px 0px 0px 0px;
+	font-size:10px;
+	text-align:center;
+}
+
+.video-gallery-nav
+{
+	width:100%;
+	margin:14px 0 14px 0;
+}
+
+.video-gallery-nav td
+{
+	text-align:center;
+}
+
+#video-gallery-nav-prev, #video-gallery-nav-next
+{
+	padding:0 0 0 0;
+	width:18px;
+	height:13px;
+}
+
+.video-gallery-nav a
+{
+	text-decoration:none;
+}
+
+#video-gallery-nav-prev a, #video-gallery-nav-next a
+{
+	display:block;
+	width:100%;
+	height:100%;
+	text-decoration:none;
+}
+
+.video-gallery-nav img
+{
+	border:0;
+}
+
+/* video view */
+
+.video-view
+{
+	width:1024px;
+}
+
+.video-view h1
+{
+	text-align:center;
+}
+
+.video-view-nav
+{
+	width:1024px;
+}
+
+.video-view-nav td
+{
+	padding:2px 2px 4px 2px;
+	width:33%;
+	text-align:center;
+}
+
+/* addresses */
+
+.address
+{
+	font-style:italic;
+}
+
+.address-block
+{
+    margin:0em 0em 0em 2em;
+    padding:0;
+	font-style:italic;
+}
+
+/* glyph */
+
+.glyph
+{ 
+    vertical-align: bottom; 
+    margin-left: 1px; 
+}
+
+/* warning */
+#warning
+{
+	width:100%;
+}

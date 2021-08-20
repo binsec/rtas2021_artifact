@@ -1,0 +1,4 @@
+This package contains:
+  - UNISIM GenISSLib: an instruction set simulator generator
+  - UNISIM AVR32EMU Simulator: an AVR32UC simulator.
+See INSTALL for installation instructions.

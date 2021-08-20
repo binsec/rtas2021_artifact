@@ -1,0 +1,955 @@
+/*
+ *  Copyright (c) 2008,
+ *  Commissariat a l'Energie Atomique (CEA)
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without modification,
+ *  are permitted provided that the following conditions are met:
+ *
+ *   - Redistributions of source code must retain the above copyright notice, this
+ *     list of conditions and the following disclaimer.
+ *
+ *   - Redistributions in binary form must reproduce the above copyright notice,
+ *     this list of conditions and the following disclaimer in the documentation
+ *     and/or other materials provided with the distribution.
+ *
+ *   - Neither the name of CEA nor the names of its contributors may be used to
+ *     endorse or promote products derived from this software without specific prior
+ *     written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ *  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *  DISCLAIMED.
+ *  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ *  INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ *  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+ *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ *  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Authors: Reda   Nouacer  (reda.nouacer@cea.fr)
+ */
+
+
+// TODO: Very Important
+// relied to instruction Queue  
+// Do not forgot to perform three program word fetches to refill the queue after a branch or subroutine call
+
+/* ********* Short Branch Instructions ******** */
+
+op sbr(0x2[4]:sel[4]:sext<8> rel8[8])
+
+sbr.var branch : { bool } = { false }
+
+sbr.getCycles = { 
+
+	if (branch) return 3; else return 1;
+
+}
+
+sbr.disasm = {
+	string mnem;
+
+	switch (sel) {
+		case 0x0: mnem = "BRA";break;
+		case 0x1: mnem = "BRN";break;
+		case 0x2: mnem = "BHI";break;
+		case 0x3: mnem = "BLS";break;
+		case 0x4: mnem = "BCC"; /* same opcode for BHS */ break;
+		case 0x5: mnem = "BCS"; /* same opcode for BLO */ break;
+		case 0x6: mnem = "BNE";break;
+		case 0x7: mnem = "BEQ";break;
+		case 0x8: mnem = "BVC";break;
+		case 0x9: mnem = "BVS";break;
+		case 0xA: mnem = "BPL";break;
+		case 0xB: mnem = "BMI";break;
+		case 0xC: mnem = "BGE";break;
+		case 0xD: mnem = "BLT";break;
+		case 0xE: mnem = "BGT";break;
+		case 0xF: mnem = "BLE";break;
+	}
+	sink << mnem << " " << std::dec << rel8;
+	
+	return mnem;
+}
+
+sbr.execute = {
+	
+	branch = false;
+	
+	switch (sel) {
+		case 0x0: // BRA: branch always
+			branch = true;
+			break;
+		case 0x1: // BRN: branch never
+			// Nothing to do
+			branch = false;
+			break;
+		case 0x2: // BHI: branch if higher (C+Z=0)
+			if ((cpu->ccr->getC() | cpu->ccr->getZ()) == 0) branch = true; 
+			break;
+		case 0x3: // BLS: branch if lower or same 
+			if ((cpu->ccr->getC() | cpu->ccr->getZ()) == 1) branch = true;
+			break;
+		case 0x4: // BCC: branch if carel8y clear or BHS: branch if higher or same
+			if (cpu->ccr->getC() == 0) branch = true;
+			break;
+		case 0x5: // BCS: branch if carel8y set or BLO: branch if lower 
+			if (cpu->ccr->getC() == 1) branch = true;
+			break;
+		case 0x6: // BNE: branch if not equal
+			if (cpu->ccr->getZ() == 0) branch = true;
+			break;
+		case 0x7: // BEQ: branch if equal
+			if (cpu->ccr->getZ() == 1) branch = true; 
+			break;
+		case 0x8: // BVC: branch if overflow clear
+			if (cpu->ccr->getV() == 0) branch = true; 
+			break;
+		case 0x9: // BVS: branch if overflow set
+			if (cpu->ccr->getV() == 1) branch = true; 
+			break;
+		case 0xA: // BPL: branch if plus
+			if (cpu->ccr->getN() == 0) branch = true;
+			break;
+		case 0xB: // BMI: branch if minus
+			if (cpu->ccr->getN() == 1) branch = true; 
+			break;
+		case 0xC: // BGE: branch if greater than or equal
+			if ((cpu->ccr->getN() ^ cpu->ccr->getV()) == 0) branch = true; 
+			break;
+		case 0xD: // BLT: branch if less than
+			if ((cpu->ccr->getN() ^ cpu->ccr->getV()) == 1) branch = true; 
+			break;
+		case 0xE: { // BGT: branch if greater than 
+				if ((cpu->ccr->getZ() | (cpu->ccr->getN() ^ cpu->ccr->getV())) == 0) branch = true; 
+			}
+			break;
+		case 0xF: // BLE: branch if less than or equal
+			if ((cpu->ccr->getZ() | (cpu->ccr->getN() ^ cpu->ccr->getV())) == 1) branch = true; 
+			break;
+	}
+	
+	if (branch) {
+		cpu->setRegPC(cpu->getRegPC() + rel8);
+	}
+
+	return getCycles();
+}
+
+/* ******** Long Branch Instructions ******* */
+
+op lbr(0x18[8]:0x2[4]:sel[4]:sext<16> rel16[16])
+
+lbr.var branch : { bool } = { false }
+
+lbr.getCycles = { if (branch) return 4; else return 3; }
+
+lbr.disasm = {
+	string mnem;
+		
+	switch (sel) {
+		case 0x0: mnem = "LBRA";break;
+		case 0x1: mnem = "LBRN";break;
+		case 0x2: mnem = "LBHI";break;
+		case 0x3: mnem = "LBLS";break;
+		case 0x4: mnem = "LBCC"; /* same opcode for LBHS */ break;
+		case 0x5: mnem = "LBCS"; /* same opcode for LBLO */ break;
+		case 0x6: mnem = "LBNE";break;
+		case 0x7: mnem = "LBEQ";break;
+		case 0x8: mnem = "LBVC";break;
+		case 0x9: mnem = "LBVS";break;
+		case 0xA: mnem = "LBPL";break;
+		case 0xB: mnem = "LBMI";break;
+		case 0xC: mnem = "LBGE";break;
+		case 0xD: mnem = "LBLT";break;
+		case 0xE: mnem = "LBGT";break;
+		case 0xF: mnem = "LBLE";break;
+	}
+	sink << mnem << " " << std::dec << rel16;
+	
+	return mnem;
+}
+
+lbr.execute = {
+	
+	branch = false;
+	
+	switch (sel) {
+		case 0x0: // LBRA: branch always
+			branch = true;
+			break;
+		case 0x1: // LBRN: branch never
+			// Nothing to do
+			branch = false;
+			break;
+		case 0x2: // LBHI: branch if higher (C+Z=0)
+			if ((cpu->ccr->getC() | cpu->ccr->getZ()) == 0) branch = true; 
+			break;
+		case 0x3: // LBLS: branch if lower or same 
+			if ((cpu->ccr->getC() | cpu->ccr->getZ()) == 1) branch = true;
+			break;
+		case 0x4: // LBCC: branch if carel8y clear or LBHS: branch if higher or same
+			if (cpu->ccr->getC() == 0) branch = true;
+			break;
+		case 0x5: // LBCS: branch if carel8y set or LBLO: branch if lower 
+			if (cpu->ccr->getC() == 1) branch = true;
+			break;
+		case 0x6: // LBNE: branch if not equal
+			if (cpu->ccr->getZ() == 0) branch = true;
+			break;
+		case 0x7: // LBEQ: branch if equal
+			if (cpu->ccr->getZ() == 1) branch = true; 
+			break;
+		case 0x8: // LBVC: branch if overflow clear
+			if (cpu->ccr->getV() == 0) branch = true; 
+			break;
+		case 0x9: // LBVS: branch if overflow set
+			if (cpu->ccr->getV() == 1) branch = true; 
+			break;
+		case 0xA: // LBPL: branch if plus
+			if (cpu->ccr->getN() == 0) branch = true;
+			break;
+		case 0xB: // LBMI: branch if minus
+			if (cpu->ccr->getN() == 1) branch = true; 
+			break;
+		case 0xC: // LBGE: branch if greater than or equal
+			if ((cpu->ccr->getN() ^ cpu->ccr->getV()) == 0) branch = true; 
+			break;
+		case 0xD: // LBLT: branch if less than
+			if ((cpu->ccr->getN() ^ cpu->ccr->getV()) == 1) branch = true; 
+			break;
+		case 0xE: // LBGT: branch if greater than
+			if ((cpu->ccr->getZ() | (cpu->ccr->getN() ^ cpu->ccr->getV())) == 0) branch = true; 
+			break;
+		case 0xF: // LBLE: branch if less than or equal
+			if ((cpu->ccr->getZ() | (cpu->ccr->getN() ^ cpu->ccr->getV())) == 1) branch = true; 
+			break;
+	}
+	
+	if (branch) {
+		cpu->setRegPC(cpu->getRegPC() + rel16);
+	}
+
+	return getCycles();
+}
+
+/* ******** Bit Condition Branch instructions *********** */
+
+// if (b==1) BRCLR_instruction else BRSET_instruction;
+
+op br_clr_set_dir(0x27[7]:b[1]:opr8a[8]:msk8[8]:sext<8> rel8[8])
+
+br_clr_set_dir.getCycles = { return 4; }
+
+br_clr_set_dir.disasm = {
+	string mnem;
+	
+	if (b==1) {
+		mnem = "BRCLR"; 
+	} else {
+		mnem = "BRSET";
+	}
+	
+	sink << mnem << " 0x" << std::hex << opr8a << ", 0x" << std::hex << msk8 << ", " << std::dec << rel8;
+	
+	return mnem;
+}
+
+br_clr_set_dir.execute = {
+
+	uint8_t opr8aVal = cpu->memRead8(opr8a, ADDRESS::DIRECT, false);
+	
+	if (b==0) {
+		opr8aVal = ~opr8aVal;
+	}
+	
+	if ((opr8aVal & msk8) == 0) {
+		cpu->setRegPC((int16_t) cpu->getRegPC() + rel8);
+		
+	 	// TODO: Refill the instruction queue with three program words from the new address		
+	}
+
+	return getCycles();
+}
+
+op br_clr_set_ext(0xF[7]:b[1]:> <:opr16a[16]:msk8[8]:sext<8> rel8[8])
+
+br_clr_set_ext.getCycles = { return 5; }
+
+br_clr_set_ext.disasm = {
+	string mnem;
+	
+	if (b==1) {
+		mnem = "BRCLR"; 
+	} else {
+		mnem = "BRSET";
+	}
+	
+	sink << mnem << " 0x" << std::hex << opr16a << ", 0x" << std::hex << msk8 << ", " << std::dec << rel8;
+	
+	return mnem;
+}
+
+br_clr_set_ext.execute = {
+	physical_address_t addr = opr16a;	
+	uint8_t opr16aVal = cpu->memRead8(addr);
+	
+	if (b==0) {
+		opr16aVal = ~opr16aVal;
+	}
+	
+	if ((opr16aVal & msk8) == 0) {
+		cpu->setRegPC(cpu->getRegPC() + rel8);
+	}
+
+	return getCycles();
+}
+
+op br_clr_set_idx(0x07[7]:b[1]:> <:*xb[XB]:> <:msk8[8]:sext<8> rel8[8])
+
+br_clr_set_idx.pre_execute = {
+	
+	xb->pre_execute(sink);
+	// after: other specific actions
+}
+
+br_clr_set_idx.post_execute = {
+
+	// before: other specific actions
+	xb->post_execute(sink);
+}
+
+br_clr_set_idx.getCycles = { return XbModes::GetIDXCycles(xb->getXbMode(), 4, 5, 6, 0, 0); }
+
+br_clr_set_idx.disasm = {
+	string mnem;
+	
+	if (b==1) {
+		mnem = "BRCLR"; 
+	} else {
+		mnem = "BRSET";
+	}
+	
+	sink << mnem << " ";
+	xb->disasm(sink);
+	sink << ", 0x" << std::hex << msk8 << ", " << std::dec << rel8;
+	
+	return mnem;
+}
+
+br_clr_set_idx.execute = {
+	physical_address_t addr = xb->getEAddr(cpu);	
+	uint8_t xbVal = cpu->memRead8(addr);
+	
+	if (b==0) {
+		xbVal = ~xbVal;
+	}
+	
+	if ((xbVal & msk8) == 0) {
+		cpu->setRegPC(cpu->getRegPC() + rel8);
+	}
+
+	return getCycles();
+}
+
+/* ********** Jump and subroutine instructions ******** */
+
+// BSR: Branch to subroutine
+op bsr(0x07[8]:sext<8> rel8[8])
+
+bsr.getCycles = { return 4; }
+
+bsr.disasm = {
+	string mnem = "BSR";
+	
+	sink << mnem << " " << std::dec << rel8;
+	
+	return mnem;
+}
+
+bsr.execute = {
+	/*
+	 * (SP)-2 => SP
+	 * RTNh:RTNl => M[SP]:M[SP+1]
+	 * Subroutine address fi PC
+	 */
+	physical_address_t addr;	
+	
+	addr = cpu->getRegSP() - 2;	
+	cpu->setRegSP(addr);
+	cpu->memWrite16(addr, cpu->getRegPC());
+	
+	cpu->setRegPC(cpu->getRegPC() + rel8);
+
+	return getCycles();
+}
+
+// CALL: Call subroutine in Expanded Memory
+op call_ext(0x4A[8]:opr16a[16]:page[8])
+
+call_ext.getCycles = { return 7; }
+
+call_ext.disasm = {
+	string mnem = "CALL";
+	
+	sink << mnem << " 0x" << std::hex << opr16a << ", 0x" << std::hex << page;
+	
+	return mnem;
+}
+
+call_ext.execute = {
+	/*
+	 * (SP)-2 => SP
+	 * RTNh:RTNl => M[SP]:M[SP+1]
+	 * (SP)-1 => SP
+	 * (PPAGE) => M[SP]
+	 * page => PPAGE
+	 * Subroutine address => PC
+	 */
+	physical_address_t addr;
+	page_t old_ppage;
+		 
+	addr = cpu->getRegSP() - 2;
+	cpu->setRegSP(addr);
+	cpu->memWrite16(addr, cpu->getRegPC());
+
+	addr = cpu->getRegSP() - 1;
+	cpu->setRegSP(addr);
+
+	old_ppage = cpu->memRead8(MMC::MMC_REGS_ADDRESSES[MMC::PPAGE]);
+	cpu->memWrite8(addr, old_ppage);
+
+	cpu->memWrite8(MMC::MMC_REGS_ADDRESSES[MMC::PPAGE], page);
+	cpu->setRegPC(opr16a);
+
+	return getCycles();
+}
+
+// I have to decode indexed-indirect addressing here, 
+// because in the case of indexed-indirect the value of PPAGE is stored in memory after the subroutine address
+// XB decoder return only one address
+
+op call_16offset_idx_ind(0x4B[8]:> <:0b111[3]:rr[2]:0b0[1]:0b11[2]:> <:sext<16> n16[16])
+
+call_16offset_idx_ind.getCycles = { return 10; }
+
+call_16offset_idx_ind.disasm = {
+	string mnem = "CALL";
+
+	sink << mnem << " " << "[" << std::dec << n16 << "," << CPU::xb_getAddrRegLabel(rr) << "]";
+	
+	return mnem;
+}
+
+call_16offset_idx_ind.execute = {
+	/*
+	 * (SP)-2 => SP
+	 * RTNh:RTNl => M[SP]:M[SP+1]
+	 * (SP)-1 => SP
+	 * (PPAGE) => M[SP]
+	 * page => PPAGE
+	 * Subroutine address => PC
+	 */
+
+	physical_address_t addr;
+	page_t old_ppage;
+
+	physical_address_t idxAddr = cpu->xb_getAddrRegValue(rr) + n16;
+
+	uint16_t subAddr = cpu->memRead16(idxAddr);
+	uint8_t   ppageVal = cpu->memRead8(idxAddr+2);
+		 
+	addr = cpu->getRegSP() - 2;
+	cpu->setRegSP(addr);
+	cpu->memWrite16(addr, cpu->getRegPC());
+	
+	addr = cpu->getRegSP() - 1;
+	cpu->setRegSP(addr);
+	
+	old_ppage = cpu->memRead8(MMC::MMC_REGS_ADDRESSES[MMC::PPAGE]);
+	cpu->memWrite8(addr, old_ppage);
+
+	cpu->memWrite8(MMC::MMC_REGS_ADDRESSES[MMC::PPAGE], ppageVal);
+	cpu->setRegPC(subAddr);
+
+	return getCycles();
+}
+
+op call_accD_offset_idx_ind(0x4B[8]:> <:0b111[3]:rr[2]:0b111[3])
+
+call_accD_offset_idx_ind.getCycles = { return 10; }
+
+call_accD_offset_idx_ind.disasm = {
+	string mnem = "CALL";
+
+	sink << mnem << " " << "[D," << CPU::xb_getAddrRegLabel(rr) << "]";
+	
+	return mnem;
+}
+
+call_accD_offset_idx_ind.execute = {
+	/*
+	 * (SP)-2 => SP
+	 * RTNh:RTNl => M[SP]:M[SP+1]
+	 * (SP)-1 => SP
+	 * (PPAGE) => M[SP]
+	 * page => PPAGE
+	 * Subroutine address => PC
+	 */
+
+	physical_address_t addr;
+	page_t old_ppage;
+
+	physical_address_t idxAddr = cpu->getRegD() + cpu->xb_getAddrRegValue(rr);
+
+	uint16_t subAddr = cpu->memRead16(idxAddr);
+	uint8_t   ppageVal = cpu->memRead8(idxAddr+2);
+		 
+	addr = cpu->getRegSP() - 2;
+	cpu->setRegSP(addr);
+	
+	cpu->memWrite16(addr, cpu->getRegPC());
+	
+	addr = cpu->getRegSP() - 1;
+	cpu->setRegSP(addr);
+
+	old_ppage = cpu->memRead8(MMC::MMC_REGS_ADDRESSES[MMC::PPAGE]);
+	cpu->memWrite8(addr, old_ppage);
+
+	cpu->memWrite8(MMC::MMC_REGS_ADDRESSES[MMC::PPAGE], ppageVal);
+	cpu->setRegPC(subAddr);
+
+	return getCycles();
+}
+
+op call_idx(0x4B[8]:> <:*xb[XB]:> <:page[8])
+
+call_idx.pre_execute = {
+	
+	xb->pre_execute(sink);
+	// after: other specific actions
+}
+
+call_idx.post_execute = {
+
+	// before: other specific actions
+	xb->post_execute(sink);
+}
+
+call_idx.getCycles = { return XbModes::GetIDXCycles(xb->getXbMode(), 7, 7, 8, 0, 0); }
+
+call_idx.disasm = {
+
+	string mnem = "CALL";
+	
+	sink << mnem << " ";
+	xb->disasm(sink);
+	sink << ", 0x" << std::hex << page;
+	
+	return mnem;
+}
+
+call_idx.execute = {
+	/*
+	 * (SP)-2 => SP
+	 * RTNh:RTNl => M[SP]:M[SP+1]
+	 * (SP)-1 => SP
+	 * (PPAGE) => M[SP]
+	 * page => PPAGE
+	 * Subroutine address => PC
+	 */
+	physical_address_t addr;
+	page_t old_ppage;
+
+	physical_address_t callAddr = xb->getEAddr(cpu);  
+			 
+	addr = cpu->getRegSP() - 2;
+	cpu->setRegSP(addr);
+	
+	cpu->memWrite16(addr, cpu->getRegPC());
+	
+	addr = cpu->getRegSP() - 1;
+	cpu->setRegSP(addr);
+
+	old_ppage = cpu->memRead8(MMC::MMC_REGS_ADDRESSES[MMC::PPAGE]);
+	cpu->memWrite8(addr, old_ppage);
+
+	cpu->memWrite8(MMC::MMC_REGS_ADDRESSES[MMC::PPAGE], page);
+	cpu->setRegPC(callAddr);
+
+	return getCycles();
+}
+
+// JMP: JUMP
+op jmp_ext(0x06[8]:> <:opr16a[16])
+
+jmp_ext.getCycles = { return 3; }
+
+jmp_ext.disasm = {
+	string mnem = "JMP";
+	
+	sink << mnem << " 0x" << std::hex << opr16a;
+	
+	return mnem;
+}
+
+jmp_ext.execute = {
+	cpu->setRegPC(opr16a);
+
+	return getCycles();
+}
+
+op jmp_idx(0x05[8]:> <:*xb[XB])
+
+jmp_idx.pre_execute = {
+	
+	xb->pre_execute(sink);
+	// after: other specific actions
+}
+
+jmp_idx.post_execute = {
+
+	// before: other specific actions
+	xb->post_execute(sink);
+}
+
+jmp_idx.getCycles = { return XbModes::GetIDXCycles(xb->getXbMode(), 3, 3, 4, 6, 6); }
+
+jmp_idx.disasm = {
+	string mnem = "JMP";
+	
+	sink << mnem << " ";
+	xb->disasm(sink);
+	
+	return mnem;
+}
+
+jmp_idx.execute = {
+	cpu->setRegPC(xb->getEAddr(cpu));
+
+	return getCycles();
+}
+
+// JSR: Jump to subroutine
+op jsr_dir(0x17[8]:opr8a[8])
+
+jsr_dir.getCycles = { return 4; }
+
+jsr_dir.disasm = {
+	string mnem = "JSR";
+	
+	sink << mnem << " 0x" << std::hex << opr8a;
+	
+	return mnem;
+}
+
+jsr_dir.execute = {
+	/*
+	 * (SP)-2 => SP
+	 * RTNh:RTNl => M[SP]:M[SP+1]
+	 * subroutine address => PC
+	 */
+	uint16_t addr;
+	page_t direct_reg;
+		 
+	addr = cpu->getRegSP() - 2;	
+	cpu->setRegSP(addr);
+	
+	cpu->memWrite16(addr, cpu->getRegPC());
+	
+	direct_reg = cpu->memRead8(MMC::MMC_REGS_ADDRESSES[MMC::DIRECT]);
+	addr = ((uint16_t) direct_reg << 8) | opr8a;
+	cpu->setRegPC(addr);
+
+	return getCycles();
+}
+
+op jsr_ext(0x16[8]:> <:opr16a[16])
+
+jsr_ext.getCycles = { return 4; }
+
+jsr_ext.disasm = {
+	string mnem = "JSR";
+	
+	sink << mnem << " 0x" << std::hex << opr16a;
+	
+	return mnem;
+}
+
+jsr_ext.execute = {
+	uint16_t addr;
+
+	addr = cpu->getRegSP() - 2;	
+	cpu->setRegSP(addr);
+	
+	cpu->memWrite16(addr, cpu->getRegPC());
+	
+	cpu->setRegPC(opr16a);
+
+	return getCycles();
+}
+
+op jsr_idx(0x15[8]:> <:*xb[XB])
+
+jsr_idx.pre_execute = {
+	
+	xb->pre_execute(sink);
+	// after: other specific actions
+}
+
+jsr_idx.post_execute = {
+
+	// before: other specific actions
+	xb->post_execute(sink);
+}
+
+jsr_idx.getCycles = { return XbModes::GetIDXCycles(xb->getXbMode(), 4, 4, 5, 7, 7); }
+
+jsr_idx.disasm = {
+	string mnem = "JSR";
+	 
+	sink << mnem << " ";
+	xb->disasm(sink);
+	
+	return mnem;
+}
+
+jsr_idx.execute = {
+	uint16_t addr;
+	uint16_t jsrAddr = xb->getEAddr(cpu);
+	
+	addr = cpu->getRegSP() - 2;
+	cpu->setRegSP(addr);
+	
+	cpu->memWrite16(addr, cpu->getRegPC());
+	
+	cpu->setRegPC(jsrAddr);
+
+	return getCycles();
+}
+
+// RTC: Return from call
+op rtc(0x0A[8])
+
+rtc.getCycles = { return 7; }
+
+rtc.disasm = {
+	string mnem = "RTC";
+	
+	sink << mnem;
+	
+	return mnem;
+}
+
+rtc.execute = {
+	/*
+	 * (M[SP]) => PPage
+	 * (SP)+1 => SP
+	 * (M[SP]):(M[SP+1]) => PCh:PCl
+	 * (SP)+2 => SP
+	 */
+
+	 uint16_t addr;
+	 
+	 addr = cpu->getRegSP();
+	 cpu->memWrite8(MMC::MMC_REGS_ADDRESSES[MMC::PPAGE], cpu->memRead8(addr));
+	 cpu->setRegSP(addr + 1);
+	 
+	 addr = cpu->getRegSP();
+
+	 cpu->setRegPC(cpu->memRead16(addr));
+	 
+	 cpu->setRegSP(addr + 2);
+
+	return getCycles();
+}
+
+// RTS: Return from subroutine
+op rts(0x3D[8])
+
+rts.getCycles = { return 5; }
+
+rts.disasm = {
+	string mnem = "RTS";
+	
+	sink << mnem;
+	
+	return mnem;
+}
+
+rts.execute = {
+
+	uint16_t addr = cpu->getRegSP();
+
+	cpu->setRegPC(cpu->memRead16(addr));
+
+	cpu->setRegSP(addr + 2);
+
+	return getCycles();
+}
+
+
+/* ************ Loop Primitive ********* */
+
+op loop(0x04[8]:b765[3]:b4[1]:b3[1]:b210[3]:> <:rel9[8])
+
+loop.var isBranch : { bool } = { false }
+
+loop.getCycles = { if (isBranch) return 3; else return 3; }
+
+loop.disasm = {
+	string mnem;
+	
+/*
+Encoding for lb is summarized in the following table. 
+Bit 3 is not used (don’t care), 
+Bit 5 selects branch on zero (DBEQ – 0) or not zero (DBNE – 1) versions, 
+and bit 4 is the sign bit of the 9-bit relative offset. 
+Bits 7 and 6 would be 0:0 for DBNE.
+*/
+	
+	switch (b765) {
+		case 0x00: mnem = "DBEQ"; break;
+		case 0x01: mnem = "DBNE"; break;
+		case 0x02: mnem = "TBEQ"; break;
+		case 0x03: mnem = "TBNE"; break;
+		case 0x04: mnem = "IBEQ"; break;
+		case 0x05: mnem = "IBNE"; break;
+		default: mnem = "?";
+	}
+/*	
+	if (b4 == 0) {
+			sink << mnem << " " << EBLB::getRegName(b210) << " , " << std::dec << (rel9 & 0xFF);
+	} else {
+		sink << mnem << " " << EBLB::getRegName(b210) << " , " << std::dec << (rel9 & 0xFF) - 256;
+	}
+*/
+	int32_t val = (int32_t) ((rel9 << 24) >> 24);
+	if (b4 == 0) {
+		sink << mnem << " " << EBLB::getRegName(b210) << " , " << std::dec << val;
+	} else {
+		sink << mnem << " " << EBLB::getRegName(b210) << " , " << std::dec << val - 256;
+	}
+	
+	return mnem;
+}
+
+loop.execute = {
+	uint16_t branchAddr;
+	
+	isBranch = false;
+/*
+	if (b4 == 0) {
+		branchAddr = cpu->getRegPC() + (rel9 & 0xFF);
+	} else {
+		branchAddr = cpu->getRegPC() + (rel9 & 0xFF) - 256;
+	}
+*/
+	int32_t val = (int32_t) ((rel9 << 24) >> 24);
+	if (b4 == 0) {
+		branchAddr = cpu->getRegPC() + val;
+	} else {
+		branchAddr = cpu->getRegPC() + val - 256;
+	}
+	
+	switch (b765) {
+		case 0x00: /*DBEQ*/{
+			
+			if (b210 < 0x4) {
+				uint8_t val; 
+				val = cpu->eblb->getter<uint8_t>(b210);
+				val = val - 1;
+				cpu->eblb->setter<uint8_t>(b210, val);
+				isBranch = (val == 0);
+			} else {
+				uint16_t val; 
+				val = cpu->eblb->getter<uint16_t>(b210);
+				val = val - 1;
+				cpu->eblb->setter<uint16_t>(b210, val);
+				isBranch = (val == 0);
+			}
+			
+		} break;
+		case 0x01: /*DBNE*/{
+			
+			if (b210 < 0x4) {
+				uint8_t val; 
+				val = cpu->eblb->getter<uint8_t>(b210);
+				val = val - 1;
+				cpu->eblb->setter<uint8_t>(b210, val);
+				isBranch = (val != 0);
+			} else {
+				uint16_t val; 
+				val = cpu->eblb->getter<uint16_t>(b210);
+				val = val - 1;
+				cpu->eblb->setter<uint16_t>(b210, val);
+				isBranch = (val != 0);
+			}
+			
+			
+		} break;
+		case 0x02: /*TBEQ*/{
+			if (b210 < 0x4) {
+				isBranch = (cpu->eblb->getter<uint8_t>(b210) == 0);
+			} else {
+				isBranch = (cpu->eblb->getter<uint16_t>(b210) == 0);
+			}
+			
+		} break;
+		case 0x03: /*TBNE*/{
+			if (b210 < 0x4) {
+				isBranch = (cpu->eblb->getter<uint8_t>(b210) != 0);
+			} else {
+				isBranch = (cpu->eblb->getter<uint16_t>(b210) != 0);
+			}
+
+		} break;
+		case 0x04: /*IBEQ*/{
+			
+			if (b210 < 0x4) {
+				uint8_t val; 
+				val = cpu->eblb->getter<uint8_t>(b210);
+				val = val + 1;
+				cpu->eblb->setter<uint8_t>(b210, val);
+				isBranch = (val == 0);
+			} else {
+				uint16_t val; 
+				val = cpu->eblb->getter<uint16_t>(b210);
+				val = val + 1;
+				cpu->eblb->setter<uint16_t>(b210, val);
+				isBranch = (val == 0);
+			}
+			
+
+		} break;
+		case 0x05: /*IBNE*/{
+			 
+			if (b210 < 0x4) {
+				uint8_t val;
+				val = cpu->eblb->getter<uint8_t>(b210);
+				val = val + 1;
+				cpu->eblb->setter<uint8_t>(b210, val);
+				isBranch = (val != 0);
+			} else {
+				uint16_t val;
+				val = cpu->eblb->getter<uint16_t>(b210);
+				val = val + 1;
+				cpu->eblb->setter<uint16_t>(b210, val);
+				isBranch = (val != 0);
+			}
+			
+
+		} break;
+		default: /*???*/;
+	}
+		
+	if (isBranch) {
+		cpu->setRegPC(branchAddr);
+	}
+
+	return getCycles();
+}
+

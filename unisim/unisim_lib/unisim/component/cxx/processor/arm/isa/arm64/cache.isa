@@ -1,0 +1,123 @@
+/*
+ *  Copyright (c) 2007-2017,
+ *  Commissariat a l'Energie Atomique (CEA)
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without modification,
+ *  are permitted provided that the following conditions are met:
+ *
+ *   - Redistributions of source code must retain the above copyright notice, this
+ *     list of conditions and the following disclaimer.
+ *
+ *   - Redistributions in binary form must reproduce the above copyright notice,
+ *     this list of conditions and the following disclaimer in the documentation
+ *     and/or other materials provided with the distribution.
+ *
+ *   - Neither the name of CEA nor the names of its contributors may be used to
+ *     endorse or promote products derived from this software without specific prior
+ *     written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ *  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *  DISCLAIMED.
+ *  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ *  INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ *  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+ *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ *  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Authors: Yves Lhuillier (yves.lhuillier@cea.fr)
+ */
+
+/*******************************************************************
+ * DC
+ *
+ * Data cache operation
+ */
+
+op dc_cisw( 0b1101010100001[13] : 0b000[3] : 0b0111[4] : 0b1110[4] : 0b010[3] : rt[5] );
+dc_cisw.var format : {char const*} = {"base,2897"};
+
+dc_cisw.disasm = {
+  sink << "dc\tcisw, " << DisasmGZXR(rt);
+};
+
+op dc_civac( 0b1101010100001[13] : 0b011[3] : 0b0111[4] : 0b1110[4] : 0b001[3] : rt[5] );
+dc_civac.var format : {char const*} = {"base,2898"};
+
+dc_civac.disasm = {
+  sink << "dc\tcivac, " << DisasmGZXR(rt);
+};
+
+op dc_csw( 0b1101010100001[13] : 0b000[3] : 0b0111[4] : 0b1010[4] : 0b010[3] : rt[5] );
+dc_csw.var format : {char const*} = {"base,2899"};
+
+dc_csw.disasm = {
+  sink << "dc\tcsw, " << DisasmGZXR(rt);
+};
+
+op dc_cvac( 0b1101010100001[13] : 0b011[3] : 0b0111[4] : 0b1010[4] : 0b001[3] : rt[5] );
+dc_cvac.var format : {char const*} = {"base,2900"};
+
+dc_cvac.disasm = {
+  sink << "dc\tcvac, " << DisasmGZXR(rt);
+};
+
+op dc_cvau( 0b1101010100001[13] : 0b011[3] : 0b0111[4] : 0b1011[4] : 0b001[3] : rt[5] );
+dc_cvau.var format : {char const*} = {"base,2901"};
+
+dc_cvau.disasm = {
+  sink << "dc\tcvau, " << DisasmGZXR(rt);
+};
+
+op dc_isw( 0b1101010100001[13] : 0b000[3] : 0b0111[4] : 0b0110[4] : 0b010[3] : rt[5] );
+dc_isw.var format : {char const*} = {"base,2908"};
+
+dc_isw.disasm = {
+  sink << "dc\tisw, " << DisasmGZXR(rt);
+};
+
+op dc_ivac( 0b1101010100001[13] : 0b000[3] : 0b0111[4] : 0b0110[4] : 0b001[3] : rt[5] );
+dc_ivac.var format : {char const*} = {"base,2909"};
+
+dc_ivac.disasm = {
+  sink << "dc\tivac, " << DisasmGZXR(rt);
+};
+
+/*
+ * end of DC
+ *******************************************************************/
+
+/*******************************************************************
+ * IC
+ *
+ * Instruction cache operation
+ */
+
+op ic_iallu( 0b1101010100001[13] : 0b000[3] : 0b0111[4] : 0b0101[4] : 0b000[3] : ?[5] );
+ic_iallu.var format : {char const*} = {"base,2902"};
+
+ic_iallu.disasm = {
+  sink << "ic\tiallu";
+};
+
+op ic_ialluis( 0b1101010100001[13] : 0b000[3] : 0b0111[4] : 0b0001[4] : 0b000[3] : ?[5] );
+ic_ialluis.var format : {char const*} = {"base,2903"};
+
+ic_ialluis.disasm = {
+  sink << "ic\tialluis";
+};
+
+op ic_ivau( 0b11010101000010110111010100111111[32] );
+ic_ivau.var format : {char const*} = {"base,2954"};
+
+ic_ivau.disasm = {
+  sink << "ic\tivau";
+};
+
+/*
+ * end of IC
+ *******************************************************************/

@@ -1,0 +1,13 @@
+#!/usr/bin/make -f
+%:
+	dh $@
+
+override_dh_auto_configure:
+	dh_auto_configure -- --disable-accellera-install-layout
+
+override_dh_strip:
+	dh_strip --dbg-package=libieee1666-@PACKAGE_VERSION@-dbg --no-automatic-dbgsym
+
+override_dh_auto_clean:
+	make clean
+	rm -f config.log config.status

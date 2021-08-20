@@ -1,0 +1,2558 @@
+/*
+ *  Copyright (c) 2008,
+ *  Commissariat a l'Energie Atomique (CEA)
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without modification,
+ *  are permitted provided that the following conditions are met:
+ *
+ *   - Redistributions of source code must retain the above copyright notice, this
+ *     list of conditions and the following disclaimer.
+ *
+ *   - Redistributions in binary form must reproduce the above copyright notice,
+ *     this list of conditions and the following disclaimer in the documentation
+ *     and/or other materials provided with the distribution.
+ *
+ *   - Neither the name of CEA nor the names of its contributors may be used to
+ *     endorse or promote products derived from this software without specific prior
+ *     written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ *  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *  DISCLAIMED.
+ *  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ *  INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ *  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+ *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ *  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Authors: Reda   Nouacer  (reda.nouacer@cea.fr)
+ */
+
+
+/* ***** Addition Instructions ****** */
+
+// ABA ( A+B => A)
+op aba(0x18[8]:0x06[8])
+
+aba.getCycles = { return 2;}
+
+aba.disasm = {
+	string mnem = "ABA";
+	
+	sink << mnem;
+	
+	return mnem;
+}
+
+aba.execute = {
+	uint8_t result, carry_out, overflow, sign;
+
+	uint8_t carry_in=0;
+	uint8_t aVal = cpu->getRegA();
+	uint8_t bVal = cpu->getRegB();
+	 
+	UnsignedAdd8(result, carry_out, overflow, sign, aVal, bVal, carry_in);
+	
+	cpu->setRegA(result);
+	
+	if (carry_out) { cpu->ccr->setC();} else { cpu->ccr->clrC();} 
+	if (overflow) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+	
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x80) == 0x80) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+//	if (((aVal & 0x0F)+(bVal & 0x0F)) > 0x09) cpu->ccr->setH(); else cpu->ccr->clrH();	
+	
+	uint8_t a3 = (cpu->getRegA() & 0x08);
+	uint8_t b3 = (cpu->getRegB() & 0x08);
+	uint8_t _r3 = ~(result & 0x08);
+
+	if ((a3 & b3) | (b3 & _r3) | (_r3 & a3)) cpu->ccr->setH(); else cpu->ccr->clrH();
+
+	return getCycles();
+}
+
+// ABX  (X+B => X) 
+op abx(0x1A[8]:0xE5[8])
+
+abx.getCycles = { return 2;}
+
+abx.disasm = {
+	string mnem = "ABX";
+	
+	sink << mnem;
+	
+	return mnem;
+}
+
+abx.execute = {
+
+	uint16_t result;
+	uint8_t carry_out, overflow, sign;
+
+	uint8_t carry_in=0;
+	uint8_t bVal = cpu->getRegB();
+	uint16_t xVal = cpu->getRegX();
+	
+	UnsignedAdd16(result, carry_out, overflow, sign, (uint16_t) bVal, xVal, carry_in);
+	
+	cpu->setRegX(result);
+
+	return getCycles();
+}
+
+// ABY (Y+B=>Y)
+op aby(0x19[8]:0xED[8])
+
+aby.getCycles = { return 2;}
+
+aby.disasm = {
+	string mnem = "ABY";
+	
+	sink << mnem;
+	
+	return mnem;
+}
+
+aby.execute = {
+	uint16_t result;
+	uint8_t carry_out, overflow, sign;
+
+	uint8_t carry_in=0;
+	uint8_t bVal = cpu->getRegB();
+	uint16_t yVal = cpu->getRegY();
+	
+	UnsignedAdd16(result, carry_out, overflow, sign, (uint16_t) bVal, yVal, carry_in);
+	
+	cpu->setRegY(result);
+
+	return getCycles();
+}
+
+// ADCab IMM  (regAB + ii + carry => regAB) 
+op adc_ab_imm(0b1[1]:b[1]:0x09[6]:opr8i[8])
+
+adc_ab_imm.getCycles = { return 1;}
+
+adc_ab_imm.disasm = {
+	string mnem;
+	
+	if (b==0) {
+		mnem = "ADCA";
+	} else {
+		mnem = "ADCB";
+	}
+	sink << mnem << " #0x"<< std::hex << opr8i;
+	
+	return mnem;
+}
+
+adc_ab_imm.execute = {
+	uint8_t result, carry_out, overflow, sign;
+	
+	uint8_t carry_in = cpu->ccr->getC();
+	uint8_t regVal;
+	if (b==0) {
+		regVal = cpu->getRegA();
+	} else {
+		regVal = cpu->getRegB();
+	}
+
+	UnsignedAdd8(result, carry_out, overflow, sign, regVal, opr8i, carry_in);
+	
+	if (b==0) {
+		cpu->setRegA(result);
+	} else {
+		cpu->setRegB(result);
+	}
+	
+	if (carry_out) { cpu->ccr->setC();} else { cpu->ccr->clrC();} 
+	if (overflow) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+	
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x80) == 0x80) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+//	if (((regVal & 0x0F)+(opr8i & 0x0F)) > 0x09) cpu->ccr->setH(); else cpu->ccr->clrH();		
+
+	uint8_t a3 = (regVal & 0x08);
+	uint8_t m3 = (opr8i & 0x08);
+	uint8_t _r3 = ~(result & 0x08);
+
+	if ((a3 & m3) | (m3 & _r3) | (_r3 & a3)) cpu->ccr->setH(); else cpu->ccr->clrH();	
+
+	return getCycles();
+}
+
+// ADCab DIR  (regAB + mem[regDirect:opr8a] + carry => regAB)
+op adc_ab_dir(0b1[1]:b[1]:0x19[6]:opr8a[8])
+
+adc_ab_dir.getCycles = { return 3;}
+
+adc_ab_dir.disasm = {
+	string mnem;
+	
+	if (b==0) {
+		mnem = "ADCA";
+	} else {
+		mnem = "ADCB"; 
+	}
+	sink << mnem << " 0x" << std::hex << opr8a;
+	
+	return mnem;
+}
+
+adc_ab_dir.execute = {
+	uint8_t result, carry_out, overflow, sign;
+	
+	uint8_t carry_in = cpu->ccr->getC();
+	uint8_t regVal;
+	if (b==0) {
+		regVal = cpu->getRegA();
+	} else {
+		regVal = cpu->getRegB();
+	}
+
+	uint8_t opr8aVal = cpu->memRead8(opr8a, ADDRESS::DIRECT, false);
+
+	UnsignedAdd8(result, carry_out, overflow, sign, regVal, opr8aVal, carry_in);
+	
+	if (b==0) {
+		cpu->setRegA(result);
+	} else {
+		cpu->setRegB(result);
+	}
+	
+	
+	if (carry_out) { cpu->ccr->setC();} else { cpu->ccr->clrC();} 
+	if (overflow) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+	
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x80) == 0x80) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+//	if (((regVal & 0x0F)+(opr8aVal & 0x0F)) > 0x09) cpu->ccr->setH(); else cpu->ccr->clrH();		
+
+	uint8_t a3 = (regVal & 0x08);
+	uint8_t m3 = (opr8aVal & 0x08);
+	uint8_t _r3 = ~(result & 0x08);
+
+	if ((a3 & m3) | (m3 & _r3) | (_r3 & a3)) cpu->ccr->setH(); else cpu->ccr->clrH();	
+
+	return getCycles();
+}
+
+// ADCab EXT (regAB + mem[opr16a] + carry => regAB)
+op adc_ab_ext(0b1[1]:b[1]:0x39[6]:> <:opr16a[16])
+
+adc_ab_ext.getCycles = { return 3;}
+
+adc_ab_ext.disasm = {
+	string mnem;
+	
+	if (b==0) {
+		mnem = "ADCA";
+	} else {
+		mnem = "ADCB";		
+	}
+	sink << mnem << " 0x" << std::hex << opr16a;
+	
+	return mnem;
+}
+
+adc_ab_ext.execute = {
+	uint8_t result, carry_out, overflow, sign;
+	
+	uint8_t carry_in = cpu->ccr->getC();
+	
+	uint8_t regVal;
+	if (b==0) {
+		regVal = cpu->getRegA();
+	} else {
+		regVal = cpu->getRegB();
+	}
+	physical_address_t addr = opr16a;	
+	uint8_t opr16aVal = cpu->memRead8(addr);
+
+	UnsignedAdd8(result, carry_out, overflow, sign, regVal, opr16aVal, carry_in);
+	
+	if (b==0) {
+		cpu->setRegA(result);
+	} else {
+		cpu->setRegB(result);
+	}
+	
+	if (carry_out) { cpu->ccr->setC();} else { cpu->ccr->clrC();} 
+	if (overflow) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+	
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x80) == 0x80) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+//	if (((regVal & 0x0F)+(opr16aVal & 0x0F)) > 0x09) cpu->ccr->setH(); else cpu->ccr->clrH();		
+
+	uint8_t a3 = (regVal & 0x08);
+	uint8_t m3 = (opr16aVal & 0x08);
+	uint8_t _r3 = ~(result & 0x08);
+
+	if ((a3 & m3) | (m3 & _r3) | (_r3 & a3)) cpu->ccr->setH(); else cpu->ccr->clrH();	
+
+	return getCycles();
+}
+
+// ADCab IDX or IDX1 or IDX2 or [D,IDX] or [IDX2]  (regAB + mem[xb->addrE] + carry => regAB)
+op adc_ab_idx(0b1[1]:b[1]:0x29[6]:> <:*xb[XB])
+
+adc_ab_idx.getCycles = { return XbModes::GetIDXCycles(xb->getXbMode(), 3, 3, 4, 6, 6); }
+
+adc_ab_idx.disasm = {
+	string mnem;
+	
+	if (b==0){
+		mnem = "ADCA";
+	} else {
+		mnem = "ADCB";
+	}
+
+	sink << mnem << " ";
+	xb->disasm(sink);
+	
+	return mnem;
+}
+
+adc_ab_idx.pre_execute = {
+	
+	xb->pre_execute(sink);
+	// after: other specific actions
+}
+
+adc_ab_idx.post_execute = {
+
+	// before: other specific actions
+	xb->post_execute(sink);
+}
+
+adc_ab_idx.execute = {
+	uint8_t result, carry_out, overflow, sign;
+	
+	uint8_t carry_in = cpu->ccr->getC();
+	
+	uint8_t regVal;
+	
+	if (b==0) {
+		regVal = cpu->getRegA();
+	} else {
+		regVal = cpu->getRegB();
+	}
+	physical_address_t addr = xb->getEAddr(cpu);		
+	uint8_t xbVal = cpu->memRead8(addr);
+
+	UnsignedAdd8(result, carry_out, overflow, sign, regVal, xbVal, carry_in);
+	
+	if (b==0) {
+		cpu->setRegA(result);
+	} else {
+		cpu->setRegB(result);
+	}
+	
+	if (carry_out) { cpu->ccr->setC();} else { cpu->ccr->clrC();} 
+	if (overflow) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+	
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x80) == 0x80) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+//	if (((regVal & 0x0F)+(xbVal & 0x0F)) > 0x09) cpu->ccr->setH(); else cpu->ccr->clrH();		
+
+	uint8_t a3 = (regVal & 0x08);
+	uint8_t m3 = (xbVal & 0x08);
+	uint8_t _r3 = ~(result & 0x08);
+
+	if ((a3 & m3) | (m3 & _r3) | (_r3 & a3)) cpu->ccr->setH(); else cpu->ccr->clrH();	
+
+	return getCycles();
+}
+
+// ADDab IMM (regAB + ii => regAB)
+op add_ab_imm(0b1[1]:b[1]:0x0B[6]:opr8i[8])
+
+add_ab_imm.getCycles = { return 1; }
+
+add_ab_imm.disasm = {
+	string mnem;
+	
+	if (b==0) {
+		mnem = "ADDA";
+	} else {
+		mnem = "ADDB";
+	}
+	sink << mnem << " #0x" << std::hex << opr8i;
+	
+	return mnem;
+}
+
+add_ab_imm.execute = {
+	uint8_t result, carry_out, overflow, sign;
+	
+	uint8_t carry_in = 0;
+	uint8_t regVal;
+	if (b==0) {
+		regVal = cpu->getRegA();
+	} else {
+		regVal = cpu->getRegB();
+	}
+
+	UnsignedAdd8(result, carry_out, overflow, sign, regVal, opr8i, carry_in);
+	
+	if (b==0) {
+		cpu->setRegA(result);
+	} else {
+		cpu->setRegB(result);
+	}
+	
+	if (carry_out) { cpu->ccr->setC();} else { cpu->ccr->clrC();} 
+	if (overflow) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+	
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x80) == 0x80) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+//	if (((regVal & 0x0F)+(opr8i & 0x0F)) > 0x09) cpu->ccr->setH(); else cpu->ccr->clrH();		
+
+	uint8_t a3 = (regVal & 0x08);
+	uint8_t m3 = (opr8i & 0x08);
+	uint8_t _r3 = ~(result & 0x08);
+
+	if ((a3 & m3) | (m3 & _r3) | (_r3 & a3)) cpu->ccr->setH(); else cpu->ccr->clrH();	
+
+	return getCycles();
+}
+
+// ADDab DIR  (regAB + mem[regDirect:opr8a] => regAB)
+op add_ab_dir(0b1[1]:b[1]:0x1B[6]:opr8a[8])
+
+add_ab_dir.getCycles = { return 3; }
+
+add_ab_dir.disasm = {
+	string mnem;
+	
+	if (b==0) {
+		mnem = "ADDA";
+	} else {
+		mnem = "ADDB"; 
+	}
+	sink << mnem << " 0x" << std::hex << opr8a;
+	
+	return mnem;
+}
+
+add_ab_dir.execute = {
+	uint8_t result, carry_out, overflow, sign;
+	
+	uint8_t carry_in = 0;
+	uint8_t regVal;
+	if (b==0) {
+		regVal = cpu->getRegA();
+	} else {
+		regVal = cpu->getRegB();
+	}
+
+	uint8_t opr8aVal = cpu->memRead8(addr, ADDRESS::DIRECT, false);
+
+	UnsignedAdd8(result, carry_out, overflow, sign, regVal, opr8aVal, carry_in);
+	
+	if (b==0) {
+		cpu->setRegA(result);
+	} else {
+		cpu->setRegB(result);
+	}
+	
+	
+	if (carry_out) { cpu->ccr->setC();} else { cpu->ccr->clrC();} 
+	if (overflow) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+	
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x80) == 0x80) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+//	if (((regVal & 0x0F)+(opr8aVal & 0x0F)) > 0x09) cpu->ccr->setH(); else cpu->ccr->clrH();	
+
+	uint8_t a3 = (regVal & 0x08);
+	uint8_t m3 = (opr8aVal & 0x08);
+	uint8_t _r3 = ~(result & 0x08);
+
+	if ((a3 & m3) | (m3 & _r3) | (_r3 & a3)) cpu->ccr->setH(); else cpu->ccr->clrH();	
+
+	return getCycles();
+}
+
+// ADDab EXT  (regAB + mem[opr16a] => regAB)
+op add_ab_ext(0b1[1]:b[1]:0x3B[6]:> <:opr16a[16])
+
+add_ab_ext.getCycles = { return 3; }
+
+add_ab_ext.disasm = {
+	string mnem;
+	
+	if (b==0) {
+		mnem = "ADDA";
+	} else {
+		mnem = "ADDB";		
+	}
+	sink << mnem << " 0x" << std::hex << opr16a;
+	
+	return mnem;
+}
+
+add_ab_ext.execute = {
+	uint8_t result, carry_out, overflow, sign;
+	
+	uint8_t carry_in = 0;
+	
+	uint8_t regVal;
+	if (b==0) {
+		regVal = cpu->getRegA();
+	} else {
+		regVal = cpu->getRegB();
+	}
+	physical_address_t addr = opr16a;		
+	uint8_t opr16aVal = cpu->memRead8(addr);
+
+	UnsignedAdd8(result, carry_out, overflow, sign, regVal, opr16aVal, carry_in);
+	
+	if (b==0) {
+		cpu->setRegA(result);
+	} else {
+		cpu->setRegB(result);
+	}
+	
+	if (carry_out) { cpu->ccr->setC();} else { cpu->ccr->clrC();} 
+	if (overflow) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+	
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x80) == 0x80) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+//	if (((regVal & 0x0F)+(opr16aVal & 0x0F)) > 0x09) cpu->ccr->setH(); else cpu->ccr->clrH();	
+
+	uint8_t a3 = (regVal & 0x08);
+	uint8_t m3 = (opr16aVal & 0x08);
+	uint8_t _r3 = ~(result & 0x08);
+
+	if ((a3 & m3) | (m3 & _r3) | (_r3 & a3)) cpu->ccr->setH(); else cpu->ccr->clrH();	
+
+	return getCycles();
+}
+
+// ADDab  IDX or IDX1 or IDX2 or [D,IDX] or [IDX2]  (regAB + mem[xb->addrE] => regAB)
+op add_ab_idx(0b1[1]:b[1]:0x2B[6]:> <:*xb[XB])
+
+add_ab_idx.pre_execute = {
+	
+	xb->pre_execute(sink);
+	// after: other specific actions
+}
+
+add_ab_idx.post_execute = {
+
+	// before: other specific actions
+	xb->post_execute(sink);
+}
+
+add_ab_idx.getCycles = { return XbModes::GetIDXCycles(xb->getXbMode(), 3, 3, 4, 6, 6); }
+
+add_ab_idx.disasm = {
+	string mnem;
+	
+	if (b==0){
+		mnem = "ADDA";
+	} else {
+		mnem = "ADDB";
+	}
+
+	sink << mnem << " ";
+	xb->disasm(sink);
+	
+	return mnem;
+}
+
+add_ab_idx.execute = {
+	uint8_t result, carry_out, overflow, sign;
+	
+	uint8_t carry_in = 0;
+	
+	uint8_t regVal;
+	
+	if (b==0) {
+		regVal = cpu->getRegA();
+	} else {
+		regVal = cpu->getRegB();
+	}
+	physical_address_t addr = xb->getEAddr(cpu);		
+	uint8_t xbVal = cpu->memRead8(addr);
+
+	UnsignedAdd8(result, carry_out, overflow, sign, regVal, xbVal, carry_in);
+	
+	if (b==0) {
+		cpu->setRegA(result);
+	} else {
+		cpu->setRegB(result);
+	}
+	
+	if (carry_out) { cpu->ccr->setC();} else { cpu->ccr->clrC();} 
+	if (overflow) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+	
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x80) == 0x80) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+//	if (((regVal & 0x0F)+(xbVal & 0x0F)) > 0x09) cpu->ccr->setH(); else cpu->ccr->clrH();	
+
+	uint8_t a3 = (regVal & 0x08);
+	uint8_t m3 = (xbVal & 0x08);
+	uint8_t _r3 = ~(result & 0x08);
+
+	if ((a3 & m3) | (m3 & _r3) | (_r3 & a3)) cpu->ccr->setH(); else cpu->ccr->clrH();	
+
+	return getCycles();
+}
+
+// ADED IMM  (regD + #opr16i + carry => regD) 
+op aded_imm(0x18[8]:0xC3[8]:opr16i[16])
+
+aded_imm.getCycles = { return 3; }
+
+aded_imm.disasm = {
+	string mnem = "ADED";
+	
+	sink << mnem << " #0x" << std::hex << opr16i;
+	
+	return mnem;
+}
+
+aded_imm.execute = {
+	uint8_t carry_out, overflow, sign;
+	uint16_t result;
+	
+	uint8_t carry_in = cpu->ccr->getC();
+	uint16_t regVal = cpu->getRegD();
+
+	UnsignedAdd16(result, carry_out, overflow, sign, regVal, opr16i, carry_in);
+	
+	cpu->setRegD(result);
+		
+	if (carry_out) { cpu->ccr->setC();} else { cpu->ccr->clrC();} 
+	if (overflow) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+	
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x8000) == 0x8000) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+// ADED DIR  (regD + mem16[regDirect:opr8a] + carry => regD)
+op aded_dir(0x18[8]:> <:0xD3[8]:opr8a[8])
+
+aded_dir.getCycles = { return 4; }
+
+aded_dir.disasm = {
+	string mnem = "ADED";
+	
+	sink << mnem << " 0x" << std::hex << opr8a;
+	
+	return mnem;
+}
+
+aded_dir.execute = {
+	uint8_t carry_out, overflow, sign;
+	uint16_t result;
+	
+	uint8_t carry_in = cpu->ccr->getC();
+	uint16_t regVal = cpu->getRegD();
+
+	uint16_t opr8aVal = cpu->memRead16(opr8a, ADDRESS::DIRECT, false);
+
+	UnsignedAdd16(result, carry_out, overflow, sign, regVal, opr8aVal, carry_in);
+	
+	cpu->setRegD(result);	
+	
+	if (carry_out) { cpu->ccr->setC();} else { cpu->ccr->clrC();} 
+	if (overflow) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+	
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x8000) == 0x8000) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+// ADED EXT (regD + mem16[opr16a] + carry => regD)
+op aded_ext(0x18[8]:0xF3[8]:> <:opr16a[16])
+
+aded_ext.getCycles = { return 4; }
+
+aded_ext.disasm = {
+	string mnem = "ADED";
+	
+	sink << mnem << " 0x" << std::hex << opr16a;
+	
+	return mnem;
+}
+
+aded_ext.execute = {
+	uint8_t carry_out, overflow, sign;
+	uint16_t result;
+	
+	uint8_t carry_in = cpu->ccr->getC();
+	
+	uint16_t regVal = cpu->getRegD();
+
+	physical_address_t addr = opr16a;	
+	uint16_t opr16aVal = cpu->memRead16(addr);
+
+	UnsignedAdd16(result, carry_out, overflow, sign, regVal, opr16aVal, carry_in);
+	
+	cpu->setRegD(result);
+		
+	if (carry_out) { cpu->ccr->setC();} else { cpu->ccr->clrC();} 
+	if (overflow) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+	
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x8000) == 0x8000) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+// ADED IDX or IDX1 or IDX2 or [D,IDX] or [IDX2]  (regD + mem16[xb->addrE] + carry => regD)
+op aded_idx(0x18[8]:0xE3[8]:> <:*xb[XB])
+
+aded_idx.pre_execute = {
+	
+	xb->pre_execute(sink);
+	// after: other specific actions
+}
+
+aded_idx.post_execute = {
+
+	// before: other specific actions
+	xb->post_execute(sink);
+}
+
+aded_idx.getCycles = { return XbModes::GetIDXCycles(xb->getXbMode(), 4, 4, 5, 7, 7); }
+
+aded_idx.disasm = {
+	string mnem = "ADED";
+	
+	sink << mnem << " ";
+	xb->disasm(sink);
+	
+	return mnem;
+}
+
+aded_idx.execute = {
+	uint8_t carry_out, overflow, sign;
+	uint16_t result;
+	
+	uint8_t carry_in = cpu->ccr->getC();
+	
+	uint16_t regVal = cpu->getRegD();
+	
+	physical_address_t addr = xb->getEAddr(cpu);		
+	uint16_t xbVal = cpu->memRead16(addr);
+
+	UnsignedAdd16(result, carry_out, overflow, sign, regVal, xbVal, carry_in);
+	
+	cpu->setRegD(result);
+		
+	if (carry_out) { cpu->ccr->setC();} else { cpu->ccr->clrC();} 
+	if (overflow) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+	
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x8000) == 0x8000) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+// ADExy IMM  (regXY + #opr16i + carry => regXY) 
+op ade_xy_imm(0x18[8]:0b1[1]:b[1]:0x09[6]:opr16i[16])
+
+ade_xy_imm.getCycles = { return 3; }
+
+ade_xy_imm.disasm = {
+	string mnem;
+	
+	if (b==0) {
+		mnem = "ADEX";
+	} else {
+		mnem = "ADEY";
+	}
+	sink << mnem << " #0x" << std::hex << opr16i;
+	
+	return mnem;
+}
+
+ade_xy_imm.execute = {
+	uint8_t carry_out, overflow, sign;
+	uint16_t result;
+	
+	uint8_t carry_in = cpu->ccr->getC();
+	uint16_t regVal;
+	if (b==0) {
+		regVal = cpu->getRegX();
+	} else {
+		regVal = cpu->getRegY();
+	}
+
+	UnsignedAdd16(result, carry_out, overflow, sign, regVal, opr16i, carry_in);
+	
+	if (b==0) {
+		cpu->setRegX(result);
+	} else {
+		cpu->setRegY(result);
+	}
+	
+	if (carry_out) { cpu->ccr->setC();} else { cpu->ccr->clrC();} 
+	if (overflow) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+	
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x8000) == 0x8000) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+// ADExy DIR  (regXY + mem16[regDirect:opr8a] + carry => regXY)
+op ade_xy_dir(0x18[8]:> <:0b1[1]:b[1]:0x19[6]:opr8a[8])
+
+ade_xy_dir.getCycles = { return 4; }
+
+ade_xy_dir.disasm = {
+	string mnem;
+	
+	if (b==0) {
+		mnem = "ADEX";
+	} else {
+		mnem = "ADEY"; 
+	}
+	sink << mnem << " 0x" << std::hex << opr8a;
+	
+	return mnem;
+}
+
+ade_xy_dir.execute = {
+	uint8_t carry_out, overflow, sign;
+	uint16_t result;
+	
+	uint8_t carry_in = cpu->ccr->getC();
+	uint16_t regVal;
+	if (b==0) {
+		regVal = cpu->getRegX();
+	} else {
+		regVal = cpu->getRegY();
+	}
+
+	uint16_t opr8aVal = cpu->memRead16(opr8a, ADDRESS::DIRECT, false);
+
+	UnsignedAdd16(result, carry_out, overflow, sign, regVal, opr8aVal, carry_in);
+	
+	if (b==0) {
+		cpu->setRegX(result);
+	} else {
+		cpu->setRegY(result);
+	}
+	
+	
+	if (carry_out) { cpu->ccr->setC();} else { cpu->ccr->clrC();} 
+	if (overflow) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+	
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x8000) == 0x8000) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+// ADExy EXT (regXY + mem16[opr16a] + carry => regXY)
+op ade_xy_ext(0x18[8]:0b1[1]:b[1]:0x39[6]:> <:opr16a[16])
+
+ade_xy_ext.getCycles = { return 4; }
+
+ade_xy_ext.disasm = {
+	string mnem;
+	
+	if (b==0) {
+		mnem = "ADEX";
+	} else {
+		mnem = "ADEY";		
+	}
+	sink << mnem << " 0x" << std::hex << opr16a;
+	
+	return mnem;
+}
+
+ade_xy_ext.execute = {
+	uint8_t carry_out, overflow, sign;
+	uint16_t result;
+	
+	uint8_t carry_in = cpu->ccr->getC();
+	
+	uint16_t regVal;
+	if (b==0) {
+		regVal = cpu->getRegX();
+	} else {
+		regVal = cpu->getRegY();
+	}
+	physical_address_t addr = opr16a;	
+	uint16_t opr16aVal = cpu->memRead16(addr);
+
+	UnsignedAdd16(result, carry_out, overflow, sign, regVal, opr16aVal, carry_in);
+	
+	if (b==0) {
+		cpu->setRegX(result);
+	} else {
+		cpu->setRegY(result);
+	}
+	
+	if (carry_out) { cpu->ccr->setC();} else { cpu->ccr->clrC();} 
+	if (overflow) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+	
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x8000) == 0x8000) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+// ADExy IDX or IDX1 or IDX2 or [D,IDX] or [IDX2]  (regXY + mem16[xb->addrE] + carry => regXY)
+op ade_xy_idx(0x18[8]:0b1[1]:b[1]:0x29[6]:> <:*xb[XB])
+
+ade_xy_idx.pre_execute = {
+	
+	xb->pre_execute(sink);
+	// after: other specific actions
+}
+
+ade_xy_idx.post_execute = {
+
+	// before: other specific actions
+	xb->post_execute(sink);
+}
+
+ade_xy_idx.getCycles = { return XbModes::GetIDXCycles(xb->getXbMode(), 4, 4, 5, 7, 7); }
+
+ade_xy_idx.disasm = {
+	string mnem;
+	
+	if (b==0){
+		mnem = "ADEX";
+	} else {
+		mnem = "ADEY";
+	}
+
+	sink << mnem << " ";
+	xb->disasm(sink);
+	
+	return mnem;
+}
+
+ade_xy_idx.execute = {
+	uint8_t carry_out, overflow, sign;
+	uint16_t result;
+	
+	uint8_t carry_in = cpu->ccr->getC();
+	
+	uint16_t regVal;
+	
+	if (b==0) {
+		regVal = cpu->getRegX();
+	} else {
+		regVal = cpu->getRegY();
+	}
+	physical_address_t addr = xb->getEAddr(cpu);		
+	uint16_t xbVal = cpu->memRead16(addr);
+
+	UnsignedAdd16(result, carry_out, overflow, sign, regVal, xbVal, carry_in);
+	
+	if (b==0) {
+		cpu->setRegX(result);
+	} else {
+		cpu->setRegY(result);
+	}
+	
+	if (carry_out) { cpu->ccr->setC();} else { cpu->ccr->clrC();} 
+	if (overflow) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+	
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x8000) == 0x8000) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+
+// ADDxy IMM (regXY + #opr16i => regXY)
+op add_xy_imm(0x18[8]:0b1[1]:b[1]:0x0B[6]:opr16i[16])
+
+add_xy_imm.getCycles = { return 3; }
+
+add_xy_imm.disasm = {
+	string mnem;
+	
+	if (b==0) {
+		mnem = "ADDX";
+	} else {
+		mnem = "ADDY";
+	}
+	sink << mnem << " #0x" << std::hex << opr16i;
+	
+	return mnem;
+}
+
+add_xy_imm.execute = {
+	uint8_t carry_out, overflow, sign;
+	uint16_t result;
+	
+	uint8_t carry_in = 0;
+	uint16_t regVal;
+	if (b==0) {
+		regVal = cpu->getRegX();
+	} else {
+		regVal = cpu->getRegY();
+	}
+
+	UnsignedAdd16(result, carry_out, overflow, sign, regVal, opr16i, carry_in);
+	
+	if (b==0) {
+		cpu->setRegX(result);
+	} else {
+		cpu->setRegY(result);
+	}
+	
+	if (carry_out) { cpu->ccr->setC();} else { cpu->ccr->clrC();} 
+	if (overflow) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+	
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x8000) == 0x8000) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+// ADDxy DIR  (regXY + mem16[regDirect:opr8a] => regXY)
+op add_xy_dir(0x18[8]:> <:0b1[1]:b[1]:0x1B[6]:opr8a[8])
+
+add_xy_dir.getCycles = { return 4; }
+
+add_xy_dir.disasm = {
+	string mnem;
+	
+	if (b==0) {
+		mnem = "ADDX";
+	} else {
+		mnem = "ADDY"; 
+	}
+	sink << mnem << " 0x" << std::hex << opr8a;
+	
+	return mnem;
+}
+
+add_xy_dir.execute = {
+	uint8_t carry_out, overflow, sign;
+	uint16_t result;
+	uint8_t carry_in = 0;
+	uint16_t regVal;
+	
+	if (b==0) {
+		regVal = cpu->getRegX();
+	} else {
+		regVal = cpu->getRegY();
+	}
+
+	uint16_t opr8aVal = cpu->memRead16(opr8a, ADDRESS::DIRECT, false);
+
+	UnsignedAdd16(result, carry_out, overflow, sign, regVal, opr8aVal, carry_in);
+	
+	if (b==0) {
+		cpu->setRegX(result);
+	} else {
+		cpu->setRegY(result);
+	}
+	
+	
+	if (carry_out) { cpu->ccr->setC();} else { cpu->ccr->clrC();} 
+	if (overflow) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+	
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x8000) == 0x8000) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+// ADDxy EXT  (regXY + mem16[opr16a] => regXY)
+op add_xy_ext(0x18[8]:0b1[1]:b[1]:0x3B[6]:> <:opr16a[16])
+
+add_xy_ext.getCycles = { return 4; }
+
+add_xy_ext.disasm = {
+	string mnem;
+	
+	if (b==0) {
+		mnem = "ADDX";
+	} else {
+		mnem = "ADDY";		
+	}
+	sink << mnem << " 0x" << std::hex << opr16a;
+	
+	return mnem;
+}
+
+add_xy_ext.execute = {
+	uint8_t carry_out, overflow, sign;
+	uint16_t result;
+	
+	uint8_t carry_in = 0;
+	
+	uint16_t regVal;
+	if (b==0) {
+		regVal = cpu->getRegX();
+	} else {
+		regVal = cpu->getRegY();
+	}
+	physical_address_t addr = opr16a;		
+	uint16_t opr16aVal = cpu->memRead16(addr);
+
+	UnsignedAdd16(result, carry_out, overflow, sign, regVal, opr16aVal, carry_in);
+	
+	if (b==0) {
+		cpu->setRegX(result);
+	} else {
+		cpu->setRegY(result);
+	}
+	
+	if (carry_out) { cpu->ccr->setC();} else { cpu->ccr->clrC();} 
+	if (overflow) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+	
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x8000) == 0x8000) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+// ADDxy  IDX or IDX1 or IDX2 or [D,IDX] or [IDX2]  (regXY + mem16[xb->addrE] => regXY)
+op add_xy_idx(0x18[8]:0b1[1]:b[1]:0x2B[6]:> <:*xb[XB])
+
+add_xy_idx.pre_execute = {
+	
+	xb->pre_execute(sink);
+	// after: other specific actions
+}
+
+add_xy_idx.post_execute = {
+
+	// before: other specific actions
+	xb->post_execute(sink);
+}
+
+add_xy_idx.getCycles = { return XbModes::GetIDXCycles(xb->getXbMode(), 4, 4, 5, 7, 7); }
+
+add_xy_idx.disasm = {
+	string mnem;
+	
+	if (b==0){
+		mnem = "ADDX";
+	} else {
+		mnem = "ADDY";
+	}
+
+	sink << mnem << " ";
+	xb->disasm(sink);
+	
+	return mnem;
+}
+
+add_xy_idx.execute = {
+	uint8_t carry_out, overflow, sign;
+	uint16_t result;
+	
+	uint8_t carry_in = 0;
+	
+	uint16_t regVal;
+	
+	if (b==0) {
+		regVal = cpu->getRegX();
+	} else {
+		regVal = cpu->getRegY();
+	}
+	physical_address_t addr = xb->getEAddr(cpu);		
+	uint16_t xbVal = cpu->memRead16(addr);
+
+	UnsignedAdd16(result, carry_out, overflow, sign, regVal, xbVal, carry_in);
+	
+	if (b==0) {
+		cpu->setRegX(result);
+	} else {
+		cpu->setRegY(result);
+	}
+	
+	if (carry_out) { cpu->ccr->setC();} else { cpu->ccr->clrC();} 
+	if (overflow) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+	
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x8000) == 0x8000) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+
+
+
+// SUBD IMM or ADDD IMM (regD -+ ii => regD)
+op add_sub_d_imm(0b1[1]:b[1]:0x03[6]:> <:opr16i[16])
+
+add_sub_d_imm.getCycles = { return 2; }
+
+add_sub_d_imm.disasm = {
+	string mnem;
+	
+	if (b==0) {
+		mnem = "SUBD";
+	} else {
+		mnem = "ADDD";
+	}
+	
+	sink << mnem << " #0x" << std::hex << opr16i;
+	
+	return mnem;
+}
+
+add_sub_d_imm.execute = {
+	uint8_t carry_out, overflow, sign;
+	uint16_t result;
+	 
+	uint8_t carry_in = 0;
+	uint16_t regVal = cpu->getRegD();
+
+	if (b==0) {
+		SignedSub16(result, carry_out, overflow, sign, regVal, opr16i, carry_in);
+	} else {
+		UnsignedAdd16(result, carry_out, overflow, sign, regVal, opr16i, carry_in);
+	}
+	
+	cpu->setRegD(result);
+	
+	if (carry_out) { cpu->ccr->setC();} else { cpu->ccr->clrC();} 
+	if (overflow) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+	
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x8000) == 0x8000) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+// SUBD DIR or ADDD DIR  (regD -+ mem[regDirect+opr8a]) 
+op add_sub_d_dir(0b1[1]:b[1]:0x13[6]:opr8a[8])
+
+add_sub_d_dir.getCycles = { return 3; }
+
+add_sub_d_dir.disasm = {
+	string mnem;
+	
+	if (b==0) {
+		mnem = "SUBD";
+	} else {
+		mnem = "ADDD";
+	}
+	sink << mnem << " 0x" << std::hex << opr8a;
+	
+	return mnem;
+}
+
+add_sub_d_dir.execute = {
+	uint8_t carry_out, overflow, sign;
+	uint16_t result;
+	
+	uint8_t carry_in = 0;
+	uint16_t regVal = cpu->getRegD();
+
+	uint16_t opr8aVal = cpu->memRead16(opr8a, ADDRESS::DIRECT, false);
+
+	if (b==0) {
+		SignedSub16(result, carry_out, overflow, sign, regVal, opr8aVal, carry_in);
+	} else {
+		UnsignedAdd16(result, carry_out, overflow, sign, regVal, opr8aVal, carry_in);
+	}
+	
+	cpu->setRegD(result);
+	
+	if (carry_out) { cpu->ccr->setC();} else { cpu->ccr->clrC();} 
+	if (overflow) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+	
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x8000) == 0x8000) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+// SUBD EXT or ADDD EXT (regD -+ mem[opr16a]) => regD)
+op add_sub_d_ext(0b1[1]:b[1]:0x33[6]:> <:opr16a[16])
+
+add_sub_d_ext.getCycles = { return 3; }
+
+add_sub_d_ext.disasm = {
+	string mnem;
+	
+	if (b==0) {
+		mnem = "SUBD";	
+	} else {
+		mnem = "ADDD";
+	}
+	
+	sink << mnem << " 0x" << std::hex << opr16a;
+	
+	return mnem;
+
+}
+
+add_sub_d_ext.execute = {
+	uint8_t carry_out, overflow, sign;
+	uint16_t result;
+	
+	uint8_t carry_in = 0;
+	
+	uint16_t regVal = cpu->getRegD();
+	physical_address_t addr = opr16a;		
+	uint16_t opr16aVal = cpu->memRead16(addr);
+
+	if (b==0) {
+		SignedSub16(result, carry_out, overflow, sign, regVal, opr16aVal, carry_in);
+	} else {
+		UnsignedAdd16(result, carry_out, overflow, sign, regVal, opr16aVal, carry_in);
+	}
+
+	cpu->setRegD(result);
+	
+	if (carry_out) { cpu->ccr->setC();} else { cpu->ccr->clrC();} 
+	if (overflow) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+	
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x8000) == 0x8000) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+// SUBD/ADDD  IDX or IDX1 or IDX2 or [D,IDX] or [IDX2]  (regD -+ mem[xb->addrE] => regD) 
+op add_sub_d_idx(0b1[1]:b[1]:0x23[6]:> <:*xb[XB])
+
+add_sub_d_idx.pre_execute = {
+	
+	xb->pre_execute(sink);
+	// after: other specific actions
+}
+
+add_sub_d_idx.post_execute = {
+
+	// before: other specific actions
+	xb->post_execute(sink);
+}
+
+add_sub_d_idx.getCycles = { return XbModes::GetIDXCycles(xb->getXbMode(), 3, 3, 4, 6, 6); }
+
+add_sub_d_idx.disasm = {
+	string mnem;
+	
+	if (b==0) {
+		mnem = "SUBD";
+	} else {
+		mnem = "ADDD";
+	}
+
+	sink << mnem << " ";
+	xb->disasm(sink);
+	
+	return mnem;
+}
+
+add_sub_d_idx.execute = {
+	uint8_t carry_out, overflow, sign;
+	uint16_t result;
+	
+	uint8_t carry_in = 0;
+	
+	uint16_t regVal = cpu->getRegD();
+	physical_address_t addr = xb->getEAddr(cpu);		
+	uint16_t xbVal = cpu->memRead16(addr);
+
+	if (b==0) {
+		SignedSub16(result, carry_out, overflow, sign, regVal, xbVal, carry_in);
+	} else {
+		UnsignedAdd16(result, carry_out, overflow, sign, regVal, xbVal, carry_in);
+	}
+
+	cpu->setRegD(result);
+	
+	if (carry_out) { cpu->ccr->setC();} else { cpu->ccr->clrC();} 
+	if (overflow) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+	
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x8000) == 0x8000) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+/* ****** Subtraction Instructions **** */
+
+// SBA  (regA - regB => regA)
+op sba(0x18[8]:0x16[8])
+
+sba.getCycles = { return 2; }
+
+sba.disasm = {
+	string mnem = "SBA";
+	
+	sink << mnem;
+	
+	return mnem;
+}
+
+sba.execute = {
+	uint8_t result, carry_out, overflow, sign;
+
+	uint8_t carry_in=0;
+	uint8_t aVal = cpu->getRegA();
+	uint8_t bVal = cpu->getRegB();
+	 
+	SignedSub8(result, carry_out, overflow, sign, aVal, bVal, carry_in);
+	
+	cpu->setRegA(result);
+	
+	if (carry_out) { cpu->ccr->setC();} else { cpu->ccr->clrC();} 
+	if (overflow) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+	
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x80) == 0x80) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+// SBCA/SBCB  IMM (regAB - ii - carry => regAB)
+op sbc_ab_imm(0b1[1]:b[1]:0x02[6]:opr8i[8])
+
+sbc_ab_imm.getCycles = { return 1; }
+
+sbc_ab_imm.disasm = {
+	string mnem;
+	
+	if (b==0) {
+		mnem = "SBCA";
+	} else {
+		mnem = "SBCB";
+	}
+	sink << mnem << " #0x" << std::hex << opr8i;
+	
+	return mnem;
+}
+
+sbc_ab_imm.execute = {
+	uint8_t result, carry_out, overflow, sign;
+	
+	uint8_t carry_in = cpu->ccr->getC();
+	uint8_t regVal;
+	if (b==0) {
+		regVal = cpu->getRegA();
+	} else {
+		regVal = cpu->getRegB();
+	}
+
+	SignedSub8(result, carry_out, overflow, sign, regVal, opr8i, carry_in);
+	
+	if (b==0) {
+		cpu->setRegA(result);
+	} else {
+		cpu->setRegB(result);
+	}
+	
+	if (carry_out) { cpu->ccr->setC();} else { cpu->ccr->clrC();} 
+	if (overflow) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+	
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x80) == 0x80) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+// SBCA/SBCB  DIR  (regAB - mem[regDirect:opr8a] - carry => regAB)
+op sbc_ab_dir(0b1[1]:b[1]:0x12[6]:opr8a[8])
+
+sbc_ab_dir.getCycles = { return 3; }
+
+sbc_ab_dir.disasm = {
+	string mnem;
+	
+	if (b==0) {
+		mnem = "SBCA";
+	} else {
+		mnem = "SBCB"; 
+	}
+	sink << mnem << " 0x" << std::hex << opr8a;
+	
+	return mnem;
+}
+
+sbc_ab_dir.execute = {
+	uint8_t result, carry_out, overflow, sign;
+	
+	uint8_t carry_in = cpu->ccr->getC();
+	uint8_t regVal;
+	if (b==0) {
+		regVal = cpu->getRegA();
+	} else {
+		regVal = cpu->getRegB();
+	}
+
+	uint8_t opr8aVal = cpu->memRead8(opr8a, ADDRESS::DIRECT, false);
+
+	SignedSub8(result, carry_out, overflow, sign, regVal, opr8aVal, carry_in);
+	
+	if (b==0) {
+		cpu->setRegA(result);
+	} else {
+		cpu->setRegB(result);
+	}
+	
+	if (carry_out) { cpu->ccr->setC();} else { cpu->ccr->clrC();} 
+	if (overflow) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+	
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x80) == 0x80) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+// SBCA/SBCB  EXT (regAB - mem[opr16a] - carry => regAB)
+op sbc_ab_ext(0b1[1]:b[1]:0x32[6]:> <:opr16a[16])
+
+sbc_ab_ext.getCycles = { return 3; }
+
+sbc_ab_ext.disasm = {
+	string mnem;
+	
+	if (b==0) {
+		mnem = "SBCA";
+	} else {
+		mnem = "SBCB";		
+	}
+	sink << mnem << " 0x" << std::hex << opr16a;
+	
+	return mnem;
+}
+
+sbc_ab_ext.execute = {
+	uint8_t result, carry_out, overflow, sign;
+	
+	uint8_t carry_in = cpu->ccr->getC();
+	
+	uint8_t regVal;
+	if (b==0) {
+		regVal = cpu->getRegA();
+	} else {
+		regVal = cpu->getRegB();
+	}
+	physical_address_t addr = opr16a;		
+	uint8_t opr16aVal = cpu->memRead8(addr);
+
+	SignedSub8(result, carry_out, overflow, sign, regVal, opr16aVal, carry_in);
+	
+	if (b==0) {
+		cpu->setRegA(result);
+	} else {
+		cpu->setRegB(result);
+	}
+	
+	if (carry_out) { cpu->ccr->setC();} else { cpu->ccr->clrC();} 
+	if (overflow) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+	
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x80) == 0x80) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+// SBCA/SBCB IDX or IDX1 or IDX2 or [D,IDX] or [IDX2]  (regAB - mem[xb->addrE] - carry => regAB)
+op sbc_ab_idx(0b1[1]:b[1]:0x22[6]:> <:*xb[XB])
+
+sbc_ab_idx.pre_execute = {
+	
+	xb->pre_execute(sink);
+	// after: other specific actions
+}
+
+sbc_ab_idx.post_execute = {
+
+	// before: other specific actions
+	xb->post_execute(sink);
+}
+
+sbc_ab_idx.getCycles = { return XbModes::GetIDXCycles(xb->getXbMode(), 3, 3, 4, 6, 6); }
+
+sbc_ab_idx.disasm = {
+	string mnem;
+	
+	if (b==0){
+		mnem = "SBCA";
+	} else {
+		mnem = "SBCB";
+	}
+
+	sink << mnem << " ";
+	xb->disasm(sink);
+	
+	return mnem;
+}
+
+sbc_ab_idx.execute = {
+	uint8_t result, carry_out, overflow, sign;
+	
+	uint8_t carry_in = cpu->ccr->getC();
+	
+	uint8_t regVal;
+	
+	if (b==0) {
+		regVal = cpu->getRegA();
+	} else {
+		regVal = cpu->getRegB();
+	}
+	physical_address_t addr = xb->getEAddr(cpu);		
+	uint8_t xbVal = cpu->memRead8(addr);
+
+	SignedSub8(result, carry_out, overflow, sign, regVal, xbVal, carry_in);
+	
+	if (b==0) {
+		cpu->setRegA(result);
+	} else {
+		cpu->setRegB(result);
+	}
+	
+	if (carry_out) { cpu->ccr->setC();} else { cpu->ccr->clrC();} 
+	if (overflow) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+	
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x80) == 0x80) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+// SBED  IMM (regD - #opr16i - carry => regD)
+op sbed_imm(0x18[8]:0x83[8]:opr16i[16])
+
+sbed_imm.getCycles = { return 3; }
+
+sbed_imm.disasm = {
+	string mnem = "SBED";
+	
+	sink << mnem << " #0x" << std::hex << opr16i;
+	
+	return mnem;
+}
+
+sbed_imm.execute = {
+	uint8_t carry_out, overflow, sign;
+	uint16_t result;
+	
+	uint8_t carry_in = cpu->ccr->getC();
+	uint16_t regVal = cpu->getRegD();
+
+	SignedSub16(result, carry_out, overflow, sign, regVal, opr16i, carry_in);
+	
+	cpu->setRegD(result);
+		
+	if (carry_out) { cpu->ccr->setC();} else { cpu->ccr->clrC();} 
+	if (overflow) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+	
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x8000) == 0x8000) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+// SBED  DIR  (regD - mem16[regDirect:opr8a] - carry => regD)
+op sbed_dir(0x18[8]:> <:0x93[8]:opr8a[8])
+
+sbed_dir.getCycles = { return 4; }
+
+sbed_dir.disasm = {
+	string mnem = "SBED";
+	
+	sink << mnem << " 0x" << std::hex << opr8a;
+	
+	return mnem;
+}
+
+sbed_dir.execute = {
+	uint8_t carry_out, overflow, sign;
+	uint16_t result;
+	
+	uint8_t carry_in = cpu->ccr->getC();
+	uint16_t regVal = cpu->getRegD();
+
+	uint16_t opr8aVal = cpu->memRead16(opr8a, ADDRESS::DIRECT, false);
+
+	SignedSub16(result, carry_out, overflow, sign, regVal, opr8aVal, carry_in);
+	
+	cpu->setRegD(result);
+		
+	if (carry_out) { cpu->ccr->setC();} else { cpu->ccr->clrC();} 
+	if (overflow) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+	
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x8000) == 0x8000) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+// SBED  EXT (regD - mem16[opr16a] - carry => regD)
+op sbed_ext(0x18[8]:0xB3[8]:> <:opr16a[16])
+
+sbed_ext.getCycles = { return 4; }
+
+sbed_ext.disasm = {
+	string mnem = "SBED";
+	
+	sink << mnem << " 0x" << std::hex << opr16a;
+	
+	return mnem;
+}
+
+sbed_ext.execute = {
+	uint8_t carry_out, overflow, sign;
+	uint16_t result;
+	
+	uint8_t carry_in = cpu->ccr->getC();
+	
+	uint16_t regVal = cpu->getRegD();
+
+	physical_address_t addr = opr16a;		
+	uint16_t opr16aVal = cpu->memRead16(addr);
+
+	SignedSub16(result, carry_out, overflow, sign, regVal, opr16aVal, carry_in);
+	
+	cpu->setRegD(result);
+		
+	if (carry_out) { cpu->ccr->setC();} else { cpu->ccr->clrC();} 
+	if (overflow) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+	
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x8000) == 0x8000) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+// SBED IDX or IDX1 or IDX2 or [D,IDX] or [IDX2]  (regD - mem16[xb->addrE] - carry => regD)
+op sbed_idx(0x18[8]:0xA3[8]:> <:*xb[XB])
+
+sbed_idx.pre_execute = {
+	
+	xb->pre_execute(sink);
+	// after: other specific actions
+}
+
+sbed_idx.post_execute = {
+
+	// before: other specific actions
+	xb->post_execute(sink);
+}
+
+sbed_idx.getCycles = { return XbModes::GetIDXCycles(xb->getXbMode(), 4, 4, 5, 7, 7); }
+
+sbed_idx.disasm = {
+	string mnem = "SBED";
+	
+	sink << mnem << " ";
+	xb->disasm(sink);
+	
+	return mnem;
+}
+
+sbed_idx.execute = {
+	uint8_t carry_out, overflow, sign;
+	uint16_t result;
+	
+	uint8_t carry_in = cpu->ccr->getC();
+	
+	uint16_t regVal = cpu->getRegD();
+	
+	physical_address_t addr = xb->getEAddr(cpu);		
+	uint16_t xbVal = cpu->memRead16(addr);
+
+	SignedSub16(result, carry_out, overflow, sign, regVal, xbVal, carry_in);
+	
+	cpu->setRegD(result);
+		
+	if (carry_out) { cpu->ccr->setC();} else { cpu->ccr->clrC();} 
+	if (overflow) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+	
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x8000) == 0x8000) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+// SBEX/SBEY  IMM (regXY - #opr16i - carry => regXY)
+op sbe_xy_imm(0x18[8]:0b1[1]:b[1]:0x02[6]:opr16i[16])
+
+sbe_xy_imm.getCycles = { return 3; }
+
+sbe_xy_imm.disasm = {
+	string mnem;
+	
+	if (b==0) {
+		mnem = "SBEX";
+	} else {
+		mnem = "SBEY";
+	}
+	sink << mnem << " #0x" << std::hex << opr16i;
+	
+	return mnem;
+}
+
+sbe_xy_imm.execute = {
+	uint8_t carry_out, overflow, sign;
+	uint16_t result;
+	
+	uint8_t carry_in = cpu->ccr->getC();
+	uint16_t regVal;
+	if (b==0) {
+		regVal = cpu->getRegX();
+	} else {
+		regVal = cpu->getRegY();
+	}
+
+	SignedSub16(result, carry_out, overflow, sign, regVal, opr16i, carry_in);
+	
+	if (b==0) {
+		cpu->setRegX(result);
+	} else {
+		cpu->setRegY(result);
+	}
+	
+	if (carry_out) { cpu->ccr->setC();} else { cpu->ccr->clrC();} 
+	if (overflow) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+	
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x8000) == 0x8000) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+// SBEX/SBEY  DIR  (regXY - mem16[regDirect:opr8a] - carry => regXY)
+op sbe_xy_dir(0x18[8]:> <:0b1[1]:b[1]:0x12[6]:opr8a[8])
+
+sbe_xy_dir.getCycles = { return 4; }
+
+sbe_xy_dir.disasm = {
+	string mnem;
+	
+	if (b==0) {
+		mnem = "SBEX";
+	} else {
+		mnem = "SBEY"; 
+	}
+	sink << mnem << " 0x" << std::hex << opr8a;
+	
+	return mnem;
+}
+
+sbe_xy_dir.execute = {
+	uint8_t carry_out, overflow, sign;
+	uint16_t result;
+	
+	uint8_t carry_in = cpu->ccr->getC();
+	uint16_t regVal;
+	if (b==0) {
+		regVal = cpu->getRegX();
+	} else {
+		regVal = cpu->getRegY();
+	}
+
+	uint16_t opr8aVal = cpu->memRead16(opr8a, ADDRESS::DIRECT, false);
+
+	SignedSub16(result, carry_out, overflow, sign, regVal, opr8aVal, carry_in);
+	
+	if (b==0) {
+		cpu->setRegX(result);
+	} else {
+		cpu->setRegY(result);
+	}
+	
+	if (carry_out) { cpu->ccr->setC();} else { cpu->ccr->clrC();} 
+	if (overflow) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+	
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x8000) == 0x8000) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+// SBEX/SBEY  EXT (regXY - mem16[opr16a] - carry => regXY)
+op sbe_xy_ext(0x18[8]:0b1[1]:b[1]:0x32[6]:> <:opr16a[16])
+
+sbe_xy_ext.getCycles = { return 4; }
+
+sbe_xy_ext.disasm = {
+	string mnem;
+	
+	if (b==0) {
+		mnem = "SBEX";
+	} else {
+		mnem = "SBEY";		
+	}
+	sink << mnem << " 0x" << std::hex << opr16a;
+	
+	return mnem;
+}
+
+sbe_xy_ext.execute = {
+	uint8_t carry_out, overflow, sign;
+	uint16_t result;
+	
+	uint8_t carry_in = cpu->ccr->getC();
+	
+	uint16_t regVal;
+	if (b==0) {
+		regVal = cpu->getRegX();
+	} else {
+		regVal = cpu->getRegY();
+	}
+	physical_address_t addr = opr16a;		
+	uint16_t opr16aVal = cpu->memRead16(addr);
+
+	SignedSub16(result, carry_out, overflow, sign, regVal, opr16aVal, carry_in);
+	
+	if (b==0) {
+		cpu->setRegX(result);
+	} else {
+		cpu->setRegY(result);
+	}
+	
+	if (carry_out) { cpu->ccr->setC();} else { cpu->ccr->clrC();} 
+	if (overflow) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+	
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x8000) == 0x8000) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+// SBEX/SBEY IDX or IDX1 or IDX2 or [D,IDX] or [IDX2]  (regXY - mem16[xb->addrE] - carry => regXY)
+op sbe_xy_idx(0x18[8]:0b1[1]:b[1]:0x22[6]:> <:*xb[XB])
+
+sbe_xy_idx.pre_execute = {
+	
+	xb->pre_execute(sink);
+	// after: other specific actions
+}
+
+sbe_xy_idx.post_execute = {
+
+	// before: other specific actions
+	xb->post_execute(sink);
+}
+
+sbe_xy_idx.getCycles = { return XbModes::GetIDXCycles(xb->getXbMode(), 4, 4, 5, 7, 7); }
+
+sbe_xy_idx.disasm = {
+	string mnem;
+	
+	if (b==0){
+		mnem = "SBEX";
+	} else {
+		mnem = "SBEY";
+	}
+
+	sink << mnem << " ";
+	xb->disasm(sink);
+	
+	return mnem;
+}
+
+sbe_xy_idx.execute = {
+	uint8_t carry_out, overflow, sign;
+	uint16_t result;
+	
+	uint8_t carry_in = cpu->ccr->getC();
+	
+	uint16_t regVal;
+	
+	if (b==0) {
+		regVal = cpu->getRegX();
+	} else {
+		regVal = cpu->getRegY();
+	}
+	physical_address_t addr = xb->getEAddr(cpu);		
+	uint16_t xbVal = cpu->memRead16(addr);
+
+	SignedSub16(result, carry_out, overflow, sign, regVal, xbVal, carry_in);
+	
+	if (b==0) {
+		cpu->setRegX(result);
+	} else {
+		cpu->setRegY(result);
+	}
+	
+	if (carry_out) { cpu->ccr->setC();} else { cpu->ccr->clrC();} 
+	if (overflow) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+	
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x8000) == 0x8000) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+// SUBA/SUBB  IMM (regAB - ii => regAB)
+op sub_ab_imm(0b1[1]:b[1]:0x00[6]:opr8i[8])
+
+sub_ab_imm.getCycles = { return 1; }
+
+sub_ab_imm.disasm = {
+	string mnem;
+	
+	if (b==0) {
+		mnem = "SUBA";
+	} else {
+		mnem = "SUBB";
+	}
+	sink << mnem << " #0x" << std::hex << opr8i;
+	
+	return mnem;
+}
+
+sub_ab_imm.execute = {
+	uint8_t result, carry_out, overflow, sign;
+	
+	uint8_t carry_in = 0;
+	uint8_t regVal;
+	if (b==0) {
+		regVal = cpu->getRegA();
+	} else {
+		regVal = cpu->getRegB();
+	}
+
+	SignedSub8(result, carry_out, overflow, sign, regVal, opr8i, carry_in);
+	
+	if (b==0) {
+		cpu->setRegA(result);
+	} else {
+		cpu->setRegB(result);
+	}
+	
+	if (carry_out) { cpu->ccr->setC();} else { cpu->ccr->clrC();} 
+	if (overflow) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+	
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x80) == 0x80) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+// SUBA/SUBB  DIR  (regAB - mem[regDirect:opr8a] => regAB)
+op sub_ab_dir(0b1[1]:b[1]:0x10[6]:opr8a[8])
+
+sub_ab_dir.getCycles = { return 3; }
+
+sub_ab_dir.disasm = {
+	string mnem;
+	
+	if (b==0) {
+		mnem = "SUBA";
+	} else {
+		mnem = "SUBB"; 
+	}
+	sink << mnem << " 0x" << std::hex << opr8a;
+	
+	return mnem ;
+}
+
+sub_ab_dir.execute = {
+	uint8_t result, carry_out, overflow, sign;
+	
+	uint8_t carry_in = 0;
+	uint8_t regVal;
+	if (b==0) {
+		regVal = cpu->getRegA();
+	} else {
+		regVal = cpu->getRegB();
+	}
+
+	uint8_t opr8aVal = cpu->memRead8(opr8a, ADDRESS::DIRECT, false);
+
+	SignedSub8(result, carry_out, overflow, sign, regVal, opr8aVal, carry_in);
+	
+	if (b==0) {
+		cpu->setRegA(result);
+	} else {
+		cpu->setRegB(result);
+	}
+	
+	
+	if (carry_out) { cpu->ccr->setC();} else { cpu->ccr->clrC();} 
+	if (overflow) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+	
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x80) == 0x80) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+// SUBA/SUBB  EXT (regAB - mem[opr16a] => regAB)
+op sub_ab_ext(0b1[1]:b[1]:0x30[6]:> <:opr16a[16])
+
+sub_ab_ext.getCycles = { return 3; }
+
+sub_ab_ext.disasm = {
+	string mnem;
+	
+	if (b==0) {
+		mnem = "SUBA";
+	} else {
+		mnem = "SUBB";		
+	}
+	sink << mnem << " 0x" << std::hex << opr16a;
+	
+	return mnem;
+}
+
+sub_ab_ext.execute = {
+	uint8_t result, carry_out, overflow, sign;
+	
+	uint8_t carry_in = 0;
+	
+	uint8_t regVal;
+	if (b==0) {
+		regVal = cpu->getRegA();
+	} else {
+		regVal = cpu->getRegB();
+	}
+	physical_address_t addr = opr16a;		
+	uint8_t opr16aVal = cpu->memRead8(addr);
+
+	SignedSub8(result, carry_out, overflow, sign, regVal, opr16aVal, carry_in);
+	
+	if (b==0) {
+		cpu->setRegA(result);
+	} else {
+		cpu->setRegB(result);
+	}
+	
+	if (carry_out) { cpu->ccr->setC();} else { cpu->ccr->clrC();} 
+	if (overflow) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+	
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x80) == 0x80) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+// SUBA/SUBB  IDX or IDX1 or IDX2 or [D,IDX] or [IDX2]  (regAB - mem[xb->addrE] => regAB)
+op sub_ab_idx(0b1[1]:b[1]:0x20[6]:> <:*xb[XB])
+
+sub_ab_idx.pre_execute = {
+	
+	xb->pre_execute(sink);
+	// after: other specific actions
+}
+
+sub_ab_idx.post_execute = {
+
+	// before: other specific actions
+	xb->post_execute(sink);
+}
+
+sub_ab_idx.getCycles = { return XbModes::GetIDXCycles(xb->getXbMode(), 3, 3, 4, 6, 6); }
+
+sub_ab_idx.disasm = {
+	string mnem;
+	
+	if (b==0){
+		mnem = "SUBA";
+	} else {
+		mnem = "SUBB";
+	}
+
+	sink << mnem << " ";
+	xb->disasm(sink);
+	
+	return mnem;
+}
+
+sub_ab_idx.execute = {
+	uint8_t result, carry_out, overflow, sign;
+	
+	uint8_t carry_in = 0;
+	
+	uint8_t regVal;
+	
+	if (b==0) {
+		regVal = cpu->getRegA();
+	} else {
+		regVal = cpu->getRegB();
+	}
+	physical_address_t addr = xb->getEAddr(cpu);		
+	uint8_t xbVal = cpu->memRead8(addr);
+
+	SignedSub8(result, carry_out, overflow, sign, regVal, xbVal, carry_in);
+	
+	if (b==0) {
+		cpu->setRegA(result);
+	} else {
+		cpu->setRegB(result);
+	}
+	
+	if (carry_out) { cpu->ccr->setC();} else { cpu->ccr->clrC();} 
+	if (overflow) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+	
+	if (result == 0) { cpu->ccr->setZ();} else { cpu->ccr->clrZ();}
+	if ((result & 0x80) == 0x80) { cpu->ccr->setN();} else { cpu->ccr->clrN();}
+
+	return getCycles();
+}
+
+// ******************************
+
+// SUBX/SUBY  IMM (regXy - opr16i => regXY)
+op sub_xy_imm(0x18[8]:0b1[1]:b[1]:0x00[6]:opr16i[16])
+
+sub_xy_imm.getCycles = { return 3; }
+
+sub_xy_imm.disasm = {
+	string mnem;
+	
+	if (b==0) {
+		mnem = "SUBX";
+	} else {
+		mnem = "SUBY";
+	}
+	sink << mnem << " #0x" << std::hex << opr16i;
+	
+	return mnem;
+}
+
+sub_xy_imm.execute = {
+	uint8_t carry_out, overflow, sign;
+	uint16_t result;
+	
+	uint8_t carry_in = 0;
+	uint16_t regVal;
+	if (b==0) {
+		regVal = cpu->getRegX();
+	} else {
+		regVal = cpu->getRegY();
+	}
+
+	SignedSub16(result, carry_out, overflow, sign, regVal, opr16i, carry_in);
+	
+	if (b==0) {
+		cpu->setRegX(result);
+	} else {
+		cpu->setRegY(result);
+	}
+	
+	if (carry_out) { cpu->ccr->setC();} else { cpu->ccr->clrC();} 
+	if (overflow) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+	
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x8000) == 0x8000) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+// SUBX/SUBY  DIR  (regXY - mem16[regDirect:opr8a] => regXY)
+op sub_xy_dir(0x18[8]:> <:0b1[1]:b[1]:0x10[6]:opr8a[8])
+
+sub_xy_dir.getCycles = { return 4; }
+
+sub_xy_dir.disasm = {
+	string mnem;
+	
+	if (b==0) {
+		mnem = "SUBX";
+	} else {
+		mnem = "SUBY"; 
+	}
+	sink << mnem << " 0x" << std::hex << opr8a;
+	
+	return mnem;
+}
+
+sub_xy_dir.execute = {
+	uint8_t carry_out, overflow, sign;
+	uint16_t result;
+	
+	uint8_t carry_in = 0;
+	uint16_t regVal;
+	if (b==0) {
+		regVal = cpu->getRegX();
+	} else {
+		regVal = cpu->getRegY();
+	}
+
+	uint16_t opr8aVal = cpu->memRead16(opr8a, ADDRESS::DIRECT, false);
+
+	SignedSub16(result, carry_out, overflow, sign, regVal, opr8aVal, carry_in);
+	
+	if (b==0) {
+		cpu->setRegX(result);
+	} else {
+		cpu->setRegY(result);
+	}
+	
+	
+	if (carry_out) { cpu->ccr->setC();} else { cpu->ccr->clrC();} 
+	if (overflow) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+	
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x8000) == 0x8000) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+// SUBX/SUBY  EXT (regXY - mem16[opr16a] => regXY)
+op sub_xy_ext(0x18[8]:0b1[1]:b[1]:0x30[6]:> <:opr16a[16])
+
+sub_xy_ext.getCycles = { return 4; }
+
+sub_xy_ext.disasm = {
+	string mnem;
+	
+	if (b==0) {
+		mnem = "SUBX";
+	} else {
+		mnem = "SUBY";		
+	}
+	sink << mnem << " 0x" << std::hex << opr16a;
+	
+	return mnem;
+}
+
+sub_xy_ext.execute = {
+	uint8_t carry_out, overflow, sign;
+	uint16_t result;
+	
+	uint8_t carry_in = 0;
+	
+	uint16_t regVal;
+	if (b==0) {
+		regVal = cpu->getRegX();
+	} else {
+		regVal = cpu->getRegY();
+	}
+	physical_address_t addr = opr16a;		
+	uint16_t opr16aVal = cpu->memRead16(addr);
+
+	SignedSub16(result, carry_out, overflow, sign, regVal, opr16aVal, carry_in);
+	
+	if (b==0) {
+		cpu->setRegX(result);
+	} else {
+		cpu->setRegY(result);
+	}
+	
+	if (carry_out) { cpu->ccr->setC();} else { cpu->ccr->clrC();} 
+	if (overflow) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+	
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x8000) == 0x8000) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+// SUBX/SUBY  IDX or IDX1 or IDX2 or [D,IDX] or [IDX2]  (regXY - mem16[xb->addrE] => regXY)
+op sub_xy_idx(0x18[8]:0b1[1]:b[1]:0x20[6]:> <:*xb[XB])
+
+sub_xy_idx.pre_execute = {
+	
+	xb->pre_execute(sink);
+	// after: other specific actions
+}
+
+sub_xy_idx.post_execute = {
+
+	// before: other specific actions
+	xb->post_execute(sink);
+}
+
+sub_xy_idx.getCycles = { return XbModes::GetIDXCycles(xb->getXbMode(), 4, 4, 5, 7, 7); }
+
+sub_xy_idx.disasm = {
+	string mnem;
+	
+	if (b==0){
+		mnem = "SUBX";
+	} else {
+		mnem = "SUBY";
+	}
+
+	sink << mnem << " ";
+	xb->disasm(sink);
+	
+	return mnem;
+}
+
+sub_xy_idx.execute = {
+	uint8_t carry_out, overflow, sign;
+	uint16_t result;
+	
+	uint8_t carry_in = 0;
+	
+	uint16_t regVal;
+	
+	if (b==0) {
+		regVal = cpu->getRegX();
+	} else {
+		regVal = cpu->getRegY();
+	}
+	physical_address_t addr = xb->getEAddr(cpu);		
+	uint16_t xbVal = cpu->memRead16(addr);
+
+	SignedSub16(result, carry_out, overflow, sign, regVal, xbVal, carry_in);
+	
+	if (b==0) {
+		cpu->setRegX(result);
+	} else {
+		cpu->setRegY(result);
+	}
+	
+	if (carry_out) { cpu->ccr->setC();} else { cpu->ccr->clrC();} 
+	if (overflow) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+	
+	if (result == 0) { cpu->ccr->setZ();} else { cpu->ccr->clrZ();}
+	if ((result & 0x8000) == 0x8000) { cpu->ccr->setN();} else { cpu->ccr->clrN();}
+
+	return getCycles();
+}
+
+
+/* ***** Binary-Coded Decimal Instructions ****** */
+
+// DAA (if (ccr.H) then regA + 0x6 => regA)
+op daa(0x18[8]:0x07[8])
+
+daa.getCycles = { return 3; }
+
+daa.disasm = {
+	string mnem = "DAA";
+	
+	sink << mnem;
+	
+	return mnem;
+}
+
+daa.execute = {
+	uint8_t hBit = cpu->ccr->getH();
+	uint8_t cBit = cpu->ccr->getC();
+
+	uint8_t overflow, carry_out, result, sign;
+
+	uint8_t aVal = cpu->getRegA(); 
+	uint8_t a74 =  aVal >> 4;
+	uint8_t a30 = aVal & 0x0F;
+
+	// cBit=0 A[7:4]=0-9 hBit=0 A[3:0]=0-9
+	if ((cBit == 0) &&
+		(a74 < 0xA) &&
+		(hBit == 0) &&
+		(a30 < 0xA))
+	{
+		UnsignedAdd8(result, carry_out, overflow, sign, aVal, 0x00, 0x00);
+		cpu->setRegA(result);
+		cpu->ccr->clrC();
+	}
+	else
+	// cBit=0 A[7:4]=0-8 hBit=0 A[3:0]=A-F
+	if ((cBit == 0) &&
+		(a74 < 0x9) &&
+		(hBit == 0) &&
+		(a30 > 0x9))
+	{
+		UnsignedAdd8(result, carry_out, overflow, sign, aVal, 0x06, 0x00);
+		cpu->setRegA(result);
+		cpu->ccr->clrC();
+	}
+	else
+	// cBit=0 A[7:4]=0-9 hBit=1 A[3:0]=0-3
+	if ((cBit == 0) &&
+		(a74 < 0xA) &&
+		(hBit == 1) &&
+		(a30 < 0x4))
+	{
+		UnsignedAdd8(result, carry_out, overflow, sign, aVal, 0x06, 0x00);
+		cpu->setRegA(result);
+		cpu->ccr->clrC();
+	}
+	else
+	// cBit=0 A[7:4]=A-F hBit=0 A[3:0]=0-9
+	if ((cBit == 0) &&
+		(a74 > 0x9) &&
+		(hBit == 0) &&
+		(a30 < 0xA))
+	{
+		UnsignedAdd8(result, carry_out, overflow, sign, aVal, 0x60, 0x00);
+		cpu->setRegA(result);
+		cpu->ccr->setC();
+	}
+	else
+	// cBit=0 A[7:4]=9-F hBit=0 A[3:0]=A-F
+	if ((cBit == 0) &&
+		(a74 > 0x8) &&
+		(hBit == 0) &&
+		(a30 > 0x9))
+	{
+		UnsignedAdd8(result, carry_out, overflow, sign, aVal, 0x66, 0x00);
+		cpu->setRegA(result);
+		cpu->ccr->setC();
+	}
+	else
+	// cBit=0 A[7:4]=A-F hBit=1 A[3:0]=0-3
+	if ((cBit == 0) &&
+		(a74 > 0x9) &&
+		(hBit == 1) &&
+		(a30 < 0x4))
+	{
+		UnsignedAdd8(result, carry_out, overflow, sign, aVal, 0x66, 0x00);
+		cpu->setRegA(result);
+		cpu->ccr->setC();
+	}
+	else
+	// cBit=1 A[7:4]=0-2 hBit=0 A[3:0]=0-9
+	if ((cBit == 1) &&
+		(a74 < 0x3) &&
+		(hBit == 0) &&
+		(a30 < 0xA))
+	{
+		UnsignedAdd8(result, carry_out, overflow, sign, aVal, 0x60, 0x00);
+		cpu->setRegA(result);
+		cpu->ccr->setC();
+	}
+	else
+	// cBit=1 A[7:4]=0-2 hBit=0 A[3:0]=A-F
+	if ((cBit == 1) &&
+		(a74 < 0x3) &&
+		(hBit == 0) &&
+		(a30 > 0x9))
+	{
+		UnsignedAdd8(result, carry_out, overflow, sign, aVal, 0x66, 0x00);
+		cpu->setRegA(result);
+		cpu->ccr->setC();
+	}
+	else
+	// cBit=1 A[7:4]=0-3 hBit=1 A[3:0]=0-3
+	if ((cBit == 1) &&
+		(a74 < 0x4) &&
+		(hBit == 1) &&
+		(a30 < 0x4))
+	{
+		UnsignedAdd8(result, carry_out, overflow, sign, aVal, 0x66, 0x00);
+		cpu->setRegA(result);
+		cpu->ccr->setC();
+	}
+	else
+	{
+		// illegal combination of input operands
+		result = aVal;
+		std::cerr << "daa: illegal combination of input operands: A=0x" << std::hex << (unsigned int) aVal << std::dec << " H=" << (unsigned int) hBit << " C=" << (unsigned int) cBit << std::endl;
+	}
+	
+	if ((result & 0x80) == 0x80) cpu->ccr->setN(); else cpu->ccr->clrN();
+	if (result == 0x00) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+
+	return getCycles();
+}
+

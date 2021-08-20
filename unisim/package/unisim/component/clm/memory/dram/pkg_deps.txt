@@ -1,0 +1,10 @@
+m4/boost
+unisim/component/clm/debug
+unisim/component/clm/interfaces
+unisim/component/clm/memory
+unisim/component/clm/utility
+unisim/component/cxx/memory/ram
+unisim/kernel
+unisim/kernel/clm/engine
+unisim/service/interfaces/memory
+unisim/service/interfaces/memory_injection

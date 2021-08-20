@@ -1,0 +1,232 @@
+/*
+ *  Copyright (c) 2019-2020,
+ *  Commissariat a l'Energie Atomique (CEA)
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without modification,
+ *  are permitted provided that the following conditions are met:
+ *
+ *   - Redistributions of source code must retain the above copyright notice, this
+ *     list of conditions and the following disclaimer.
+ *
+ *   - Redistributions in binary form must reproduce the above copyright notice,
+ *     this list of conditions and the following disclaimer in the documentation
+ *     and/or other materials provided with the distribution.
+ *
+ *   - Neither the name of CEA nor the names of its contributors may be used to
+ *     endorse or promote products derived from this software without specific prior
+ *     written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ *  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *  DISCLAIMED.
+ *  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ *  INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ *  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+ *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ *  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Authors: Yves Lhuillier (yves.lhuillier@cea.fr)
+ */
+
+
+op add_s(17[6]:16[5]:ra[5]:rb[5]:rc[5]:0[6]);
+add_s.disasm = { sink << "add.s\t" << PrintR("$f",rc) << "," << PrintR("$f",rb) << "," << PrintR("$f",ra); };
+
+op add_d(17[6]:17[5]:ra[5]:rb[5]:rc[5]:0[6]);
+add_d.disasm = { sink << "add.d\t" << PrintR("$f",rc) << "," << PrintR("$f",rb) << "," << PrintR("$f",ra); };
+
+op sub_s(17[6]:16[5]:ra[5]:rb[5]:rc[5]:1[6]);
+sub_s.disasm = { sink << "sub.s\t" << PrintR("$f",rc) << "," << PrintR("$f",rb) << "," << PrintR("$f",ra); };
+
+op sub_d(17[6]:17[5]:ra[5]:rb[5]:rc[5]:1[6]);
+sub_d.disasm = { sink << "sub.d\t" << PrintR("$f",rc) << "," << PrintR("$f",rb) << "," << PrintR("$f",ra); };
+
+op mul_s(17[6]:16[5]:ra[5]:rb[5]:rc[5]:2[6]);
+mul_s.disasm = { sink << "mul.s\t" << PrintR("$f",rc) << "," << PrintR("$f",rb) << "," << PrintR("$f",ra); };
+
+op mul_d(17[6]:17[5]:ra[5]:rb[5]:rc[5]:2[6]);
+mul_d.disasm = { sink << "mul.d\t" << PrintR("$f",rc) << "," << PrintR("$f",rb) << "," << PrintR("$f",ra); };
+
+op div_s(17[6]:16[5]:ra[5]:rb[5]:rc[5]:3[6]);
+div_s.disasm = { sink << "div.s\t" << PrintR("$f",rc) << "," << PrintR("$f",rb) << "," << PrintR("$f",ra); };
+
+op div_d(17[6]:17[5]:ra[5]:rb[5]:rc[5]:3[6]);
+div_d.disasm = { sink << "div.d\t" << PrintR("$f",rc) << "," << PrintR("$f",rb) << "," << PrintR("$f",ra); };
+
+op sqrt_s(17[6]:16[5]:0[5]:rb[5]:rc[5]:0x4[6]);
+sqrt_s.disasm = { sink << "sqrt.s\t" << PrintR("$f",rc) << "," << PrintR("$f",rb); };
+
+op sqrt_d(17[6]:17[5]:0[5]:rb[5]:rc[5]:0x4[6]);
+sqrt_d.disasm = { sink << "sqrt.d\t" << PrintR("$f",rc) << "," << PrintR("$f",rb); };
+
+op abs_s(17[6]:16[5]:0[5]:rb[5]:rc[5]:0x5[6]);
+abs_s.disasm = { sink << "abs.s\t" << PrintR("$f",rc) << "," << PrintR("$f",rb); };
+
+op abs_d(17[6]:17[5]:0[5]:rb[5]:rc[5]:0x5[6]);
+abs_d.disasm = { sink << "abs.d\t" << PrintR("$f",rc) << "," << PrintR("$f",rb); };
+
+op mov_s(17[6]:16[5]:0[5]:rb[5]:rc[5]:0x6[6]);
+mov_s.disasm = { sink << "mov.s\t" << PrintR("$f",rc) << "," << PrintR("$f",rb); };
+
+op mov_d(17[6]:17[5]:0[5]:rb[5]:rc[5]:0x6[6]);
+mov_d.disasm = { sink << "mov.d\t" << PrintR("$f",rc) << "," << PrintR("$f",rb); };
+
+op neg_s(17[6]:16[5]:0[5]:rb[5]:rc[5]:0x7[6]);
+neg_s.disasm = { sink << "neg.s\t" << PrintR("$f",rc) << "," << PrintR("$f",rb); };
+
+op neg_d(17[6]:17[5]:0[5]:rb[5]:rc[5]:0x7[6]);
+neg_d.disasm = { sink << "neg.d\t" << PrintR("$f",rc) << "," << PrintR("$f",rb); };
+
+op round_l_s(17[6]:16[5]:0[5]:rb[5]:rc[5]:0x8[6]);
+round_l_s.disasm = { sink << "round.l.s\t" << PrintR("$f",rc) << "," << PrintR("$f",rb); };
+
+op round_l_d(17[6]:17[5]:0[5]:rb[5]:rc[5]:0x8[6]);
+round_l_d.disasm = { sink << "round.l.d\t" << PrintR("$f",rc) << "," << PrintR("$f",rb); };
+
+op trunc_l_s(17[6]:16[5]:0[5]:rb[5]:rc[5]:0x9[6]);
+trunc_l_s.disasm = { sink << "trunc.l.s\t" << PrintR("$f",rc) << "," << PrintR("$f",rb); };
+
+op trunc_l_d(17[6]:17[5]:0[5]:rb[5]:rc[5]:0x9[6]);
+trunc_l_d.disasm = { sink << "trunc.l.d\t" << PrintR("$f",rc) << "," << PrintR("$f",rb); };
+
+op ceil_l_s(17[6]:16[5]:0[5]:rb[5]:rc[5]:0xa[6]);
+ceil_l_s.disasm = { sink << "ceil.l.s\t" << PrintR("$f",rc) << "," << PrintR("$f",rb); };
+
+op ceil_l_d(17[6]:17[5]:0[5]:rb[5]:rc[5]:0xa[6]);
+ceil_l_d.disasm = { sink << "ceil.l.d\t" << PrintR("$f",rc) << "," << PrintR("$f",rb); };
+
+op floor_l_s(17[6]:16[5]:0[5]:rb[5]:rc[5]:0xb[6]);
+floor_l_s.disasm = { sink << "floor.l.s\t" << PrintR("$f",rc) << "," << PrintR("$f",rb); };
+
+op floor_l_d(17[6]:17[5]:0[5]:rb[5]:rc[5]:0xb[6]);
+floor_l_d.disasm = { sink << "floor.l.d\t" << PrintR("$f",rc) << "," << PrintR("$f",rb); };
+
+op round_w_s(17[6]:16[5]:0[5]:rb[5]:rc[5]:0xc[6]);
+round_w_s.disasm = { sink << "round.w.s\t" << PrintR("$f",rc) << "," << PrintR("$f",rb); };
+
+op round_w_d(17[6]:17[5]:0[5]:rb[5]:rc[5]:0xc[6]);
+round_w_d.disasm = { sink << "round.w.d\t" << PrintR("$f",rc) << "," << PrintR("$f",rb); };
+
+op trunc_w_s(17[6]:16[5]:0[5]:rb[5]:rc[5]:0x0d[6]);
+trunc_w_s.disasm = { sink << "trunc.w.s\t" << PrintR("$f",rc) << "," << PrintR("$f",rb); };
+
+op trunc_w_d(17[6]:17[5]:0[5]:rb[5]:rc[5]:0x0d[6]);
+trunc_w_d.disasm = { sink << "trunc.w.d\t" << PrintR("$f",rc) << "," << PrintR("$f",rb); };
+
+op ceil_w_s(17[6]:16[5]:0[5]:rb[5]:rc[5]:0x0e[6]);
+ceil_w_s.disasm = { sink << "ceil.w.s\t" << PrintR("$f",rc) << "," << PrintR("$f",rb); };
+
+op ceil_w_d(17[6]:17[5]:0[5]:rb[5]:rc[5]:0x0e[6]);
+ceil_w_d.disasm = { sink << "ceil.w.d\t" << PrintR("$f",rc) << "," << PrintR("$f",rb); };
+
+op floor_w_s(17[6]:16[5]:0[5]:rb[5]:rc[5]:0x0f[6]);
+floor_w_s.disasm = { sink << "floor.w.s\t" << PrintR("$f",rc) << "," << PrintR("$f",rb); };
+
+op floor_w_d(17[6]:17[5]:0[5]:rb[5]:rc[5]:0x0f[6]);
+floor_w_d.disasm = { sink << "floor.w.d\t" << PrintR("$f",rc) << "," << PrintR("$f",rb); };
+
+op cvt_d_s(17[6]:16[5]:0[5]:rb[5]:rc[5]:0x21[6]);
+cvt_d_s.disasm = { sink << "cvt.d.s\t" << PrintR("$f",rc) << "," << PrintR("$f",rb); };
+
+op cvt_s_d(17[6]:17[5]:0[5]:rb[5]:rc[5]:0x20[6]);
+cvt_s_d.disasm = { sink << "cvt.s.d\t" << PrintR("$f",rc) << "," << PrintR("$f",rb); };
+
+op cvt_w_s(17[6]:16[5]:0[5]:rb[5]:rc[5]:0x24[6]);
+cvt_w_s.disasm = { sink << "cvt.w.s\t" << PrintR("$f",rc) << "," << PrintR("$f",rb); };
+
+op cvt_w_d(17[6]:17[5]:0[5]:rb[5]:rc[5]:0x24[6]);
+cvt_w_d.disasm = { sink << "cvt.w.d\t" << PrintR("$f",rc) << "," << PrintR("$f",rb); };
+
+op cvt_l_s(17[6]:16[5]:0[5]:rb[5]:rc[5]:0x25[6]);
+cvt_l_s.disasm = { sink << "cvt.l.s\t" << PrintR("$f",rc) << "," << PrintR("$f",rb); };
+
+op cvt_l_d(17[6]:17[5]:0[5]:rb[5]:rc[5]:0x25[6]);
+cvt_l_d.disasm = { sink << "cvt.l.d\t" << PrintR("$f",rc) << "," << PrintR("$f",rb); };
+
+op c_s(17[6]:16[5]:ra[5]:rb[5]:cc[3]:0[2]:3[2]:cond[4]);
+c_s.disasm = { sink << "c." << PrintCond(cond) << ".s\t"; if (cc) sink << PrintR("$fcc",cc) << ','; sink << PrintR("$f",rb) << ',' << PrintR("$f",ra); };
+
+op c_d(17[6]:17[5]:ra[5]:rb[5]:cc[3]:0[2]:3[2]:cond[4]);
+c_d.disasm = { sink << "c." << PrintCond(cond) << ".d\t"; if (cc) sink << PrintR("$fcc",cc) << ','; sink << PrintR("$f",rb) << ',' << PrintR("$f",ra); };
+
+op cabs_s(17[6]:16[5]:ra[5]:rb[5]:cc[3]:1[2]:3[2]:cond[4]);
+cabs_s.disasm = { sink << "cabs." << PrintCond(cond) << ".s\t" << PrintR("$fcc",cc) << ',' << PrintR("$f",rb) << ',' << PrintR("$f",ra); };
+
+op cabs_d(17[6]:17[5]:ra[5]:rb[5]:cc[3]:1[2]:3[2]:cond[4]);
+cabs_d.disasm = { sink << "cabs." << PrintCond(cond) << ".d\t" << PrintR("$fcc",cc) << ',' << PrintR("$f",rb) << ',' << PrintR("$f",ra); };
+
+op movf_s(17[6]:16[5]:cc[3]:0[2]:fs[5]:fd[5]:0x11[6]);
+
+movf_s.disasm = { sink << "movf.s\t" << PrintR("$f",fd) << "," << PrintR("$f",fs) << ',' << PrintR("$fcc",cc); };
+
+op movf_d(17[6]:17[5]:cc[3]:0[2]:fs[5]:fd[5]:0x11[6]);
+
+movf_d.disasm = { sink << "movf.d\t" << PrintR("$f",fd) << "," << PrintR("$f",fs) << ',' << PrintR("$fcc",cc); };
+
+op movt_s(17[6]:16[5]:cc[3]:1[2]:fs[5]:fd[5]:0x11[6]);
+
+movt_s.disasm = { sink << "movt.s\t" << PrintR("$f",fd) << "," << PrintR("$f",fs) << ',' << PrintR("$fcc",cc); };
+
+op movt_d(17[6]:17[5]:cc[3]:1[2]:fs[5]:fd[5]:0x11[6]);
+
+movt_d.disasm = { sink << "movt.d\t" << PrintR("$f",fd) << "," << PrintR("$f",fs) << ',' << PrintR("$fcc",cc); };
+
+op movz_s(17[6]:16[5]:rt[5]:fs[5]:fd[5]:0x12[6]);
+
+movz_s.disasm = { sink << "movz.s\t" << PrintR("$f",fd) << "," << PrintR("$f",fs) << ',' << PrintR("$",rt); };
+
+op movz_d(17[6]:17[5]:rt[5]:fs[5]:fd[5]:0x12[6]);
+
+movz_d.disasm = { sink << "movz.d\t" << PrintR("$f",fd) << "," << PrintR("$f",fs) << ',' << PrintR("$",rt); };
+
+op movn_s(17[6]:16[5]:rt[5]:fs[5]:fd[5]:0x13[6]);
+
+movn_s.disasm = { sink << "movn.s\t" << PrintR("$f",fd) << "," << PrintR("$f",fs) << ',' << PrintR("$",rt); };
+
+op movn_d(17[6]:17[5]:rt[5]:fs[5]:fd[5]:0x13[6]);
+
+movn_d.disasm = { sink << "movn.d\t" << PrintR("$f",fd) << "," << PrintR("$f",fs) << ',' << PrintR("$",rt); };
+
+op recip_s(17[6]:16[5]:0[5]:rb[5]:rc[5]:0x15[6]);
+recip_s.disasm = { sink << "recip.s\t" << PrintR("$f",rc) << "," << PrintR("$f",rb); };
+
+op recip_d(17[6]:17[5]:0[5]:rb[5]:rc[5]:0x15[6]);
+recip_d.disasm = { sink << "recip.d\t" << PrintR("$f",rc) << "," << PrintR("$f",rb); };
+
+op recip1_s(17[6]:16[5]:0[5]:rb[5]:rc[5]:0x1d[6]);
+recip1_s.disasm = { sink << "recip1.s\t" << PrintR("$f",rc) << "," << PrintR("$f",rb); };
+
+op recip1_d(17[6]:17[5]:0[5]:rb[5]:rc[5]:0x1d[6]);
+recip1_d.disasm = { sink << "recip1.d\t" << PrintR("$f",rc) << "," << PrintR("$f",rb); };
+
+op rsqrt_s(17[6]:16[5]:0[5]:rb[5]:rc[5]:0x16[6]);
+rsqrt_s.disasm = { sink << "rsqrt.s\t" << PrintR("$f",rc) << "," << PrintR("$f",rb); };
+
+op rsqrt_d(17[6]:17[5]:0[5]:rb[5]:rc[5]:0x16[6]);
+rsqrt_d.disasm = { sink << "rsqrt.d\t" << PrintR("$f",rc) << "," << PrintR("$f",rb); };
+
+op rsqrt1_s(17[6]:16[5]:0[5]:rb[5]:rc[5]:0x1e[6]);
+rsqrt1_s.disasm = { sink << "rsqrt1.s\t" << PrintR("$f",rc) << "," << PrintR("$f",rb); };
+
+op rsqrt1_d(17[6]:17[5]:0[5]:rb[5]:rc[5]:0x1e[6]);
+rsqrt1_d.disasm = { sink << "rsqrt1.d\t" << PrintR("$f",rc) << "," << PrintR("$f",rb); };
+
+op recip2_s(17[6]:16[5]:ra[5]:rb[5]:rd[5]:0x1c[6]);
+recip2_s.disasm = { sink << "recip2.s\t" << PrintR("$f",rd) << "," << PrintR("$f",rb) << "," << PrintR("$f",ra); };
+
+op recip2_d(17[6]:17[5]:ra[5]:rb[5]:rd[5]:0x1c[6]);
+recip2_d.disasm = { sink << "recip2.d\t" << PrintR("$f",rd) << "," << PrintR("$f",rb) << "," << PrintR("$f",ra); };
+
+op rsqrt2_s(17[6]:16[5]:ra[5]:rb[5]:rd[5]:0x1f[6]);
+rsqrt2_s.disasm = { sink << "rsqrt2.s\t" << PrintR("$f",rd) << "," << PrintR("$f",rb) << "," << PrintR("$f",ra); };
+
+op rsqrt2_d(17[6]:17[5]:ra[5]:rb[5]:rd[5]:0x1f[6]);
+rsqrt2_d.disasm = { sink << "rsqrt2.d\t" << PrintR("$f",rd) << "," << PrintR("$f",rb) << "," << PrintR("$f",ra); };
+
+op cvt_ps_s(17[6]:16[5]:ra[5]:rb[5]:rc[5]:0x26[6]);
+cvt_ps_s.disasm = { sink << "cvt.ps.s\t" << PrintR("$f",rc) << "," << PrintR("$f",rb) << "," << PrintR("$f",ra); };
+

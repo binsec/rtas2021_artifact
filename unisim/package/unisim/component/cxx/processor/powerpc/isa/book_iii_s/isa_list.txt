@@ -1,0 +1,4 @@
+unisim/component/cxx/processor/powerpc/isa/book_iii_s/mfsrin.isa
+unisim/component/cxx/processor/powerpc/isa/book_iii_s/mfsr.isa
+unisim/component/cxx/processor/powerpc/isa/book_iii_s/mtsrin.isa
+unisim/component/cxx/processor/powerpc/isa/book_iii_s/mtsr.isa

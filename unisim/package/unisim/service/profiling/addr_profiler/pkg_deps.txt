@@ -1,0 +1,7 @@
+libc/inttypes
+unisim/kernel
+unisim/kernel/logger
+unisim/kernel/variable
+unisim/service/interfaces/memory_access_reporting
+unisim/service/interfaces/profiling
+unisim/util/debug

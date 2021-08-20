@@ -1,0 +1,1 @@
+AC_CHECK_HEADER([cstddef],, AC_MSG_ERROR([cstddef is missing]))

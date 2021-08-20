@@ -1,0 +1,6 @@
+unisim/component/cxx/chipset/mpc107/epic/epic_32.cc
+unisim/component/cxx/chipset/mpc107/epic/epic_32_debug.cc
+unisim/component/cxx/chipset/mpc107/epic/epic_64.cc
+unisim/component/cxx/chipset/mpc107/epic/epic_64_debug.cc
+unisim/component/cxx/chipset/mpc107/epic/inservice_reg.cc
+unisim/component/cxx/chipset/mpc107/epic/register.cc

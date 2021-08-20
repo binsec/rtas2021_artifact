@@ -1,0 +1,18 @@
+Installation instructions:
+
+1)  Configuring
+
+Run the configure script:
+$ ./configure --prefix=/usr/local
+
+Change the installation 'prefix' to install into another directory, for instance --prefix=${HOME}/cacti
+
+2) Compiling
+
+Compile the source:
+$ make
+
+3) Installing
+
+Install everything in the installation directory:
+$ make install

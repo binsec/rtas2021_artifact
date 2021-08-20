@@ -1,0 +1,8 @@
+#!/bin/sh
+
+UA_BUNDLE="`echo "$0" | sed -e 's/\/Contents\/MacOS\/UNISIM\ ArmEmu//'`"
+UA_RESOURCES="$UA_BUNDLE/Contents/Resources"
+UA_SHARE_DIRECTORY="$UA_RESOURCES/@RELATIVE_SHARE_DIRECTORY@"
+
+exec "osascript" "$UA_SHARE_DIRECTORY/macosx/armemu-launcher.scpt" "$UA_RESOURCES/bin/@ARMEMU_EXEC_NAME@"
+

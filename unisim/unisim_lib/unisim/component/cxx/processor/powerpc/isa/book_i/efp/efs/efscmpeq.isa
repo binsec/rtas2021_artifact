@@ -1,0 +1,100 @@
+/*
+ *  Copyright (c) 2017,
+ *  Commissariat a l'Energie Atomique (CEA)
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without modification,
+ *  are permitted provided that the following conditions are met:
+ *
+ *   - Redistributions of source code must retain the above copyright notice, this
+ *     list of conditions and the following disclaimer.
+ *
+ *   - Redistributions in binary form must reproduce the above copyright notice,
+ *     this list of conditions and the following disclaimer in the documentation
+ *     and/or other materials provided with the distribution.
+ *
+ *   - Neither the name of CEA nor the names of its contributors may be used to
+ *     endorse or promote products derived from this software without specific prior
+ *     written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ *  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *  DISCLAIMED.
+ *  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ *  INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ *  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+ *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ *  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Authors: Gilles Mouchard (gilles.mouchard@cea.fr), Franck Vedrine (franck.vedrine@cea.fr)
+ */
+
+op efscmpeq(4[6]:bf[3]:?[2]:ra[5]:rb[5]:718[11]);
+
+efscmpeq.execute = {
+	if (!cpu->CheckSPV())
+		return false;
+
+	// Read the input operands
+	U32 ua( cpu->GetGPR(ra) ), ub( cpu->GetGPR(rb) );
+	SoftFloat a( SoftFloat::FromRawBits, ua ), b( SoftFloat::FromRawBits, ub );
+	
+	// Check for Invalid Operation/Input errors
+	if (not cpu->EFPProcessInput().set(a).set(b).proceed())
+		return false;
+	
+	// Compute the result
+	CPU::SPEFSCR& spefscr = cpu->GetSPEFSCR();
+	bool result = evenly(likely(spefscr.Get<CPU::SPEFSCR::FINV>() == UINT(0)) ? (a == b) : (ua == ub));
+	
+	// Update the flags
+	spefscr.SetOverflow( false );
+	spefscr.SetUnderflow( false );
+
+	// Write back the result in CR[bf] bit field
+	CR& cr = cpu->GetCR();
+	switch(bf)
+	{
+	case 0:
+		cr.Set<CR::CR0>(0);
+		cr.Set<CR::CR0::GT>(result);
+		break;
+	case 1:
+		cr.Set<CR::CR1>(0);
+		cr.Set<CR::CR1::GT>(result);
+		break;
+	case 2:
+		cr.Set<CR::CR2>(0);
+		cr.Set<CR::CR2::GT>(result);
+		break;
+	case 3:
+		cr.Set<CR::CR3>(0);
+		cr.Set<CR::CR3::GT>(result);
+		break;
+	case 4:
+		cr.Set<CR::CR4>(0);
+		cr.Set<CR::CR4::GT>(result);
+		break;
+	case 5:
+		cr.Set<CR::CR5>(0);
+		cr.Set<CR::CR5::GT>(result);
+		break;
+	case 6:
+		cr.Set<CR::CR6>(0);
+		cr.Set<CR::CR6::GT>(result);
+		break;
+	case 7:
+		cr.Set<CR::CR7>(0);
+		cr.Set<CR::CR7::GT>(result);
+		break;
+	}
+
+	return true;
+};
+
+efscmpeq.disasm = {
+	os << "efscmpeq " << (unsigned int) bf << ", " << GPRPrint(ra) << ", " << GPRPrint(rb);
+};

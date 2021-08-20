@@ -1,0 +1,4 @@
+unisim/component/tlm/pci/ide/pci_dev_32.cc
+unisim/component/tlm/pci/ide/pci_dev_64.cc
+unisim/component/tlm/pci/ide/pci_ide_module_32.cc
+unisim/component/tlm/pci/ide/pci_ide_module_64.cc

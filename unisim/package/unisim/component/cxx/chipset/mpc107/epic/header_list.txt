@@ -1,0 +1,3 @@
+unisim/component/cxx/chipset/mpc107/epic/epic.hh
+unisim/component/cxx/chipset/mpc107/epic/inservice_reg.hh
+unisim/component/cxx/chipset/mpc107/epic/register.hh

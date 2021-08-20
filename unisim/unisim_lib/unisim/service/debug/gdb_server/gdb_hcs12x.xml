@@ -1,0 +1,14 @@
+<architecture name="hcs12x" endian="big">
+	<program_counter name="PC"/>
+	<feature name="hcs12x">
+		<register name="X" bitsize="16"/>
+		<register name="D" bitsize="16"/>
+		<register name="Y" bitsize="16"/>
+		<register name="SP" bitsize="16"/>
+		<register name="PC" bitsize="16"/>	
+		<register name="A" bitsize="8"/>
+		<register name="B" bitsize="8"/>
+		<register name="CCRL" bitsize="8"/>	
+		<register name="PPAGE" bitsize="8"/>
+	</feature>
+</architecture>

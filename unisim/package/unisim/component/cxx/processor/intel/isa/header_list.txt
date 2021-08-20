@@ -1,0 +1,8 @@
+unisim/component/cxx/processor/intel/isa/branch.hh
+unisim/component/cxx/processor/intel/isa/floatingpoint.hh
+unisim/component/cxx/processor/intel/isa/integer.hh
+unisim/component/cxx/processor/intel/isa/intel.hh
+unisim/component/cxx/processor/intel/isa/move.hh
+unisim/component/cxx/processor/intel/isa/simd.hh
+unisim/component/cxx/processor/intel/isa/special.hh
+unisim/component/cxx/processor/intel/isa/string.hh

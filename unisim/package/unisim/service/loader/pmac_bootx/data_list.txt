@@ -1,0 +1,2 @@
+unisim/service/loader/pmac_bootx/device_tree_pmac_g3.xml
+unisim/service/loader/pmac_bootx/device_tree_pmac_g4.xml

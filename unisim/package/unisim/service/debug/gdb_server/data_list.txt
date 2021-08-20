@@ -1,0 +1,8 @@
+unisim/service/debug/gdb_server/gdb_arm_with_fpa.xml
+unisim/service/debug/gdb_server/gdb_arm_with_neon.xml
+unisim/service/debug/gdb_server/gdb_avr32.xml
+unisim/service/debug/gdb_server/gdb_hcs12x.xml
+unisim/service/debug/gdb_server/gdb_power64.xml
+unisim/service/debug/gdb_server/gdb_powerpc_32.xml
+unisim/service/debug/gdb_server/gdb_powerpc_vle.xml
+unisim/service/debug/gdb_server/gdb_tms320c3x.xml

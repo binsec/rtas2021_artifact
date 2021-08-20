@@ -1,0 +1,143 @@
+/*
+ *  Copyright (c) 2018,
+ *  Commissariat a l'Energie Atomique (CEA)
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without modification,
+ *  are permitted provided that the following conditions are met:
+ *
+ *   - Redistributions of source code must retain the above copyright notice, this
+ *     list of conditions and the following disclaimer.
+ *
+ *   - Redistributions in binary form must reproduce the above copyright notice,
+ *     this list of conditions and the following disclaimer in the documentation
+ *     and/or other materials provided with the distribution.
+ *
+ *   - Neither the name of CEA nor the names of its contributors may be used to
+ *     endorse or promote products derived from this software without specific prior
+ *     written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ *  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *  DISCLAIMED.
+ *  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ *  INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ *  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+ *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ *  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Authors: Gilles Mouchard (gilles.mouchard@cea.fr)
+ */
+
+/* Branch Conditional to Count Register */
+op bcctr(19[6]: bo[5]: bi[5]:?[5]:528[10]:lk[1]);
+
+bcctr.execute = {
+	if(unlikely((bo & 4) == 0))
+	{
+		cpu->ThrowException<CPU::ProgramInterrupt::IllegalInstruction>();
+		return false;
+	}
+	
+	BOOL cond_ok = BOOL(true);
+	
+	if (((bo & 16) == 0)) {
+		/* Conditional branch */
+		if(bo & 8) {
+			/* Branch if condition is true */
+			cond_ok = ((U32(cpu->GetCR()) << bi) & U32(0x80000000)) != U32(0);
+		}
+		else {
+			/* Branch if condition is false */
+			cond_ok = ((U32(cpu->GetCR()) << bi) & U32(0x80000000)) == U32(0);
+		}
+	}
+	
+	if (evenly(cond_ok)) {
+		ADDRESS target_addr( UINT(cpu->GetCTR()) & UINT(-4) );
+		cpu->Branch(target_addr);
+	}
+	
+	if (lk) cpu->GetLR() = ADDRESS( cpu->GetCIA() + UINT(4) );
+	
+	return true;
+};
+
+bcctr.disasm = {
+	bool cr = (bo & 16) == 0, dc = (bo & 4) == 0;
+	os << "b";
+	if (dc) os << "<illegal>";
+	if (cr) os << CondPrint(bi & 3,bo & 8);
+	if (lk) os << "l";
+	os << "ctr ";
+	if      (cr) { if (unsigned crn = bi >> 2) os << CRPrint(crn); }
+	else         { os << unsigned(bo) << ", " << unsigned(bi); }
+};
+
+specialize bcctr(bo=0,aa=2,lk=0);
+specialize bcctr(bo=0,aa=2,lk=1);
+specialize bcctr(bo=1,aa=2,lk=0);
+specialize bcctr(bo=1,aa=2,lk=1);
+specialize bcctr(bo=2,aa=2,lk=0);
+specialize bcctr(bo=2,aa=2,lk=1);
+specialize bcctr(bo=3,aa=2,lk=0);
+specialize bcctr(bo=3,aa=2,lk=1);
+specialize bcctr(bo=4,aa=2,lk=0);
+specialize bcctr(bo=4,aa=2,lk=1);
+specialize bcctr(bo=5,aa=2,lk=0);
+specialize bcctr(bo=5,aa=2,lk=1);
+specialize bcctr(bo=6,aa=2,lk=0);
+specialize bcctr(bo=6,aa=2,lk=1);
+specialize bcctr(bo=7,aa=2,lk=0);
+specialize bcctr(bo=7,aa=2,lk=1);
+specialize bcctr(bo=8,aa=2,lk=0);
+specialize bcctr(bo=8,aa=2,lk=1);
+specialize bcctr(bo=9,aa=2,lk=0);
+specialize bcctr(bo=9,aa=2,lk=1);
+specialize bcctr(bo=10,aa=2,lk=0);
+specialize bcctr(bo=10,aa=2,lk=1);
+specialize bcctr(bo=11,aa=2,lk=0);
+specialize bcctr(bo=11,aa=2,lk=1);
+specialize bcctr(bo=12,aa=2,lk=0);
+specialize bcctr(bo=12,aa=2,lk=1);
+specialize bcctr(bo=13,aa=2,lk=0);
+specialize bcctr(bo=13,aa=2,lk=1);
+specialize bcctr(bo=14,aa=2,lk=0);
+specialize bcctr(bo=14,aa=2,lk=1);
+specialize bcctr(bo=15,aa=2,lk=0);
+specialize bcctr(bo=15,aa=2,lk=1);
+specialize bcctr(bo=16,aa=2,lk=0);
+specialize bcctr(bo=16,aa=2,lk=1);
+specialize bcctr(bo=17,aa=2,lk=0);
+specialize bcctr(bo=17,aa=2,lk=1);
+specialize bcctr(bo=18,aa=2,lk=0);
+specialize bcctr(bo=18,aa=2,lk=1);
+specialize bcctr(bo=19,aa=2,lk=0);
+specialize bcctr(bo=19,aa=2,lk=1);
+specialize bcctr(bo=20,aa=2,lk=0);
+specialize bcctr(bo=20,aa=2,lk=1);
+specialize bcctr(bo=21,aa=2,lk=0);
+specialize bcctr(bo=21,aa=2,lk=1);
+specialize bcctr(bo=22,aa=2,lk=0);
+specialize bcctr(bo=22,aa=2,lk=1);
+specialize bcctr(bo=23,aa=2,lk=0);
+specialize bcctr(bo=23,aa=2,lk=1);
+specialize bcctr(bo=24,aa=2,lk=0);
+specialize bcctr(bo=24,aa=2,lk=1);
+specialize bcctr(bo=25,aa=2,lk=0);
+specialize bcctr(bo=25,aa=2,lk=1);
+specialize bcctr(bo=26,aa=2,lk=0);
+specialize bcctr(bo=26,aa=2,lk=1);
+specialize bcctr(bo=27,aa=2,lk=0);
+specialize bcctr(bo=27,aa=2,lk=1);
+specialize bcctr(bo=28,aa=2,lk=0);
+specialize bcctr(bo=28,aa=2,lk=1);
+specialize bcctr(bo=29,aa=2,lk=0);
+specialize bcctr(bo=29,aa=2,lk=1);
+specialize bcctr(bo=30,aa=2,lk=0);
+specialize bcctr(bo=30,aa=2,lk=1);
+specialize bcctr(bo=31,aa=2,lk=0);
+specialize bcctr(bo=31,aa=2,lk=1);

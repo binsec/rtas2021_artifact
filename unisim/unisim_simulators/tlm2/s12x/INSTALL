@@ -1,0 +1,21 @@
+INSTALLATION
+------------
+
+Requirements:
+  - GNU bash (bash-3.0-19.3 on RHEL4)
+  - GNU make (make-3.80-6.EL4 on RHEL4)
+  - GNU autoconf (autoconf-2.59-5 on RHEL4)
+  - GNU automake (automake-1.9.2-3 on RHEL4)
+  - GNU flex (flex-2.5.4a-33 on RHEL4)
+  - GNU bison (bison-1.875c-2 on RHEL4)
+  - boost development package (boost-devel-1.32.0-1.rhel4 on RHEL4)
+  - libxml2 development package (libxml2-devel-2.6.16-6 on RHEL4)
+  - zlib development package (zlib-devel-1.2.1.2-1.2 on RHEL4)
+
+Building instructions:
+  $ ./configure
+  $ make
+
+Installing (optional):
+  $ make install
+

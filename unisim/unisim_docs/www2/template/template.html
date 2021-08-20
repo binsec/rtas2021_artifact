@@ -1,0 +1,59 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+	<head>
+#if 0
+		<meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0; user-scalable=0;"/>
+#else
+		<meta name="viewport" content="width=device-width; initial-scale=1.0;"/>
+#endif
+#if HAVE_META_DESCRIPTION
+		<meta name="description" content=``META_DESCRIPTION``>
+#endif
+#if HAVE_META_KEYWORDS
+		<meta name="keywords" content=``META_KEYWORDS``>
+#endif
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+#if HAVE_PAGE_TITLE
+		<title>UNISIM Virtual Platforms - PAGE_TITLE</title>
+#endif
+		<link rel="shortcut icon" type="image/x-icon"  href=``GLYPHES/favicon-unisim.ico``>
+#if HAVE_BASE_STYLE
+		<link rel="stylesheet" href=``BASE_STYLE`` type="text/css">
+#endif
+#if HAVE_THEME_STYLE
+		<link rel="stylesheet" href=``THEME_STYLE`` type="text/css">
+#endif
+#if HAVE_CONTENT_STYLE
+		<link rel="stylesheet" href=``CONTENT_STYLE`` type="text/css">
+#endif
+	</head>
+
+	<body>
+		<div class="header">
+#include "header.html"
+		</div>
+
+		<div class="nav">
+#include "nav.html"
+		</div>
+
+		<div class="extra-nav">
+#include "extra-nav.html"
+		</div>
+		<div class="clear"></div>
+
+		<div class="content">
+#include "content.html"
+		</div>
+
+		<div class="separator"></div>
+
+		<div class="aside">
+#include "aside.html"
+		</div>
+
+		<div class="footer">
+#include "footer.html"
+		</div>
+	</body>
+</html>

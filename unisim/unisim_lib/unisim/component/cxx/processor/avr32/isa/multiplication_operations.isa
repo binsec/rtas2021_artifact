@@ -1,0 +1,243 @@
+//signed divide
+
+op divs(0b111[3]:rx[4]:0b00000[5]:ry[4]:><:0b0000[4]:0b11000000[8]:rd[4])
+
+divs.execute={
+	
+	if(rd == 15) return false;
+
+	int32_t x = (int32_t)cpu->GetGPR(rx);
+	int32_t y = (int32_t)cpu->GetGPR(ry);
+	if(y==0) return false;
+	
+	uint32_t result = x / y;
+	uint32_t remainder = x % y;
+
+	cpu->SetGPR(rd,result);
+	cpu->SetGPR(rd+1,remainder); 	
+
+	return true;
+}
+
+divs.disasm={
+
+	os << "divs\t" << REG_NAME[rd] << "," << REG_NAME[rx] << "," << REG_NAME[ry];
+}
+
+
+//unsigned divide
+
+op divu(0b111[3]:rx[4]:0b00000[5]:ry[4]:><:0b0000[4]:0b11010000[8]:rd[4])
+
+divu.execute={
+	
+	if(rd == 15) return false;
+
+	uint32_t x = cpu->GetGPR(rx);
+	uint32_t y = cpu->GetGPR(ry);
+	if(y==0) return false;
+	
+	uint32_t result = x / y;
+	uint32_t remainder = x % y;
+
+	cpu->SetGPR(rd,result);
+	cpu->SetGPR(rd+1,remainder); 	
+
+	return true;
+}
+
+divu.disasm={
+
+	os << "divu\t" << REG_NAME[rd] << "," << REG_NAME[rx] << "," << REG_NAME[ry];
+}
+
+
+// MAC - multiply accumulate                              
+
+op mac(0b111[3]:rx[4]:0b00000[5]:ry[4]:><:0b0000[4]:0b00110100[8]:rd[4])
+
+                                                            
+mac.execute={
+	
+	uint32_t x= cpu->GetGPR(rx);
+ 	uint32_t y= cpu->GetGPR(ry);
+ 	uint32_t d= cpu->GetGPR(rd);
+ 
+	uint32_t result = (x * y) + d;
+
+	cpu->SetGPR(rd,result);
+
+	return true;
+}
+
+mac.disasm={
+
+	os << "mac\t" << REG_NAME[rd] << "," << REG_NAME[rx] << "," << REG_NAME[ry];
+}
+
+//multiply accumulate signed
+
+op macs_d(0b111[3]:rx[4]:0b00000[5]:ry[4]:><:0b0000[4]:0b01010100[8]:rd[4])
+
+macs_d.execute={
+
+	if(rd == 15) return false;
+	
+	int32_t x= cpu->GetGPR(rx);
+ 	int32_t y= cpu->GetGPR(ry);
+ 	int32_t d= cpu->GetGPR(rd);
+	int32_t d1= cpu->GetGPR(rd+1);
+	int64_t acc = ((int64_t)d1 << 32) | (int64_t)d;
+	int64_t prod = (int64_t)x *(int64_t) y;
+	uint64_t res = prod + acc; 
+
+	cpu-> SetGPR(rd,res);
+	cpu-> SetGPR(rd+1,res>>32);
+	return true;
+}
+
+macs_d.disasm={
+
+	os << "macs_d\t" << REG_NAME[rd] << "," << REG_NAME[rx] << "," << REG_NAME[ry];
+}
+
+
+//multiply accumulate unsigned
+
+op macu_d(0b111[3]:rx[4]:0b00000[5]:ry[4]:><:0b0000[4]:0b01110100[8]:rd[4])
+
+macu_d.execute={
+
+	if(rd == 15) return false;
+
+	uint32_t x= cpu->GetGPR(rx);
+ 	uint32_t y= cpu->GetGPR(ry);
+ 	uint32_t d= cpu->GetGPR(rd);
+	uint32_t d1= cpu->GetGPR(rd+1);
+	uint64_t acc = ((uint64_t)d1 << 32) | (uint64_t)d;
+	uint64_t prod = (uint64_t)x *(uint64_t) y;
+	uint64_t res = prod + acc; 
+
+	cpu-> SetGPR(rd,res );
+	cpu-> SetGPR(rd+1,res >>32 );
+	return true;
+}
+
+
+macu_d.disasm={
+
+	os << "macu_d\t" << REG_NAME[rd] << "," << REG_NAME[rx] << "," << REG_NAME[ry];
+}
+
+
+//MUL - multiply                                    ## no specified if numbers are signed or unsigned
+
+op mul_a(0b101[3]:rs[4]:0b10011[5]:rd[4])
+
+mul_a.execute={
+
+	int32_t s = cpu->GetGPR(rs);
+	int32_t d = cpu->GetGPR(rd);
+
+	uint32_t result = s * d;
+
+	cpu->SetGPR(rd,result);
+
+	return true;
+}
+
+mul_a.disasm={
+
+	os << "mul\t" << REG_NAME[rd] << "," << REG_NAME[rs];
+}
+
+op mul_b(0b111[3]:rx[4]:0b00000[5]:ry[4]:><:0b0000[4]:0b00100100[8]:rd[4])
+
+mul_b.execute={
+
+	int32_t x = cpu->GetGPR(rx);
+	int32_t y = cpu->GetGPR(ry);
+
+	uint32_t result = x * y;
+
+	cpu->SetGPR(rd,result);
+
+	return true;
+}
+
+
+mul_b.disasm={
+
+	os << "mul\t" << REG_NAME[rd] << "," << REG_NAME[rx] << "," << REG_NAME[ry];
+}
+
+
+
+op mul_c(0b111[3]:rs[4]:0b00000[5]:rd[4]:><:0b0001[4]:0b0000[4]:sext<32>imm8[8])
+
+mul_c.execute={
+
+	int32_t s = cpu->GetGPR(rs);
+	uint32_t result = s * (int32_t)imm8;
+
+	cpu->SetGPR(rd,result);
+
+	return true;
+}
+
+
+mul_c.disasm={
+
+	os << "mul\t" << REG_NAME[rd] << "," << REG_NAME[rs] << "," << std::hex << imm8;
+}
+
+//multiply signed
+
+op muls_d(0b111[3]:rx[4]:0b00000[5]:ry[4]:><:0b0000[4]:0b01000100[8]:rd[4])
+
+muls_d.execute={
+	
+	int32_t x = cpu->GetGPR(rx);
+	int32_t y = cpu->GetGPR(ry);
+	uint64_t res =(int64_t)x *(int64_t) y;
+	
+	cpu-> SetGPR(rd,res);
+	cpu-> SetGPR(rd+1,res>>32);
+
+	
+	return true;
+	
+}
+
+muls_d.disasm={
+
+	os << "muls.d\t" << REG_NAME[rd] << "," << REG_NAME[rx] << "," << REG_NAME[ry];
+}
+
+
+//multiply unsigned
+
+op mulu_d(0b111[3]:rx[4]:0b00000[5]:ry[4]:><:0b0000[4]:0b01100100[8]:rd[4]) // verfier pour rd si pas erreur dans le manuel
+
+mulu_d.execute={
+	
+	uint32_t x = cpu->GetGPR(rx);
+	uint32_t y = cpu->GetGPR(ry);
+	uint64_t res = (uint64_t)x *(uint64_t) y;
+	
+	cpu-> SetGPR(rd, res);
+	cpu-> SetGPR(rd+1,res >>32 );
+
+	
+	return true;
+	
+}
+
+
+mulu_d.disasm={
+
+	os << "mulu.d\t" << REG_NAME[rd] << "," << REG_NAME[rx] << "," << REG_NAME[ry];
+}
+
+
+

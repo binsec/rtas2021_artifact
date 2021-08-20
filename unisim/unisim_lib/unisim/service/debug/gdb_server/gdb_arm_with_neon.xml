@@ -1,0 +1,61 @@
+<architecture name="arm-with-neon" endian="little">
+	<breakpoint_kind kind="2" size="2"/>
+	<breakpoint_kind kind="3" size="4"/>
+	<breakpoint_kind kind="4" size="4"/>
+	<program_counter name="pc"/>
+	<feature name="org.gnu.gdb.arm.core">
+		<register name="r0" bitsize="32" type="uint32" regnum="0"/>
+		<register name="r1" bitsize="32" type="uint32"/>
+		<register name="r2" bitsize="32" type="uint32"/>
+		<register name="r3" bitsize="32" type="uint32"/>
+		<register name="r4" bitsize="32" type="uint32"/>
+		<register name="r5" bitsize="32" type="uint32"/>
+		<register name="r6" bitsize="32" type="uint32"/>
+		<register name="r7" bitsize="32" type="uint32"/>
+		<register name="r8" bitsize="32" type="uint32"/>
+		<register name="r9" bitsize="32" type="uint32"/>
+		<register name="r10" bitsize="32" type="uint32"/>
+		<register name="r11" bitsize="32" type="uint32"/>
+		<register name="r12" bitsize="32" type="uint32"/>
+		<register name="sp" bitsize="32" type="data_ptr"/>
+		<register name="lr" bitsize="32"/>
+		<register name="pc" bitsize="32" type="code_ptr"/>
+		<register name="cpsr" bitsize="32" regnum="25"/>
+	</feature>
+	<feature name="org.gnu.gdb.arm.vfp">
+		<register name="d0" bitsize="64" type="ieee_double"/>
+		<register name="d1" bitsize="64" type="ieee_double"/>
+		<register name="d2" bitsize="64" type="ieee_double"/>
+		<register name="d3" bitsize="64" type="ieee_double"/>
+		<register name="d4" bitsize="64" type="ieee_double"/>
+		<register name="d5" bitsize="64" type="ieee_double"/>
+		<register name="d6" bitsize="64" type="ieee_double"/>
+		<register name="d7" bitsize="64" type="ieee_double"/>
+		<register name="d8" bitsize="64" type="ieee_double"/>
+		<register name="d9" bitsize="64" type="ieee_double"/>
+		<register name="d10" bitsize="64" type="ieee_double"/>
+		<register name="d11" bitsize="64" type="ieee_double"/>
+		<register name="d12" bitsize="64" type="ieee_double"/>
+		<register name="d13" bitsize="64" type="ieee_double"/>
+		<register name="d14" bitsize="64" type="ieee_double"/>
+		<register name="d15" bitsize="64" type="ieee_double"/>
+		<register name="d16" bitsize="64" type="ieee_double"/>
+		<register name="d17" bitsize="64" type="ieee_double"/>
+		<register name="d18" bitsize="64" type="ieee_double"/>
+		<register name="d19" bitsize="64" type="ieee_double"/>
+		<register name="d20" bitsize="64" type="ieee_double"/>
+		<register name="d21" bitsize="64" type="ieee_double"/>
+		<register name="d22" bitsize="64" type="ieee_double"/>
+		<register name="d23" bitsize="64" type="ieee_double"/>
+		<register name="d24" bitsize="64" type="ieee_double"/>
+		<register name="d25" bitsize="64" type="ieee_double"/>
+		<register name="d26" bitsize="64" type="ieee_double"/>
+		<register name="d27" bitsize="64" type="ieee_double"/>
+		<register name="d28" bitsize="64" type="ieee_double"/>
+		<register name="d29" bitsize="64" type="ieee_double"/>
+		<register name="d30" bitsize="64" type="ieee_double"/>
+		<register name="d31" bitsize="64" type="ieee_double"/>
+		<register name="fpscr" bitsize="32" type="int" group="float"/>
+	</feature>
+	<feature name="org.gnu.gdb.arm.neon"/>
+</architecture>

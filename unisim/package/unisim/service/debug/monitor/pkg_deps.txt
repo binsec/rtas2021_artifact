@@ -1,0 +1,15 @@
+m4/systemc
+std/stdexcept
+unisim/kernel
+unisim/kernel/logger
+unisim/service/interfaces/backtrace
+unisim/service/interfaces/data_object_lookup
+unisim/service/interfaces/debug_event
+unisim/service/interfaces/debug_info_loading
+unisim/service/interfaces/loader
+unisim/service/interfaces/memory
+unisim/service/interfaces/registers
+unisim/service/interfaces/stmt_lookup
+unisim/service/interfaces/subprogram_lookup
+unisim/service/interfaces/symbol_table_lookup
+unisim/util/debug

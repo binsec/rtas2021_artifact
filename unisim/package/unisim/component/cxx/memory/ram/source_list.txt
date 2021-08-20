@@ -1,0 +1,2 @@
+unisim/component/cxx/memory/ram/memory_32.cc
+unisim/component/cxx/memory/ram/memory_64.cc

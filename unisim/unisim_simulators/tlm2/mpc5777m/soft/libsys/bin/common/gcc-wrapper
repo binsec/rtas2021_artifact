@@ -1,0 +1,63 @@
+#!/bin/bash
+ARCH="$1"
+shift
+SUBSYS="$1"
+shift
+COMMAND="$1"
+shift
+
+INSTALL_PREFIX=$(cd $(dirname $0)/../..; pwd)
+CROSS_TOOLS=$(cd "${S32DS}/../Cross_Tools/powerpc-eabivle-4_9"; pwd)
+CROSS_COMPILE="${CROSS_TOOLS}/bin/powerpc-eabivle-"
+#CC=${INSTALL_PREFIX}/bin/common/tester
+CC="${CROSS_COMPILE}gcc"
+LD="${CROSS_COMPILE}ld"
+AR="${CROSS_COMPILE}ar"
+RANLIB="${CROSS_COMPILE}ranlib"
+STRIP="${CROSS_COMPILE}strip"
+
+LINKER_ARGS=()
+LINKER_ARGS+=("-T${INSTALL_PREFIX}/lib/ldscripts/${SUBSYS}/mpc57xx.ld")
+LINKER_ARGS+=('-Xlinker')
+LINKER_ARGS+=('--gc-sections')
+LINKER_ARGS+=("-L${INSTALL_PREFIX}/lib")
+LINKER_ARGS+=('-lsys')
+
+COMPILER_ARGS=()
+COMPILER_ARGS+=("-I${CROSS_TOOLS}/include")
+COMPILER_ARGS+=("-I${INSTALL_PREFIX}/include")
+COMPILER_ARGS+=('-DMPC5777M')
+COMPILER_ARGS+=('-fmessage-length=0')
+COMPILER_ARGS+=('-fsigned-char')
+COMPILER_ARGS+=('-ffunction-sections')
+COMPILER_ARGS+=('-fdata-sections')
+COMPILER_ARGS+=('-fstrict-volatile-bitfields')
+COMPILER_ARGS+=("-mcpu=${ARCH}")
+COMPILER_ARGS+=('-specs=nosys.specs')
+COMPILER_ARGS+=('-mbig')
+COMPILER_ARGS+=('-mvle')
+COMPILER_ARGS+=('-mregnames')
+COMPILER_ARGS+=('-mhard-float')
+COMPILER_ARGS+=("--sysroot=${CROSS_TOOLS}/powerpc-eabivle/newlib")
+COMPILER_ARGS+=('-gdwarf-4')
+COMPILER_ARGS+=('-gstrict-dwarf')
+
+case "${COMMAND}" in
+	compile)
+		"${CC}" "${COMPILER_ARGS[@]}" "$@" "${LINKER_ARGS[@]}"
+		;;
+	link)
+		"${LD}" "$@"
+		;;
+	archive)
+		"${AR}" "$@"
+		;;
+		
+	index)
+		"${RANLIB}" "$@"
+		;;
+		
+	strip)
+		"${STRIP}" "$@"
+		;;
+esac

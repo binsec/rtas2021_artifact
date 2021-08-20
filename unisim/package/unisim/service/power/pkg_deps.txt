@@ -1,0 +1,15 @@
+libc/inttypes
+libc/math
+libc/stdio
+libc/stdlib
+libc/string
+m4/cacti
+std/iostream
+std/map
+std/sstream
+unisim/kernel
+unisim/kernel/logger
+unisim/kernel/variable
+unisim/service/interfaces/cache_power_estimator
+unisim/service/interfaces/power_mode
+unisim/service/interfaces/time

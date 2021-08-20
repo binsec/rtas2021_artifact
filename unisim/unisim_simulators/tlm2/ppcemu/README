@@ -1,0 +1,2 @@
+UNISIM ppcemu is an user level PowerPC simulator with support of ELF32 binaries and Linux system call translation.
+This simulator can run simple PowerPC Linux applications.

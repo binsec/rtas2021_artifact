@@ -1,0 +1,44 @@
+\mode<article>{
+	\clearpage
+}
+
+\section{Other things}
+
+\mode<presentation>{
+\begin{frame}
+	\frametitle{Other things}
+	\begin{itemize}
+		\item Things appearing in the current TLM 2.0 revision:
+		\begin{itemize}
+			\item Analysis interface and analysis ports.
+			\item Adapters examples.
+			\item Generic payload extension mechanism.
+		\end{itemize}
+		\item Things missing in the current TLM 2.0 revision:
+		\begin{itemize}
+			\item New standard protocols.
+			\item Atomic transactions.
+		\end{itemize}
+	\end{itemize}
+\end{frame}
+}
+
+\mode<article>{
+In this tutorial we have learn the basics of TLM 2.0, but still some things remain if you really want to learn all about TLM 2.0. 
+For example:
+\begin{itemize}
+	\item we have not talked about the analysis interface and analysis ports.
+	They are intended to support the distribution of transactions to multiple 
+components for analysis, meaning tasks such as checking for functional correctness or collecting functional coverage statistics.
+	\item we have not seen examples on how to connect modules using different coding styles or TLM modules with cycle level modules. 
+	Those are called adapters, and the TLM 2.0 provides some examples on how this can be done. 
+	Usually it is done with a module that translates (the adapter) the coding style of the initiator module with the coding style of the second module.
+	\item you have seen that the generic payload could be extended, however we have not talked about this because it could be considered as a non basic feature. 
+	Again, the TLM 2.0 user manual explains how this can be done. 
+\end{itemize}
+
+There are even some things that the TLM 2.0 proposed standard does not explain. 
+For example, new protocols (e.g., interrupts) can appear in future version of the standard.
+Also the TLM 2.0 user manual explicitly states that the other capabilities like the atomic transactions might appear in future revisions of the Accellera TLM.
+
+}

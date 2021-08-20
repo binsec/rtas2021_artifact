@@ -1,0 +1,184 @@
+/*
+ *  Copyright (c) 2007-2016,
+ *  Commissariat a l'Energie Atomique (CEA)
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without modification,
+ *  are permitted provided that the following conditions are met:
+ *
+ *   - Redistributions of source code must retain the above copyright notice, this
+ *     list of conditions and the following disclaimer.
+ *
+ *   - Redistributions in binary form must reproduce the above copyright notice,
+ *     this list of conditions and the following disclaimer in the documentation
+ *     and/or other materials provided with the distribution.
+ *
+ *   - Neither the name of CEA nor the names of its contributors may be used to
+ *     endorse or promote products derived from this software without specific prior
+ *     written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ *  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *  DISCLAIMED.
+ *  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ *  INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ *  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+ *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ *  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Authors: Yves Lhuillier (yves.lhuillier@cea.fr), Daniel Gracia Perez (daniel.gracia-perez@cea.fr)
+ */
+ 
+/**********************************************
+
+       HINTS INSTRUCTIONS
+
+**********************************************/
+
+/*******************************************************************
+ * Nop (wide) instruction
+ */
+
+op nopw( 0b1111001110101111[16]:> <: 0b10000000[8]: imm[8] );
+
+nopw.disasm = {
+  if (imm) buffer << "nop.w\t{" << imm << "}";
+  else     buffer << "nop.w";
+};
+
+nopw.execute = {
+  if (unlikely( not CheckCondition(cpu, cpu.itcond()) )) return;
+};
+
+/*
+ * end of nop instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * yield instruction
+ */
+
+{ ARCH::Config::insns7 }:                               \
+op yield( 0b1011111100010000[16] );
+
+yield.disasm = {
+  buffer << "yield";
+};
+
+{ ARCH::Config::insns7 }:                               \
+op yield_w( 0b1111001110101111[16]:> <: 0b1000000000000001[16] );
+
+yield_w.disasm = {
+  buffer << "yield.w";
+};
+
+/*
+ * end of yield instruction
+ *******************************************************************/
+
+/* DBG instruction */
+
+op dbg_i( 0b1111001110101111[16]:> <: 0b100000001111[12]: imm[4] );
+dbg_i.disasm = { buffer << "dbg\t" << DisasmI(imm); };
+
+/* DMB instruction */
+
+op dmb( 0b1111001110111111[16]:> <: 0b100011110101[12]: opt[4] );
+dmb.var reject : {Reject} = {(opt & 2) == 0};
+
+dmb.disasm = {
+  buffer << "dmb\t" << DisasmBarrierOption( opt );
+};
+
+dmb.execute = {
+  if (unlikely( not CheckCondition(cpu, cpu.itcond()) )) return;
+};
+
+/* DSB instruction */
+
+op dsb( 0b1111001110111111[16]:> <: 0b100011110100[12]: opt[4] );
+dsb.var reject : {Reject} = {(opt & 2) == 0};
+
+dsb.disasm = {
+  buffer << "dsb\t" << DisasmBarrierOption( opt );
+};
+
+dsb.execute = {
+  if (unlikely( not CheckCondition(cpu, cpu.itcond()) )) return;
+};
+
+/* ISB instruction */
+
+op isb( 0b1111001110111111[16]:> <: 0b100011110110[12]: opt[4] );
+isb.var reject : {Reject} = {opt == 15};
+
+isb.disasm = {
+  buffer << "isb\t" << DisasmBarrierOption( opt );
+};
+
+isb.execute = {
+  if (unlikely( not CheckCondition(cpu, cpu.itcond()) )) return;
+  
+};
+
+{ ARCH::Config::insns7 }:                               \
+op wfe( 0b1011111100100000[16] );
+wfe.disasm = {
+  buffer << "wfe";
+};
+
+{ ARCH::Config::insns7 }:                               \
+op wfi( 0b1011111100110000[16] );
+
+wfi.disasm = {
+  buffer << "wfi";
+};
+
+wfi.execute = {
+  // if (HaveVirtExt() and not IsSecure() and not CurrentModeIsHyp() and HCR.TWI) {
+  //   HSRString = Zeros(25);
+  //   HSRString<0> = '0';
+  //   WriteHSR('000001', HSRString);
+  //   TakeHypTrapException();
+  // } else
+  
+  cpu.WaitForInterrupt();
+};
+
+{ ARCH::Config::insns7 }:                               \
+op sev( 0b1011111101000000[16] );
+sev.disasm = {
+  buffer << "sev";
+};
+
+{ ARCH::Config::insns7 }:                               \
+op wfe_w( 0b1111001110101111[16]:> <: 0b1000000000000010[16] );
+wfe_w.disasm = {
+  buffer << "wfe.w";
+};
+
+{ ARCH::Config::insns7 }:                               \
+op wfi_w( 0b1111001110101111[16]:> <: 0b1000000000000011[16] );
+wfi_w.disasm = {
+  buffer << "wfi.w";
+};
+
+wfi_w.execute = {
+  // if (HaveVirtExt() and not IsSecure() and not CurrentModeIsHyp() and HCR.TWI) {
+  //   HSRString = Zeros(25);
+  //   HSRString<0> = '0';
+  //   WriteHSR('000001', HSRString);
+  //   TakeHypTrapException();
+  // } else
+  
+  cpu.WaitForInterrupt();
+};
+
+{ ARCH::Config::insns7 }:                                     \
+op sev_w( 0b1111001110101111[16]:> <: 0b1000000000000100[16] );
+sev_w.disasm = {
+  buffer << "sev.w";
+};

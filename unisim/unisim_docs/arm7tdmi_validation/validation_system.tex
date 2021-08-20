@@ -1,0 +1,21 @@
+\section{System Level Validation}
+\label{sec:system_level}
+
+The tests presented in Section~\ref{sec:user_level} validated the user level ISA subset of the complete ARM7TDMI ISA.
+Validation of the system level ISA is a more complicated.
+Firstly, systematic tests as the random tests introduced in Section~\ref{sec:random_tests} are not feasible, due to the system dependencies of those instructions.
+Secondly, there are not benchmarks as those presented in Section~\ref{sec:benchmark_suite} to validate the ARM7TDMI alone.
+System benchmarks exist, but they require more components than those developed for the architecture targeted in this document (see Figure~\ref{fig:arm7tdmi_architecture}).
+
+For those reasons we have developed a small kernel to test the following features of the system:
+\begin{itemize}
+	\item system bootup
+	\item exception mechanism
+	\item user/system mode switching
+	\item ARM ISA to Thumb ISA switching
+\end{itemize}
+
+\subsection{Results}
+To validate the behavior of the ARM7TDMI simulator at system level we do not have any tool to do it automatically (we can not compare two outputs like presented in Section~\ref{sec:user_level}).
+We performed all the validation manually, heavily using the debugging service provided with UNISIM and comparing the behavior of the simulator to the behavior described in the ARM manual.
+All the tests were succesfully validated.

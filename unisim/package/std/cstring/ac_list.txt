@@ -1,0 +1,1 @@
+AC_CHECK_HEADER([cstring],, AC_MSG_ERROR([cstring is missing]))

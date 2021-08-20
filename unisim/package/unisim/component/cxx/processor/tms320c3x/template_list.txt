@@ -1,0 +1,2 @@
+unisim/component/cxx/processor/tms320c3x/cpu.tcc
+unisim/component/cxx/processor/tms320c3x/exception.tcc

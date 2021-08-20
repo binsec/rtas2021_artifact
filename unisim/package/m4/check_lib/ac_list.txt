@@ -1,0 +1,6 @@
+dnl This is a hack: see http://cvs.pld-linux.org/cgi-bin/viewvc.cgi/cvs/packages/icu/ac264-hack.patch?view=markup
+dnl
+dnl this AC_LINK_IFELSE is early here so that ac 2.64 wouldn't define the `ac_fn_cxx_try_link' in if..else condition
+AC_LANG_PUSH([C++])
+AC_LINK_IFELSE([AC_LANG_PROGRAM()])
+AC_LANG_POP([C++])

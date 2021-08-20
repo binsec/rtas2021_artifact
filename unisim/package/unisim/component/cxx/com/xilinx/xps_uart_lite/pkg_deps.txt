@@ -1,0 +1,10 @@
+libc/inttypes
+libc/string
+unisim/kernel
+unisim/kernel/logger
+unisim/kernel/variable
+unisim/service/interfaces/char_io
+unisim/service/interfaces/memory
+unisim/util/arithmetic
+unisim/util/endian
+unisim/util/queue

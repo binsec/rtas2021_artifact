@@ -1,0 +1,1 @@
+AC_CHECK_HEADER([errno.h],, AC_MSG_ERROR([errno.h is missing]))

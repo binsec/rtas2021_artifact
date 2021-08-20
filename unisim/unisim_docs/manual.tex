@@ -1,0 +1,154 @@
+%\documentclass[11pt]{book}
+\documentclass[a4paper,11pt,onecolumn]{mathese}
+% \usepackage[frenchb]{babel}
+% \usepackage[latin1]{inputenc}
+% \usepackage[T1]{fontenc}
+% \usepackage[french]{varioref}
+%\usepackage{fullpage}
+% \usepackage{graphicx}
+% \usepackage{lgrind}
+%\usepackage{progSTF}
+% \usepackage{subfigure}
+% \usepackage{moreverb}
+\usepackage{ulem}
+% \usepackage{srctex}
+% \usepackage{geometry}
+\usepackage{pifont}
+\usepackage{multirow}
+\usepackage{supertabular}
+\usepackage{placeins}
+
+\usepackage{hyperref}%                   % Utilisation de HyperTeX
+
+\lhead{\includegraphics[width=1.0cm]{logo_unisim.pdf}}
+
+\hypersetup{
+    pdfauthor   = {Gilles Mouchard, Daniel Gracia P\'erez, Reda Nouacer, Sylvain Girbal, Olivier Temam, Yves Lhuillier and Franck V\'edrine},%
+    pdftitle    = {UNISIM Documentation},%
+    pdfsubject  = {UNISIM},%
+    pdfkeywords = {simulation framework, architectural exploration, embedded system design, system verification},%
+    pdfcreator  = {rubber},%
+    pdfproducer = {rubber}
+}
+
+
+%\geometry{hmargin=3.0cm,vmargin=2.5cm}
+
+\begin{document}
+\selectlanguage{english}
+\setlength{\parskip}{0.5em}%0.15cm}
+\baselineskip 14pt
+
+
+\title{\bf \huge UNISIM: UNIted SIMulation environment\\Documentation Project}
+\author{Gilles Mouchard \\Daniel Gracia P\'erez\\Reda Nouacer\\Sylvain Girbal\\Olivier Temam\\Yves Lhuillier \\Franck V\'edrine}
+\date{2008, Dec 9th}
+
+\begin{titlepage}
+%\frontmatter
+\begin{figure}
+\begin{center}
+\includegraphics[width=8cm,natwidth=11.0cm,natheight=11.0cm]{logo_unisim.pdf}
+\maketitle
+\end{center}
+\end{figure}
+\end{titlepage}
+%\input{abstract}
+%\input{acknowledgements}
+%\tableofcontents
+
+
+%\addcontentsline{toc}{chapter}{Table des mati�res} 
+\tableofcontents \markboth{Table of content}{Table of content}
+\listoffigures
+
+\mainmatter
+
+\chapter{Introduction}
+\label{introduction}
+\input{introduction/introduction}
+
+\chapter{Installation}
+\label{installation}
+\input{installation/install}
+
+\chapter{armemu}
+\label{armemu}
+\input{armemu/armemu}
+
+\chapter{arm7tdmi}
+\label{arm7tdmi}
+\input{arm7tdmi/arm7tdmi}
+
+\chapter{arm966e\_s}
+\label{arm966e_s}
+\input{arm966e_s/arm966e_s}
+
+\chapter{ppcemu}
+\label{ppcemu}
+\input{ppcemu/ppcemu}
+
+\chapter{ppcemu-system}
+\label{ppcemu_system}
+\input{ppcemu_system/ppcemu_system}
+
+\chapter{embedded-ppc-g4-board}
+\label{embedded_ppc_g4_board}
+\input{embedded_ppc_g4_board/embedded_ppc_g4_board}
+
+\chapter{S12XEMU}
+\label{S12XEMU}
+\input{mc9s12xdp512/mc9s12xdp512}
+
+\chapter{tms320c3x}
+\label{tms320c3x}
+\input{tms320c3x/tms320c3x}
+
+\chapter{UNISIM Virtex 5 FXT simulator}
+\label{virtex5fxt}
+\input{virtex5fxt/virtex5fxt}
+
+\chapter{GenISSLib : An Instruction Set Simulator Generator}
+\label{genisslib}
+\input{genisslib/genisslib}
+
+\chapter{TLM/TTLM}
+\label{tlm_ttlm}
+\input{tlm/tlm}
+
+\chapter{Services}
+\label{services}
+\input{services/services}
+
+\chapter{Validation of the UNISIM ARM7TDMI Microprocessor Simulator}
+\label{arm7tdmi_validation}
+\input{arm7tdmi_validation/report}
+
+\chapter{Validation of the UNISIM STR7 Microcontroller Simulator}
+\label{str7_validation}
+\input{str7_validation/report}
+
+\begin{appendix}
+\chapter{TLM library}
+\label{tlm_appendix}
+\input{tlm/appendix}
+
+\chapter{UNISIM Virtex 5 FXT Simulator technical reference (generated) }
+\label{techref}
+\input{virtex5fxt/techref}
+\end{appendix}
+
+% \input{filename}
+% \begin{appendix}
+% \input{filename} 
+% \end{appendix}
+
+\bibliographystyle{plain}
+\bibliography{virtex5fxt/virtex5fxt}
+
+% Gilles: To uncomment once we have at least one citation
+%\bibliographystyle{plain}
+%\bibliography{biblio}
+
+
+\end{document}

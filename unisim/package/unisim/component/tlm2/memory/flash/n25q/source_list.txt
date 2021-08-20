@@ -1,0 +1,2 @@
+unisim/component/tlm2/memory/flash/n25q/config.cc
+unisim/component/tlm2/memory/flash/n25q/n25q032a.cc

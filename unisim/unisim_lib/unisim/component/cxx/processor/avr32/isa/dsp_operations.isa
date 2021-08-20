@@ -1,0 +1,846 @@
+//----------------------------------------------------------------------------------------------------
+
+//                                           DSP - OPERATIONS
+
+//----------------------------------------------------------------------------------------------------
+
+// ADDHH_W - add halfwords into word                         
+
+op addhh_w(0b111[3]:rx[4]:0b00000[5]:ry[4]:><:0b0000[4]:0b1110[4]:0b00[2]:x[1]:y[1]:rd[4])
+
+// X=t=0 high part ; X=b=1 low part
+// Y=t=0 high part ; Y=b=1 low part
+
+addhh_w.execute={
+
+	uint32_t x=cpu->GetGPR(rx);
+	uint32_t y=cpu->GetGPR(ry);
+
+	uint32_t op1= (x==1) ? SignExtend(x >>16,16)  // select halfword of rx and sign extend
+				   :SignExtend(x ,16);
+	uint32_t op2= (y==1) ? SignExtend(y >> 16,16)  // select halfword of ry
+				   :SignExtend(y ,16);
+	uint32_t result;
+ 
+	uint8_t overflow;
+	uint8_t sign;
+	uint8_t carry_in=0;                                             // without carry                         
+	uint8_t carry_out;
+	
+	SignedAdd32(result,carry_out, overflow,sign,op1,op2,carry_in); // add 2 words 
+
+	cpu->SetSR_V(overflow);                                        // set flags
+	cpu->SetSR_N(sign);
+	cpu->SetSR_Z(result==0);
+	cpu->SetSR_C(carry_out);
+
+	
+	cpu->SetGPR(rd,result);                                       // set result
+
+	return true;
+}
+addhh_w.disasm={
+
+	os << "addhh.w\t" << REG_NAME[rd] << "," << REG_NAME[rx] << ":<" << HALF_WORD_PART_NAME[x] << ">," << REG_NAME[ry] <<":<" << HALF_WORD_PART_NAME[y] << ">";
+}
+
+
+// MACHH_D - multiply halfwords and accumulate in doubleword
+
+op machh_d(0b111[3]:rx[4]:0b00000[5]:ry[4]:><:0b0000[4]:0b0101[4]:0b10[2]:x[1]:y[1]:rd[4])
+
+// X=t=0 high part ; X=b=1 low part
+// Y=t=0 high part ; Y=b=1 low part
+
+machh_d.execute={
+
+	uint32_t x=cpu->GetGPR(rx);
+	uint32_t y=cpu->GetGPR(ry);
+	uint32_t d=cpu->GetGPR(rd);
+	uint32_t d1=cpu->GetGPR(rd+1);
+	
+	int32_t op1= (x==1) ? SignExtend(x >>16,16)  // select halfword of rx
+	                    : SignExtend(x,16);
+			  
+	int32_t op2= (y==1) ? SignExtend(y >>16,16)  // select halfword of ry
+	                    : SignExtend(y,16);
+			  
+	uint64_t acc = ((uint64_t)(d1 << 16)) | ((uint64_t) d >> 16); // Rd+1[31:0] || Rd[31:16]
+	uint64_t result = (op1 * op2) + (int32_t)acc;
+
+	cpu->SetGPR(rd,result << 16);          // Rd[31:16]<-result[15:0], Rd[15:0]<-0  write back result in 2 registers
+	cpu->SetGPR(rd+1,result >> 16);        // Rd+1[31:0]<-result[47:16]
+ 
+	return true;
+}
+
+machh_d.disasm={
+
+	os << "machh.d\t" << REG_NAME[rd] << "," << REG_NAME[rx] << ":<" << HALF_WORD_PART_NAME[x] << ">," << REG_NAME[ry] <<":<" << HALF_WORD_PART_NAME[y] << ">";
+}
+
+// MACHH_W - multiply halfwords and accumulate in word
+
+op machh_w(0b111[3]:rx[4]:0b00000[5]:ry[4]:><:0b0000[4]:0b0100[4]:0b10[2]:x[1]:y[1]:rd[4])
+
+// x=t=0 high part ; x=b=1 low part
+// y=t=0 high part ; y=b=1 low part
+
+machh_w.execute={
+
+	uint32_t x=cpu->GetGPR(rx);
+	uint32_t y=cpu->GetGPR(ry);
+	uint32_t d=cpu->GetGPR(rd);
+
+	int32_t op1= (x==1) ? SignExtend(x >> 16,16)  // select halfword of rx 
+	                    : SignExtend(x ,16);
+				   
+	int32_t op2= (y==1) ? SignExtend(y >> 16,16)  // select halfword of ry
+	                    : SignExtend(y,16);
+	
+	uint32_t result = (op1 * op2) + (int32_t)d;
+
+	cpu->SetGPR(rd,result);
+ 
+	return true;
+}
+
+machh_w.disasm={
+
+	os << "machh.w\t" << REG_NAME[rd] << "," << REG_NAME[rx] << ":<" << HALF_WORD_PART_NAME[x] << ">," << REG_NAME[ry] <<":<" << HALF_WORD_PART_NAME[y] << ">";
+}
+
+
+//MACWH_D - multiply word with halfword and accumulate in doubleword
+
+op macwh_d(0b111[3]:rx[4]:0b00000[5]:ry[4]:><:0b0000[4]:0b1100[4]:0b100[3]:y[1]:rd[4])
+
+// y=t=0 high part ; y=b=1 low part
+
+macwh_d.execute={
+
+	uint32_t x=cpu->GetGPR(rx);
+	uint32_t y=cpu->GetGPR(ry);
+	uint32_t d=cpu->GetGPR(rd);
+	uint32_t d1=cpu->GetGPR(rd+1);
+	
+	int64_t op1=SignExtend((uint64_t)x,32);                                   // ?? sign extend x ?
+	int64_t op2 = (y==1) ? SignExtend((uint64_t)y >> 16,16)                   // select halfword of ry
+                           : SignExtend((uint64_t)y ,16);
+
+	int64_t acc = ((uint64_t)d1 << 32) | (d & 0xFFFF0000);
+	uint64_t result = (((op1 * op2) & 0x0000000000FFFFFF) + (acc >> 16)) << 16;
+
+	cpu->SetGPR(rd,result);
+	cpu->SetGPR(rd+1,result >>32);
+ 
+	return true;
+}
+
+macwh_d.disasm={
+	os << "macwh.d\t" << REG_NAME[rd] << "," << REG_NAME[rx] << "," << REG_NAME[ry] << ":<" << HALF_WORD_PART_NAME[y] << ">";
+}
+
+//MULHH_W - multiply halfword with halfword
+
+op mulhh_w(0b111[3]:rx[4]:0b00000[5]:ry[4]:><:0b00000111[8]:0b10[2]:x[1]:y[1]:rd[4])
+
+mulhh_w.execute={
+
+	uint32_t x=cpu->GetGPR(rx);
+	uint32_t y=cpu->GetGPR(ry);
+	
+	int32_t op1= (x==1) ? SignExtend(x >> 16,16)  // select halfword of rx 
+	                    : SignExtend(x ,16);
+				  
+	int32_t op2= (y==1) ? SignExtend(y >> 16,16)  // select halfword of ry 
+	                    : SignExtend(y ,16);
+	
+	uint32_t result = op1 * op2;
+
+	cpu->SetGPR(rd,result);
+ 
+	return true;
+}
+
+mulhh_w.disasm={
+
+	os << "mulhh.w\t" << REG_NAME[rd] << "," << REG_NAME[rx] << ":<" << HALF_WORD_PART_NAME[x] <<">," << REG_NAME[ry] <<":<" << HALF_WORD_PART_NAME[y] << ">";
+}
+
+// MULWH_D - multiply word with halfword
+
+//Since the most significant part of the product is stored, no overflow will occur ??
+
+op mulwh_d(0b111[3]:rx[4]:0b00000[5]:ry[4]:><:0b0000[4]:0b1101[4]:0b100[3]:y[1]:rd[4])
+
+mulwh_d.execute={
+
+	uint32_t x=cpu->GetGPR(rx);
+	uint32_t y=cpu->GetGPR(ry);
+
+	
+	int64_t op1=SignExtend((uint64_t)x,32);                                     // ?? sign extend x ?                     
+	int64_t op2= (y==1) ? SignExtend((uint64_t)(y >>16),16)      // select halfword of ry
+	                    : SignExtend((uint64_t)y,16);
+	
+	uint64_t result = (op1 * op2) << 16;
+
+	cpu->SetGPR(rd,result);
+	cpu->SetGPR( rd+1,result >> 32);
+ 
+	return true;
+}
+mulwh_d.disasm={
+
+	os << "mulwh.d\t" << REG_NAME[rd] << "," << REG_NAME[rx] << "," << REG_NAME[ry] << ":<" << HALF_WORD_PART_NAME[y] << ">";
+}
+
+// MULNHH_W - multiply halword with negative halfword
+
+op mulnhh_w(0b111[3]:rx[4]:0b00000[5]:ry[4]:><:0b00000001[8]:0b10[2]:x[1]:y[1]:rd[4])
+
+mulnhh_w.execute={
+
+	uint32_t x=cpu->GetGPR(rx);
+	uint32_t y=cpu->GetGPR(ry);
+	
+	int32_t op1= (x==1) ? SignExtend(x >>16,16) // select halfword of rx 
+	                    :SignExtend(x,16);
+	
+	int32_t op2= (y==1) ? SignExtend( y >>16,16) // select halfword of ry
+	                    :SignExtend(y ,16);
+	
+	uint32_t result = -(op1 * op2);
+
+	cpu->SetGPR(rd,result);
+ 
+	return true;
+}
+mulnhh_w.disasm={
+
+	os << "mulnhh.w\t" << REG_NAME[rd] << "," << REG_NAME[rx] << ":<" << HALF_WORD_PART_NAME[x] <<">," << REG_NAME[ry] <<":<" << HALF_WORD_PART_NAME[y] << ">";
+}
+
+//MULNWH_D - multiply word with negative halfword
+
+//Since the most significant part of the product is stored, no overflow will occur ??
+
+op mulnwh_d(0b111[3]:rx[4]:0b00000[5]:ry[4]:><:0b0000[4]:0b0010[4]:0b100[3]:y[1]:rd[4])
+
+mulnwh_d.execute={
+	
+	uint32_t x=cpu->GetGPR(rx);
+	uint32_t y=cpu->GetGPR(ry);
+
+	int64_t op1=SignExtend((uint64_t)x,32);		   			        // ?? sign extend x ? 
+	int64_t op2= (y==1) ? SignExtend((uint64_t)(y >> 16),16)    // select halfword of ry
+	                    :SignExtend((uint64_t)y ,16);
+	
+	uint64_t result = (-(op1 * op2)) << 16;
+
+	cpu->SetGPR(rd,result);
+	cpu->SetGPR(rd+1,result >> 32);
+ 
+	return true;
+}
+
+mulnwh_d.disasm={
+
+	os << "mulnwh.d\t" << REG_NAME[rd] << "," << REG_NAME[rx] << "," << REG_NAME[ry] << ":<" << HALF_WORD_PART_NAME[y] << ">";
+}
+
+
+//SATADD_H - saturated add of halfwords
+
+op satadd_h(0b111[3]:rx[4]:0b00000[5]:ry[4]:><:0b0000[4]:0b00101100[8]:rd[4])
+
+satadd_h.execute={
+	
+	uint16_t x = cpu->GetGPR(rx);
+	uint16_t y = cpu->GetGPR(ry); 
+	uint16_t temp;
+	
+	uint8_t carry_in=0;   // without carry
+	uint8_t carry_out;
+	uint8_t overflow;
+	uint8_t sign;
+
+	SignedSatAdd16(temp, carry_out, overflow, sign, x , y , carry_in);
+	
+	uint32_t result = SignExtend((uint32_t)temp,16);
+
+	cpu->SetGPR(rd,result);
+
+	cpu->SetSR_Q(overflow || cpu->GetSR_Q());
+	cpu->SetSR_V(overflow);
+	cpu->SetSR_N((int32_t)result < 0);          
+	cpu->SetSR_Z(result == 0);
+	cpu->SetSR_C(0);
+
+	return true;
+}
+
+satadd_h.disasm={
+
+	os << "satadd.h\t" << REG_NAME[rd] << "," << REG_NAME[rx] << "," << REG_NAME[ry];
+}
+
+//SATADD_W - saturated add of words                  
+
+op satadd_w(0b111[3]:rx[4]:0b00000[5]:ry[4]:><:0b0000[4]:0b00001100[8]:rd[4])
+
+satadd_w.execute={
+
+	uint32_t x = cpu->GetGPR(rx);
+	uint32_t y = cpu->GetGPR(ry);  
+	uint32_t result;
+	
+	uint8_t carry_in=0;
+	uint8_t carry_out;
+	uint8_t overflow;
+	uint8_t sign;
+
+	SignedSatAdd32(result, carry_out, overflow, sign, x,y, carry_in);
+	
+	cpu->SetGPR(rd,result);
+
+	cpu->SetSR_Q(overflow || cpu->GetSR_Q());
+	cpu->SetSR_V(overflow);
+	cpu->SetSR_N((int32_t)result < 0);                           
+	cpu->SetSR_Z(result == 0);
+	cpu->SetSR_C(0);
+
+	return true;
+}
+
+satadd_w.disasm={
+
+	os << "satadd.w\t" << REG_NAME[rd] << "," << REG_NAME[rx] << "," << REG_NAME[ry];
+}
+
+//SATSUB_H - saturate subtract of halfwords			
+
+op satsub_h(0b111[3]:rx[4]:0b00000[5]:ry[4]:><:0b0000[4]:0b00111100[8]:rd[4])
+
+satsub_h.execute={
+
+	uint16_t x = (uint16_t)cpu->GetGPR(rx);
+	uint16_t y = (uint16_t)cpu->GetGPR(ry);  
+	uint16_t temp;
+	
+	uint8_t borrow_in=0;
+	uint8_t borrow_out;
+	uint8_t overflow;
+	uint8_t sign;
+
+	SignedSatSub16(temp, borrow_out, overflow, sign, x , y, borrow_in);
+
+	uint32_t result = SignExtend(((uint32_t)temp),16);
+
+	cpu->SetGPR(rd,result);
+
+	cpu->SetSR_Q(overflow || cpu->GetSR_Q());
+	cpu->SetSR_V(overflow);
+	cpu->SetSR_N((int32_t)result < 0);
+	cpu->SetSR_Z(result == 0);
+	cpu->SetSR_C(0);
+
+	return true;
+
+
+}
+
+satsub_h.disasm={
+
+	os << "satsub.h\t" << REG_NAME[rd] << "," << REG_NAME[rx] << "," << REG_NAME[ry];
+}
+
+//SATSUB_W_A saturate subtract of words                      
+
+op satsub_w_a(0b111[3]:rx[4]:0b00000[5]:ry[4]:><:0b0000[4]:0b00011100[8]:rd[4])
+
+satsub_w_a.execute={
+
+	uint32_t op1 = cpu->GetGPR(rx);
+	uint32_t op2 = cpu->GetGPR(ry); 
+	uint32_t result;
+	
+	uint8_t borrow_in=0;                 
+	uint8_t borrow_out;
+	uint8_t overflow;
+	uint8_t sign;
+
+	SignedSatSub32(result, borrow_out, overflow, sign,op1 ,op2 ,borrow_in);
+	
+      cpu->SetGPR(rd,result);
+
+	cpu->SetSR_Q(overflow || cpu->GetSR_Q());
+	cpu->SetSR_V(overflow);
+	cpu->SetSR_N((int32_t)result < 0);
+	cpu->SetSR_Z(result==0);
+	cpu->SetSR_C(0);
+
+	return true;
+}
+
+satsub_w_a.disasm={
+
+	os << "satsub.w\t" << REG_NAME[rd] << "," << REG_NAME[rx] << "," << REG_NAME[ry];
+}
+
+//SATSUB_W_B                                  
+
+op satsub_w_b(0b111[3]:rs[4]:0b01101[5]:rd[4]:><:sext<32>imm16[16])
+
+satsub_w_b.execute={
+
+	uint32_t op1 = cpu->GetGPR(rs);
+	uint32_t op2 = imm16; 
+	uint32_t result;
+	
+	uint8_t borrow_in=0;
+	uint8_t borrow_out;
+	uint8_t overflow;
+	uint8_t sign;
+
+	SignedSatSub32(result, borrow_out, overflow, sign, op1,op2, borrow_in);
+	
+      cpu->SetGPR(rd,result);
+
+	cpu->SetSR_Q(overflow || cpu->GetSR_Q());
+	cpu->SetSR_V(overflow); 
+	cpu->SetSR_N((int32_t)result <0);                       
+	cpu->SetSR_Z(result==0);
+	cpu->SetSR_C(0);
+
+	return true;
+}
+
+satsub_w_b.disasm={
+
+	os << "satsub.w\t" << REG_NAME[rd] << "," << REG_NAME[rs] << ",0x" << std::hex <<(int)imm16;
+}
+
+//SATRNDS - saturate with rounding signed
+
+op satrnds(0b111[3]:0b1001[4]:0b11011[5]:rd[4]:><:0b0000[4]:0b00[2]:bp5[5]:sa5[5])
+
+satrnds.execute={
+	
+	uint32_t d = cpu->GetGPR(rd);
+	uint8_t rnd;
+	uint32_t temp = ShiftArithmeticRight(d,sa5,rnd);                // arithmetic shift
+	uint32_t result;
+	uint8_t q = cpu->GetSR_Q();                                // if Q=1 sat flag is set cleared otherwise
+	
+	if(sa5 != 0)
+	{
+		temp= (int32_t)temp + (int32_t)rnd;
+	}
+	
+	if( (temp == (uint32_t) SignExtend(temp,bp5)) || (bp5 == 0))
+	{
+		result = temp;
+	}
+	else                                                       // saturation occurs
+	{
+		q=1;						   // sat flag is set
+		result = ((temp >> 31)&1) ? - ((uint32_t) 1 << (bp5 - 1)) // min signed value with bp5 bits
+		                          :   ((uint32_t) 1 << (bp5 - 1))-1;                        // max signed value
+	}
+
+	cpu->SetGPR(rd,result);                                    // write back result
+	cpu->SetSR_Q(q);						   // set saturation flag
+
+	return true;
+}
+
+satrnds.disasm={
+	os << "satrnds\t" << REG_NAME[rd]  << ">>0x" << std::hex << (int)sa5 << ",0x" <<  (int) bp5; 
+}
+
+//SATRNDU - saturate with rounding unsigned
+
+op satrndu(0b111[3]:0b1001[4]:0b11011[5]:rd[4]:><:0b0000[4]:0b01[2]:bp5[5]:sa5[5])
+
+satrndu.execute={
+	
+	uint32_t d = cpu->GetGPR(rd);
+	uint8_t rnd;
+	int32_t temp = ShiftArithmeticRight(d,(unsigned int)sa5,rnd);           // arithmetic shift
+	uint32_t result;
+	uint8_t q= cpu->GetSR_Q();    // if Q=1 sat flag is set cleared otherwise
+	
+	if(sa5 != 0)
+	{
+		temp= temp + (int8_t)rnd;
+	}
+	
+	uint32_t mask = (1UL << bp5)-1 ;
+	if( ((uint32_t) temp == (uint32_t)(temp & mask)) || (bp5 == 0) )
+	{
+		result = temp;
+	}
+	else							// saturation occurs
+	{
+		q=1;						// Q flag is set
+		result= ((temp >> 31)&1) ? 0x00000000 
+						 : ((uint32_t) 1 << bp5)-1;                                 // max unsigned value with bp5 bits     
+	}
+
+	cpu->SetGPR(rd,result);                        //write back result
+	cpu->SetSR_Q(q);			      // set saturation flag
+
+	return true;
+}
+
+satrndu.disasm={
+	os << "satrndu\t" << REG_NAME[rd] << ">>0x" << (int) sa5 << ",0x" << (int) bp5; 
+}
+
+
+//SATS - saturate signed
+
+op sats(0b111[3]:0b1000[4]:0b11011[5]:rd[4]:><:0b0000[4]:0b00[2]:bp5[5]:sa5[5])
+
+sats.execute={
+
+	uint32_t d = cpu->GetGPR(rd);
+	uint32_t temp = ShiftArithmeticRight(d,(unsigned int)sa5);                // arithmetic shift
+	uint32_t result;
+	uint8_t q = cpu->GetSR_Q();                                              // get last saturation flag
+	
+
+	if( (temp == (uint32_t) SignExtend(temp,bp5)) || (bp5 == 0) )
+	{
+		result = temp;
+	}
+	else						// saturation occurs
+	{
+		q=1;					// Q flag is set
+
+		result = ((temp >> 31)&1) ? -((uint32_t)1 <<(bp5-1))               // max signed value with bp5 bits
+			                    : ((uint32_t)1 << (bp5-1))-1;            // min signed value with bp5 bits
+	}
+
+	cpu->SetGPR(rd,result);                            //write back result
+	cpu->SetSR_Q(q);                                   // set saturation flag
+
+	return true;
+}
+
+sats.disasm={
+	os << "sats\t" << REG_NAME[rd] << ">>0x" <<std::hex<< (int)sa5 << ",0x" << (int) bp5; 
+}
+
+
+//SATU - saturate unsigned
+
+op satu(0b111[3]:0b1000[4]:0b11011[5]:rd[4]:><:0b0000[4]:0b01[2]:bp5[5]:sa5[5])
+
+satu.execute={
+	
+	uint32_t d = cpu->GetGPR(rd);
+	int32_t temp = ShiftArithmeticRight(d,(unsigned int)sa5);
+	uint32_t result;
+	uint8_t q=cpu->GetSR_Q();                // get last saturation flag
+	
+	uint32_t mask = (1UL << bp5)-1 ;
+	if( ((uint32_t) temp == (uint32_t)(temp & mask)) || (bp5 == 0) )
+	{
+		result = temp;
+	}
+	else					// saturation occurs
+	{
+		q = 1;
+		result = ((temp >> 31)&1)  ? 0x00000000
+				               : ((uint32_t)1<< bp5)-1;     
+	}
+
+	cpu->SetGPR(rd,result);			//write back result in rd
+	cpu->SetSR_Q(q);			// set Q flag
+
+	return true;
+}
+
+satu.disasm={
+
+	os << "satu\t" << REG_NAME[rd] << ">>0x" << std::hex << (int)sa5 << ",0x"<< (int)bp5; 
+}
+
+//SUBHH_W - subtract halfwords into word
+
+op subhh_w(0b111[3]:rx[4]:0b00000[5]:ry[4]:><:0b0000[4]:0b111100[6]:x[1]:y[1]:rd[4])
+
+//X=0=t high part X=1=b low part
+//Y=0=t high part Y=1=b low part
+
+subhh_w.execute={
+
+	uint32_t x=cpu->GetGPR(rx);			   // get values in registers
+	uint32_t y=cpu->GetGPR(ry);
+	
+	uint32_t op1= (x==1) ? SignExtend(x >> 16,16)  // select halfword of rx
+				   :SignExtend(x,16);
+	uint32_t op2= (y==1) ? SignExtend(y >> 16,16)  // select halfword of ry
+				   :SignExtend(y ,16);
+	uint32_t result;
+ 
+	uint8_t overflow;
+	uint8_t sign;
+	uint8_t borrow_in=0;                           // case without carry               
+	uint8_t borrow_out;
+	
+	SignedSub32(result,borrow_out, overflow,sign,op1,op2,borrow_in);
+
+	cpu->SetSR_V(overflow);                       // set flags
+	cpu->SetSR_N(sign);
+	cpu->SetSR_Z(result==0);
+	cpu->SetSR_C(borrow_out);
+
+	
+	cpu->SetGPR(rd,result);                      // write back result
+
+	return true;
+}
+
+subhh_w.disasm={
+
+	os << "msubhh.w\t" << REG_NAME[rd] << "," << REG_NAME[rx] << ":<" << HALF_WORD_PART_NAME[x] << ">," << REG_NAME[ry] << ":<" << HALF_WORD_PART_NAME[y] << ">";
+}
+
+
+// MULSATHH_H - multiply halfword with saturation into halfword                       
+
+op mulsathh_h(0b111[3]:rx[4]:0b00000[5]:ry[4]:><:0b0000[4]:0b1000[4]:0b10[2]:x[1]:y[1]:rd[4])
+
+//X=0=t high part X=1=b low part
+//Y=0=t high part Y=1=b low part
+
+mulsathh_h.execute={
+
+	uint32_t x=cpu->GetGPR(rx);			// select halfword	 // get values in registers
+	uint32_t y=cpu->GetGPR(ry);
+	      
+	int32_t op1= (x==1) ? SignExtend(x >> 16,16)
+			        :SignExtend(x ,16);
+	int32_t op2= (y==1) ? SignExtend(y >> 16,16)
+				  :SignExtend(y ,16);
+	uint32_t result;
+	uint8_t q=cpu->GetSR_Q();				// get last saturation flag
+
+	if(((uint16_t)op1 == 0x8000) && ((uint16_t)op2 == 0x8000))   // op1=op2=-1
+	{ 
+		result = 0x00007FFF;				    // saturation occured
+		q=1;                                                // set Q flag
+	}	
+	else result = SignExtend((uint32_t)((op1 * op2) >> 15),16);
+	
+	cpu->SetGPR(rd,result);                                       
+	cpu->SetSR_Q(q);                                             //write Q flag                                
+	
+	return true;
+}
+
+mulsathh_h.disasm={
+
+	os << "mulsathh.h\t" << REG_NAME[rd] << "," << REG_NAME[rx] << ":<" << HALF_WORD_PART_NAME[x] << ">," << REG_NAME[ry] <<":<" << HALF_WORD_PART_NAME[y] << ">";
+}
+
+
+// MULSATHH_W - multiply halfword with saturation into word                         
+
+op mulsathh_w(0b111[3]:rx[4]:0b00000[5]:ry[4]:><:0b0000[4]:0b1001[4]:0b10[2]:x[1]:y[1]:rd[4])
+
+//X=0=t high part X=1=b low part
+//Y=0=t high part Y=1=b low part
+
+mulsathh_w.execute={
+
+	uint32_t x=cpu->GetGPR(rx);			    // get values in registers
+	uint32_t y=cpu->GetGPR(ry);
+	
+	int32_t op1= (x==1) ? SignExtend(x >> 16,16)  // select halword into word
+				  :SignExtend(x ,16);
+	int32_t op2= (y==1) ? SignExtend(y >> 16,16)
+				  :SignExtend(y,16);
+	uint32_t result;
+	uint8_t q = cpu->GetSR_Q();			      // get last saturation flag
+
+	if(((uint16_t)op1 == 0x8000) && ((uint16_t)op2 == 0x8000)) // if op1=op2=-1
+	{
+		result = 0x7FFFFFFF;    // largest positive 32-bit fractional number
+		q=1;
+	}	
+	else result = (op1 * op2) << 1;
+	
+	cpu->SetGPR(rd,result);          // write back result
+	cpu->SetSR_Q(q);                 // write saturation flag
+	
+	return true;
+}
+
+mulsathh_w.disasm={
+
+	os << "mulsathh.w\t" << REG_NAME[rd] << "," << REG_NAME[rx] << ":<" << HALF_WORD_PART_NAME[x] << ">," << REG_NAME[ry] <<":<" << HALF_WORD_PART_NAME[y] << ">";
+}
+
+
+// MULSATRNDHH_H - multiply halfwords with saturation and rounding into halfword
+
+op mulsatrndhh_h(0b111[3]:rx[4]:0b00000[5]:ry[4]:><:0b0000[4]:0b1010[4]:0b10[2]:x[1]:y[1]:rd[4])
+
+//X=0=t high part X=1=b low part
+//Y=0=t high part Y=1=b low part
+
+mulsatrndhh_h.execute={
+
+	uint32_t x=cpu->GetGPR(rx);                               // get values in registers
+	uint32_t y=cpu->GetGPR(ry);
+	
+	int32_t op1= (x==1) ? SignExtend(x >>16,16)        // select halfword
+				  :SignExtend(x ,16);
+	int32_t op2= (y==1) ? SignExtend(y >>16,16)
+				  :SignExtend(y,16);
+	uint32_t result;
+	uint8_t q= cpu->GetSR_Q();                                  // get last saturation flag
+
+	if(((uint16_t)op1 == 0x8000) && ((uint16_t)op2 == 0x8000)) // if op1=op2=-1
+	{
+		result = 0x00007FFF;				// saturation occurs
+		q=1;
+	}	
+	else result = SignExtend((uint32_t)((op1 * op2) + 0x4000) >> 15,16);
+	
+	cpu->SetGPR(rd,result);   
+	cpu->SetSR_Q(q);			 //write Q flag
+
+	return true;
+}
+
+mulsatrndhh_h.disasm={
+
+	os << "mulsatrndhh.h\t" << REG_NAME[rd] << "," << REG_NAME[rx] << ":<" << HALF_WORD_PART_NAME[x] << ">," << REG_NAME[ry] <<":<" << HALF_WORD_PART_NAME[y] << ">";
+}
+
+
+// MULSATRNDWH_W - multiply word and halfwords with saturation and rounding into word
+
+op mulsatrndwh_w(0b111[3]:rx[4]:0b00000[5]:ry[4]:><:0b0000[4]:0b1011[4]:0b100[3]:y[1]:rd[4])
+
+//Y=0=t high part Y=1=b low part
+
+mulsatrndwh_w.execute={
+
+	uint32_t x=cpu->GetGPR(rx);			 // get values in registers
+	uint32_t y=cpu->GetGPR(ry);
+	
+	int32_t op1=x;                                
+	int32_t op2 = (y==1) ? SignExtend(y >> 16,16)  // select halfword
+				   :SignExtend(y,16);
+	uint32_t result;
+	uint8_t q=cpu->GetSR_Q();                       // get last saturation flag
+
+	if(((uint32_t)op1 == 0x80000000) && ((uint16_t)op2 == 0x8000)) // if op1=op2=-1
+	{
+		result = 0x7FFFFFFF;                          // saturation occurs
+		q=1;
+	}	
+	else result = SignExtend((uint32_t)((op1 * op2) + 0x4000) >> 15,16);
+	
+	cpu->SetGPR(rd,result);   
+	cpu->SetSR_Q(q);                          //write Q flag
+
+	return true;
+
+}
+
+mulsatrndwh_w.disasm={
+
+	os << "mulsatrndwh.w\t" << REG_NAME[rd] << "," << REG_NAME[rx] << "," << REG_NAME[ry] << ":<" << HALF_WORD_PART_NAME[y] << ">";
+}
+
+
+// MULSATWH_W - multiply word and halfword with saturation into word
+
+op mulsatwh_w(0b111[3]:rx[4]:0b00000[5]:ry[4]:><:0b0000[4]:0b1110[4]:0b100[3]:y[1]:rd[4])
+
+mulsatwh_w.execute={
+
+	//Y=0=t high part Y=1=b low part
+
+	uint32_t x=cpu->GetGPR(rx);                                // get value in registers
+	uint32_t y=cpu->GetGPR(ry);
+
+	int32_t op1=x;
+	int32_t op2= (y==1) ? SignExtend(y >>16,16)          // select halfword
+				  : SignExtend(y,16);
+	uint32_t result;
+	uint8_t q=cpu->GetSR_Q();                                    // get last Q
+
+	if( ((uint32_t)op1 == 0x80000000) && ((uint16_t)op2 == 0x8000) )// if op1=op2=-1
+	{
+		result = 0x7FFFFFFF;
+		q=1;
+	}	
+	else result = (op1 * op2)  >> 15;                       // arithmetic shift ??
+	
+	cpu->SetGPR(rd,result);      // write back result in rd
+	cpu->SetSR_Q(q);             // write Q flag
+
+	return true;
+}
+
+mulsatwh_w.disasm={
+
+	os << "mulsatwh.w\t" << REG_NAME[rd] << "," << REG_NAME[rx] << "," << REG_NAME[ry] <<":<" << HALF_WORD_PART_NAME[y] << ">";
+}
+
+
+
+// MACSATHH_W - multiply accumulate halfwords with saturation into word    
+
+op macsathh_w(0b111[3]:rx[4]:0b00000[5]:ry[4]:><:0b0000[4]:0b0110[4]:0b10[2]:x[1]:y[1]:rd[4])
+
+//X=0=t high part X=1=b low part
+//Y=0=t high part Y=1=b low part
+
+macsathh_w.execute={
+
+	uint32_t x=cpu->GetGPR(rx);                        //  get value in registers
+	uint32_t y=cpu->GetGPR(ry);
+	uint32_t d=cpu->GetGPR(rd);
+	
+	int32_t op1= (x==1) ? SignExtend(x >> 16,16)   // select halfword
+				  :SignExtend(x ,16);
+	int32_t op2= (y==1) ? SignExtend(y>>16,16)
+				  :SignExtend(y,16);
+	uint32_t result,product;
+	uint8_t q= cpu->GetSR_Q();                   // get last Q flag
+
+	if(((uint16_t)op1 == 0x8000) && ((uint16_t)op2 == 0x8000)) //if op1=op2=-1
+	{
+		product = 0x7FFFFFFF;                // saturation occurs
+		q=1;                                 // set Q
+	}	
+	else product = (op1 * op2) << 1;             
+	
+	uint8_t sign,carry_out,overflow;
+	uint8_t carry_in=0;
+	
+	SignedSatAdd32(result,carry_out,overflow,sign,product,d,carry_in);            
+	
+	if(overflow==1) q=1;                        // set if overflow on accumulate          	
+
+	cpu->SetGPR(rd,result);                     // write back result
+ 	cpu->SetSR_Q(q);			    // write Q flag
+	return true;
+}
+
+macsathh_w.disasm={
+
+	os << "macsathh.w\t" << REG_NAME[rd] << "," << REG_NAME[rx] << ":<" << HALF_WORD_PART_NAME[x] << ">," << REG_NAME[ry] <<":<" << HALF_WORD_PART_NAME[y] << ">";
+}
+
+

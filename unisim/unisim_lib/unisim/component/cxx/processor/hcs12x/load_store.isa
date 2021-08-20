@@ -1,0 +1,1190 @@
+/*
+ *  Copyright (c) 2008,
+ *  Commissariat a l'Energie Atomique (CEA)
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without modification,
+ *  are permitted provided that the following conditions are met:
+ *
+ *   - Redistributions of source code must retain the above copyright notice, this
+ *     list of conditions and the following disclaimer.
+ *
+ *   - Redistributions in binary form must reproduce the above copyright notice,
+ *     this list of conditions and the following disclaimer in the documentation
+ *     and/or other materials provided with the distribution.
+ *
+ *   - Neither the name of CEA nor the names of its contributors may be used to
+ *     endorse or promote products derived from this software without specific prior
+ *     written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ *  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *  DISCLAIMED.
+ *  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ *  INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ *  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+ *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ *  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Authors: Reda   Nouacer  (reda.nouacer@cea.fr)
+ */
+
+// LDAA or LDAB #opr8i
+op ldaab_imm(0b1[1]:b[1]:0x6[6]:opr8i[8])
+
+ldaab_imm.getCycles = { return 1; }
+
+ldaab_imm.disasm = {
+	string mnem;
+	
+    if (b==0) {
+	    mnem = "LDAA";
+    } else {
+	    mnem = "LDAB";
+    }
+    sink << mnem << " #0x" << std::hex << opr8i;    
+    return mnem;
+}
+
+ldaab_imm.execute = {
+	if (b==0) {
+	    cpu->setRegA(opr8i); // ldaa #<opr8i>
+	} else {
+	    cpu->setRegB(opr8i); // ldab #<opr8i>	
+	}
+// CRC flags 0->V; setZ; setN
+	cpu->ccr->clrV();
+	if (opr8i == 0) {cpu->ccr->setZ();} else {cpu->ccr->clrZ();}
+	if ((opr8i & 0x80) == 0x80) { cpu->ccr->setN();} else { cpu->ccr->clrN(); }
+
+	return getCycles();
+}
+
+// LDAA or LDAB opr8a
+op ldaab_dir( 0b1[1]:b[1]:0x16[6]:opr8a[8] )
+
+ldaab_dir.getCycles = { return 3; }
+
+ldaab_dir.disasm = {
+	string mnem;
+	
+	if (b==0) {
+	    mnem = "LDAA";
+	} else {
+	    mnem = "LDAB";
+	}
+	sink << mnem << " 0x" << std::hex << opr8a;
+	return mnem;
+}
+
+ldaab_dir.execute = {
+
+	uint8_t val = cpu->memRead8(opr8a, ADDRESS::DIRECT, false);
+	if (b==0) {
+	    cpu->setRegA(val);
+	} else {
+	    cpu->setRegB(val);	
+	}
+// CRC flags 0->V; setZ; setN
+	cpu->ccr->clrV();
+	if (val == 0) {cpu->ccr->setZ();} else {cpu->ccr->clrZ();}
+	if ((val & 0x80) == 0x80) { cpu->ccr->setN();} else { cpu->ccr->clrN(); }
+
+	return getCycles();
+}
+
+// LDAA or LDAB opr16a
+op ldaab_ext(0b1[1]:b[1]:0x36[6]:> <:opr16a[16] )
+
+ldaab_ext.getCycles = { return 3; }
+
+ldaab_ext.disasm = {
+	string mnem;
+	
+	if (b==0) {
+	    mnem = "LDAA";
+	} else {
+	    mnem = "LDAB";	
+	}
+	sink << mnem << " 0x" << std::hex << opr16a; 
+	return mnem;
+}
+
+ldaab_ext.execute = {
+	physical_address_t addr = opr16a;
+
+	uint8_t val = cpu->memRead8(addr); 
+	if (b==0) {
+	    cpu->setRegA(val);
+	} else {
+	    cpu->setRegB(val);
+	}
+// CRC flags 0->V; setZ; setN
+	cpu->ccr->clrV();
+	if (val == 0) {cpu->ccr->setZ();} else {cpu->ccr->clrZ();}
+	if ((val & 0x80) == 0x80) { cpu->ccr->setN();} else { cpu->ccr->clrN(); }
+
+	return getCycles();
+}
+
+// LDAA or LDAB oprx0_xysp
+// LDAA or LDAB oprx9,xysp
+// LDAA or LDAB oprx16,xysp
+// LDAA or LDAB [D,xysp]
+// LDAA or LDAB [oprx16,xysp]
+op ldaab_idx(0b1[1]:b[1]:0x26[6]:> <:*xb[XB]) 
+
+ldaab_idx.pre_execute = {
+	
+	xb->pre_execute(sink);
+	// after: other specific actions
+}
+
+ldaab_idx.post_execute = {
+
+	// before: other specific actions
+	xb->post_execute(sink);
+}
+
+ldaab_idx.getCycles = { return XbModes::GetIDXCycles(xb->getXbMode(), 3, 3, 4, 6, 6); }
+
+ldaab_idx.disasm = {
+	string mnem;
+	
+	if (b==0) {
+	    mnem = "LDAA";
+	} else {
+	    mnem = "LDAB";	
+	}
+	sink << mnem << " ";
+    xb->disasm(sink);
+    return mnem;
+}
+
+ldaab_idx.execute = {
+    
+	physical_address_t addr = xb->getEAddr(cpu);
+    
+	uint8_t		val = cpu->memRead8(addr);     
+	
+	if (b==0) {
+	    cpu->setRegA(val);
+	} else {
+	    cpu->setRegB(val);	
+	}
+// CRC flags 0->V; setZ; setN
+	cpu->ccr->clrV();
+	if (val == 0) {cpu->ccr->setZ();} else {cpu->ccr->clrZ();}
+	if ((val & 0x80) == 0x80) { cpu->ccr->setN();} else { cpu->ccr->clrN(); }
+
+	return getCycles();
+}
+
+// LDD or LDY or LDX or LDS #opr16i
+op ld_dyxs_imm(0x33[6]:dyxs[2]:> <:opr16i[16])
+
+ld_dyxs_imm.getCycles = { return 2; }
+
+ld_dyxs_imm.disasm = {
+	string mnem;
+	
+	switch (dyxs) {
+	case 0: mnem = "LDD"; break;
+	case 1: mnem = "LDY"; break;
+	case 2: mnem = "LDX"; break;
+	case 3: mnem = "LDS"; break;
+	}
+	sink << mnem << " #0x" << std::hex << opr16i;
+	return mnem;
+}
+
+ld_dyxs_imm.execute = {
+
+	switch (dyxs) {
+	case 0: cpu->setRegD(opr16i); break;
+	case 1: cpu->setRegY(opr16i); break;
+	case 2: cpu->setRegX(opr16i); break;
+	case 3: cpu->setRegSP(opr16i); break;
+	}
+// CRC flags 0->V; setZ; setN
+	cpu->ccr->clrV();
+	if (opr16i == 0) {cpu->ccr->setZ();} else {cpu->ccr->clrZ();}
+	if ((opr16i & 0x8000) == 0x8000) { cpu->ccr->setN();} else { cpu->ccr->clrN(); }
+
+	return getCycles();
+}
+
+// LDD or LDY or LDX or LDS opr8a
+op ld_dyxs_dir(0x37[6]:dyxs[2]:opr8a[8])
+
+ld_dyxs_dir.getCycles = { return 3; }
+
+ld_dyxs_dir.disasm = {
+	string mnem;
+
+	switch (dyxs) {
+	case 0: mnem = "LDD"; break;
+	case 1: mnem = "LDY"; break;
+	case 2: mnem = "LDX"; break;
+	case 3: mnem = "LDS"; break;
+	}
+	sink << mnem << " 0x" << std::hex << opr8a;
+	return mnem;
+}
+
+ld_dyxs_dir.execute = {
+
+	uint16_t val = cpu->memRead16(opr8a, ADDRESS::DIRECT, false);
+	switch (dyxs) {
+	case 0: cpu->setRegD(val); break;
+	case 1: cpu->setRegY(val); break;
+	case 2: cpu->setRegX(val); break;
+	case 3: cpu->setRegSP(val); break;
+	}
+// CRC flags 0->V; setZ; setN
+	cpu->ccr->clrV();
+	if (val == 0) {cpu->ccr->setZ();} else {cpu->ccr->clrZ();}
+	if ((val & 0x8000) == 0x8000) { cpu->ccr->setN();} else { cpu->ccr->clrN(); }
+
+	return getCycles();
+}
+
+// LDD or LDY or LDX or LDS opr16a
+op ld_dyxs_ext(0x3F[6]:dyxs[2]:> <:opr16a[16])
+
+ld_dyxs_ext.getCycles = { return 3; }
+
+ld_dyxs_ext.disasm = {
+	string mnem;
+
+	switch (dyxs) {
+	case 0: mnem = "LDD"; break;
+	case 1: mnem = "LDY"; break;
+	case 2: mnem = "LDX"; break;
+	case 3: mnem = "LDS"; break;
+	}
+
+	sink << mnem << " 0x" << std::hex << opr16a;
+	return mnem;
+}
+
+ld_dyxs_ext.execute = {
+	physical_address_t addr = opr16a;
+	
+	uint16_t val = cpu->memRead16(addr);
+	
+	switch (dyxs) {
+	case 0: cpu->setRegD(val); break;
+	case 1: cpu->setRegY(val); break;
+	case 2: cpu->setRegX(val); break;
+	case 3: cpu->setRegSP(val); break;
+	}
+// CRC flags 0->V; setZ; setN
+	cpu->ccr->clrV();
+	if (val == 0) {cpu->ccr->setZ();} else {cpu->ccr->clrZ();}
+	if ((val & 0x8000) == 0x8000) { cpu->ccr->setN();} else { cpu->ccr->clrN(); }
+
+	return getCycles();
+}
+
+// LDD or LDY or LDX or LDS oprx0_xysp
+// LDD or LDY or LDX or LDS oprx9,xysp
+// LDD or LDY or LDX or LDS oprx16,xysp
+// LDD or LDY or LDX or LDS [D,xysp]
+// LDD or LDY or LDX or LDS [oprx16,xysp]
+op ld_dyxs_idx(0x3B[6]:dyxs[2]:> <:*xb[XB]) 
+
+ld_dyxs_idx.pre_execute = {
+	
+	xb->pre_execute(sink);
+	// after: other specific actions
+}
+
+ld_dyxs_idx.post_execute = {
+
+	// before: other specific actions
+	xb->post_execute(sink);
+}
+
+ld_dyxs_idx.getCycles = { return XbModes::GetIDXCycles(xb->getXbMode(), 3, 3, 4, 6, 6); }
+
+ld_dyxs_idx.disasm = {
+	string mnem;
+
+	switch (dyxs) {
+	case 0: mnem = "LDD"; break;
+	case 1: mnem = "LDY"; break;
+	case 2: mnem = "LDX"; break;
+	case 3: mnem = "LDS"; break;
+	}
+
+	sink << mnem << " ";
+    xb->disasm(sink);
+    return mnem;
+}
+
+ld_dyxs_idx.execute = {
+    
+	physical_address_t addr = xb->getEAddr(cpu);
+    
+	uint16_t	val = cpu->memRead16(addr);     
+
+	switch (dyxs) {
+	case 0: cpu->setRegD(val); break;
+	case 1: cpu->setRegY(val); break;
+	case 2: cpu->setRegX(val); break;
+	case 3: cpu->setRegSP(val); break;
+	}
+// CRC flags 0->V; setZ; setN
+	cpu->ccr->clrV();
+	if (val == 0) {cpu->ccr->setZ();} else {cpu->ccr->clrZ();}
+	if ((val & 0x8000) == 0x8000) { cpu->ccr->setN();} else { cpu->ccr->clrN(); }
+
+	return getCycles();
+}
+
+  
+// LEAY oprx0_xysp
+// LEAY oprx9,xysp
+// LEAY oprx16,xysp
+op leay(0x19[8]:> <:*xb[XB])
+
+leay.getCycles = { return XbModes::GetIDXCycles(xb->getXbMode(), 2, 2, 2, 0, 0); }
+
+leay.disasm = {
+	string mnem = "LEAY";
+
+	sink << mnem << " ";
+	xb->disasm(sink);
+	return mnem;
+}
+
+leay.execute = {
+
+    uint16_t	addr = xb->getEAddr(cpu);
+   
+	cpu->setRegY(addr);
+
+	return getCycles();
+}
+
+// LEAX oprx0_xysp
+// LEAX oprx9,xysp
+// LEAX oprx16,xysp
+op leax(0x1A[8]:> <:*xb[XB])
+
+leax.getCycles = { return XbModes::GetIDXCycles(xb->getXbMode(), 2, 2, 2, 0, 0); }
+
+leax.disasm = {
+	string mnem = "LEAX";
+
+	sink << mnem << " ";
+	xb->disasm(sink);
+	return mnem;
+}
+
+leax.execute = {
+
+    uint16_t	addr = xb->getEAddr(cpu);
+    
+	cpu->setRegX(addr);
+
+	return getCycles();
+}
+
+// LEAS  oprx0_xysp
+// LEAS  oprx9,xysp
+// LEAS  oprx16,xysp
+op leas(0x1B[8]:> <:*xb[XB])
+
+leas.getCycles = { return XbModes::GetIDXCycles(xb->getXbMode(), 2, 2, 2, 0, 0); }
+
+leas.disasm = {
+	string mnem = "LEAS";
+
+	sink << mnem << " ";
+	xb->disasm(sink);
+	return mnem;
+}
+
+leas.execute = {
+
+    uint16_t	addr = xb->getEAddr(cpu);
+    
+	cpu->setRegSP(addr);
+
+	return getCycles();
+}
+
+// STAA or STAB opr8a
+op staab_dir(0x2D[7]:b[1]:opr8a[8])
+
+staab_dir.getCycles = { return 2; }
+
+staab_dir.disasm = {
+	string mnem;
+
+	if (b==0) {
+	    mnem = "STAA";
+	} else {
+	    mnem = "STAB";
+	}
+	sink << mnem << " 0x" << std::hex << opr8a;
+	return mnem;
+
+}
+
+staab_dir.execute = {
+
+	uint8_t val;
+	
+	if (b == 0) { val = cpu->getRegA(); } else { val = cpu->getRegB(); }
+	
+    cpu->memWrite8(opr8a, val, ADDRESS::DIRECT, false);	
+
+// CRC flags 0->V; setZ; setN
+	cpu->ccr->clrV();
+	if (val == 0) {cpu->ccr->setZ();} else {cpu->ccr->clrZ();}
+	if ((val & 0x80) == 0x80) { cpu->ccr->setN();} else { cpu->ccr->clrN(); }
+
+	return getCycles();
+}
+
+// STAA or STAB opr16a
+op staab_ext(0x3D[7]:b[1]:> <:opr16a[16])
+
+staab_ext.getCycles = { return 3; }
+
+staab_ext.disasm = {
+	string mnem;
+
+	if (b==0) {
+	    mnem = "STAA";
+	} else {
+	    mnem = "STAB";
+	}
+	sink << mnem << " 0x" << std::hex << opr16a;
+	return mnem;
+
+}
+
+staab_ext.execute = {
+
+	uint8_t	val;
+	physical_address_t addr = opr16a;
+		
+	if (b == 0) { val = cpu->getRegA(); } else { val = cpu->getRegB(); }
+    cpu->memWrite8(addr, val);
+
+// CRC flags 0->V; setZ; setN
+	cpu->ccr->clrV();
+	if (val == 0) {cpu->ccr->setZ();} else {cpu->ccr->clrZ();}
+	if ((val & 0x80) == 0x80) { cpu->ccr->setN();} else { cpu->ccr->clrN(); }
+
+	return getCycles();
+}
+
+// STAA or STAB oprx0_xysp
+// STAA or STAB oprx9,xysp
+// STAA or STAB oprx16,xysp
+// STAA or STAB [D,xysp]
+// STAA or STAB [oprx16,xysp]
+
+op staab_idx(0x35[7]:b[1]:> <:*xb[XB])
+
+staab_idx.pre_execute = {
+	
+	xb->pre_execute(sink);
+	// after: other specific actions
+}
+
+staab_idx.post_execute = {
+
+	// before: other specific actions
+	xb->post_execute(sink);
+}
+
+staab_idx.getCycles = { return XbModes::GetIDXCycles(xb->getXbMode(), 2, 3, 3, 4, 4); }
+
+staab_idx.disasm = {
+	string mnem;
+
+	if (b==0) {
+	    mnem = "STAA";
+	} else {
+	    mnem = "STAB";	
+	}
+	sink << mnem << " ";
+    xb->disasm(sink);
+    return mnem;
+
+}
+
+staab_idx.execute = {
+
+	physical_address_t addr = xb->getEAddr(cpu);
+
+	uint8_t val;
+	if (b == 0) { val = cpu->getRegA(); } else { val = cpu->getRegB(); }
+    cpu->memWrite8(addr,val);	
+
+// CRC flags 0->V; setZ; setN
+	cpu->ccr->clrV();
+	if (val == 0) {cpu->ccr->setZ();} else {cpu->ccr->clrZ();}
+	if ((val & 0x80) == 0x80) { cpu->ccr->setN();} else { cpu->ccr->clrN(); }
+
+	return getCycles();
+}
+
+// STD or STY or STX or STS opr8a
+op st_dyxs_dir(0x17[6]:dyxs[2]:opr8a[8])
+
+st_dyxs_dir.getCycles = { return 2; }
+
+st_dyxs_dir.disasm = {
+	string mnem;
+
+	switch (dyxs) {
+	case 0: mnem = "STD"; break;
+	case 1: mnem = "STY"; break;
+	case 2: mnem = "STX"; break;
+	case 3: mnem = "STS"; break;
+	}
+	
+	sink << mnem << " 0x" << std::hex << opr8a;
+	return mnem;
+}
+
+st_dyxs_dir.execute = {
+
+	uint16_t val = 0;
+		
+	switch (dyxs) {
+	case 0: val = cpu->getRegD(); break;
+	case 1: val = cpu->getRegY(); break;
+	case 2: val = cpu->getRegX(); break;
+	case 3: val = cpu->getRegSP(); break;
+	}
+	
+	cpu->memWrite16(opr8a, val, ADDRESS::DIRECT, false);
+
+// CRC flags 0->V; setZ; setN
+	cpu->ccr->clrV();
+	if (val == 0) {cpu->ccr->setZ();} else {cpu->ccr->clrZ();}
+	if ((val & 0x8000) == 0x8000) { cpu->ccr->setN();} else { cpu->ccr->clrN(); }
+
+	return getCycles();
+}
+
+// STD or STY or STX or STS opr16a
+op st_dyxs_ext(0x1F[6]:dyxs[2]:> <:opr16a[16])
+
+st_dyxs_ext.getCycles = { return 3; }
+
+st_dyxs_ext.disasm = {
+	string mnem;
+
+	switch (dyxs) {
+	case 0: mnem = "STD"; break;
+	case 1: mnem = "STY"; break;
+	case 2: mnem = "STX"; break;
+	case 3: mnem = "STS"; break;
+	}
+	
+	sink << mnem << " 0x" << std::hex << opr16a;
+	return mnem;
+
+}
+
+st_dyxs_ext.execute = {
+
+	uint16_t val = 0;
+	physical_address_t addr = opr16a;
+		
+	switch (dyxs) {
+	case 0: val = cpu->getRegD(); break;
+	case 1: val = cpu->getRegY(); break;
+	case 2: val = cpu->getRegX(); break;
+	case 3: val = cpu->getRegSP(); break;
+	}
+	
+	cpu->memWrite16(addr, val);
+
+// CRC flags 0->V; setZ; setN
+	cpu->ccr->clrV();
+	if (val == 0) {cpu->ccr->setZ();} else {cpu->ccr->clrZ();}
+	if ((val & 0x8000) == 0x8000) { cpu->ccr->setN();} else { cpu->ccr->clrN(); }
+
+	return getCycles();
+}
+
+// STD or STY or STX or STS oprx0_xysp
+// STD or STY or STX or STS oprx9,xysp
+// STD or STY or STX or STS oprx16,xysp
+// STD or STY or STX or STS [D,xysp]
+// STD or STY or STX or STS [oprx16,xysp]
+
+op st_dyxs_idx(0x1B[6]:dyxs[2]:> <:*xb[XB])
+
+st_dyxs_idx.pre_execute = {
+	
+	xb->pre_execute(sink);
+	// after: other specific actions
+}
+
+st_dyxs_idx.post_execute = {
+
+	// before: other specific actions
+	xb->post_execute(sink);
+}
+
+st_dyxs_idx.getCycles = { return XbModes::GetIDXCycles(xb->getXbMode(), 2, 3, 3, 4, 4); }
+
+st_dyxs_idx.disasm = {
+	string mnem;
+
+	switch (dyxs) {
+	case 0: mnem = "STD"; break;
+	case 1: mnem = "STY"; break;
+	case 2: mnem = "STX"; break;
+	case 3: mnem = "STS"; break;
+	}
+
+	sink << mnem << " ";
+    xb->disasm(sink);
+    return mnem;
+
+}
+
+st_dyxs_idx.execute = {
+
+	physical_address_t addr = xb->getEAddr(cpu);
+    
+	uint16_t val = 0;
+	
+	switch (dyxs) {
+	case 0: val = cpu->getRegD(); break;
+	case 1: val = cpu->getRegY(); break;
+	case 2: val = cpu->getRegX(); break;
+	case 3: val = cpu->getRegSP(); break;
+	}
+	cpu->memWrite16(addr,val);
+
+// CRC flags 0->V; setZ; setN
+	cpu->ccr->clrV();
+	if (val == 0) {cpu->ccr->setZ();} else {cpu->ccr->clrZ();}
+	if ((val & 0x8000) == 0x8000) { cpu->ccr->setN();} else { cpu->ccr->clrN(); }
+
+	return getCycles();
+}
+
+// **********  GLOBAL MEMORY MODE ***************
+
+// GLDAA or GLDAB opr8a
+op gldaab_dir(0x18[8]:> <:0b1[1]:b[1]:0x16[6]:opr8a[8] )
+
+gldaab_dir.getCycles = { return 4; }
+
+gldaab_dir.disasm = {
+	string mnem;
+	
+	if (b==0) {
+	    mnem = "GLDAA";
+	} else {
+	    mnem = "GLDAB";
+	}
+	sink << mnem << " 0x" << std::hex << opr8a;
+	return mnem;
+}
+
+gldaab_dir.execute = {
+
+	uint8_t val = cpu->memRead8(opr8a, ADDRESS::DIRECT, true);
+
+	if (b==0) {
+	    cpu->setRegA(val);
+	} else {
+	    cpu->setRegB(val);	
+	}
+// CRC flags 0->V; setZ; setN
+	cpu->ccr->clrV();
+	if (val == 0) {cpu->ccr->setZ();} else {cpu->ccr->clrZ();}
+	if ((val & 0x80) == 0x80) { cpu->ccr->setN();} else { cpu->ccr->clrN(); }
+
+	return getCycles();
+}
+
+// GLDAA or GLDAB opr16a
+op gldaab_ext(0x18[8]:0b1[1]:b[1]:0x36[6]:> <:opr16a[16] )
+
+gldaab_ext.getCycles = { return 4; }
+
+gldaab_ext.disasm = {
+	string mnem;
+	
+	if (b==0) {
+	    mnem = "GLDAA";
+	} else {
+	    mnem = "GLDAB";
+	}
+	sink << mnem << " 0x" << std::hex << opr16a; 
+	return mnem;
+}
+
+gldaab_ext.execute = {
+
+	uint8_t val = cpu->memRead8(opr16a, ADDRESS::EXTENDED, true); 
+	
+	if (b==0) {
+	    cpu->setRegA(val);
+	} else {
+	    cpu->setRegB(val);
+	}
+// CRC flags 0->V; setZ; setN
+	cpu->ccr->clrV();
+	if (val == 0) {cpu->ccr->setZ();} else {cpu->ccr->clrZ();}
+	if ((val & 0x80) == 0x80) { cpu->ccr->setN();} else { cpu->ccr->clrN(); }
+
+	return getCycles();
+}
+
+// GLDAA or GLDAB oprx0_xysp
+// GLDAA or GLDAB oprx9,xysp
+// GLDAA or GLDAB oprx16,xysp
+// GLDAA or GLDAB [D,xysp]
+// GLDAA or GLDAB [oprx16,xysp]
+op gldaab_idx(0x18[8]:0b1[1]:b[1]:0x26[6]:> <:*xb[XB]) 
+
+gldaab_idx.pre_execute = {
+	
+	xb->pre_execute(sink);
+	// after: other specific actions
+}
+
+gldaab_idx.post_execute = {
+
+	// before: other specific actions
+	xb->post_execute(sink);
+}
+
+gldaab_idx.getCycles = { return XbModes::GetIDXCycles(xb->getXbMode(), 4, 4, 5, 7, 7); }
+
+gldaab_idx.disasm = {
+	string mnem;
+	
+	if (b==0) {
+	    mnem = "GLDAA";
+	} else {
+	    mnem = "GLDAB";
+	}
+	sink << mnem << " ";
+    xb->disasm(sink);
+    return mnem;
+}
+
+gldaab_idx.execute = {
+    
+	uint8_t		val = cpu->memRead8(xb->getEAddr(cpu), ADDRESS::EXTENDED, true);     
+	
+	if (b==0) {
+	    cpu->setRegA(val);
+	} else {
+	    cpu->setRegB(val);	
+	}
+// CRC flags 0->V; setZ; setN
+	cpu->ccr->clrV();
+	if (val == 0) {cpu->ccr->setZ();} else {cpu->ccr->clrZ();}
+	if ((val & 0x80) == 0x80) { cpu->ccr->setN();} else { cpu->ccr->clrN(); }
+
+	return getCycles();
+}
+
+// GLDD or GLDY or GLDX or GLDS opr8a
+op gld_dyxs_dir(0x18[8]:> <:0x37[6]:dyxs[2]:opr8a[8])
+
+gld_dyxs_dir.getCycles = { return 4; }
+
+gld_dyxs_dir.disasm = {
+	string mnem;
+
+	switch (dyxs) {
+	case 0: mnem = "GLDD"; break;
+	case 1: mnem = "GLDY"; break;
+	case 2: mnem = "GLDX"; break;
+	case 3: mnem = "GLDS"; break;
+	}
+	sink << mnem << " 0x" << std::hex << opr8a;
+	return mnem;
+}
+
+gld_dyxs_dir.execute = {
+
+	uint16_t val = cpu->memRead16(opr8a, ADDRESS::DIRECT, true);
+	
+	switch (dyxs) {
+	case 0: cpu->setRegD(val); break;
+	case 1: cpu->setRegY(val); break;
+	case 2: cpu->setRegX(val); break;
+	case 3: cpu->setRegSP(val); break;
+	}
+// CRC flags 0->V; setZ; setN
+	cpu->ccr->clrV();
+	if (val == 0) {cpu->ccr->setZ();} else {cpu->ccr->clrZ();}
+	if ((val & 0x8000) == 0x8000) { cpu->ccr->setN();} else { cpu->ccr->clrN(); }
+
+	return getCycles();
+}
+
+// GLDD or GLDY or GLDX or GLDS opr16a
+op gld_dyxs_ext(0x18[8]:0x3F[6]:dyxs[2]:> <:opr16a[16])
+
+gld_dyxs_ext.getCycles = { return 4; }
+
+gld_dyxs_ext.disasm = {
+	string mnem;
+
+	switch (dyxs) {
+	case 0: mnem = "GLDD"; break;
+	case 1: mnem = "GLDY"; break;
+	case 2: mnem = "GLDX"; break;
+	case 3: mnem = "GLDS"; break;
+	}
+
+	sink << mnem << " 0x" << std::hex << opr16a;
+	return mnem;
+}
+
+gld_dyxs_ext.execute = {
+	
+	uint16_t val = cpu->memRead16(opr16a, ADDRESS::EXTENDED, true);
+	
+	switch (dyxs) {
+	case 0: cpu->setRegD(val); break;
+	case 1: cpu->setRegY(val); break;
+	case 2: cpu->setRegX(val); break;
+	case 3: cpu->setRegSP(val); break;
+	}
+// CRC flags 0->V; setZ; setN
+	cpu->ccr->clrV();
+	if (val == 0) {cpu->ccr->setZ();} else {cpu->ccr->clrZ();}
+	if ((val & 0x8000) == 0x8000) { cpu->ccr->setN();} else { cpu->ccr->clrN(); }
+
+	return getCycles();
+}
+
+// GLDD or GLDY or GLDX or GLDS oprx0_xysp
+// GLDD or GLDY or GLDX or GLDS oprx9,xysp
+// GLDD or GLDY or GLDX or GLDS oprx16,xysp
+// GLDD or GLDY or GLDX or GLDS [D,xysp]
+// GLDD or GLDY or GLDX or GLDS [oprx16,xysp]
+op gld_dyxs_idx(0x18[8]:0x3B[6]:dyxs[2]:> <:*xb[XB]) 
+
+gld_dyxs_idx.pre_execute = {
+	
+	xb->pre_execute(sink);
+	// after: other specific actions
+}
+
+gld_dyxs_idx.post_execute = {
+
+	// before: other specific actions
+	xb->post_execute(sink);
+}
+
+gld_dyxs_idx.getCycles = { return XbModes::GetIDXCycles(xb->getXbMode(), 4, 4, 5, 7, 7); }
+
+gld_dyxs_idx.disasm = {
+	string mnem;
+
+	switch (dyxs) {
+	case 0: mnem = "GLDD"; break;
+	case 1: mnem = "GLDY"; break;
+	case 2: mnem = "GLDX"; break;
+	case 3: mnem = "GLDS"; break;
+	}
+
+	sink << mnem << " ";
+    xb->disasm(sink);
+    return mnem;
+}
+
+gld_dyxs_idx.execute = {
+    
+	uint16_t	val = cpu->memRead16(xb->getEAddr(cpu), ADDRESS::EXTENDED, true);     
+
+	switch (dyxs) {
+	case 0: cpu->setRegD(val); break;
+	case 1: cpu->setRegY(val); break;
+	case 2: cpu->setRegX(val); break;
+	case 3: cpu->setRegSP(val); break;
+	}
+// CRC flags 0->V; setZ; setN
+	cpu->ccr->clrV();
+	if (val == 0) {cpu->ccr->setZ();} else {cpu->ccr->clrZ();}
+	if ((val & 0x8000) == 0x8000) { cpu->ccr->setN();} else { cpu->ccr->clrN(); }
+
+	return getCycles();
+}
+
+// GSTAA or GSTAB opr8a
+op gstaab_dir(0x18[8]:> <:0x2D[7]:b[1]:opr8a[8])
+
+gstaab_dir.getCycles = { return 3; }
+
+gstaab_dir.disasm = {
+	string mnem;
+
+	if (b==0) {
+	    mnem = "GSTAA";
+	} else {
+	    mnem = "GSTAB";
+	}
+	sink << mnem << " 0x" << std::hex << opr8a;
+	return mnem;
+
+}
+
+gstaab_dir.execute = {
+
+	uint8_t val;
+	
+	if (b == 0) { val = cpu->getRegA(); } else { val = cpu->getRegB(); }
+	
+    cpu->memWrite8(opr8a, val, ADDRESS::DIRECT, true);	
+
+// CRC flags 0->V; setZ; setN
+	cpu->ccr->clrV();
+	if (val == 0) {cpu->ccr->setZ();} else {cpu->ccr->clrZ();}
+	if ((val & 0x80) == 0x80) { cpu->ccr->setN();} else { cpu->ccr->clrN(); }
+
+	return getCycles();
+}
+
+// GSTAA or GSTAB opr16a
+op gstaab_ext(0x18[8]:0x3D[7]:b[1]:> <:opr16a[16])
+
+gstaab_ext.getCycles = { return 4; }
+
+gstaab_ext.disasm = {
+	string mnem;
+
+	if (b==0) {
+	    mnem = "GSTAA";
+	} else {
+	    mnem = "GSTAB";
+	}
+	sink << mnem << " 0x" << std::hex << opr16a;
+	return mnem;
+
+}
+
+gstaab_ext.execute = {
+
+	uint8_t	val;
+		
+	if (b == 0) { val = cpu->getRegA(); } else { val = cpu->getRegB(); }
+	
+    cpu->memWrite8(opr16a, val, ADDRESS::EXTENDED, true);
+
+// CRC flags 0->V; setZ; setN
+	cpu->ccr->clrV();
+	if (val == 0) {cpu->ccr->setZ();} else {cpu->ccr->clrZ();}
+	if ((val & 0x80) == 0x80) { cpu->ccr->setN();} else { cpu->ccr->clrN(); }
+
+	return getCycles();
+}
+
+// GSTAA or GSTAB oprx0_xysp
+// GSTAA or GSTAB oprx9,xysp
+// GSTAA or GSTAB oprx16,xysp
+// GSTAA or GSTAB [D,xysp]
+// GSTAA or GSTAB [oprx16,xysp]
+
+op gstaab_idx(0x18[8]:0x35[7]:b[1]:> <:*xb[XB])
+
+gstaab_idx.pre_execute = {
+	
+	xb->pre_execute(sink);
+	// after: other specific actions
+}
+
+gstaab_idx.post_execute = {
+
+	// before: other specific actions
+	xb->post_execute(sink);
+}
+
+gstaab_idx.getCycles = { return XbModes::GetIDXCycles(xb->getXbMode(), 3, 4, 4, 5, 5); }
+
+gstaab_idx.disasm = {
+	string mnem;
+
+	if (b==0) {
+	    mnem = "GSTAA";
+	} else {
+	    mnem = "GSTAB";
+	}
+	sink << mnem << " ";
+    xb->disasm(sink);
+    return mnem;
+
+}
+
+gstaab_idx.execute = {
+
+	uint8_t val;
+
+	if (b == 0) { val = cpu->getRegA(); } else { val = cpu->getRegB(); }
+	
+    cpu->memWrite8(xb->getEAddr(cpu),val, ADDRESS::EXTENDED, true);	
+
+// CRC flags 0->V; setZ; setN
+	cpu->ccr->clrV();
+	if (val == 0) {cpu->ccr->setZ();} else {cpu->ccr->clrZ();}
+	if ((val & 0x80) == 0x80) { cpu->ccr->setN();} else { cpu->ccr->clrN(); }
+
+	return getCycles();
+}
+
+// GSTD or GSTY or GSTX or GSTS opr8a
+op gst_dyxs_dir(0x18[8]:> <:0x17[6]:dyxs[2]:opr8a[8])
+
+gst_dyxs_dir.getCycles = { return 3; }
+
+gst_dyxs_dir.disasm = {
+	string mnem;
+
+	switch (dyxs) {
+	case 0: mnem = "GSTD"; break;
+	case 1: mnem = "GSTY"; break;
+	case 2: mnem = "GSTX"; break;
+	case 3: mnem = "GSTS"; break;
+	}
+	
+	sink << mnem << " 0x" << std::hex << opr8a;
+	return mnem;
+}
+
+gst_dyxs_dir.execute = {
+
+	uint16_t val = 0;
+		
+	switch (dyxs) {
+	case 0: val = cpu->getRegD(); break;
+	case 1: val = cpu->getRegY(); break;
+	case 2: val = cpu->getRegX(); break;
+	case 3: val = cpu->getRegSP(); break;
+	}
+	
+	cpu->memWrite16(opr8a, val, ADDRESS::DIRECT, true);
+
+// CRC flags 0->V; setZ; setN
+	cpu->ccr->clrV();
+	if (val == 0) {cpu->ccr->setZ();} else {cpu->ccr->clrZ();}
+	if ((val & 0x8000) == 0x8000) { cpu->ccr->setN();} else { cpu->ccr->clrN(); }
+
+	return getCycles();
+}
+
+// GSTD or GSTY or GSTX or GSTS opr16a
+op gst_dyxs_ext(0x18[8]:0x1F[6]:dyxs[2]:> <:opr16a[16])
+
+gst_dyxs_ext.getCycles = { return 4; }
+
+gst_dyxs_ext.disasm = {
+	string mnem;
+
+	switch (dyxs) {
+	case 0: mnem = "GSTD"; break;
+	case 1: mnem = "GSTY"; break;
+	case 2: mnem = "GSTX"; break;
+	case 3: mnem = "GSTS"; break;
+	}
+	
+	sink << mnem << " 0x" << std::hex << opr16a;
+	return mnem;
+
+}
+
+gst_dyxs_ext.execute = {
+
+	uint16_t val = 0;
+		
+	switch (dyxs) {
+	case 0: val = cpu->getRegD(); break;
+	case 1: val = cpu->getRegY(); break;
+	case 2: val = cpu->getRegX(); break;
+	case 3: val = cpu->getRegSP(); break;
+	}
+	
+	cpu->memWrite16(opr16a, val, ADDRESS::EXTENDED, true);
+
+// CRC flags 0->V; setZ; setN
+	cpu->ccr->clrV();
+	if (val == 0) {cpu->ccr->setZ();} else {cpu->ccr->clrZ();}
+	if ((val & 0x8000) == 0x8000) { cpu->ccr->setN();} else { cpu->ccr->clrN(); }
+
+	return getCycles();
+}
+
+// GSTD or GSTY or GSTX or GSTS oprx0_xysp
+// GSTD or GSTY or GSTX or GSTS oprx9,xysp
+// GSTD or GSTY or GSTX or GSTS oprx16,xysp
+// GSTD or GSTY or GSTX or GSTS [D,xysp]
+// GSTD or GSTY or GSTX or GSTS [oprx16,xysp]
+
+op gst_dyxs_idx(0x18[8]:0x1B[6]:dyxs[2]:> <:*xb[XB])
+
+gst_dyxs_idx.pre_execute = {
+	
+	xb->pre_execute(sink);
+	// after: other specific actions
+}
+
+gst_dyxs_idx.post_execute = {
+
+	// before: other specific actions
+	xb->post_execute(sink);
+}
+
+gst_dyxs_idx.getCycles = { return XbModes::GetIDXCycles(xb->getXbMode(), 3, 4, 4, 5, 5); }
+
+gst_dyxs_idx.disasm = {
+	string mnem;
+
+	switch (dyxs) {
+	case 0: mnem = "GSTD"; break;
+	case 1: mnem = "GSTY"; break;
+	case 2: mnem = "GSTX"; break;
+	case 3: mnem = "GSTS"; break;
+	}
+
+	sink << mnem << " ";
+    xb->disasm(sink);
+    return mnem;
+
+}
+
+gst_dyxs_idx.execute = {
+
+	uint16_t val = 0;
+	
+	switch (dyxs) {
+	case 0: val = cpu->getRegD(); break;
+	case 1: val = cpu->getRegY(); break;
+	case 2: val = cpu->getRegX(); break;
+	case 3: val = cpu->getRegSP(); break;
+	}
+	cpu->memWrite16(xb->getEAddr(cpu), val, ADDRESS::EXTENDED, true);
+
+// CRC flags 0->V; setZ; setN
+	cpu->ccr->clrV();
+	if (val == 0) {cpu->ccr->setZ();} else {cpu->ccr->clrZ();}
+	if ((val & 0x8000) == 0x8000) { cpu->ccr->setN();} else { cpu->ccr->clrN(); }
+
+	return getCycles();
+}
+

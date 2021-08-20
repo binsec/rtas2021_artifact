@@ -1,0 +1,44 @@
+                                  UNISIM
+
+    Simulation is a solution to the test needs of both microprocessors and software 
+running on microprocessors. A silicon implementation of these microprocessors is
+usually not available before the end of the architecture design flow, essentially
+for cost reasons. The sooner these simulation models are available, the sooner the
+compilers, the operating system and the applications can be designed while meeting
+a good integration with the architecture.
+    Actually, simulation is the core of research in micro-architecture since it
+allows evaluating new techniques in various contexts, and gives a better understanding
+of their properties. Simulation is also a convenient technique to debug software
+where a hardware prototype is not yet available. The capabilities of simulation
+platforms to inject faults into the simulated system and to easily observe the
+system behavior are also useful during hardware and software integration process.
+    Since a couple of years, SystemC has emerged as a defacto standard for simulating
+systems on chip (SoC) and embedded processors. The main assets of SystemC are the
+modular structure of simulators which facilitates components reuse and sharing,
+its ability to combine cycle level and transactional level modeling, and now its
+large use by the community.
+
+UNISIM is a joint open source initiative of CEA List, INRIA Futurs and Princeton
+University to develop a complete simulation environment based on SystemC. Other
+institutions have also participated: Brigham Young University, Universitat Politecnica
+de Catalunya, Barcelona Supercomputing Center, Ghent University, University of 
+Perpignan, ARM and ST Microelectronics.
+
+UNISIM brings:
+  (1) A methodology for developing the hardware models;
+  (2) A library of hardware models;
+  (3) Several tools to facilitate hardware model development/debugging/exploitation.
+
+It is freely available on the web at http://www.unisim.org and through subversion
+at https://www.unisim.org/svn (use "guest" as login and no password).
+
+UNISIM softwares are composed of three main packages:
+- UNISIM Tools (located in sub-directory unisim_tools)
+- UNISIM Library (located in sub-directory unisim_lib)
+- UNISIM Simulators (located in sub-directory unisim_simulators)
+And an optional package for unit module tests:
+- UNISIM Tests (located in sub-directory unisim_tests)
+
+See file README in each subdirectory for information on a particular package of UNISIM
+See file COPYING of each package for license information.
+For installation instructions, please read file INSTALL

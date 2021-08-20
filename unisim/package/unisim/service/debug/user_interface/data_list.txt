@@ -1,0 +1,8 @@
+unisim/service/debug/user_interface/icon_cont.svg
+unisim/service/debug/user_interface/icon_halt.svg
+unisim/service/debug/user_interface/icon_intr.svg
+unisim/service/debug/user_interface/icon_stepi.svg
+unisim/service/debug/user_interface/icon_step.svg
+unisim/service/debug/user_interface/status_style.css
+unisim/service/debug/user_interface/style.css
+unisim/service/debug/user_interface/script.js

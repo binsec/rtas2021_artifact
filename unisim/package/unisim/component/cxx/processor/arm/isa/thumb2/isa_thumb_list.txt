@@ -1,0 +1,14 @@
+unisim/component/cxx/processor/arm/isa/thumb2/branch.isa
+unisim/component/cxx/processor/arm/isa/thumb2/coprocessor.isa
+unisim/component/cxx/processor/arm/isa/thumb2/data_processing.isa
+unisim/component/cxx/processor/arm/isa/thumb2/exception.isa
+unisim/component/cxx/processor/arm/isa/thumb2/hints.isa
+unisim/component/cxx/processor/arm/isa/thumb2/load_store.isa
+unisim/component/cxx/processor/arm/isa/thumb2/misc_arithmetic.isa
+unisim/component/cxx/processor/arm/isa/thumb2/multiply.isa
+unisim/component/cxx/processor/arm/isa/thumb2/neon.isa
+unisim/component/cxx/processor/arm/isa/thumb2/ordering.isa
+unisim/component/cxx/processor/arm/isa/thumb2/status_register_access.isa
+unisim/component/cxx/processor/arm/isa/thumb2/thumb.isa
+unisim/component/cxx/processor/arm/isa/thumb2/vfp.isa
+unisim/component/cxx/processor/arm/isa/thumb2/xscale.isa

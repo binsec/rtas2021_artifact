@@ -1,0 +1,505 @@
+/*
+ *  Copyright (c) 2008,
+ *  Commissariat a l'Energie Atomique (CEA)
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without modification,
+ *  are permitted provided that the following conditions are met:
+ *
+ *   - Redistributions of source code must retain the above copyright notice, this
+ *     list of conditions and the following disclaimer.
+ *
+ *   - Redistributions in binary form must reproduce the above copyright notice,
+ *     this list of conditions and the following disclaimer in the documentation
+ *     and/or other materials provided with the distribution.
+ *
+ *   - Neither the name of CEA nor the names of its contributors may be used to
+ *     endorse or promote products derived from this software without specific prior
+ *     written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ *  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *  DISCLAIMED.
+ *  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ *  INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ *  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+ *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ *  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Authors: Reda   Nouacer  (reda.nouacer@cea.fr)
+ */
+
+
+// MEM: Membership function
+op mem(0x01[8])
+
+mem.getCycles = { return 5; }
+
+mem.disasm = {
+	string mnem = "MEM";
+	
+	sink << mnem;
+	
+	return mnem;
+}
+
+mem.execute = {
+	// The final state of CCR flags is not defined
+	
+/*
+
+Operation
+---------
+Grade of Membership ⇒ M(Y)
+(Y) + 0x0001 ⇒ Y
+(X) + 0x0004 ⇒ X
+
+Description
+-----------
+Before executing MEM, initialize A, X, and Y. Load A with the current crisp value of a system input
+variable. Load Y with the fuzzy input RAM location where the grade of membership is to be stored.
+Load X with the first address of a 4-byte data structure that describes a trapezoidal membership
+function. The data structure consists of:
+• Point_1 — The x-axis starting point for the leading side (at MX)
+• Point_2 — The x-axis position of the rightmost point (at MX+1)
+• Slope_1 — The slope of the leading side (at MX+2)
+• Slope_2—The slope of the trailing side (atMX+3); the right side slopes up and to the left from
+Point_2
+A Slope_1 or Slope_2 value of 0x00 is a special case in which the membership function either starts
+with a grade of 0xFF at input = Point_1, or ends with a grade of 0xFF at input = Point_2 (infinite slope).
+During execution, the value of A remains unchanged. X is incremented by four and Y is incremented
+by one.
+	
+*/
+
+// Grade of Membership (gm(A)) ⇒ M(Y)
+
+	uint8_t p1, p2;
+
+	uint8_t aVal = cpu->getRegA();
+	uint16_t xVal = cpu->getRegX();
+	uint16_t yVal = cpu->getRegY();
+
+	p1 = cpu->memRead8(xVal);
+	p2 = cpu->memRead8(xVal+1);
+	
+	if ((aVal < p1) or (aVal > p2)) {
+		cpu->memWrite8(yVal, 0);
+	} else {
+		uint8_t s1, s2, min1, min2;
+
+		
+		s1 = cpu->memRead8(xVal+2);
+		s2 = cpu->memRead8(xVal+3);
+		
+		min1 = (aVal - p1) * s1;
+		min2 = (p2 - aVal) * s2;
+		if (min1 < min2) {
+			cpu->memWrite8(yVal, min1);
+		} else {
+			cpu->memWrite8(yVal, min2);		
+		} 
+	}
+
+// (Y) + 0x0001 ⇒ Y
+	cpu->setRegY(yVal + 1);
+
+// (X) + 0x0004 ⇒ X
+	cpu->setRegX(xVal + 4);
+
+	return getCycles();
+}
+
+// REV: (8bits) MIN-MAX rule evaluation
+// this instruction can be interrupted.
+op rev(0x18[8]:0x3A[8])
+
+rev.getCycles = { return 0; /* TODO: take in account the fact that it may be interrupted */}
+
+rev.disasm = {
+	string mnem = "REV";
+	
+	sink << mnem;
+	
+	return mnem;
+}
+
+// *** INTERRUPTIBLE ***
+rev.execute = {
+	/* The V flag is affected by operation. 
+	 * The final state for the others CCR flags is not defined.
+	 */
+	 
+	 uint8_t aVal = 0xFF, ccrV = 0, memX, memYX;
+	 uint16_t  xVal, yVal;
+	 
+	 xVal = cpu->getRegX();
+	 yVal = cpu->getRegY();
+	 
+	 memX = cpu->memRead8(xVal);
+	 while (memX != 0xFF) {
+	 	
+	 	ccrV = 0; 
+	 	aVal = 0xFF; 
+	 	while ((memX != 0xFE) && (memX != 0xFF)) {
+	 		memYX = cpu->memRead8(yVal+memX);
+	 		if (memYX < aVal) {
+	 			aVal = memYX; 
+	 		}
+	 		xVal++; 
+	 		memX = cpu->memRead8(xVal);
+	 	}
+	 	
+	 	if (memX != 0xFF) {
+	 		
+	 		ccrV = 1; 
+	 		xVal++;  
+	 		memX = cpu->memRead8(xVal);
+	 		while ((memX != 0xFE) && (memX != 0xFF)) {
+	 			memYX = cpu->memRead8(yVal+memX);
+	 			if (aVal > memYX) {
+	 				cpu->memWrite8(yVal+memX, aVal);
+	 			}
+	 			xVal++; 
+	 			memX = cpu->memRead8(xVal);
+	 		}
+	 		
+	 		if (memX != 0xFF) {
+	 			xVal++;  
+	 			memX = cpu->memRead8(xVal);
+	 		}
+	 	}
+	 	
+	 	// check asynchronous interruptions
+	 	if (cpu->hasAsynchronousInterrupt())
+		{
+			throw AsynchronousException();
+		}
+	 	
+	 }
+	 
+	 xVal++;  
+	 
+	 cpu->setRegA(aVal);
+	 cpu->setRegX(xVal);
+	 cpu->setRegY(yVal);
+	 if (ccrV) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+
+	return getCycles();
+}
+
+// REVW: (16bits) MIN-MAX rule evaluation
+// this instruction can be interrupted.
+op revw(0x18[8]:0x3B[8])
+
+revw.getCycles = { return 0; /* TODO: take in account the fact that it may be interrupted */}
+
+revw.disasm = {
+	string mnem = "REVW";
+	
+	sink << mnem;
+	
+	return mnem;
+}
+
+// *** INTERRUPTIBLE ***
+revw.execute = {
+	/* The V flag is affected by operation. 
+	 * The C flag is used for special purpose.
+	 * The final state for the others CCR flags is not defined.
+	 */
+
+	 uint8_t aVal = 0xFF, ccrV = 0, ccrC, memOfMemX, memY;
+	 uint16_t memX, xVal, yVal;
+	 
+	 xVal = cpu->getRegX();
+	 yVal = cpu->getRegY(); cpu->setRegTMP(1, yVal);  // (Y) weight pointer kept in TMP2
+	 ccrC = cpu->ccr->getC();
+
+	 memX = cpu->memRead16(xVal);
+	 while (memX != 0xFFFF) {
+	 	
+	 	ccrV = 0;  
+	 	aVal = 0xFF;  
+	 	while ((memX != 0xFFFE) && (memX != 0xFFFF)) {
+	 		memOfMemX = cpu->memRead8(memX);
+	 		if (memOfMemX < aVal) {
+	 			aVal = memOfMemX; 
+	 		}
+	 		xVal++;  
+	 		memX = cpu->memRead16(xVal);
+	 	}
+	 	
+	 	if (memX != 0xFFFF) {
+			// *** Apply weight	***
+			if (ccrC == 1) {
+				memY = cpu->memRead8(yVal);
+				aVal = (uint8_t) ((uint16_t) aVal * (memY+1)) >> 8;  // cpu->setRegA(aVal);
+				yVal++;  cpu->setRegTMP(1, yVal); // cpu->setRegY(yVal);
+			}
+			
+	 		ccrV = 1; 
+	 		xVal++;  
+	 		memX = cpu->memRead16(xVal);
+	 		while ((memX != 0xFFFE) && (memX != 0xFFFF)) {
+	 			memOfMemX = cpu->memRead16(memX);
+	 			if (aVal > memOfMemX) {
+	 				cpu->memWrite8(memX, aVal);
+	 			}
+	 			xVal++;  
+		 		memX = cpu->memRead16(xVal);
+	 		}
+	 		
+	 		if (memX != 0xFFFF) {
+	 			xVal++;  
+	 			memX = cpu->memRead16(xVal);
+	 		}
+	 	}
+	 
+	  	// check asynchronous interruptions
+	 	if (cpu->hasAsynchronousInterrupt())
+		{
+			throw AsynchronousException();
+		}
+	 
+	 }
+	 
+	 xVal++;  
+	 
+	 cpu->setRegA(aVal);
+	 cpu->setRegX(xVal);
+	 cpu->setRegY(yVal);
+	 if (ccrV) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+
+	return getCycles();
+}
+
+// WAV: Weighted Average Calculation
+/*
+This instruction can be interrupted. 
+New WAV instructions can be started and interrupted while a previous WAV instruction is interrupted
+*/
+
+op wav(0x18[8]:0x3C[8])
+
+wav.getCycles = { return 0; /* TODO: take in account the fact that it may be interrupted */}
+
+wav.disasm = {
+	string mnem = "WAV";
+	
+	sink << mnem;
+	
+	return mnem;
+}
+
+// *** INTERRUPTIBLE ***
+wav.execute = {
+	/* The Z flag is affected by operation. 
+	 * The final state for the others CCR flags is not defined.
+	 */
+	 
+	 /*
+	  * Do until B = 0, leave SOP in Y : D, SOW in X
+	  *   Partial Product = (M pointed to by X) × (M pointed to by Y)
+	  *   Sum-of-Products (24-bit SOP) = Previous SOP + Partial Product
+	  *   Sum-of-Weights (16-bit SOW) = Previous SOW + (M pointed to by Y)
+	  *   (X) + 0x0001 ⇒ X; (Y) + 0x0001 ⇒ Y
+	  *   (B) – 0x01 ⇒ B
+	  **/
+	 
+	 uint8_t bVal, memX, memY;
+	 uint16_t xVal, yVal;
+	 uint32_t sop;
+	 uint16_t pp, sow;
+	 
+	 bVal = cpu->getRegB();
+	 xVal = cpu->getRegX();
+	 yVal = cpu->getRegY();
+	 sop = 0;
+	 sow = 0;
+	 cpu->setRegTMP(0, 0x0000);
+	 cpu->setRegTMP(1, 0x0000);
+	 cpu->setRegTMP(2, 0x0000);
+	 
+	 while (bVal > 0) {
+		
+		/** TODO: WAV is interruptible only at this point and not after.
+		 * if (InterruptPending)
+		 * {
+		 *   Write word @ -2,SP (stack TMP3); SP = SP - 2;
+		 *   Write word @ -2,SP (stack TMP2); SP = SP - 2;
+		 *   Write word @ -2,SP (stack TMP1); SP = SP - 2;
+		 *   Adjust PC to point at 0x3C wavr pseudo-opcode (The second byte of WAV opcode).
+		 * }
+		 **/
+
+	 	// check asynchronous interruptions
+	 	if (cpu->hasAsynchronousInterrupt())
+		{
+			cpu->setRegSP(cpu->getRegSP()-2);
+			cpu->memWrite16(cpu->getRegSP(), cpu->getRegTMP(2));
+			cpu->setRegSP(cpu->getRegSP()-2);
+			cpu->memWrite16(cpu->getRegSP(), cpu->getRegTMP(1));
+			cpu->setRegSP(cpu->getRegSP()-2);
+			cpu->memWrite16(cpu->getRegSP(), cpu->getRegTMP(0));
+			
+			//   Adjust PC to point at 0x3C wavr pseudo-opcode
+			cpu->setRegPC(cpu->getRegPC()-1); 
+
+			throw AsynchronousException();
+					 
+		}
+
+
+	 	memY = cpu->memRead8(yVal);
+		memX = cpu->memRead8(xVal);
+		
+	 	pp = memX * memY;
+	 	sop += pp;
+		cpu->setRegTMP(2, (uint16_t) (sop >> 16));
+		cpu->setRegTMP(1, (uint16_t) sop);
+
+	 	sow += memY;
+		cpu->setRegTMP(0, sow);
+		
+	 	xVal++;   
+	 	yVal++;   
+	 	bVal--;   
+	 	
+	 }
+	 
+	 cpu->setRegB(bVal);
+	 cpu->setRegY(cpu->getRegTMP(2));
+	 cpu->setRegD(cpu->getRegTMP(1));
+	 cpu->setRegX(cpu->getRegTMP(0));
+	 	 
+	 cpu->ccr->setZ();
+
+	return getCycles();
+}
+
+// WAVR pseudo instruction: Resume execution of interrupted WAV instruction
+op wavr(0x3C[8])
+
+wavr.getCycles = { return 0; /* TODO: linked to WAV instruction */}
+
+wavr.disasm = {
+	string mnem = "WAVR";
+	
+	sink << mnem;
+	
+	return mnem;
+}
+
+wavr.execute = {
+	/* The Z flag is affected by operation. 
+	 * The final state for the others CCR flags is not defined.
+	 */
+
+	uint16_t sp = cpu->getRegSP();
+	cpu->setRegTMP(0, cpu->memRead16(sp));
+	cpu->setRegTMP(1, cpu->memRead16(sp+2));
+	cpu->setRegTMP(2, cpu->memRead16(sp+4));
+	cpu->setRegSP(sp+6);
+	
+	if ((cpu->getRegTMP(0) == 0) || 
+		(cpu->getRegTMP(1) == 0) || 
+		(cpu->getRegTMP(2) == 0)) 
+	{
+		cpu->ccr->setZ();
+	} else {
+		cpu->ccr->clrZ();
+	}
+
+	return getCycles();
+}
+
+/* ********  TABLE INTERPOLATION Instructions ********* */
+
+// TBL: 8-bit Table lookup and Interpolate
+op tbl(0x18[8]:0x3D[8]:> <:*xb[XB])
+
+tbl.getCycles = { return 6; }
+
+tbl.disasm = {
+	string mnem = "TBL";
+	
+	sink << mnem << " ";
+	xb->disasm(sink);
+	
+	return mnem;
+}
+
+tbl.execute = {
+/*
+ Operation: (M) + [(B) * ((M+1) - (M))] => A
+ The intermediate value [(B) * (Y2 - Y1)] produces a 16-bit result 
+ with the radix point between bits 7 and 8.
+ 
+ N: Set if MSB of result is set; cleared otherwise
+ Z: Set if result is 0x00; cleared otherwise
+ C: Set if result can be rounded up; cleared otherwise
+*/
+
+	physical_address_t addr = xb->getEAddr(cpu);
+
+	uint8_t bVal = cpu->getRegB();
+	uint8_t mVal = cpu->memRead8(addr);
+	uint8_t m1Val = cpu->memRead8(addr+1);
+	
+	uint16_t result = (uint16_t) mVal + (bVal * (m1Val - mVal));
+	uint8_t msBits = (uint8_t) (result >> 8);
+	uint8_t lowBits = (uint8_t) result;
+	
+	cpu->setRegA(msBits);
+	if ((msBits & 0x80) == 0x80) { cpu->ccr->setN(); } else { cpu->ccr->clrN();}
+	if (msBits == 0x00) { cpu->ccr->setZ(); } else { cpu->ccr->clrZ();}	
+	if (lowBits > 0x7F) { cpu->ccr->setC(); } else { cpu->ccr->clrC();}	
+
+	return getCycles();
+}
+
+
+// ETBL: 16-bit Table lookup and Interpolate
+op etlb(0x18[8]:0x3F[8]:> <:*xb[XB])
+
+etlb.getCycles = { return 10; }
+
+etlb.disasm = {
+	string mnem = "ETBL";
+	
+	sink << mnem << " ";
+	xb->disasm(sink);
+	
+	return mnem;
+}
+
+etlb.execute = {
+/*
+Operation: D = M + [(B) * ((M+2) - (M))]
+The intermediate value [(B) * ((M+2) - (M))] produces a 24-bit result 
+with the radix point between bits 7 and 8.
+*/
+
+	physical_address_t addr = xb->getEAddr(cpu);
+
+	uint8_t bVal = cpu->getRegB();
+	uint16_t mVal = cpu->memRead16(addr);
+	uint16_t m1Val = cpu->memRead16(addr+2);
+	
+	uint32_t result = (uint32_t) mVal + (bVal * (m1Val - mVal));
+	uint16_t msBits = (uint16_t) (result >> 8);
+	uint8_t lowBits = (uint8_t) result;
+	
+	cpu->setRegD(msBits);
+	if ((msBits & 0x8000) == 0x8000) { cpu->ccr->setN(); } else { cpu->ccr->clrN();}
+	if (result == 0x0000) { cpu->ccr->setZ(); } else { cpu->ccr->clrZ();}	
+	if (lowBits > 0x7F) { cpu->ccr->setC(); } else { cpu->ccr->clrC();}	
+
+	return getCycles();
+}
+
+

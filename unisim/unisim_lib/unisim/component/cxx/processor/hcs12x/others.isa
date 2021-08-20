@@ -1,0 +1,365 @@
+/*
+ *  Copyright (c) 2008,
+ *  Commissariat a l'Energie Atomique (CEA)
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without modification,
+ *  are permitted provided that the following conditions are met:
+ *
+ *   - Redistributions of source code must retain the above copyright notice, this
+ *     list of conditions and the following disclaimer.
+ *
+ *   - Redistributions in binary form must reproduce the above copyright notice,
+ *     this list of conditions and the following disclaimer in the documentation
+ *     and/or other materials provided with the distribution.
+ *
+ *   - Neither the name of CEA nor the names of its contributors may be used to
+ *     endorse or promote products derived from this software without specific prior
+ *     written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ *  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *  DISCLAIMED.
+ *  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ *  INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ *  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+ *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ *  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Authors: Reda   Nouacer  (reda.nouacer@cea.fr)
+ */
+
+
+// NOP:
+op nop(0xA7[8])
+
+nop.getCycles = { return 1; }
+
+nop.disasm = {
+	string mnem = "NOP";
+	
+	sink << mnem;	
+	return mnem;
+}
+
+nop.execute = {
+	// This single-byte instruction increments the PC and does nothing else.
+
+	return getCycles();
+}
+
+// STOP:
+op stop(0x18[8]:0x3E[8])
+
+stop.var stopDisabled : { bool } = { false }
+
+stop.getCycles = { if (stopDisabled) return 2; else return 16; }
+
+stop.disasm = {
+	string mnem = "STOP";
+	
+	sink << mnem;
+	return mnem;
+}
+
+stop.execute = {
+	
+	if (cpu->ccr->getS() == 1) {
+		stopDisabled = true;
+		/*
+		 * if S control bit = 1, the STOP instruction is disabled and acts like two-cycle NOP
+		 */
+	} else {
+		stopDisabled = false;
+		/*
+		 * (SP) – 0x0002 => SP; RTNH : RTNL => (M(SP) : M(SP+1))
+		 * (SP) – 0x0002 => SP; YH : YL => (M(SP) : M(SP+1))
+		 * (SP) – 0x0002 => SP; XH : XL => (M(SP) : M(SP+1))
+		 * (SP) – 0x0002 => SP; B : A => (M(SP) : M(SP+1))
+		 * (SP) – 0x0002 => SP; CCRH : CCRL => (M(SP) : M(SP+1))
+		 * Stop All Clocks and puts the device in standby mode
+		 */
+		 
+		 cpu->saveCPUContext();
+
+		 /* TODO: 
+		  * Stop All Clocks and puts the device in standby mode.
+		  * Asserting the RESET, XIRQ, or IRQ signals ends standby mode. 
+		  */
+		 
+	 	 cpu->sleep();
+//	 	cpu->Stop(0);
+	 	 
+	 	 /* TODO:
+	 	  * If XIRQ is asserted while the X mask bit = 0 (XIRQ interrupts enabled), 
+	 	  * execution resumes with a vector fetch for the XIRQ interrupt. 
+	 	  * While the X mask bit = 1 (XIRQ interrupts disabled), 
+	 	  * a 2-cycle recovery sequence is used to adjust the instruction queue and the stack pointer, 
+	 	  * and execution continues with the next instruction after STOP.
+	 	  */
+ 	  
+	}
+
+	return getCycles();
+}
+
+// WAIT
+op wai(0x3E[8])
+
+wai.getCycles = { return 13; }
+
+wai.disasm = {
+	string mnem = "WAI";
+	
+	sink << mnem;
+	return mnem;
+}
+
+wai.execute = {
+
+	/*
+	 * (SP) – 0x0002 => SP; RTNH : RTNL => (M(SP) : M(SP+1))
+	 * (SP) – 0x0002 => SP; YH : YL => (M(SP) : M(SP+1))
+	 * (SP) – 0x0002 => SP; XH : XL => (M(SP) : M(SP+1))
+	 * (SP) – 0x0002 => SP; B : A => (M(SP) : M(SP+1))
+	 * (SP) – 0x0002 => SP; CCRH : CCRL => (M(SP) : M(SP+1))
+	 * The CPU12 then enters a wait state for an integer number of bus clock cycles. 
+	 * During the wait state, CPU12 clocks are stopped, but otherMCUclocks can continue to run.
+	 * WAIT for not masked interrupt
+	 */
+	 
+	 cpu->saveCPUContext();
+
+	/* TODO: 
+	 * Enter a wait state for an integer number of bus clock cycle
+	 * Only CPU12 clocks are stopped
+	 * Wait for not masked interrupt
+	 */
+
+	 cpu->wai();
+	 
+	 /*
+	  * If XIRQ is asserted while the X mask bit = 0 (XIRQ interrupts enabled),
+	  * execution resumes with a vector fetch for the XIRQ interrupt. 
+	  * While the X mask bit = 1 (XIRQ interrupts disabled), 
+	  * a 2-cycle recovery sequence is used to adjust the instruction queue and the stack pointer, 
+	  * and execution continues with the next instruction after WAI.
+	  */
+
+	return getCycles();
+}
+
+// BGND: Enter Background debug mode
+
+op bgnd(0x00[8])
+
+bgnd.getCycles = { return 5; }
+
+bgnd.disasm = {
+	string mnem = "BGND";
+	
+	sink << mnem;
+	return mnem;
+}
+
+bgnd.execute = {
+
+	if (cpu->isDebuggerConnect()) {
+		cpu->reportTrap("CPU has encountered BGND instruction. S12X_DBG module (not emulated).");
+	} else {
+		std::cerr << "Warning:: CPU has encountered BGND instruction. S12X_DBG module (not emulated). " << std::endl;
+		cpu->Stop(0);
+	}
+	
+
+	return getCycles();
+}
+
+/* ********** Interrupt instructions ******** */
+
+// RTI: Return from interrupt
+
+op rti(0x0B[8])
+
+rti.var isPending : { bool } = { false }
+
+rti.getCycles = { if (isPending) return 10; else return 8; }
+
+rti.disasm = {
+	string mnem = "RTI";
+	
+	sink << mnem;
+	return mnem;
+}
+
+// TODO: check if there is interrupt pending and set "isPending"
+ 
+rti.execute = {
+
+	/*
+	 * (M(SP) : M(SP+1)) => CCRH : CCRL; (SP) + 0x0002 => SP
+	 * (M(SP) : M(SP+1)) => B : A; (SP) + 0x0002 => SP
+	 * (M(SP) : M(SP+1)) => XH : XL; (SP) + 0x0004 => SP
+	 * (M(SP) : M(SP+1)) => PCH : PCL; (SP) – 0x0002 => SP
+	 * (M(SP) : M(SP+1)) => YH : YL; (SP) + 0x0004 => SP
+	 * */
+	 
+	uint16_t addr = cpu->getRegSP();
+	
+	/* Leave bit X unchanged.
+	 * X bit can be set only by a reset or by recognition of an (!XIRQ) interrupt
+	 */ 	 
+	cpu->ccr->setCCR(cpu->memRead16(addr));
+
+	addr = addr + 2;
+	cpu->setRegB(cpu->memRead8(addr));
+	cpu->setRegA(cpu->memRead8(addr+1));
+
+	addr = addr + 2;
+	cpu->setRegX(cpu->memRead16(addr));
+
+	addr = addr + 2;
+	cpu->setRegY(cpu->memRead16(addr));
+
+	addr = addr + 2;
+	cpu->setRegPC(cpu->memRead16(addr));
+
+	addr = addr + 2;
+	cpu->setRegSP(addr);
+
+	return getCycles();
+}
+
+// SWI: Software Interrupt
+
+op swi(0x3F[8])
+
+swi.getCycles = { return 9; }
+
+swi.disasm = {
+	string mnem = "SWI";
+	
+	sink << mnem;
+	return mnem;
+}
+
+swi.execute = {
+	/* (SP) – 0x0002 => SP; RTNH : RTNL => (M(SP) : M(SP+1))
+	 * (SP) – 0x0002 => SP; YH : YL => (M(SP) : M(SP+1))
+	 * (SP) – 0x0002 => SP; XH : XL => (M(SP) : M(SP+1))
+	 * (SP) – 0x0002 => SP; B : A=> (M(SP) : M(SP+1))
+	 * In case of CPU12
+	 * (SP) – 0x0001 => SP; CCR => (M(SP) )
+	 * In case of CPU12X
+	 * (SP) – 0x0002 => SP; CCRH : CCRL => (M(SP) : M(SP+1))
+	 * 1 => I; 0 => U
+	 * (SWI Vector) => PC
+	 */
+
+	throw NonMaskableSWIInterrupt();
+
+	return getCycles();
+}
+
+// TRAP: unimplemented opcode trap
+// trapnum: Trap number 0x30-0x39 or 0x40-0xFF
+
+op trap(0x18[8]:trapnum[8])
+
+trap.getCycles = { return 10; }
+
+trap.disasm = {
+	string mnem = "TRAP";
+	
+	sink << mnem << " 0x" << std::hex << trapnum;
+	return mnem;
+}
+
+trap.execute = {
+	
+	if (((trapnum >= 0x30) && (trapnum <= 0x39)) || ((trapnum >= 0x40) && (trapnum <= 0xFF))) {
+		/*
+		 * (SP) – 0x0002 => SP; RTNH : RTNL => (M(SP) : M(SP+1))
+		 * (SP) – 0x0002 => SP; YH : YL => (M(SP) : M(SP+1))
+		 * (SP) – 0x0002 => SP; XH : XL => (M(SP) : M(SP+1))
+		 * (SP) – 0x0002 => SP; B : A => (M(SP) : M(SP+1))
+		 * In case of CPU12
+		 * (SP) – 0x0001 => SP; CCR => (M(SP) )
+		 * In case of CPU12X
+		 * (SP) – 0x0002 => SP; CCRH : CCRL => (M(SP) : M(SP+1))
+		 * 1 => I; 0 => U
+		 * (Trap Vector) => PC
+		 */
+
+		throw TrapException(trapnum);
+		
+//  All this code is implemented in the CPU exception handling mecanism
+//		 
+//		uint16_t addr = cpu->getRegSP();
+//
+//		addr = addr - 2;
+//		cpu->memWrite16(addr, cpu->getRegPC());
+//		
+//		addr = addr - 2;
+//		cpu->memWrite16(addr, cpu->getRegY());
+//		
+//		addr = addr - 2;
+//		cpu->memWrite16(addr, cpu->getRegX());
+//
+//		addr = addr - 2;
+//		cpu->memWrite8(addr, cpu->getRegB());
+//		cpu->memWrite16(addr+1, cpu->getRegA());
+//		
+//		addr = addr - 2;
+//		cpu->memWrite16(addr, cpu->ccr->getCCR());
+//		
+//		// 1 => I; 0 => U
+//		cpu->ccr->setI();
+//		cpu->ccr->setCCRHigh(cpu->ccr->getCCRHigh() & 0x7F);
+//		
+//		// (Trap Vector) => PC
+//		cpu->setRegPC(cpu->memRead16(cpu->get_Trap_Vector()));
+//
+
+
+	}
+
+	return getCycles();
+}
+
+// SYS: System Call Interrupt
+// System call interrupt vector is 0xFF12:0xFF13
+
+op sys(0x18[8]:0xA7[8])
+
+sys.getCycles = { return 10; }
+
+sys.disasm = {
+	string mnem = "SYS";
+	
+	sink << mnem;
+	return mnem;
+}
+
+sys.execute = {
+	
+	/*
+	 * (SP) – 0x0002 => SP; RTNH : RTNL => (M(SP) : M(SP+1))
+	 * (SP) – 0x0002 => SP; YH : YL => (M(SP) : M(SP+1))
+	 * (SP) – 0x0002 => SP; XH : XL => (M(SP) : M(SP+1))
+	 * (SP) – 0x0002 => SP; B : A => (M(SP) : M(SP+1))
+	 * In case of CPU12
+	 * (SP) – 0x0001 => SP; CCR => (M(SP) )
+	 * In case of CPU12X
+	 * (SP) – 0x0002 => SP; CCRH : CCRL => (M(SP) : M(SP+1))
+	 * 1 => I; 0 => U
+	 * (Trap Vector) => PC
+	 */
+		 
+	throw SysCallInterrupt();
+
+	return getCycles();
+}

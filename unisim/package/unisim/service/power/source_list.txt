@@ -1,0 +1,5 @@
+unisim/service/power/cache_dynamic_energy.cc
+unisim/service/power/cache_dynamic_power.cc
+unisim/service/power/cache_leakage_power.cc
+unisim/service/power/cache_power_estimator.cc
+unisim/service/power/cache_profile.cc

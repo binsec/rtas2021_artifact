@@ -1,0 +1,10 @@
+unisim/component/cxx/pci/ide/disk_image.hh
+unisim/component/cxx/pci/ide/event.hh
+unisim/component/cxx/pci/ide/event_manager.hh
+unisim/component/cxx/pci/ide/ide_atareg.hh
+unisim/component/cxx/pci/ide/ide_ctrl.hh
+unisim/component/cxx/pci/ide/ide_disk.hh
+unisim/component/cxx/pci/ide/ide_wdcreg.hh
+unisim/component/cxx/pci/ide/pcidev.hh
+unisim/component/cxx/pci/ide/pci_master.hh
+unisim/component/cxx/pci/ide/pcireg.hh

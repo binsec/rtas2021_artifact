@@ -1,0 +1,13 @@
+<dw_reg_num_mapping>
+	<architecture name="68hc12">
+		<stack_pointer dw_reg_num="15"/>
+		<register dw_reg_num="0" arch_reg="A"/>
+		<register dw_reg_num="1" arch_reg="B"/>
+		<register dw_reg_num="3" arch_reg="D"/>
+		<register dw_reg_num="7" arch_reg="X"/>
+		<register dw_reg_num="8" arch_reg="Y"/>
+		<register dw_reg_num="15" arch_reg="SP"/>
+		<register dw_reg_num="16" arch_reg="PC"/>
+		<register dw_reg_num="17" arch_reg="CCR"/>
+	</architecture>
+</dw_reg_num_mapping>

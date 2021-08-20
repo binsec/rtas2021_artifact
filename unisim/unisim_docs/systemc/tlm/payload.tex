@@ -1,0 +1,442 @@
+\mode<article> {
+	\clearpage
+}
+
+\section{The Generic Payload}
+
+\mode<presentation>{
+
+\begin{frame}
+	\frametitle{The generic payload}
+	\begin{block}{Objective}
+		Improve interoperability between modules providing a single message type for most TLM designs.
+	\end{block}
+	\begin{itemize}
+		\item \texttt{tlm\_generic\_payload} provides a generic message type.
+		\item It is specifically aimed at memory mapped buses.
+		\item It provides an extension mechanism to add ignorable extension.
+		\item It can be used to generate new payload types.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}
+	\frametitle{\texttt{tlm\_generic\_payload} class definition}
+	\lstinputlisting[linerange={1-31}]{tlm/tlm_generic_payload.hh}
+\end{frame}
+
+\begin{frame}
+	\frametitle{\small \texttt{tlm\_generic\_payload} class definition (contd.)}
+	\lstinputlisting[linerange={31-53}]{tlm/tlm_generic_payload.hh}
+\end{frame}
+}
+
+\mode<article>{
+Unlike TLM 1.0, TLM 2.0 introduced a generic message type (payload).
+With a generic payload, the SystemC TLM working group expects to improve the interoperability of modules written with SystemC TLM.
+Effectively, one of the drawbacks of TLM 1.0 was that the payload was not standardized.
+This made difficult the connection of modules that should have been easy to connect.
+For example a simple address type could make two modules speaking the same protocol not interoperable.
+
+The generic payload is specifically aimed at memory-mapped buses. 
+This guarantees the interoperability of abstract models using memory-mapped buses for which precise details are unimportant.
+Additionally it provides an extension mechanism which allow the designer to add details which may be \emph{ignorable}, thus not breaking the interoperability of the models, but enhancing their functionality if the connected models implement such ignorable details.
+
+The same extension mechanism allows the designer to add bus specific details which maybe compulsory.
+If such is the case, the connected models using the specific bus will need to implement such extension.
+It is the responsibility of the provider of the extension to provide models which use it, models which bridge with the generic payload, or to provide coding guidelines for the usage of such extension.
+
+The use of ignorable extensions allow the connection of two models with different payloads:
+\begin{itemize}
+	\item One of the models could use the generic payload without extensions and the other the generic payload with ignorable extensions.
+	\item The two models could use different ignorable extensions over the generic payload.
+\end{itemize}
+Any of those combinations would compile, and produce an executable simulator.
+
+However, the TLM working group recommends a disciplined use of the ignorable extensions.
+Effectively, the designers could use the ignorable extensions to allow full compilation interoperability, but those models would check the non ignorable extensions at run-time, what would degrade the simulation performance or simply create simulators that would dump an error message systematically.
+For that reason, there are three, \emph{an only three}\footnote{The TLM working group heavily insist on that point.} recommended alternatives for the transaction template argument of blocking and non-blocking interfaces (ordered from more interoperability to less interoperability solutions):
+\begin{enumerate}
+	\item \emph{Use the generic payload, with ignorable extensions.}\newline
+	In this case the ignorable extensions should be clearly ignorable, that is, the models should not create an error message or fail if the extension is not available.
+	Neither the model should work in degraded mode.
+	Examples of correct ignorable extensions are:
+	\begin{itemize}
+		\item There is a clear default value for the ignorable extension.
+		\item The extension contains simulation-related information, but not model behavior related information.
+	\end{itemize}
+	\item \emph{Define a new protocol types class containing a \texttt{typedef} for \texttt{tlm\_generic\_payload}.}\newline
+	When the extensions are clearly not ignorable, but the new protocol is a clear extension of the \texttt{tlm\_generic\_payload}, this solution is recommended.
+	This allows a rapid development of the new payload type thanks to the reuse the generic payload, but at the same time this ensures that compile time interoperability checking of two interconnected models.
+	\item \emph{Define a new protocol types class and a new transaction type.}\newline
+	When the generic payload is clearly ill adapted to create the transaction and protocol a new protocol types class and a new transaction type should be defined.
+	Again, this ensures the compile time interoperability checking of two connected models.
+\end{enumerate}
+
+%\begin{figure}[h]
+%	\lstinputlisting{tlm/tlm_generic_payload_types.hh}
+%	\caption{The types used by the generic payload class definitions.}
+%	\label{fig:tlm_generic_payload_types}
+%\end{figure}
+
+\begin{figure}[h]
+	\lstinputlisting{tlm/tlm_generic_payload.hh}
+	\caption{The generic payload class definition.}
+	\label{fig:tlm_generic_payload_definition}
+\end{figure}
+
+Figure~\ref{fig:tlm_generic_payload_definition} shows the definition of the \texttt{tlm\_generic\_payload} class.
+The initiator of a transaction is responsible of the creation of all the storage that the generic payload may require during its lifetime. 
+Additionally, it is responsible of keeping the generic payload available during the lifetime of the transaction.
+
+\begin{table}[h]
+	\begin{center}
+	\begin{tabular}{|l|l|l|l|}
+	\hline
+	\textbf{Attribute} & \textbf{Default value} & \textbf{Modifiable by} & \textbf{Modifiable by} \\
+	& & \textbf{interconnect?} & \textbf{target?} \\
+	\hline
+	Command & \texttt{TLM\_IGNORE\_COMMAND} & No & No \\
+	\hline
+	Address & 0 & Yes & No \\
+	\hline
+	Data pointer & 0 & No & No \\
+	\hline
+	Data array & - & No & Yes (read) \\
+	\hline
+	Data length & 1 & No & No \\
+	\hline
+	Byte enable pointer & 0 & No & No \\
+	\hline
+	Byte enable array & - & No & No \\
+	\hline
+	Byte enable length & 1 & No & No \\
+	\hline
+	Streaming width & 0 & No & No \\
+	\hline
+	DMI allowed & false & Yes & Yes \\
+	\hline
+	Response status & \texttt{TLM\_INCOMPLETE\_RESPONSE} & No & Yes \\
+	\hline
+	Extension pointers & 0 & Yes & Yes \\
+	\hline
+	\end{tabular}
+	\end{center}
+	\caption{Generic payload default values and modifiability of attributes}
+	\label{table:tlm_generic_payload_default_values}
+\end{table}
+
+When created the values of the different generic payload attributes shall be set as defined in Table~\ref{table:tlm_generic_payload_default_values}.
+The copy constructor should make a shallow copy of the payload contents, that is the different pointer should be copied but not their contents.
+The same applies for the assignment operator.
+The \texttt{deep\_copy} method on the other side should additionally copy the contents of the pointers. Implementations of the virtual destructor should not delete the data array, the byte enable array, or any extension objects.
+
+The generic payload attributes are not publicly accessible and should be set and get using the provided setters and getters. 
+Table~\ref{table:tlm_generic_payload_default_values} shows which attributes can be modified by interconnect and target modules.
+}
+
+\subsection{The command attribute}
+
+\mode<presentation>{
+
+\begin{frame}
+	\frametitle{The command attribute}
+	\begin{itemize}
+		\small
+		\item<1-> Only three commands are defined:
+		\lstinputlisting{tlm/tlm_command.hh}
+		\item<2-> Getter and setter:
+		\begin{itemize}
+			\item<2-> \texttt{tlm\_command get\_command()}
+			\item<2-> \texttt{void set\_command(const tlm\_command)}
+		\end{itemize}
+		\item<2-> Facility methods are provided to set a read/write request, and to check: \texttt{is\_read()}, \texttt{set\_read()}, \texttt{is\_write()} and \texttt{set\_write()}.
+		\item<3-> Default error when command not supported: \texttt{TLM\_COMMAND\_ERROR\_RESPONSE}
+		\item<4-> When the command is \texttt{TLM\_IGNORE\_COMMAND}, the target must ignore data pointer, but can use any other attributes, including extensions.
+	\end{itemize}
+\end{frame}
+
+}
+
+\mode<article>{
+\begin{figure}[h]
+	\lstinputlisting{tlm/tlm_command.hh}
+	\caption{Definition of the different generic payload commands.}
+	\label{fig:tlm_command}
+\end{figure}
+
+Figure~\ref{fig:tlm_command} shows the different commands provided by the command attribute.
+Only read, write and ignore commands are provided.
+The generic payload provides a setter and getter to set and get the command, and convenience methods to set and get them: \texttt{is\_read()}, \texttt{is\_write()}, \texttt{set\_read()}, \texttt{set\_write()}.
+
+When receiving a read command the target should fill the array pointed by the data pointer attribute.
+When receiving a write command the target should copy the array pointed by the data pointer attribute.
+If the target is unable to execute a read or write command, it shall generate a standard error response (\texttt{TLM\_COMMAND\_ERROR\_RESPONSE} is recommended).
+When receiving an ignore command the target should ignore the contents of the data pointer, but can use any other attribute in the payload, including extensions.
+}
+
+\subsection{The address attribute}
+
+\mode<presentation>{
+
+\begin{frame}
+	\frametitle{The address attribute}
+	\begin{itemize}
+		\item<1-> It corresponds to the first byte in the array pointed by the data pointer attribute.
+		\item<1-> Getter and setter:
+		\begin{itemize}
+			\item<1-> \texttt{sc\_dt::uint64 get\_address()}
+			\item<1-> \texttt{void set\_address(const sc\_dt::uint64)}
+		\end{itemize}
+		\item<2-> Formula: \textbf{$address\_attribute + (array\_index \% streaming\_width)$}
+		\item<3-> Default error when error in address: \texttt{TLM\_ADDRESS\_ERROR\_RESPONSE}
+		\item<3-> Interconnect modules may change its value (for example when a translation needs to be made).
+	\end{itemize}
+\end{frame}
+}
+
+\mode<article>{
+The address received by the target should be considered as the first byte to be read from or written to the local array in the target.
+It always corresponds to the first byte in the array pointed by the data pointer attribute.
+
+A byte at a given index in the data array shall be transferred to or from the address given by the formula \textbf{$address\_attribute + (array\_index \% streaming\_width)$}.
+
+If the requested command can not be performed in the given address (or address range) an standard error should be returned (\texttt{TLM\_ADDRESS\_ERROR\_RESPONSE} is recommended).
+
+The address attribute is set by the initiator module. Target module should not modify it, however, interconnect modules can modify its value.
+It could be the case if the interconnect module needs to do some kind of address translation on the transaction.
+}
+
+\subsection{The data pointer attribute}
+
+\mode<presentation>{
+
+\begin{frame}
+	\frametitle{The data pointer attribute}
+	\begin{itemize}
+		\item<1-> Buffer allocated by the initiator module to perform the read/write command.
+		\item<1-> Getter and setter:
+		\begin{itemize}
+			\item<1-> \texttt{unsigned char* get\_data\_ptr()}
+			\item<1-> \texttt{void set\_data\_ptr(unsigned char *)}
+		\end{itemize}
+		\item<2-> Must be always different than 0 (\texttt{NULL}).
+		\item<2-> Should never be modified by interconnect modules.
+		\item<2-> The size of the buffer must be bigger than the number of bytes to read/write (the data lengt attribute).
+	\end{itemize}
+\end{frame}
+
+}
+
+\mode<article>{
+The data pointer attribute should point to a buffer allocated by the initiator module.
+The data pointer should always be set to something different than 0 before calling the transport interface.
+Such buffer should contain the data to be written into the target on write command, and a buffer to write the data to be read from the target on read command.
+Interconnect modules should never modify the contents of the buffer.
+The size of the buffer should always be bigger than the number of bytes to read/write (the data length attribute).
+}
+
+\subsection{The data length attribute}
+
+\mode<presentation>{
+
+\begin{frame}
+	\frametitle{The data length attribute}
+	\begin{itemize}
+		\item<1-> It represents the length in bytes to be read/written, inclusive for any bytes disabled by the byte enable attribute.
+		\item<1-> Getter and setter:
+		\begin{itemize}
+			\item<1-> \texttt{unsigned int get\_data\_length()}
+			\item<1-> \texttt{void set\_data\_length(const unsigned int)}
+		\end{itemize}
+		\item<2-> If it is bigger than the template parameter BUSWIDTH, the transfer is considered as a burst transfer.
+		\item<2-> Default error when error due to the data length attribute: \texttt{TLM\_BURST\_ERROR\_RESPONSE}.
+	\end{itemize}
+\end{frame}
+
+}
+
+\mode<article>{
+It represents the length in bytes to be read/written, inclusive for any bytes disabled by the byte enable attribute.
+This attribute shall be set by the initiator module, and not modified by any interconnect or target module.
+
+If the data length is bigger than the template parameter \texttt{BUSWIDTH} (in bits) the transfer is considered as a burst transfer.
+The size of the transfer on those cases is the \texttt{BUSWIDTH}.
+If the data length is smaller than or equal to \texttt{BUSWIDTH} the transfer is a word transfer, not a burst transfer.
+
+If the target can not satisfy the request given the received data length, it should generate a standard error response (\texttt{TLM\_BURST\_ERROR\_RESPONSE} is recommended).
+}
+
+\subsection{The byte enable pointer and the byte enable length attributes}
+
+\mode<presentation>{
+
+\begin{frame}
+	\frametitle{The byte enable pointer and length attributes}
+	\begin{itemize}
+		\item<1-> Define the bytes that should be read from or written to the data buffer.
+		\item<1-> The byte enable length defines the size of the byte enable array.
+		\item<1-> Getter and setter:
+		\begin{itemize}
+			\item<1-> \texttt{unsigned char* get\_byte\_enable\_ptr()}
+			\item<1-> \texttt{void set\_byte\_enable\_ptr(unsigned char *)}
+			\item<1-> \texttt{unsigned int get\_byte\_enable\_length()}
+			\item<1-> \texttt{void set\_byte\_enable\_length(const unsigned int)}
+		\end{itemize}
+		\item<2-> Formula: $byte\_enable\_array\_index = data\_array\_index \% byte\_enable\_length$
+		\item<2-> If length is equal to 0, the byte enable array can be ignored.
+		\item<3-> Default error response because byte enable error: \texttt{TLM\_BYTE\_ENABLE\_ERROR\_RESPONSE}
+	\end{itemize}
+\end{frame}
+}
+
+\mode<article>{
+Those couple of attributes define the bytes that should be read from or written to the data buffer.
+The byte enable length attribute defines the size of the byte enable pointer.
+The byte enable pointer attribute points to an array of booleans that defines the mask of bytes that should be considered(true value)/ignored(false value).
+
+If the byte enable length attribute is smaller than the data length attribute, the contents of the byte enable pointer should be considered as many times as necessary to match the data length attribute.
+The following formula can be used $byte\_enable\_array\_index = data\_array\_index \% byte\_enable\_length$.
+
+If the byte enabled pointer is equal to 0 the byte enable length attribute must be ignored, and bytes enables should be also ignored (all the contents of the data array should be considered).
+
+If the target can not process the requested transaction because of the byte enable pointer or the byte enable length attributes, a standard error should be returned (TLM\_BYTE\_ENABLE\_ERROR\_RESPONSE is recommended).
+}
+
+\subsection{The streaming width attribute}
+
+\mode<presentation>{
+
+\begin{frame}
+	\frametitle{The streaming width attribute}
+	\begin{itemize}
+		\item<1-> It determines the width of the stream, that is, the number of bytes transferred on each beat.
+		\item<1-> Getter and setter:
+		\begin{itemize}
+			\item<1-> \texttt{unsigned int get\_streaming\_width()}
+			\item<1-> \texttt{void set\_streaming\_width(unsigned int)}
+		\end{itemize}
+		\item<2-> Formula: \textbf{$address\_attribute + (array\_index \% streaming\_width)$}
+		\item<2-> If its value is equal to 0, then the transfer is considered as a normal transfer (or burst transfer).
+		\item<3-> Default error on stream width error: \texttt{TLM\_BURST\_ERROR\_RESPONSE}.
+	\end{itemize}
+\end{frame}
+
+}
+
+\mode<article>{
+Streaming affects the way a component should interpret the data array. 
+A stream consists of a sequence of data transfers occurring on successive notional beats. 
+The streaming width attribute shall determine the width of the stream, that is, the number of bytes transferred on each beat.
+
+The address to or from which each byte is being copied in the target shall be reset to the value of the address attribute at the start of each beat.
+
+With respect to the interpretation of the data array, a transaction with a non-zero streaming width shall be functionally equivalent to a sequence of transactions each having the same address as the original transaction, each having a data length attribute equal to the streaming width of the original, and each with a data array that effectively steps down the original data array maintaining the sequence of bytes.
+
+A streaming width of 0 shall be interpreted in the same way as a streaming width greater than or equal to the value of the data length attribute, that is, the data transfer is a normal transfer, not a streaming transfer.
+
+If the target module can not process the transfer because of the streaming width attribute a standard error should be returned (\texttt{TLM\_BURST\_ERROR\_RESPONSE} is recommended).
+}
+
+\subsection{Endianess}
+
+\mode<presentation>{
+
+\begin{frame}
+	\frametitle{Endianess}
+	\begin{block}{}
+		In order to interpret the contents of the data pointer array TLM 2.0 defines that the data transferred should be sent using the host endianness.
+	\end{block}
+\end{frame}
+
+}
+
+\mode<article>{
+In order to interpret the contents of the data pointer array TLM 2.0 defines that the data transferred should be sent using the host endianness.
+}
+
+\subsection{DMI allowed attribute}
+
+\mode<presentation>{
+
+\begin{frame}
+	\frametitle{DMI allowed attribute}
+	\begin{itemize}
+		\item<1-> Thanks to this attribute the target module can give a hint to the initiator module signaling if the target supports or not DMI for the current request.
+		\item<1-> Getter and setter:
+		\begin{itemize}
+			\item<1-> \texttt{void set\_dmi\_allowed(bool)}
+			\item<1-> \texttt{bool get\_dmi\_allowed()}
+		\end{itemize}
+	\end{itemize}
+\end{frame}
+}
+
+\mode<article>{
+Thanks to this attribute the target module can give a hint to the initiator module signaling if the target supports or not DMI for the current request.
+}
+
+\subsection{The response status attribute}
+
+\mode<presentation>{
+
+\begin{frame}
+	\frametitle{The response status attribute}
+	\begin{itemize}
+		\item<1-> Possible error attribute values:
+		\lstinputlisting{tlm/tlm_response_status.hh}
+		\item<1-> Getter and setter:
+		\begin{itemize}
+			\item<1-> \texttt{tlm\_response\_status get\_response\_status()}
+			\item<1-> \texttt{void set\_response\_status(const tlm\_response\_status)}
+		\end{itemize}
+		\item<2-> Helper methods:
+		\begin{itemize}
+			\item<2-> \texttt{std::string get\_response\_string()}
+			\item<2-> \texttt{bool is\_response\_ok()}
+			\item<2-> \texttt{bool is\_response\_error()}
+		\end{itemize}
+	\end{itemize}
+\end{frame}
+}
+
+\mode<article>{
+\begin{figure}[h]
+	\lstinputlisting{tlm/tlm_response_status.hh}
+	\caption{Definition of the different response status values.}
+	\label{fig:tlm_response_status_definition}
+\end{figure}
+
+\begin{table}[h]
+	\begin{center}
+	\begin{tabular}{|l|l|}
+		\hline
+		\textbf{Error response} & \textbf{Interpretation} \\
+		\hline
+		\texttt{TLM\_ADDRESS\_ERROR\_RESPONSE} & Unable to act upon the address attribute, \\
+		& or address out of range\\
+		\hline
+		\texttt{TLM\_COMMAND\_ERROR\_RESPONSE} & Unable to execute the command \\
+		\hline
+		\texttt{TLM\_BURST\_ERROR\_RESPONSE} & Unable to act upon the data length or streaming width \\
+		\hline
+		\texttt{TLM\_BYTE\_ENABLE\_ERROR\_RESPONSE} & Unable to act upon the byte enable \\
+		\hline
+		\texttt{TLM\_GENERIC\_ERROR\_RESPONSE} & Any other error	\\
+		\hline
+	\end{tabular}
+	\end{center}
+	\caption{Error response values}
+	\label{table:response_status_errors}
+\end{table}
+
+Figure~\ref{fig:tlm_response_status_definition} shows the response status attribute possible values.
+This attribute is used by the target module to signal the success (\texttt{TLM\_OK\_RESPONSE}) if the transaction could successfully handled, and to an error otherwise, following the Table~\ref{table:response_status_errors}.
+The initiator should set this attribute to \texttt{TLM\_INCOMPLETE\_RESPONSE}, and no interconnect module should modify it, because it means that the target module has not still handled the transaction.
+}
+
+\subsection{The extension mechanism}
+
+\mode<article>{
+The extension mechanism is out of the scope of this tutorial.
+For a detailed explanation refer to the Accellera TLM 2.0 User Manual.
+}

@@ -1,0 +1,8 @@
+unisim/component/tlm/chipset/mpc107/mpc107_fsb32_pci32.cc
+unisim/component/tlm/chipset/mpc107/mpc107_fsb32_pci32_debug.cc
+unisim/component/tlm/chipset/mpc107/mpc107_fsb32_pci64.cc
+unisim/component/tlm/chipset/mpc107/mpc107_fsb32_pci64_debug.cc
+unisim/component/tlm/chipset/mpc107/mpc107_fsb64_pci32.cc
+unisim/component/tlm/chipset/mpc107/mpc107_fsb64_pci32_debug.cc
+unisim/component/tlm/chipset/mpc107/mpc107_fsb64_pci64.cc
+unisim/component/tlm/chipset/mpc107/mpc107_fsb64_pci64_debug.cc

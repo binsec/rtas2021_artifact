@@ -1,0 +1,27 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<package>
+	<unit>
+		<name>unisim::service::pim::network</name>
+		<files>
+			<file>unisim/service/pim/network/BlockingQueue.hpp</file>
+			<file>unisim/service/pim/network/BlockingQueue.cpp</file>
+			<file>unisim/service/pim/network/BlockingQueue.tcc</file>
+			<file>unisim/service/pim/network/GenericThread.cpp</file>
+			<file>unisim/service/pim/network/GenericThread.hpp</file>
+			<file>unisim/service/pim/network/SocketClientThread.hpp</file>
+			<file>unisim/service/pim/network/SocketClientThread.cpp</file>
+			<file>unisim/service/pim/network/SocketReader.cpp</file>
+			<file>unisim/service/pim/network/SocketReader.hpp</file>
+			<file>unisim/service/pim/network/SocketServerThread.cpp</file>
+			<file>unisim/service/pim/network/SocketServerThread.hpp</file>
+			<file>unisim/service/pim/network/SocketThread.cpp</file>
+			<file>unisim/service/pim/network/SocketThread.hpp</file>
+			<file>unisim/service/pim/network/SocketWriter.cpp</file>
+			<file>unisim/service/pim/network/SocketWriter.hpp</file>
+			<file>unisim/service/pim/network/CMakeLists.txt</file>		
+		</files>
+		<depends>
+		</depends>
+	</unit>
+</package>
+

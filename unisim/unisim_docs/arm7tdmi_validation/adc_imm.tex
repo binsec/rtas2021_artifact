@@ -1,0 +1,30 @@
+\begin{center}
+\scriptsize
+% \begin{tabular}{|p{0.8\textwidth}|}
+\begin{tabular}{|l|}
+\hline
+\texttt{}\\
+\texttt{ 1~eor~r9,~r9,~r9;~
+}\\
+\texttt{ 2~mov~r10,~\%u4;
+}\\
+\texttt{ 3~mov~r10,~r10,~ror~\#4;
+}\\
+\texttt{ 4~msr~cpsr\_f,~r10;
+}\\
+\texttt{ 5~adc\%(,eq,ne,cs,cc,mi,pl,vs,vc,hi,ls,ge,lt,gt,le,al)\%(,s)~\
+}\\
+\texttt{~~~~~~~~~~~~~~r9,~\%r,~\%s8,4,2;
+}\\
+\texttt{ 6~mrs~r10,~cpsr;
+}\\
+\texttt{ 7~mov~r10,~r10,~ror~\#28;
+}\\
+\texttt{ 8~and~\%R,~r10,~\#15;
+}\\
+\texttt{ 9~mov~\%R,~r9
+}\\
+\texttt{}\\
+\hline
+\end{tabular}
+\end{center}

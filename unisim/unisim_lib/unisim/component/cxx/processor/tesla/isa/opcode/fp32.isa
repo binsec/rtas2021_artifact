@@ -1,0 +1,1295 @@
+/*
+ *  Copyright (c) 2009,
+ *  University of Perpignan (UPVD),
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without modification,
+ *  are permitted provided that the following conditions are met:
+ *
+ *   - Redistributions of source code must retain the above copyright notice, this
+ *     list of conditions and the following disclaimer.
+ *
+ *   - Redistributions in binary form must reproduce the above copyright notice,
+ *     this list of conditions and the following disclaimer in the documentation
+ *     and/or other materials provided with the distribution.
+ *
+ *   - Neither the name of UPVD nor the names of its contributors may be used to
+ *     endorse or promote products derived from this software without specific prior
+ *     written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ *  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *  DISCLAIMED.
+ *  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ *  INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ *  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+ *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ *  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Authors: Sylvain Collange (sylvain.collange@univ-perp.fr)
+ */
+
+
+/***************************************************
+
+	SINGLE PRECISION FLOATING-POINT ARITHMETIC INSTRUCTIONS
+
+****************************************************/
+
+// Constant segment overlap with rounding mode
+// Need to distinguish between both versions
+
+op fsmad_full_noconst_normal( \
+	/*subop*/0[3]:/*?*/0[1]:src3_neg[1]:src1_neg[1]:0[2]:rounding_mode[2]:/*src1_sh*/?[1]:/*src3*/?[7]\
+	:/*pred_reg*/?[2]:/*pred_cond*/?[5]:/*set_pred*/?[1]:/*set_pred_reg*/?[2]:/*output_reg*/?[1]:/*addr_hi*/?[1]:/*marker*/0[2]: \
+	0xe[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src3_cm*/0[1]:/*src2_cm*/0[1]:?[21]:0[1]:/*IWidth*/1[1]\
+)
+
+//specialize fsmad_full_noconst_normal(src3_neg=0, src1_neg=0, rounding_mode=0)
+
+op fsmad_full_noconst_end( \
+	/*subop*/0[3]:/*?*/0[1]:src3_neg[1]:src1_neg[1]:0[2]:rounding_mode[2]:/*src1_sh*/?[1]:/*src3*/?[7]\
+	:/*pred_reg*/?[2]:/*pred_cond*/?[5]:/*set_pred*/?[1]:/*set_pred_reg*/?[2]:/*output_reg*/?[1]:/*addr_hi*/?[1]:/*marker*/1[2]: \
+	0xe[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src3_cm*/0[1]:/*src2_cm*/0[1]:?[21]:0[1]:/*IWidth*/1[1]\
+)
+
+op fsmad_full_noconst_join( \
+	/*subop*/0[3]:/*?*/0[1]:src3_neg[1]:src1_neg[1]:0[2]:rounding_mode[2]:/*src1_sh*/?[1]:/*src3*/?[7]\
+	:/*pred_reg*/?[2]:/*pred_cond*/?[5]:/*set_pred*/?[1]:/*set_pred_reg*/?[2]:/*output_reg*/?[1]:/*addr_hi*/?[1]:/*marker*/2[2]: \
+	0xe[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src3_cm*/0[1]:/*src2_cm*/0[1]:?[21]:0[1]:/*IWidth*/1[1]\
+)
+
+group fsmad_full(fsmad_full_noconst_normal, fsmad_full_noconst_end, fsmad_full_noconst_join)
+
+
+// Sat?
+
+fsmad_full.disasm = {
+	buffer << "mad";
+	insn->DisasmControl(buffer);
+	buffer << ".f32";
+	DisasmRounding(rounding_mode, buffer);
+	buffer << " ";
+	insn->DisasmDest(buffer);
+
+	buffer << ", ";
+	DisasmSign(src1_neg, buffer);
+	insn->DisasmSrc1(buffer);
+	
+	buffer << ", ";
+	insn->DisasmSrc2(buffer);
+	
+	buffer << ", ";
+	DisasmSign(src3_neg, buffer);
+	insn->DisasmSrc3(buffer);
+}
+
+fsmad_full.execute = {
+	typedef VectorRegister<CONFIG> reg_t;
+	// dest = a * b + c
+	reg_t & a = insn->GetSrc1();
+	reg_t & b = insn->GetSrc2();
+	reg_t & c = insn->GetSrc3();
+	
+	CONFIG::vfp32::Mad(a, b, c, src1_neg, 0, src3_neg, rounding_mode);
+}
+
+op fsmad_full_const3_normal( \
+	/*subop*/0[3]:/*?*/0[1]:src3_neg[1]:src1_neg[1]:/*const_seg*/?[4]:/*src1_sh*/?[1]:/*src3*/?[7]\
+	:/*pred_reg*/?[2]:/*pred_cond*/?[5]:/*set_pred*/?[1]:/*set_pred_reg*/?[2]:/*output_reg*/?[1]:/*addr_hi*/?[1]:/*marker*/0[2]: \
+	0xe[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src3_cm*/1[1]:/*src2_cm*/?[1]:?[21]:0[1]:/*IWidth*/1[1]\
+)
+
+//specialize fsmad_full_const3_normal(src3_neg=0, src1_neg=0)
+
+op fsmad_full_const3_end( \
+	/*subop*/0[3]:/*?*/0[1]:src3_neg[1]:src1_neg[1]:/*const_seg*/?[4]:/*src1_sh*/?[1]:/*src3*/?[7]\
+	:/*pred_reg*/?[2]:/*pred_cond*/?[5]:/*set_pred*/?[1]:/*set_pred_reg*/?[2]:/*output_reg*/?[1]:/*addr_hi*/?[1]:/*marker*/1[2]: \
+	0xe[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src3_cm*/1[1]:/*src2_cm*/?[1]:?[21]:0[1]:/*IWidth*/1[1]\
+)
+
+op fsmad_full_const3_join( \
+	/*subop*/0[3]:/*?*/0[1]:src3_neg[1]:src1_neg[1]:/*const_seg*/?[4]:/*src1_sh*/?[1]:/*src3*/?[7]\
+	:/*pred_reg*/?[2]:/*pred_cond*/?[5]:/*set_pred*/?[1]:/*set_pred_reg*/?[2]:/*output_reg*/?[1]:/*addr_hi*/?[1]:/*marker*/2[2]: \
+	0xe[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src3_cm*/1[1]:/*src2_cm*/?[1]:?[21]:0[1]:/*IWidth*/1[1]\
+)
+
+op fsmad_full_const2_normal( \
+	/*subop*/0[3]:/*?*/0[1]:src3_neg[1]:src1_neg[1]:/*const_seg*/?[4]:/*src1_sh*/?[1]:/*src3*/?[7]\
+	:/*pred_reg*/?[2]:/*pred_cond*/?[5]:/*set_pred*/?[1]:/*set_pred_reg*/?[2]:/*output_reg*/?[1]:/*addr_hi*/?[1]:/*marker*/0[2]: \
+	0xe[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src3_cm*/0[1]:/*src2_cm*/1[1]:?[21]:0[1]:/*IWidth*/1[1]\
+)
+
+op fsmad_full_const2_end( \
+	/*subop*/0[3]:/*?*/0[1]:src3_neg[1]:src1_neg[1]:/*const_seg*/?[4]:/*src1_sh*/?[1]:/*src3*/?[7]\
+	:/*pred_reg*/?[2]:/*pred_cond*/?[5]:/*set_pred*/?[1]:/*set_pred_reg*/?[2]:/*output_reg*/?[1]:/*addr_hi*/?[1]:/*marker*/1[2]: \
+	0xe[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src3_cm*/0[1]:/*src2_cm*/1[1]:?[21]:0[1]:/*IWidth*/1[1]\
+)
+
+op fsmad_full_const2_join( \
+	/*subop*/0[3]:/*?*/0[1]:src3_neg[1]:src1_neg[1]:/*const_seg*/?[4]:/*src1_sh*/?[1]:/*src3*/?[7]\
+	:/*pred_reg*/?[2]:/*pred_cond*/?[5]:/*set_pred*/?[1]:/*set_pred_reg*/?[2]:/*output_reg*/?[1]:/*addr_hi*/?[1]:/*marker*/2[2]: \
+	0xe[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src3_cm*/0[1]:/*src2_cm*/1[1]:?[21]:0[1]:/*IWidth*/1[1]\
+)
+
+group fsmad_full_const(fsmad_full_const3_normal, fsmad_full_const3_end, fsmad_full_const3_join, \
+	fsmad_full_const2_normal, fsmad_full_const2_end, fsmad_full_const2_join)
+
+
+fsmad_full_const.disasm = {
+	buffer << "mad";
+	insn->DisasmControl(buffer);
+	buffer << ".f32";
+	buffer << " ";
+	insn->DisasmDest(buffer);
+
+	buffer << ", ";
+	DisasmSign(src1_neg, buffer);
+	insn->DisasmSrc1(buffer);
+	
+	buffer << ", ";
+	insn->DisasmSrc2(buffer);
+	
+	buffer << ", ";
+	DisasmSign(src3_neg, buffer);
+	insn->DisasmSrc3(buffer);
+}
+
+fsmad_full_const.execute = {
+	typedef VectorRegister<CONFIG> reg_t;
+//	cpu.ExecMarker(marker);
+	// dest = a * b + c
+	reg_t & a = insn->GetSrc1();
+	reg_t & b = insn->GetSrc2();
+	reg_t & c = insn->GetSrc3();
+	CONFIG::vfp32::Mad(a, b, c, src1_neg, 0, src3_neg, RM_RN);
+}
+
+
+op fsmac_imm(\
+	/*subop*/0[3]:/*?*/0[1]:/*imm_hi*/?[26]:/*marker*/3[2]: \
+	0xe[4]:/*addr_reg*/?[3]:/*src1_sh*/?[1]:/*src2_cm*/?[1]:/*src2_neg*/0[1]:/*src1_neg[1]:WTF*//*src2*/?[6]:src3_neg[1]:/*src1*/?[6]: \
+	dest[7]:/*flow*/0[1]:/*long*/1[1] \
+)
+
+//op fsmad_half(\
+//	0xe[4]:/*addr_reg*/?[3]:/*src1_sh*/?[1]:/*src2_cm*/?[1]:/*src2_neg*/0[1]:/*src1_neg*/?[1]:/*src2*/?[5]:src3_neg[1]:/*src1*/?[6]: \
+//	/*dest*/?[7]:/*flow*/0[1]:/*long*/0[1] \
+//)
+
+// TODO: fsmad_half
+
+group fsmac(fsmac_imm)
+
+fsmac.disasm = {
+	if(src3_neg) {		// ??
+		buffer << "msc";
+	}
+	else {
+		buffer << "mac";
+	}
+	insn->DisasmControl(buffer);
+	buffer << ".f32";
+	buffer << " ";
+	insn->DisasmDest(buffer);
+	buffer << ", ";
+//	DisasmSign(src1_neg, buffer);
+	insn->DisasmSrc1(buffer);
+	buffer << ", ";
+	insn->DisasmSrc2(buffer);
+}
+
+fsmac.execute = {
+	typedef VectorRegister<CONFIG> reg_t;
+	// dest += a * b
+	// b immediate
+	reg_t & a = insn->GetSrc1();
+	reg_t & b = insn->GetSrc2();
+	reg_t & c = cpu->GetGPR(dest);	// TODO: count as input operand!
+
+	CONFIG::vfp32::Mad(a, b, c, /*src1_neg*/0, 0, src3_neg, RM_RN);
+}
+
+// Single-precision FP Add
+// full: dest = src1 + src3
+// half: dest = src1 + src2
+
+op fsadd_full_noconst_normal( \
+	/*subop*/0[3]:/*?*/0[1]:src3_neg[1]:src1_neg[1]:0[2]:rounding_mode[2]:?[20]:/*marker*/0[2]: \
+	0xb[4]:/*addr*/?[3]:/*src3_cm*/0[1]:/*src2_cm*/0[1]:?[21]:0[1]:/*IWidth*/1[1]\
+)
+
+//specialize fsadd_full_noconst_normal(src3_neg=0, src1_neg=0, rounding_mode=0)
+
+op fsadd_full_noconst_end( \
+	/*subop*/0[3]:/*?*/0[1]:src3_neg[1]:src1_neg[1]:0[2]:rounding_mode[2]:?[20]:/*marker*/1[2]: \
+	0xb[4]:/*addr*/?[3]:/*src3_cm*/0[1]:/*src2_cm*/0[1]:?[21]:0[1]:/*IWidth*/1[1]\
+)
+
+op fsadd_full_noconst_join( \
+	/*subop*/0[3]:/*?*/0[1]:src3_neg[1]:src1_neg[1]:0[2]:rounding_mode[2]:?[20]:/*marker*/2[2]: \
+	0xb[4]:/*addr*/?[3]:/*src3_cm*/0[1]:/*src2_cm*/0[1]:?[21]:0[1]:/*IWidth*/1[1]\
+)
+
+op fsadd_full_const_normal( \
+	/*subop*/0[3]:/*?*/0[1]:src3_neg[1]:src1_neg[1]:/*cs*/?[4]:?[20]:/*marker*/0[2]: \
+	0xb[4]:/*addr*/?[3]:/*src3_cm*/1[1]:/*src2_cm*/0[1]:?[21]:0[1]:/*IWidth*/1[1]\
+)
+
+op fsadd_full_const_end( \
+	/*subop*/0[3]:/*?*/0[1]:src3_neg[1]:src1_neg[1]:/*cs*/?[4]:?[20]:/*marker*/1[2]: \
+	0xb[4]:/*addr*/?[3]:/*src3_cm*/1[1]:/*src2_cm*/0[1]:?[21]:0[1]:/*IWidth*/1[1]\
+)
+
+op fsadd_full_const_join( \
+	/*subop*/0[3]:/*?*/0[1]:src3_neg[1]:src1_neg[1]:/*cs*/?[4]:?[20]:/*marker*/2[2]: \
+	0xb[4]:/*addr*/?[3]:/*src3_cm*/1[1]:/*src2_cm*/0[1]:?[21]:0[1]:/*IWidth*/1[1]\
+)
+
+
+group fsadd_full(fsadd_full_noconst_normal, fsadd_full_noconst_end, fsadd_full_noconst_join)
+
+group fsadd_full_const(fsadd_full_const_normal, fsadd_full_const_end, fsadd_full_const_join)
+
+
+fsadd_full.disasm = {
+//	cpu.DisasmPred(pred_cond, pred_reg, buffer);
+
+	buffer << "add";
+	insn->DisasmControl(buffer);
+	buffer << ".f32";
+	
+	DisasmRounding(rounding_mode, buffer);
+	buffer << " ";
+	insn->DisasmDest(buffer);
+
+	buffer << ", ";
+	DisasmSign(src1_neg, buffer);
+	insn->DisasmSrc1(buffer);
+	
+	buffer << ", ";
+	DisasmSign(src3_neg, buffer);
+	insn->DisasmSrc3(buffer);
+}
+
+fsadd_full_const.disasm = {
+	buffer << "add";
+	insn->DisasmControl(buffer);
+	buffer << ".f32";
+	
+	buffer << " ";
+	insn->DisasmDest(buffer);
+
+	buffer << ", ";
+	DisasmSign(src1_neg, buffer);
+	insn->DisasmSrc1(buffer);
+	
+	buffer << ", ";
+	DisasmSign(src3_neg, buffer);
+	insn->DisasmSrc3(buffer);
+}
+
+fsadd_full.execute = {
+	typedef VectorRegister<CONFIG> reg_t;
+
+	// dest = a + c
+	reg_t & a = insn->GetSrc1();
+	reg_t & c = insn->GetSrc3();
+	
+	CONFIG::vfp32::Add(a, c, src1_neg, src3_neg, rounding_mode);
+}
+
+fsadd_full_const.execute = {
+	typedef VectorRegister<CONFIG> reg_t;
+
+	// dest = a + c
+	reg_t & a = insn->GetSrc1();
+	reg_t & c = insn->GetSrc3();
+	
+	CONFIG::vfp32::Add(a, c, src1_neg, src3_neg, RM_RN);
+}
+
+
+op fsadd_imm( \
+	/*subop*/0[3]:/*?*/0[1]:/*imm_hi*/?[26]:/*marker*/3[2]: \
+	0xb[4]:/*addr_reg*/?[3]:/*src1_sh*/?[1]:/*src2_cm*/?[1]:src2_neg[1]:/*src2*/?[6]:src1_neg[1]:/*src1*/?[6]: \
+	/*dest*/?[7]:/*flow*/0[1]:/*long*/1[1] \
+)
+
+op fsadd_half( \
+	0xb[4]:/*addr_reg*/?[3]:/*src1_sh*/?[1]:/*src2_cm*/?[1]:src2_neg[1]:/*src2*/?[6]:src1_neg[1]:/*src1*/?[6]: \
+	/*dest*/?[7]:/*flow*/0[1]:/*long*/0[1] \
+)
+
+group fsadd_halfimm(fsadd_imm, fsadd_half)
+
+
+fsadd_halfimm.disasm = {
+//	cpu.DisasmPred(pred_cond, pred_reg, buffer);
+
+	buffer << "add";
+	insn->DisasmControl(buffer);
+	buffer << ".f32";
+	
+	buffer << " ";
+	insn->DisasmDest(buffer);
+
+	buffer << ", ";
+	DisasmSign(src1_neg, buffer);
+	insn->DisasmSrc1(buffer);
+	
+	buffer << ", ";
+	DisasmSign(src2_neg, buffer);
+	insn->DisasmSrc2(buffer);
+}
+
+fsadd_halfimm.execute = {
+	typedef VectorRegister<CONFIG> reg_t;
+
+	// dest = a + b
+	reg_t & a = insn->GetSrc1();
+	reg_t & b = insn->GetSrc2();
+	
+	CONFIG::vfp32::Add(a, b, src1_neg, src2_neg, RM_RN);
+}
+
+
+// Single-precision FP Mul
+// dest = src1 * src2
+
+// TODO: enforce no src2?
+
+op fsmul_full_noconst_normal( \
+	/*subop*/0[3]:/*?*/0[1]:src3_neg[1]:src1_neg[1]:0[2]:rounding_mode[2]:/*src1_sh*/?[1]:/*src3*/?[7]\
+	:/*pred_reg*/?[2]:/*pred_cond*/?[5]:/*set_pred*/?[1]:/*set_pred_reg*/?[2]:/*output_reg*/?[1]:/*addr_hi*/?[1]:/*marker*/0[2]: \
+	0xc[4]:/*addr*/?[3]:/*src3_cm*/0[1]:/*src2_cm*/0[1]:?[21]:0[1]:/*IWidth*/1[1]\
+)
+
+//specialize fsmul_full_noconst_normal(src3_neg=0, src1_neg=0, rounding_mode=0)
+
+op fsmul_full_noconst_end( \
+	/*subop*/0[3]:/*?*/0[1]:src3_neg[1]:src1_neg[1]:0[2]:rounding_mode[2]:/*src1_sh*/?[1]:/*src3*/?[7]\
+	:/*pred_reg*/?[2]:/*pred_cond*/?[5]:/*set_pred*/?[1]:/*set_pred_reg*/?[2]:/*output_reg*/?[1]:/*addr_hi*/?[1]:/*marker*/1[2]: \
+	0xc[4]:/*addr*/?[3]:/*src3_cm*/0[1]:/*src2_cm*/0[1]:?[21]:0[1]:/*IWidth*/1[1]\
+)
+
+op fsmul_full_noconst_join( \
+	/*subop*/0[3]:/*?*/0[1]:src3_neg[1]:src1_neg[1]:0[2]:rounding_mode[2]:/*src1_sh*/?[1]:/*src3*/?[7]\
+	:/*pred_reg*/?[2]:/*pred_cond*/?[5]:/*set_pred*/?[1]:/*set_pred_reg*/?[2]:/*output_reg*/?[1]:/*addr_hi*/?[1]:/*marker*/2[2]: \
+	0xc[4]:/*addr*/?[3]:/*src3_cm*/0[1]:/*src2_cm*/0[1]:?[21]:0[1]:/*IWidth*/1[1]\
+)
+
+op fsmul_full_const_normal( \
+	/*subop*/0[3]:/*?*/0[1]:src3_neg[1]:src1_neg[1]:/*cs*/?[4]:/*src1_sh*/?[1]:/*src3*/?[7]\
+	:/*pred_reg*/?[2]:/*pred_cond*/?[5]:/*set_pred*/?[1]:/*set_pred_reg*/?[2]:/*output_reg*/?[1]:/*addr_hi*/?[1]:/*marker*/0[2]: \
+	0xc[4]:/*addr*/?[3]:/*src3_cm*/0[1]:/*src2_cm*/1[1]:?[21]:0[1]:/*IWidth*/1[1]\
+)
+
+op fsmul_full_const_end( \
+	/*subop*/0[3]:/*?*/0[1]:src3_neg[1]:src1_neg[1]:/*cs*/?[4]:/*src1_sh*/?[1]:/*src3*/?[7]\
+	:/*pred_reg*/?[2]:/*pred_cond*/?[5]:/*set_pred*/?[1]:/*set_pred_reg*/?[2]:/*output_reg*/?[1]:/*addr_hi*/?[1]:/*marker*/1[2]: \
+	0xc[4]:/*addr*/?[3]:/*src3_cm*/0[1]:/*src2_cm*/1[1]:?[21]:0[1]:/*IWidth*/1[1]\
+)
+
+op fsmul_full_const_join( \
+	/*subop*/0[3]:/*?*/0[1]:src3_neg[1]:src1_neg[1]:/*cs*/?[4]:/*src1_sh*/?[1]:/*src3*/?[7]\
+	:/*pred_reg*/?[2]:/*pred_cond*/?[5]:/*set_pred*/?[1]:/*set_pred_reg*/?[2]:/*output_reg*/?[1]:/*addr_hi*/?[1]:/*marker*/2[2]: \
+	0xc[4]:/*addr*/?[3]:/*src3_cm*/0[1]:/*src2_cm*/1[1]:?[21]:0[1]:/*IWidth*/1[1]\
+)
+
+op fsmul_imm( \
+	/*subop*/0[3]:/*?*/0[1]:/*imm_hi*/?[26]:/*marker*/3[2]: \
+	0xc[4]:/*addr_reg*/?[3]:/*src1_sh*/?[1]:/*src2_cm*/?[1]:src3_neg[1]:/*src2*/?[6]:src1_neg[1]:/*src1*/?[6]: \
+	/*dest*/?[7]:/*flow*/0[1]:/*long*/1[1] \
+)
+
+op fsmul_half( \
+	0xc[4]:/*addr_reg*/?[3]:/*src1_sh*/?[1]:/*src2_cm*/?[1]:src3_neg[1]:/*src2*/?[6]:src1_neg[1]:/*src1*/?[6]: \
+	/*dest*/?[7]:/*flow*/0[1]:/*long*/0[1] \
+)
+
+group fsmul_full(fsmul_full_noconst_normal, fsmul_full_noconst_end, fsmul_full_noconst_join)
+group fsmul_full_const(fsmul_full_const_normal, fsmul_full_const_end, fsmul_full_const_join)
+group fsmul_halfimm(fsmul_imm, fsmul_half)
+
+fsmul_full.disasm = {
+
+	buffer << "mul";
+	insn->DisasmControl(buffer);
+	buffer << ".f32";
+	
+	DisasmRounding(rounding_mode, buffer);
+	buffer << " ";
+	insn->DisasmDest(buffer);
+
+	buffer << ", ";
+	DisasmSign(src1_neg, buffer);
+	insn->DisasmSrc1(buffer);
+	
+	buffer << ", ";
+	DisasmSign(src3_neg, buffer);
+	insn->DisasmSrc2(buffer);
+}
+
+fsmul_full.execute = {
+	typedef VectorRegister<CONFIG> reg_t;
+
+	// dest = a * b
+	reg_t & a = insn->GetSrc1();
+	reg_t & b = insn->GetSrc2();
+
+	// src3_neg applies to Src2 here
+	// (not very useful to have -a * -b btw)
+	CONFIG::vfp32::Mul(a, b, src1_neg, src3_neg, rounding_mode);
+}
+
+fsmul_full_const.disasm = {
+	buffer << "mul";
+	insn->DisasmControl(buffer);
+	buffer << ".f32";
+	buffer << " ";
+	insn->DisasmDest(buffer);
+
+	buffer << ", ";
+	DisasmSign(src1_neg, buffer);
+	insn->DisasmSrc1(buffer);
+	
+	buffer << ", ";
+	DisasmSign(src3_neg, buffer);
+	insn->DisasmSrc2(buffer);
+}
+
+fsmul_full_const.execute = {
+	typedef VectorRegister<CONFIG> reg_t;
+
+	// dest = a * b
+	reg_t & a = insn->GetSrc1();
+	reg_t & b = insn->GetSrc2();
+
+	// src3_neg applies to Src2 here
+	// (not very useful to have -a * -b btw)
+	CONFIG::vfp32::Mul(a, b, src1_neg, src3_neg, RM_RN);
+}
+
+
+fsmul_halfimm.disasm = {
+
+	buffer << "mul";
+	insn->DisasmControl(buffer);
+	buffer << ".f32";
+	
+	buffer << " ";
+	insn->DisasmDest(buffer);
+
+	buffer << ", ";
+	DisasmSign(src1_neg, buffer);
+	insn->DisasmSrc1(buffer);
+	
+	buffer << ", ";
+	DisasmSign(src3_neg, buffer);
+	insn->DisasmSrc2(buffer);
+}
+
+fsmul_halfimm.execute = {
+	typedef VectorRegister<CONFIG> reg_t;
+
+	// dest = a * b
+	reg_t & a = insn->GetSrc1();
+	reg_t & b = insn->GetSrc2();
+
+	// src3_neg applies to Src2 here
+	// (not very useful to have -a * -b btw)
+	CONFIG::vfp32::Mul(a, b, src1_neg, src3_neg, RM_RN);
+}
+
+
+
+// TODO: forbid immediate?
+// TODO: setcond > 7 (or flag??)
+// abs_sat??
+op fsset_full( \
+	/*subop*/3[3]:/*?*/0[1]:src3_neg[1]:0[1]:/*const seg*/?[4]:/*src1_sh*/?[1]:src1_abs[1]:src2_abs[1]:0[1]:setcond[4]\
+	:/*pred_reg*/?[2]:/*pred_cond*/?[5]:/*set_pred*/?[1]:/*set_pred_reg*/?[2]:/*output_reg*/?[1]:/*addr_hi*/?[1]:/*marker*/?[2]: \
+	0xb[4]:?[26]:0[1]:/*IWidth*/1[1]\
+)
+
+//specialize fsset_full(src3_neg=0, m32=0, src1_abs=0)
+
+group fsset(fsset_full)
+
+fsset.init = {
+	typedef Operation<CONFIG> inherited;
+	inherited::op_type[OpDest] = DT_U32;	// Always 32-bit?
+	inherited::op_type[OpSrc1] = DT_F32;
+	inherited::op_type[OpSrc2] = DT_F32;
+	inherited::op_type[OpSrc3] = DT_NONE;
+}
+
+fsset.classify = {
+	stats->SetFP();
+}
+
+fsset.disasm = {
+	buffer << "set.";
+	buffer << SetCondString(SetCond(setcond));
+	insn->DisasmControl(buffer);
+	//DisasmSignWidth(false, m32, buffer);
+	buffer << ".f32";
+	
+	buffer << " ";
+	insn->DisasmDest(buffer);
+	buffer << ", ";
+	if(src1_abs) {
+		buffer << "|";
+	}
+	insn->DisasmSrc1(buffer);
+	if(src1_abs) {
+		buffer << "|";
+	}
+	
+	buffer << ", ";
+	if(src2_abs) {
+		buffer << "|";
+	}
+	insn->DisasmSrc2(buffer);
+	if(src2_abs) {
+		buffer << "|";
+	}
+	
+}
+
+fsset.execute = {
+	typedef VectorRegister<CONFIG> reg_t;
+	
+	assert(!src3_neg);	// Is this allowed?
+	//assert(!src1_neg);
+
+	// dest = a * b
+	reg_t & a = insn->GetSrc1();
+	reg_t & b = insn->GetSrc2();
+	reg_t output;
+	VectorFlags<CONFIG> vf;
+
+	vf = CONFIG::vfp32::ComputePredSetFP32(output, a, b, SetCond(setcond), src1_abs, src2_abs);
+	
+	insn->SetDest(output);
+	insn->SetPred(vf);
+}
+
+//--------------------------------------------------------------------
+
+// float to int
+op f2i_full_normal( \
+	/*subop*/4[3]:/*?*/0[1]:issigned[1]:dest_32[1]:/*?*/0[3]:/*f64*/0[1]:/*src1_sh*/?[1]:/*abs_sat*/0[2]:cvt_round[2]:cvt_type[3]:\
+	/*pred_reg*/?[2]:/*pred_cond*/?[5]:/*set_pred*/?[1]:/*set_pred_reg*/?[2]:/*output*/?[1]:/*addr_hi*/?[1]:/*marker*/?[2]: \
+	0xa[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src3_cm*/0[1]:/*src2_cm*/0[1]:/*?*/0[7]:\
+	/*src1*/?[7]:/*dest*/?[7]:/*flow*/0[1]:/*IWidth*/1[1]\
+)
+
+//specialize f2i_full_normal(issigned=1, dest_32=1, cvt_round=3, cvt_type=5)
+
+group f2i_full(f2i_full_normal)
+
+f2i_full.init = {
+	typedef Operation<CONFIG> inherited;
+	DataType dt = RegTypeToDataType(RegType(dest_32));
+	inherited::op_type[OpDest] = dt;
+	assert(cvt_type == CT_U32 || cvt_type == CT_U16);
+	inherited::op_type[OpSrc1] = (
+		(cvt_type == CT_U32) ?
+			DT_F32 :
+			DT_U16);
+	inherited::op_type[OpSrc2] = DT_NONE;
+	inherited::op_type[OpSrc3] = DT_NONE;
+}
+
+f2i_full.classify = {
+	stats->SetFP();
+}
+
+f2i_full.disasm = {
+	buffer << "cvt";
+	insn->DisasmControl(buffer);
+
+	DisasmSignWidth(issigned, dest_32, buffer);
+
+	if(cvt_type == CT_U32) {
+		buffer << ".f32";
+	}
+	else {
+		assert(cvt_type == CT_U16);
+		buffer << ".f16";
+	}
+	DisasmRounding(cvt_round, buffer);
+	buffer << "i";
+	
+	buffer << " ";
+	insn->DisasmDest(buffer);
+
+	buffer << ", ";
+	insn->DisasmSrc1(buffer);
+}
+
+f2i_full.execute = {
+	typedef VectorRegister<CONFIG> reg_t;
+	// dest = a
+	//assert(!f64);
+	reg_t & a = insn->GetSrc1();
+	CONFIG::vfp32::ConvertF2I(a, issigned, dest_32, ConvType(cvt_type), RoundingMode(cvt_round));
+}
+
+
+
+// Float to float
+op fcvtf_full_normal( \
+	/*subop*/6[3]:/*?*/0[1]:cvt_int[1]:dest_32[1]:/*const_seg*/?[4]:/*src1_sh*/?[1]:abs_sat[2]:cvt_round[2]:cvt_type[3]:\
+	/*pred_reg*/?[2]:/*pred_cond*/?[5]:/*set_pred*/?[1]:/*set_pred_reg*/?[2]:/*output*/?[1]:/*addr_hi*/?[1]:/*marker*/0[2]: \
+	0xa[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src3_cm*/0[1]:/*src2_cm*/0[1]:f64[1]:/*?*/0[6]:\
+	/*src1*/?[7]:/*dest*/?[7]:/*flow*/0[1]:/*IWidth*/1[1]\
+)
+
+op fcvtf_full_end( \
+	/*subop*/6[3]:/*?*/0[1]:cvt_int[1]:dest_32[1]:/*const_seg*/?[4]:/*src1_sh*/?[1]:abs_sat[2]:cvt_round[2]:cvt_type[3]:\
+	/*pred_reg*/?[2]:/*pred_cond*/?[5]:/*set_pred*/?[1]:/*set_pred_reg*/?[2]:/*output*/?[1]:/*addr_hi*/?[1]:/*marker*/1[2]: \
+	0xa[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src3_cm*/0[1]:/*src2_cm*/0[1]:f64[1]:/*?*/0[6]:\
+	/*src1*/?[7]:/*dest*/?[7]:/*flow*/0[1]:/*IWidth*/1[1]\
+)
+
+op fcvtf_full_join( \
+	/*subop*/6[3]:/*?*/0[1]:cvt_int[1]:dest_32[1]:/*const_seg*/?[4]:/*src1_sh*/?[1]:abs_sat[2]:cvt_round[2]:cvt_type[3]:\
+	/*pred_reg*/?[2]:/*pred_cond*/?[5]:/*set_pred*/?[1]:/*set_pred_reg*/?[2]:/*output*/?[1]:/*addr_hi*/?[1]:/*marker*/2[2]: \
+	0xa[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src3_cm*/0[1]:/*src2_cm*/0[1]:f64[1]:/*?*/0[6]:\
+	/*src1*/?[7]:/*dest*/?[7]:/*flow*/0[1]:/*IWidth*/1[1]\
+)
+
+
+
+group fcvtf_full(fcvtf_full_normal, fcvtf_full_end, fcvtf_full_join)
+
+// No immediate : dest = conv(src1)
+
+fcvtf_full.init = {
+	typedef Operation<CONFIG> inherited;
+	DataType dt = RegTypeToDataType(RegType(dest_32));
+	inherited::op_type[OpDest] = (dt == DT_U32 ? DT_F32 : DT_U16);
+	assert(cvt_type == CT_U32 || cvt_type == CT_U16);
+	inherited::op_type[OpSrc1] = (
+		(cvt_type == CT_U32) ?
+			DT_F32 :
+			DT_U16);
+	inherited::op_type[OpSrc2] = DT_NONE;
+	inherited::op_type[OpSrc3] = DT_NONE;
+}
+
+fcvtf_full.classify = {
+	stats->SetFP();
+}
+
+fcvtf_full.disasm = {
+	buffer << "cvt";
+	insn->DisasmControl(buffer);
+
+	DisasmConvertFP32(dest_32, ConvType(cvt_type), RoundingMode(cvt_round), cvt_int,
+		AbsSat(abs_sat), buffer);
+	buffer << " ";
+	insn->DisasmDest(buffer);
+
+	buffer << ", ";
+	insn->DisasmSrc1(buffer);
+}
+
+fcvtf_full.execute = {
+	typedef VectorRegister<CONFIG> reg_t;
+	// dest = a
+	// TODO: Read 2 regs if 64-bit
+	assert(!f64);
+	reg_t & a = insn->GetSrc1();
+	CONFIG::vfp32::ConvertF2F(a, dest_32, ConvType(cvt_type), RoundingMode(cvt_round), cvt_int,
+		AbsSat(abs_sat));
+}
+
+
+
+// "delta" in decuda and nouveau??
+// behaves like a mov.f32...
+// used only for negating floats?
+op fmov_full( \
+	/*subop*/7[3]:/*?*/0[1]:/*?*/0[1]:src1_neg[1]:/*const_seg*/?[4]:?[20]:/*marker*/?[2]: \
+	0xa[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src3_cm*/0[1]:/*src2_cm*/0[1]:f64[1]:/*?*/0[6]:\
+	/*src1*/?[7]:/*dest*/?[7]:/*flow*/0[1]:/*IWidth*/1[1]\
+)
+
+//specialize fmov_full(src1_neg=1, f64=0)
+
+//group fmov_full(fmov_full_normal)
+
+group fmov(fmov_full)
+
+// No immediate : dest = conv(src1)
+
+fmov_full.disasm = {
+	buffer << "mov";
+	insn->DisasmControl(buffer);
+	buffer << ".f32";
+
+	buffer << " ";
+	insn->DisasmDest(buffer);
+
+	buffer << ", ";
+	DisasmSign(src1_neg, buffer);
+	insn->DisasmSrc1(buffer);
+}
+
+fmov_full.execute = {
+	typedef VectorRegister<CONFIG> reg_t;
+	assert(!f64);
+	reg_t & a = insn->GetSrc1();
+	reg_t output = CONFIG::vfp32::Mov(a, src1_neg);
+
+	insn->SetDest(output);
+	//insn->SetPredFP32(output);
+}
+
+//////////////////////////////////////////////////////////////////////
+// Transcendentals
+
+op rr_ex2_full( \
+	/*subop*/6[3]:/*?*/0[1]:/*?*/0[1]:/*src1_neg*/0[1]:/*const_seg*/?[4]:?[1]:1[7]:?[12]:/*marker*/?[2]: \
+	0xb[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src3_cm*/0[1]:/*src2_cm*/0[1]:/*f64*/0[1]:/*?*/0[6]:\
+	/*src1*/?[7]:/*dest*/?[7]:/*flow*/0[1]:/*IWidth*/1[1]\
+)
+
+// TODO end, join...
+// Forbid imm
+
+group rr_ex2(rr_ex2_full)
+
+// No immediate : dest = conv(src1)
+
+rr_ex2.disasm = {
+	buffer << "rr.ex2";
+	insn->DisasmControl(buffer);
+	buffer << ".f32";
+
+	buffer << " ";
+	insn->DisasmDest(buffer);
+
+	buffer << ", ";
+	//DisasmSign(src1_neg, buffer);
+	insn->DisasmSrc1(buffer);
+}
+
+rr_ex2.execute = {
+	typedef VectorRegister<CONFIG> reg_t;
+	reg_t & a = insn->GetSrc1();
+	reg_t output = CONFIG::vfp32::RRExp2(a);
+
+	insn->SetDest(output);
+	insn->SetPredI32(output);	// ?
+}
+
+
+op rr_trig_full_normal( \
+	/*subop*/6[3]:/*?*/0[1]:/*?*/0[1]:/*src1_neg*/0[1]:/*const_seg*/?[4]:?[1]:0[7]:?[12]:/*marker*/?[2]: \
+	0xb[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src3_cm*/0[1]:/*src2_cm*/0[1]:/*f64*/0[1]:/*?*/0[6]:\
+	/*src1*/?[7]:/*dest*/?[7]:/*flow*/0[1]:/*IWidth*/1[1]\
+)
+
+// TODO end, join, imm...
+
+group rr_trig(rr_trig_full_normal)
+
+// No immediate : dest = conv(src1)
+
+rr_trig.disasm = {
+	buffer << "rr.sin";
+	insn->DisasmControl(buffer);
+	buffer << ".f32";
+
+	buffer << " ";
+	insn->DisasmDest(buffer);
+
+	buffer << ", ";
+	//DisasmSign(src1_neg, buffer);
+	insn->DisasmSrc1(buffer);
+}
+
+rr_trig.execute = {
+	typedef VectorRegister<CONFIG> reg_t;
+	reg_t & a = insn->GetSrc1();
+	reg_t output = CONFIG::vfp32::RRTrig(a);
+
+	insn->SetDest(output);
+	insn->SetPredI32(output);	// ?
+}
+
+op rcp_full_normal( \
+	/*subop*/0[3]:/*?*/0[1]:/*?*/0[1]:/*src1_neg*/0[1]:/*const_seg*/?[4]:?[1]:?[7]:?[12]:/*marker*/?[2]: \
+	0x9[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src3_cm*/0[1]:/*src2_cm*/0[1]:/*f64*/0[1]:/*?*/0[6]:\
+	/*src1*/?[7]:/*dest*/?[7]:/*flow*/0[1]:/*IWidth*/1[1]\
+)
+
+// TODO end, join, imm...
+
+op rcp_half( \
+	0x9[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src3_cm*/0[1]:/*src2_cm*/0[1]:/*f64*/0[1]:/*?*/0[6]:\
+	/*src1*/?[7]:/*dest*/?[7]:/*flow*/0[1]:/*IWidth*/0[1]\
+)
+
+group rcp(rcp_full_normal, rcp_half)
+
+// No immediate : dest = conv(src1)
+
+rcp.disasm = {
+	buffer << "rcp";
+	insn->DisasmControl(buffer);
+	buffer << ".f32";
+
+	buffer << " ";
+	insn->DisasmDest(buffer);
+
+	buffer << ", ";
+	//DisasmSign(src1_neg, buffer);
+	insn->DisasmSrc1(buffer);
+}
+
+rcp.execute = {
+	CONFIG::vfp32::Rcp(insn->GetSrc1());
+}
+
+////// RSQ
+
+op rsq_full_normal( \
+	/*subop*/2[3]:/*?*/0[1]:/*?*/0[1]:/*src1_neg*/0[1]:/*const_seg*/?[4]:?[1]:?[7]:?[12]:/*marker*/?[2]: \
+	0x9[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src3_cm*/0[1]:/*src2_cm*/0[1]:/*f64*/0[1]:/*?*/0[6]:\
+	/*src1*/?[7]:/*dest*/?[7]:/*flow*/0[1]:/*IWidth*/1[1]\
+)
+
+// TODO end, join, imm...
+
+
+group rsq(rsq_full_normal)
+
+// No immediate : dest = conv(src1)
+
+rsq.disasm = {
+	buffer << "rsqrt";
+	insn->DisasmControl(buffer);
+	buffer << ".f32";
+
+	buffer << " ";
+	insn->DisasmDest(buffer);
+
+	buffer << ", ";
+	//DisasmSign(src1_neg, buffer);
+	insn->DisasmSrc1(buffer);
+}
+
+rsq.execute = {
+	CONFIG::vfp32::Rsq(insn->GetSrc1());
+}
+
+////// LG2
+
+op lg2_full_normal( \
+	/*subop*/3[3]:/*?*/0[1]:/*?*/0[1]:/*src1_neg*/0[1]:/*const_seg*/?[4]:?[1]:?[7]:?[12]:/*marker*/?[2]: \
+	0x9[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src3_cm*/0[1]:/*src2_cm*/0[1]:/*f64*/0[1]:/*?*/0[6]:\
+	/*src1*/?[7]:/*dest*/?[7]:/*flow*/0[1]:/*IWidth*/1[1]\
+)
+
+// TODO end, join, imm...
+
+
+group lg2(lg2_full_normal)
+
+// No immediate : dest = conv(src1)
+
+lg2.disasm = {
+	buffer << "lg2";
+	insn->DisasmControl(buffer);
+	buffer << ".f32";
+
+	buffer << " ";
+	insn->DisasmDest(buffer);
+
+	buffer << ", ";
+	//DisasmSign(src1_neg, buffer);
+	insn->DisasmSrc1(buffer);
+}
+
+lg2.execute = {
+	typedef VectorRegister<CONFIG> reg_t;
+	reg_t & a = insn->GetSrc1();
+	reg_t output = CONFIG::vfp32::Log2(a);
+
+	insn->SetDest(output);
+	//insn->SetPredFP32(output);
+}
+
+////// SIN
+
+op sin_full_normal( \
+	/*subop*/4[3]:/*?*/0[1]:/*?*/0[1]:/*src1_neg*/0[1]:/*const_seg*/?[4]:?[1]:?[7]:?[12]:/*marker*/?[2]: \
+	0x9[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src3_cm*/0[1]:/*src2_cm*/0[1]:/*f64*/0[1]:/*?*/0[6]:\
+	/*src1*/?[7]:/*dest*/?[7]:/*flow*/0[1]:/*IWidth*/1[1]\
+)
+
+// TODO end, join, imm...
+
+
+group sin(sin_full_normal)
+
+// No immediate : dest = conv(src1)
+
+sin.disasm = {
+	buffer << "sin";
+	insn->DisasmControl(buffer);
+	buffer << ".f32";
+
+	buffer << " ";
+	insn->DisasmDest(buffer);
+
+	buffer << ", ";
+	//DisasmSign(src1_neg, buffer);
+	insn->DisasmSrc1(buffer);
+}
+
+sin.execute = {
+	typedef VectorRegister<CONFIG> reg_t;
+	reg_t & a = insn->GetSrc1();
+	reg_t output = CONFIG::vfp32::Sin(a);
+
+	insn->SetDest(output);
+	//insn->SetPredFP32(output);
+}
+
+////// COS
+
+op cos_full_normal( \
+	/*subop*/5[3]:/*?*/0[1]:/*?*/0[1]:/*src1_neg*/0[1]:/*const_seg*/?[4]:?[1]:?[7]:?[12]:/*marker*/?[2]: \
+	0x9[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src3_cm*/0[1]:/*src2_cm*/0[1]:/*f64*/0[1]:/*?*/0[6]:\
+	/*src1*/?[7]:/*dest*/?[7]:/*flow*/0[1]:/*IWidth*/1[1]\
+)
+
+// TODO end, join, imm...
+
+
+group cos(cos_full_normal)
+
+// No immediate : dest = conv(src1)
+
+cos.disasm = {
+	buffer << "cos";
+	insn->DisasmControl(buffer);
+	buffer << ".f32";
+
+	buffer << " ";
+	insn->DisasmDest(buffer);
+
+	buffer << ", ";
+	//DisasmSign(src1_neg, buffer);
+	insn->DisasmSrc1(buffer);
+}
+
+cos.execute = {
+	typedef VectorRegister<CONFIG> reg_t;
+	reg_t & a = insn->GetSrc1();
+	reg_t output = CONFIG::vfp32::Cos(a);
+
+	insn->SetDest(output);
+	//insn->SetPredFP32(output);
+}
+
+////// EX2
+
+op ex2_full_normal( \
+	/*subop*/6[3]:/*?*/0[1]:/*?*/0[1]:/*src1_neg*/0[1]:/*const_seg*/?[4]:?[1]:?[7]:?[12]:/*marker*/?[2]: \
+	0x9[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src3_cm*/0[1]:/*src2_cm*/0[1]:/*f64*/0[1]:/*?*/0[6]:\
+	/*src1*/?[7]:/*dest*/?[7]:/*flow*/0[1]:/*IWidth*/1[1]\
+)
+
+// TODO end, join, imm...
+
+
+group ex2(ex2_full_normal)
+
+// No immediate : dest = conv(src1)
+
+ex2.disasm = {
+	buffer << "ex2";
+	insn->DisasmControl(buffer);
+	buffer << ".f32";
+
+	buffer << " ";
+	insn->DisasmDest(buffer);
+
+	buffer << ", ";
+	//DisasmSign(src1_neg, buffer);
+	insn->DisasmSrc1(buffer);
+}
+
+ex2.execute = {
+	typedef VectorRegister<CONFIG> reg_t;
+	reg_t & a = insn->GetSrc1();
+	reg_t output = CONFIG::vfp32::Exp2(a);
+
+	insn->SetDest(output);
+	//insn->SetPredFP32(output);
+}
+
+
+//////////////////////////////////////////////////////////////////////
+// Min, max
+op fsmax_full_normal( \
+	/*subop*/4[3]:/*?*/0[1]:/*src3_neg*/0[1]:/*src1_neg*/0[1]:/*const seg*/?[4]:/*src1_sh*/?[1]:abs_sat[2]:?[17]:/*marker*/0[2]: \
+	0xb[4]:?[26]:0[1]:/*IWidth*/1[1]\
+)
+
+//specialize fsmax_full_normal(abs_sat=0)
+
+op fsmax_full_end( \
+	/*subop*/4[3]:/*?*/0[1]:/*src3_neg*/0[1]:/*src1_neg*/0[1]:/*const seg*/?[4]:/*src1_sh*/?[1]:abs_sat[2]:?[17]:/*marker*/1[2]: \
+	0xb[4]:?[26]:0[1]:/*IWidth*/1[1]\
+)
+
+op fsmax_full_join( \
+	/*subop*/4[3]:/*?*/0[1]:/*src3_neg*/0[1]:/*src1_neg*/0[1]:/*const seg*/?[4]:/*src1_sh*/?[1]:abs_sat[2]:?[17]:/*marker*/2[2]: \
+	0xb[4]:?[26]:0[1]:/*IWidth*/1[1]\
+)
+
+op fsmax_imm( \
+	/*subop*/4[3]:/*?*/0[1]:/*imm_hi*/?[26]:/*marker*/3[2]: \
+	0xb[4]:/*addr_reg*/?[3]:/*src1_sh*/?[1]:/*src2_cm*/?[1]:/*src2_neg*/0[1]:/*src2*/?[6]:/*src1_neg*/0[1]:/*src1*/?[6]: \
+	/*dest*/?[7]:/*flow*/0[1]:/*long*/1[1] \
+)
+
+group fsmax_full(fsmax_full_normal, fsmax_full_end, fsmax_full_join)
+
+fsmax_full.disasm = {
+	buffer << "max";
+	insn->DisasmControl(buffer);
+	buffer << ".f32";
+	buffer << AbsSatString(AbsSat(abs_sat));
+	
+	buffer << " ";
+	insn->DisasmDest(buffer);
+
+	buffer << ", ";
+	insn->DisasmSrc1(buffer);
+	
+	buffer << ", ";
+	insn->DisasmSrc2(buffer);
+}
+
+fsmax_full.execute = {
+	typedef VectorRegister<CONFIG> reg_t;
+
+	reg_t & a = insn->GetSrc1();
+	reg_t & b = insn->GetSrc2();
+	
+	reg_t output = CONFIG::vfp32::Max(a, b, AbsSat(abs_sat));
+	
+	insn->SetDest(output);
+	//insn->SetPredFP32(output);
+}
+
+fsmax_imm.disasm = {
+	buffer << "max";
+	insn->DisasmControl(buffer);
+	buffer << ".f32";
+	
+	buffer << " ";
+	insn->DisasmDest(buffer);
+
+	buffer << ", ";
+	insn->DisasmSrc1(buffer);
+	
+	buffer << ", ";
+	insn->DisasmSrc2(buffer);
+}
+
+fsmax_imm.execute = {
+	typedef VectorRegister<CONFIG> reg_t;
+
+	reg_t & a = insn->GetSrc1();
+	reg_t & b = insn->GetSrc2();
+	
+	reg_t output = CONFIG::vfp32::Max(a, b, AS_NONE);
+	
+	insn->SetDest(output);
+	//insn->SetPredFP32(output);
+}
+
+op fsmin_full_normal( \
+	/*subop*/5[3]:/*?*/0[1]:/*src3_neg*/0[1]:/*src1_neg*/0[1]:/*const seg*/?[4]:/*src1_sh*/?[1]:abs_sat[2]:?[17]:/*marker*/0[2]: \
+	0xb[4]:?[26]:0[1]:/*IWidth*/1[1]\
+)
+
+//specialize fsmax_full_normal(abs_sat=0)
+
+op fsmin_full_end( \
+	/*subop*/5[3]:/*?*/0[1]:/*src3_neg*/0[1]:/*src1_neg*/0[1]:/*const seg*/?[4]:/*src1_sh*/?[1]:abs_sat[2]:?[17]:/*marker*/1[2]: \
+	0xb[4]:?[26]:0[1]:/*IWidth*/1[1]\
+)
+
+op fsmin_full_join( \
+	/*subop*/5[3]:/*?*/0[1]:/*src3_neg*/0[1]:/*src1_neg*/0[1]:/*const seg*/?[4]:/*src1_sh*/?[1]:abs_sat[2]:?[17]:/*marker*/2[2]: \
+	0xb[4]:?[26]:0[1]:/*IWidth*/1[1]\
+)
+
+op fsmin_imm( \
+	/*subop*/5[3]:/*?*/0[1]:/*imm_hi*/?[26]:/*marker*/3[2]: \
+	0xb[4]:/*addr_reg*/?[3]:/*src1_sh*/?[1]:/*src2_cm*/?[1]:/*src2_neg*/0[1]:/*src2*/?[6]:/*src1_neg*/0[1]:/*src1*/?[6]: \
+	/*dest*/?[7]:/*flow*/0[1]:/*long*/1[1] \
+)
+
+group fsmin_full(fsmin_full_normal, fsmin_full_end, fsmin_full_join)
+
+fsmin_full.disasm = {
+	buffer << "min";
+	insn->DisasmControl(buffer);
+	buffer << ".f32";
+	buffer << AbsSatString(AbsSat(abs_sat));
+	
+	buffer << " ";
+	insn->DisasmDest(buffer);
+
+	buffer << ", ";
+	insn->DisasmSrc1(buffer);
+	
+	buffer << ", ";
+	insn->DisasmSrc2(buffer);
+}
+
+fsmin_full.execute = {
+	typedef VectorRegister<CONFIG> reg_t;
+
+	reg_t & a = insn->GetSrc1();
+	reg_t & b = insn->GetSrc2();
+	
+	reg_t output = CONFIG::vfp32::Min(a, b, AbsSat(abs_sat));
+	
+	insn->SetDest(output);
+}
+
+fsmin_imm.disasm = {
+	buffer << "min";
+	insn->DisasmControl(buffer);
+	buffer << ".f32";
+	
+	buffer << " ";
+	insn->DisasmDest(buffer);
+
+	buffer << ", ";
+	insn->DisasmSrc1(buffer);
+	
+	buffer << ", ";
+	insn->DisasmSrc2(buffer);
+}
+
+fsmin_imm.execute = {
+	typedef VectorRegister<CONFIG> reg_t;
+
+	reg_t & a = insn->GetSrc1();
+	reg_t & b = insn->GetSrc2();
+	
+	reg_t output = CONFIG::vfp32::Min(a, b, AS_NONE);
+	
+	insn->SetDest(output);
+}
+
+
+// Input operands 1, 2, 3 and output operand of type DT_F32
+group fp32d123(fsmad_full, fsmad_full_const)
+
+fp32d123.init = {
+	typedef Operation<CONFIG> inherited;
+	inherited::op_type[OpDest] = DT_F32;
+	inherited::op_type[OpSrc1] = DT_F32;
+	inherited::op_type[OpSrc2] = DT_F32;
+	inherited::op_type[OpSrc3] = DT_F32;
+}
+
+fp32d123.classify = {
+	stats->SetFP();
+}
+
+// Input operands 1, 2 and output operand of type DT_F32
+group fp32d12(fsmac, fsadd_halfimm, fsmul_full, fsmul_halfimm, \
+	fsmul_full_const, fsmax_full, fsmax_imm, fsmin_full, fsmin_imm)
+
+fp32d12.init = {
+	typedef Operation<CONFIG> inherited;
+	inherited::op_type[OpDest] = DT_F32;
+	inherited::op_type[OpSrc1] = DT_F32;
+	inherited::op_type[OpSrc2] = DT_F32;
+	inherited::op_type[OpSrc3] = DT_NONE;
+}
+
+fp32d12.classify = {
+	stats->SetFP();
+}
+
+// Input operands 1, 3 and output operand of type DT_F32
+group fp32d13(fsadd_full, fsadd_full_const)
+
+fp32d13.init = {
+	typedef Operation<CONFIG> inherited;
+	inherited::op_type[OpDest] = DT_F32;
+	inherited::op_type[OpSrc1] = DT_F32;
+	inherited::op_type[OpSrc2] = DT_NONE;
+	inherited::op_type[OpSrc3] = DT_F32;
+}
+
+fp32d13.classify = {
+	stats->SetFP();
+}
+
+// Input operand 1 and output operand of type DT_F32
+group fp32d1(fmov, rcp, rsq, lg2)
+
+fp32d1.init = {
+	typedef Operation<CONFIG> inherited;
+	inherited::op_type[OpDest] = DT_F32;
+	inherited::op_type[OpSrc1] = DT_F32;
+	inherited::op_type[OpSrc2] = DT_NONE;
+	inherited::op_type[OpSrc3] = DT_NONE;
+}
+
+fp32d1.classify = {
+	stats->SetFP();
+}
+
+// Input operand 1: DT_U32 and output operand: DT_F32
+group fp32dint1(ex2, sin, cos)
+
+fp32dint1.init = {
+	typedef Operation<CONFIG> inherited;
+	inherited::op_type[OpDest] = DT_F32;
+	inherited::op_type[OpSrc1] = DT_U32;
+	inherited::op_type[OpSrc2] = DT_NONE;
+	inherited::op_type[OpSrc3] = DT_NONE;
+}
+
+fp32dint1.classify = {
+	stats->SetFP();
+}
+
+// Input operand 1: DT_F32 and output operand : DT_U32
+group intdfp321(rr_ex2, rr_trig)
+
+intdfp321.init = {
+	typedef Operation<CONFIG> inherited;
+	inherited::op_type[OpDest] = DT_U32;
+	inherited::op_type[OpSrc1] = DT_F32;
+	inherited::op_type[OpSrc2] = DT_NONE;
+	inherited::op_type[OpSrc3] = DT_NONE;
+}
+
+intdfp321.classify = {
+	stats->SetFP();
+}
+

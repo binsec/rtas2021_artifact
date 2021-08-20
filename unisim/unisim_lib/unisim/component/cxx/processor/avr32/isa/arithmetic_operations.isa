@@ -1,0 +1,896 @@
+//---------------------------------------------------------------------------------------------
+
+// 				       ARITHMETIC OPERATIONS
+
+//---------------------------------------------------------------------------------------------
+
+// ABS - absolute value                                         
+
+op abs(0b010[3]:0b1110[4]:0b00100[5]:rd[4])
+
+
+abs.execute={
+
+	int32_t d= cpu->GetGPR(rd);
+	uint32_t result;
+			
+	result = (d < 0) ? -d : d;
+	uint8_t zero= (result==0);
+	
+	cpu->SetGPR(rd,result);        // write back result in register rd
+	cpu->SetSR_Z(zero);            // set zero flag
+	
+	return true;
+	
+}
+abs.disasm={
+
+	os<< "abs\t" << REG_NAME[rd];
+}
+
+
+// ACR - add carry to register
+
+op acr(0b010[3]:0b1110[4]:0b00000[5]:rd[4])
+
+acr.execute={
+
+	uint32_t d = cpu->GetGPR(rd);
+	uint32_t result;
+ 
+	uint8_t overflow;
+	uint8_t sign;
+	uint8_t carry_in = cpu->GetSR_C();
+	uint8_t carry_out;
+
+	SignedAdd32(result,carry_out, overflow,sign,d,0,carry_in);
+
+	cpu->SetSR_V(overflow);
+	cpu->SetSR_N(sign);
+	cpu->SetSR_Z(result==0 && cpu->GetSR_Z());
+	cpu->SetSR_C(carry_out);
+	
+	cpu->SetGPR(rd,result);
+
+	return true;
+}
+
+acr.disasm={
+
+	os<< "acr\t" << REG_NAME[rd];
+}
+
+// ADC - add with carry
+
+op adc(0b111[3]:rx[4]:0b00000[5]:ry[4]:><:0b0000[4]:0b00000100[8]:rd[4])
+
+adc.execute={
+
+	uint32_t x=cpu->GetGPR(rx);
+	uint32_t y=cpu->GetGPR(ry);
+	uint32_t result;
+ 
+	uint8_t overflow;
+	uint8_t sign;
+	uint8_t carry_in=cpu->GetSR_C();
+	uint8_t carry_out;
+	
+	SignedAdd32(result,carry_out, overflow,sign,x,y,carry_in);
+
+	cpu->SetSR_V(overflow);
+	cpu->SetSR_N(sign);
+	cpu->SetSR_Z(result==0 && cpu->GetSR_Z());
+	cpu->SetSR_C(carry_out);
+
+	
+	cpu->SetGPR(rd,result);
+
+	return true;
+}
+
+adc.disasm={
+
+	os<< "adc\t" << REG_NAME[rd] << "," << REG_NAME[rx] << "," << REG_NAME[ry];
+}
+
+// ADD - add without carry
+
+op add_a(0b000[3]:rs[4]:0b00000[5]:rd[4]) 
+
+add_a.execute={
+
+	uint32_t d= cpu->GetGPR(rd);
+	uint32_t s= cpu->GetGPR(rs);
+	uint32_t result;
+ 
+	uint8_t overflow;
+	uint8_t sign;
+	uint8_t carry_in=0;
+	uint8_t carry_out;
+	
+ 	SignedAdd32(result,carry_out, overflow,sign,d,s,carry_in);
+
+	cpu->SetSR_V(overflow);
+	cpu->SetSR_N(sign);
+	cpu->SetSR_Z(result==0);
+	cpu->SetSR_C(carry_out);
+
+	cpu->SetGPR(rd,result);
+
+	return true;
+	
+}
+
+add_a.disasm={
+
+	os<< "add\t" << REG_NAME[rd] << "," << REG_NAME[rs];
+
+}
+
+op add_b(0b111[3]:rx[4]:0b00000[5]:ry[4]:><:0b0000[4]:0b0000[4]:0b00[2]:sa[2]:rd[4])
+
+add_b.execute={
+
+	uint32_t x=cpu->GetGPR(rx);
+	uint32_t y=cpu->GetGPR(ry) << sa;
+	uint32_t result;
+ 
+	uint8_t overflow;
+	uint8_t sign;
+	uint8_t carry_in=0;
+	uint8_t carry_out;
+	
+ 	SignedAdd32(result,carry_out, overflow,sign,x,y,carry_in);
+	
+	cpu->SetSR_V(overflow);
+	cpu->SetSR_N(sign);
+	cpu->SetSR_Z(result==0);
+	cpu->SetSR_C(carry_out);
+
+	cpu->SetGPR(rd,result);
+
+	return true;
+}
+
+add_b.disasm={
+
+	os << "add\t" << REG_NAME[rd] << "," << REG_NAME[rx] << "," << REG_NAME[ry]  << std::hex << "<< 0x" <<(unsigned int) sa 
+ << std::dec;
+}
+
+// ADD_COND4 - conditional add                                                            
+
+op add_cond4(0b111[3]:rx[4]:0b11101[5]:ry[4]:><:0b1110[4]:cond4[4]:0b0000[4]:rd[4])
+
+add_cond4.execute={
+
+	if(cpu->EvaluateCond(cond4))
+	{
+		uint32_t x =cpu->GetGPR(rx);
+		uint32_t y=cpu->GetGPR(ry);
+		uint32_t result;
+		uint8_t carry_in=0;
+		uint8_t overflow,sign,carry_out;
+
+		SignedAdd32(result,carry_out, overflow,sign,x,y,carry_in);
+		cpu->SetGPR(rd,result);
+	}
+	return true;
+}
+add_cond4.disasm={
+
+	os<< "add"<< COND[cond4] << "\t" << REG_NAME[rd] << "," << REG_NAME[rx] << "," << REG_NAME[ry];
+
+}
+
+// ADDABS - add absolute value
+
+op addabs(0b111[3]:rx[4]:0b00000[5]:ry[4]:><:0b0000[4]:0b11100100[8]:rd[4])
+
+addabs.execute={
+	
+	uint32_t x =cpu->GetGPR(rx);
+	uint32_t y=cpu->GetGPR(ry);
+	uint32_t result;
+	uint8_t carry_in=0;
+	uint8_t overflow,sign,carry_out;
+
+	uint32_t abs_y = ((int32_t) y < 0) ? -y : y;
+	SignedAdd32(result,carry_out, overflow,sign,x,abs_y,carry_in);
+	
+	cpu->SetGPR(rd,result);
+	cpu->SetSR_Z(result == 0);
+  	
+	return true;
+}
+
+addabs.disasm={
+
+	os<< "addabs\t" << REG_NAME[rd] << "," << REG_NAME[rx] << "," << REG_NAME[ry];
+
+}
+
+// CP_B - compare byte
+
+op cp_b(0b111[3]:rs[4]:0b00000[5]:rd[4]:><:0b0001[4]:0b1000[4]:0b00000000[8])
+
+cp_b.execute={
+
+	uint8_t d =cpu->GetGPR(rd);
+	uint8_t s = cpu->GetGPR(rs);
+	uint8_t result;
+	uint8_t carry_in=0;
+	uint8_t carry_out;
+	uint8_t overflow;
+	uint8_t sign;
+
+	SignedSub8(result, carry_out, overflow, sign, d, s, carry_in);
+  
+	cpu->SetSR_V(overflow);
+	cpu->SetSR_N(sign);
+	cpu->SetSR_Z(result==0);
+	cpu->SetSR_C(carry_out);
+
+	return true;
+}
+
+
+cp_b.disasm={
+
+	os<< "cp.b\t" << REG_NAME[rd] << "," << REG_NAME[rs];
+
+}
+
+// CP_H - compare halfword
+
+op cp_h(0b111[3]:rs[4]:0b00000[5]:rd[4]:><:0b0001[4]:0b1001[4]:0b00000000[8])
+
+cp_h.execute={
+
+	uint16_t d = cpu->GetGPR(rd);
+	uint16_t s = cpu->GetGPR(rs);
+	uint16_t result;
+	uint8_t carry_in=0;
+	uint8_t carry_out;
+	uint8_t overflow;
+	uint8_t sign;
+
+	SignedSub16(result, carry_out, overflow, sign, d, s, carry_in);  
+
+	cpu->SetSR_V(overflow);
+	cpu->SetSR_N(sign);
+	cpu->SetSR_Z(result==0);
+	cpu->SetSR_C(carry_out);
+
+	return true;
+}
+
+
+cp_h.disasm={
+
+	os<< "cp.h\t" << REG_NAME[rd] << "," << REG_NAME[rs];
+
+}
+
+// CP_W - compare word
+
+op cp_w_a(0b000[3]:rs[4]:0b00011[5]:rd[4])
+
+cp_w_a.execute={
+
+	uint32_t d =cpu->GetGPR(rd);
+	uint32_t s = cpu->GetGPR(rs);
+	uint32_t result;
+	uint8_t carry_in=0;
+	uint8_t carry_out;
+	uint8_t overflow;
+	uint8_t sign;
+
+	SignedSub32(result, carry_out, overflow, sign, d, s, carry_in);  
+
+	cpu->SetSR_V(overflow);
+	cpu->SetSR_N(sign);
+	cpu->SetSR_Z(result==0);
+	cpu->SetSR_C(carry_out);
+
+	return true;
+}
+
+cp_w_a.disasm={
+
+	os<< "cp.w\t" << REG_NAME[rd] << "," << REG_NAME[rs];
+
+}
+
+op cp_w_b(0b010[3]:0b110[3]:sext<32>imm6[6]:rd[4])
+
+cp_w_b.execute={
+
+	uint32_t d =cpu->GetGPR(rd);
+	uint32_t result;
+	uint8_t carry_in=0;
+	uint8_t carry_out;
+	uint8_t overflow;
+	uint8_t sign;
+
+	SignedSub32(result, carry_out, overflow, sign, d, imm6, carry_in); 
+
+	cpu->SetSR_V(overflow);
+	cpu->SetSR_N(sign);
+	cpu->SetSR_Z(result==0);
+	cpu->SetSR_C(carry_out);
+
+	return true;
+}
+
+cp_w_b.disasm={
+
+	os<< "cp.w\t" << REG_NAME[rd] << ","<< imm6;
+	if(CONFIG::DISAMBIGUATE_DISASM) os<< "\t\t/*imm6*/";
+
+}
+
+op cp_w_c(0b111[3]:shl<17>imm_20_17[4]:0b0010[4]:shl<16>imm_16[1]:rd[4]:><:imm_15_0[16])
+
+cp_w_c.var imm : { int32_t } = { SignExtend(imm_20_17 | imm_16 | imm_15_0, 21) }
+
+cp_w_c.execute={
+
+	uint32_t d =cpu->GetGPR(rd);
+	uint32_t result;
+	uint8_t carry_in=0;
+	uint8_t carry_out;
+	uint8_t overflow;
+	uint8_t sign;
+
+	SignedSub32(result, carry_out, overflow, sign, d, imm, carry_in); 
+
+	cpu->SetSR_V(overflow);
+	cpu->SetSR_N(sign);
+	cpu->SetSR_Z(result==0);
+	cpu->SetSR_C(carry_out);
+
+	return true;
+}
+cp_w_c.disasm={
+
+	os<< "cp.w\t" << REG_NAME[rd] << "," << imm;
+	if(CONFIG::DISAMBIGUATE_DISASM) os<< "\t\t/*imm21*/";
+
+}
+
+
+
+// CPC - compare with carry
+
+op cpc_a(0b111[3]:rs[4]:0b00000[5]:rd[4]:><:0b0001[4]:0b0011[4]:0b00000000[8])
+
+cpc_a.execute={
+
+	uint32_t s = cpu->GetGPR(rs);
+	uint32_t d = cpu->GetGPR(rd);
+
+	uint8_t borrow_in = cpu->GetSR_C();
+	uint8_t sign;
+	uint8_t overflow;
+	uint8_t borrow_out;
+	uint32_t result;
+	
+	SignedSub32(result,borrow_out, overflow, sign, d, s, borrow_in);
+	
+	cpu->SetSR_V(overflow);
+	cpu->SetSR_N(sign);
+	cpu->SetSR_Z((result==0) && cpu->GetSR_Z());
+	cpu->SetSR_C(borrow_out);
+
+	return true;
+}
+
+cpc_a.disasm={
+
+	os<< "cpc\t" << REG_NAME[rd] << "," << REG_NAME[rs];
+}
+
+op cpc_b(0b010[3]:0b1110[4]:0b00010[5]:rd[4])
+
+
+cpc_b.execute={
+
+	uint32_t d = cpu->GetGPR(rd);
+
+	uint8_t borrow_in = cpu->GetSR_C();
+	uint8_t sign;
+	uint8_t overflow;
+	uint8_t borrow_out;
+	uint32_t result;
+	
+	SignedSub32(result,borrow_out, overflow, sign, d, 0, borrow_in);
+	
+	cpu->SetSR_V(overflow);
+	cpu->SetSR_N(sign);
+	cpu->SetSR_Z((result==0) && cpu->GetSR_Z());
+	cpu->SetSR_C(borrow_out);
+
+	return true;
+}
+cpc_b.disasm={
+
+	os<< "cpc\t"<< REG_NAME[rd];
+}
+
+// MAX - return maximum value
+
+op max(0b111[3]:rx[4]:0b00000[5]:ry[4]:><:0b0000[4]:0b11000100[8]:rd[4])
+
+max.execute={
+
+	int32_t x =  cpu->GetGPR(rx);
+	int32_t y = cpu->GetGPR(ry);
+	uint32_t result = (x > y) ? x : y;
+
+	cpu->SetGPR(rd,result);
+
+	return true;
+}
+
+max.disasm={
+
+	os << "max\t" << REG_NAME[rd] << "," << REG_NAME[rx] << "," << REG_NAME[ry];
+}
+
+//MIN - return minimum value
+
+op min(0b111[3]:rx[4]:0b00000[5]:ry[4]:><:0b0000[4]:0b11010100[8]:rd[4])
+//erreur dans la doc (AVR32 Architecture Manual) rd au lieu de ry
+
+min.execute={
+
+	int32_t x =  cpu->GetGPR(rx);
+	int32_t y = cpu->GetGPR(ry);
+	uint32_t result = (x < y) ? x : y;
+
+	cpu->SetGPR(rd,result);
+
+	return true;
+}
+
+min.disasm={
+
+	os << "min\t" << REG_NAME[rd] << "," << REG_NAME[rx] << "," << REG_NAME[ry];
+}
+
+//NEG - two's complement
+
+op neg(0b010[3]:0b1110[4]:0b00011[5]:rd[4])
+
+neg.execute={
+
+	uint32_t d = cpu->GetGPR(rd);
+	uint32_t result;
+	uint8_t carry_in=0;
+	uint8_t carry_out;
+	uint8_t overflow;
+	uint8_t sign;
+
+	SignedSub32(result, carry_out, overflow, sign, 0, d, carry_in);  
+
+	cpu->SetSR_V(overflow);
+	cpu->SetSR_N(sign);
+	cpu->SetSR_Z(result==0);
+	cpu->SetSR_C(carry_out);
+
+	cpu->SetGPR(rd,result);
+
+	return true;
+}
+
+
+neg.disasm={
+
+	os << "neg\t" << REG_NAME[rd];
+}
+
+// RSUB - reverse subtract
+
+op rsub_a(0b000[3]:rs[4]:0b00010[5]:rd[4])
+
+rsub_a.execute = {
+					 // get values
+	
+	uint32_t s= cpu->GetGPR(rs);     // rs
+	uint32_t d= cpu->GetGPR(rd);     // rd
+	uint32_t result;
+ 
+	uint8_t overflow;
+	uint8_t sign;
+	uint8_t carry_in=0;            
+	uint8_t carry_out;
+	
+	SignedSub32(result,carry_out, overflow,sign,s,d,carry_in);       // perform substraction rs - rd
+
+	cpu->SetSR_V(overflow);          //set flags
+	cpu->SetSR_N(sign);
+	cpu->SetSR_Z(result==0);
+	cpu->SetSR_C(carry_out);
+
+	cpu->SetGPR(rd,result);         // write back result
+
+	return true;
+}
+
+
+rsub_a.disasm={
+
+	os << "rsub\t" << REG_NAME[rd] << "," << REG_NAME[rs];
+}
+
+op rsub_b(0b111[3]:rs[4]:0b00000[5]:rd[4]:><:0b0001[4]:0b0001[4]:sext<32>imm8[8])
+
+rsub_b.execute = {
+
+							// get values
+	uint32_t s = cpu->GetGPR(rs);                 // rs
+	
+	uint32_t result;
+ 	uint8_t overflow;
+	uint8_t sign;
+	uint8_t carry_in=0;            
+	uint8_t carry_out;
+	
+	SignedSub32(result,carry_out, overflow,sign,imm8,s,carry_in);       // perform SE(imm8) - rs
+
+	cpu->SetSR_V(overflow);                   // Set flags
+	cpu->SetSR_N(sign);
+	cpu->SetSR_Z(result==0);
+	cpu->SetSR_C(carry_out);
+
+	cpu->SetGPR(rd,result);                   // write back result
+
+	return true;
+}
+
+rsub_b.disasm={
+
+	os << "rsub\t" << REG_NAME[rd] << "," << REG_NAME[rs] << "," << imm8;
+}
+
+// RSUB_COND4 - conditional reverse subtract
+
+op rsub_cond4(0b111[3]:0b1101[4]:0b11011[5]:rd[4]:><:0b0000[4]:cond4[4]:sext<32>imm8[8])
+
+rsub_cond4.execute={
+
+	if(cpu->EvaluateCond(cond4))
+	{
+		uint32_t d = cpu->GetGPR(rd);                  // rd
+		uint32_t result;
+ 
+		uint8_t overflow;
+		uint8_t sign;
+		uint8_t carry_in=0;            
+		uint8_t carry_out;
+		
+		SignedSub32(result,carry_out, overflow,sign,imm8,d,carry_in);         //perform SE(imm8) -Rd
+	
+		// flags not affected
+	
+		cpu->SetGPR(rd,result);                       //write back result
+	}
+	return true;
+}
+
+rsub_cond4.disasm={
+
+	os << "rsub" << COND[cond4] <<"\t" << REG_NAME[rd] << "," <<  imm8;
+}
+
+//SBC -  subtract with carry
+
+op sbc(0b111[3]:rx[4]:0b00000[5]:ry[4]:><:0b0000[4]:0b00010100[8]:rd[4])
+
+sbc.execute = {
+
+	
+	uint32_t x= cpu->GetGPR(rx);     // rx
+	uint32_t y= cpu->GetGPR(ry);     //ry
+	
+	uint32_t result;
+ 	uint8_t overflow;
+	uint8_t sign;
+	uint8_t carry_in = cpu->GetSR_C();     //get carry         
+	uint8_t carry_out;
+	
+	SignedSub32(result,carry_out, overflow,sign,x,y,carry_in);        // perform Rx-Ry-1
+
+	cpu->SetSR_V(overflow);                // set flags
+	cpu->SetSR_N(sign);
+	cpu->SetSR_Z((result==0) && cpu->GetSR_Z());
+	cpu->SetSR_C(carry_out);
+
+	cpu->SetGPR(rd,result);                // write back result
+
+	return true;
+}
+sbc.disasm={
+
+	
+os << "sbc\t" << REG_NAME[rd] << "," << REG_NAME[rx] << "," << REG_NAME[ry];
+}
+
+//SCR - subtract carry from register
+
+op scr(0b010[3]:0b1110[4]:0b00001[5]:rd[4])
+
+scr.execute = {
+
+	
+	uint32_t d=cpu->GetGPR(rd);     // rd
+        
+	uint32_t result;
+     	uint8_t overflow;
+	uint8_t sign;
+	uint8_t carry_in = cpu->GetSR_C();     //get carry       
+	uint8_t carry_out;
+	
+	SignedSub32(result,carry_out, overflow,sign,d,0,carry_in);  // perform rd - c
+
+	cpu->SetSR_V(overflow);              // set flags
+	cpu->SetSR_N(sign);
+	cpu->SetSR_Z(result==0 && cpu->GetSR_Z());
+	cpu->SetSR_C(carry_out);
+
+	cpu->SetGPR(rd,result);              // write back result
+
+	return true;
+}
+
+scr.disasm={
+
+	os << "scr\t" << REG_NAME[rd];
+}
+
+//SUB - subtract without carry
+
+op sub_a(0b000[3]:rs[4]:0b00001[5]:rd[4])
+
+sub_a.execute = {
+
+	
+	uint32_t d=cpu->GetGPR(rd); // rd
+	uint32_t s=cpu->GetGPR(rs); //rs
+	uint32_t result;
+ 
+	uint8_t overflow;
+	uint8_t sign;
+	uint8_t carry_in=0;           // carry is 0 
+	uint8_t carry_out;
+	
+	SignedSub32(result,carry_out, overflow,sign,d,s,carry_in);      // perform rd - rs
+
+	cpu->SetSR_V(overflow);       // set flags
+	cpu->SetSR_N(sign);
+	cpu->SetSR_Z(result==0);
+	cpu->SetSR_C(carry_out);
+
+	cpu->SetGPR(rd,result);      // write back result
+
+	return true;
+}
+
+sub_a.disasm={
+
+	os << "sub\t" << REG_NAME[rd] << "," << REG_NAME[rs];
+}
+
+op sub_b(0b111[3]:rx[4]:0b00000[5]:ry[4]:><:0b0000[4]:0b0001[4]:0b00[2]:sa[2]:rd[4])
+
+sub_b.execute = {
+
+	
+	uint32_t x= cpu->GetGPR(rx);         // rx
+	uint32_t y= cpu->GetGPR(ry) << sa;  //ry << sa
+	uint32_t result;
+ 
+	uint8_t overflow;
+	uint8_t sign;
+	uint8_t carry_in=0;            
+	uint8_t carry_out;
+	
+	SignedSub32(result,carry_out, overflow,sign,x,y,carry_in);        //perform rx - (ry << sa)
+
+	cpu->SetSR_V(overflow);        // set flags
+	cpu->SetSR_N(sign);
+	cpu->SetSR_Z(result==0);
+	cpu->SetSR_C(carry_out);
+
+	cpu->SetGPR(rd,result);        // write back result
+
+	return true;
+}
+
+sub_b.disasm={
+
+	os << "sub\t" << REG_NAME[rd] << "," << REG_NAME[rx] << "," << REG_NAME[ry] << "<<"<< (int) sa;
+}
+
+op sub_c(0b001[3]:0b0[1]:sext<32>imm8[8]:rd[4])
+
+sub_c.execute = {
+
+	
+	uint32_t d=cpu->GetGPR(rd);     // rd
+		
+	uint32_t s = (rd == REG_SP) ? imm8 << 2 : imm8;
+                   
+	uint32_t result;
+ 	uint8_t overflow;
+	uint8_t sign;
+	uint8_t carry_in=0;            
+	uint8_t carry_out;
+	
+	SignedSub32(result,carry_out, overflow,sign,d,s,carry_in);       // perform rd - SE(imm8 << 2) or rd - SE(imm8)
+
+	cpu->SetSR_V(overflow);     // set flags
+	cpu->SetSR_N(sign);
+	cpu->SetSR_Z(result==0);
+	cpu->SetSR_C(carry_out);
+
+	cpu->SetGPR(rd,result);    // write back result
+
+	return true;
+}
+
+
+sub_c.disasm={
+
+	os << "sub\t" << REG_NAME[rd] << "," << ((rd == REG_SP) ? imm8 << 2 : imm8);
+	if(CONFIG::DISAMBIGUATE_DISASM) os<< "\t\t/*imm8*/";
+}
+
+op sub_d(0b111[3]:shl<17>imm_20_17[4]:0b0001[4]:shl<16>imm_16[1]:rd[4]:><:imm_15_0[16])
+sub_d.var imm :{int32_t}= {SignExtend(imm_20_17 | imm_16 | imm_15_0,21)}
+
+sub_d.execute = {
+
+	
+	uint32_t d= cpu->GetGPR(rd);     // rd
+	
+	uint32_t result;
+ 	uint8_t overflow;
+	uint8_t sign;
+	uint8_t carry_in=0;            
+	uint8_t carry_out;
+	
+	SignedSub32(result,carry_out, overflow,sign,d,imm,carry_in);  // perform rd - SignExtend(imm21)
+
+	cpu->SetSR_V(overflow);        // set flags
+	cpu->SetSR_N(sign);
+	cpu->SetSR_Z(result==0);
+	cpu->SetSR_C(carry_out);
+
+	cpu->SetGPR(rd,result);       // write back result
+
+	return true;
+}
+
+sub_d.disasm={
+
+	os << "sub\t" << REG_NAME[rd] << ","  << imm;
+	if(CONFIG::DISAMBIGUATE_DISASM) os<< "\t\t/*imm21*/";
+}
+
+op sub_e(0b111[3]:rs[4]:0b01100[5]:rd[4]:><:sext<32>imm16[16])
+
+sub_e.execute = {
+
+	
+	uint32_t s= cpu->GetGPR(rs);                  // rs
+	uint32_t result;
+ 	uint8_t overflow;
+	uint8_t sign;
+	uint8_t carry_in=0;            
+	uint8_t carry_out;
+	
+	SignedSub32(result,carry_out, overflow,sign,s,imm16,carry_in);  // perform rs - SignExtend(imm16)
+
+	cpu->SetSR_V(overflow);             // set flags
+	cpu->SetSR_N(sign);
+	cpu->SetSR_Z(result==0);
+	cpu->SetSR_C(carry_out);
+
+	cpu->SetGPR(rd,result);            // write back result
+
+	return true;
+}
+
+
+sub_e.disasm={
+
+	os << "sub\t" << REG_NAME[rd] << "," << REG_NAME[rs] << "," << imm16 ;
+}
+
+//SUB_COND4_F and SUB_COND4 - conditional subtract
+
+op sub_flag_cond4(0b111[3]:0b101[3]:f[1]:0b11011[5]:rd[4]:><:0b0000[4]:cond4[4]:sext<32>imm8[8])
+
+sub_flag_cond4.execute = {
+
+	if(cpu->EvaluateCond(cond4))
+	{
+		uint32_t d= cpu->GetGPR(rd);           // rd
+		uint32_t result;
+ 
+		uint8_t overflow;
+		uint8_t sign;
+		uint8_t carry_in=0;            
+		uint8_t carry_out;
+	
+		SignedSub32(result,carry_out, overflow,sign,d,imm8,carry_in);  // perform rd - SE(imm8)
+
+		if(f==1)           //set flag
+		{
+			cpu->SetSR_V(overflow);
+			cpu->SetSR_N(sign);
+			cpu->SetSR_Z(result==0);
+			cpu->SetSR_C(carry_out);
+	
+		}	
+		cpu->SetGPR(rd,result);    //write back result
+
+	}
+	return true;
+}
+
+sub_flag_cond4.disasm={
+
+	os << "subf"<< COND[cond4]<<"\t" << REG_NAME[rd] << "," <<(int) imm8;
+
+}
+
+op sub_cond4(0b111[3]:rx[4]:0b11101[5]:ry[4]:><:0b1110[4]:cond4[4]:0b0001[4]:rd[4])
+
+sub_cond4.execute = {
+
+	if(cpu->EvaluateCond(cond4))
+	{
+		uint32_t x= cpu->GetGPR(rx);           // rx
+		uint32_t y= cpu->GetGPR(ry);           // ry
+		uint32_t result;
+ 
+		uint8_t overflow;
+		uint8_t sign;
+		uint8_t carry_in=0;           
+		uint8_t carry_out;
+	
+		SignedSub32(result,carry_out, overflow,sign,x,y,carry_in);        // perform rx - ry
+
+		// flags are not affected
+	
+		cpu->SetGPR(rd,result);	  // write back result
+	}
+	return true;
+}
+sub_cond4.disasm={
+
+	os << "sub"<< COND[cond4]<<"\t" << REG_NAME[rd] << "," << REG_NAME[rx] << "," << REG_NAME[ry];
+}
+
+//TNBZ - test if no byte equal to zero
+
+op tnbz(0b010[3]:0b1110[4]:0b01110[5]:rd[4])
+
+tnbz.execute={
+	
+	uint32_t d = cpu-> GetGPR(rd);
+
+	uint8_t zero = ((d & 0xFF000000)==0)||((d & 0x00FF0000)==0)||((d & 0x0000FF00)==0)||((d & 0x000000FF)==0);
+
+	cpu->SetSR_Z(zero);
+	return true;
+}
+
+tnbz.disasm={
+
+	os << "tnbz\t" << REG_NAME[rd];
+}
+

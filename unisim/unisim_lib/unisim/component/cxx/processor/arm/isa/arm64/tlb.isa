@@ -1,0 +1,267 @@
+/*
+ *  Copyright (c) 2007-2017,
+ *  Commissariat a l'Energie Atomique (CEA)
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without modification,
+ *  are permitted provided that the following conditions are met:
+ *
+ *   - Redistributions of source code must retain the above copyright notice, this
+ *     list of conditions and the following disclaimer.
+ *
+ *   - Redistributions in binary form must reproduce the above copyright notice,
+ *     this list of conditions and the following disclaimer in the documentation
+ *     and/or other materials provided with the distribution.
+ *
+ *   - Neither the name of CEA nor the names of its contributors may be used to
+ *     endorse or promote products derived from this software without specific prior
+ *     written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ *  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *  DISCLAIMED.
+ *  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ *  INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ *  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+ *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ *  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Authors: Yves Lhuillier (yves.lhuillier@cea.fr)
+ */
+
+/*******************************************************************
+ * TLBI
+ *
+ * TLB invalidate operation
+ */
+
+op tlbi_alle1( 0b1101010100001[13] : 0b100[3] : 0b1000[4] : 0b0111[4] : 0b100[3] : ?[5] );
+tlbi_alle1.var format : {char const*} = {"base,2889"};
+
+tlbi_alle1.disasm = {
+  sink << "tlbi\talle1";
+};
+
+op tlbi_alle1is( 0b1101010100001[13] : 0b100[3] : 0b1000[4] : 0b0011[4] : 0b100[3] : ?[5] );
+tlbi_alle1is.var format : {char const*} = {"base,2890"};
+
+tlbi_alle1is.disasm = {
+  sink << "tlbi\talle1is";
+};
+
+op tlbi_alle2( 0b1101010100001[13] : 0b100[3] : 0b1000[4] : 0b0111[4] : 0b000[3] : ?[5] );
+tlbi_alle2.var format : {char const*} = {"base,2891"};
+
+tlbi_alle2.disasm = {
+  sink << "tlbi\talle2";
+};
+
+op tlbi_alle2is( 0b1101010100001[13] : 0b100[3] : 0b1000[4] : 0b0011[4] : 0b000[3] : ?[5] );
+tlbi_alle2is.var format : {char const*} = {"base,2892"};
+
+tlbi_alle2is.disasm = {
+  sink << "tlbi\talle2is";
+};
+
+op tlbi_alle3( 0b1101010100001[13] : 0b110[3] : 0b1000[4] : 0b0111[4] : 0b000[3] : ?[5] );
+tlbi_alle3.var format : {char const*} = {"base,2893"};
+
+tlbi_alle3.disasm = {
+  sink << "tlbi\talle3";
+};
+
+op tlbi_alle3is( 0b1101010100001[13] : 0b110[3] : 0b1000[4] : 0b0011[4] : 0b000[3] : ?[5] );
+tlbi_alle3is.var format : {char const*} = {"base,2894"};
+
+tlbi_alle3is.disasm = {
+  sink << "tlbi\talle3is";
+};
+
+op tlbi_aside1( 0b1101010100001[13] : 0b000[3] : 0b1000[4] : 0b0111[4] : 0b010[3] : rt[5] );
+tlbi_aside1.var format : {char const*} = {"base,2895"};
+
+tlbi_aside1.disasm = {
+  sink << "tlbi\taside1, " << DisasmGZXR(rt);
+};
+
+op tlbi_aside1is( 0b1101010100001[13] : 0b000[3] : 0b1000[4] : 0b0011[4] : 0b010[3] : rt[5] );
+tlbi_aside1is.var format : {char const*} = {"base,2896"};
+
+tlbi_aside1is.disasm = {
+  sink << "tlbi\taside1is, " << DisasmGZXR(rt);
+};
+
+op tlbi_ipas2e1( 0b1101010100001[13] : 0b100[3] : 0b1000[4] : 0b0100[4] : 0b001[3] : rt[5] );
+tlbi_ipas2e1.var format : {char const*} = {"base,2904"};
+
+tlbi_ipas2e1.disasm = {
+  sink << "tlbi\tipas2e1, " << DisasmGZXR(rt);
+};
+
+op tlbi_ipas2e1is( 0b1101010100001[13] : 0b100[3] : 0b1000[4] : 0b0000[4] : 0b001[3] : rt[5] );
+tlbi_ipas2e1is.var format : {char const*} = {"base,2905"};
+
+tlbi_ipas2e1is.disasm = {
+  sink << "tlbi\tipas2e1is, " << DisasmGZXR(rt);
+};
+
+op tlbi_ipas2le1( 0b1101010100001[13] : 0b100[3] : 0b1000[4] : 0b0100[4] : 0b101[3] : rt[5] );
+tlbi_ipas2le1.var format : {char const*} = {"base,2906"};
+
+tlbi_ipas2le1.disasm = {
+  sink << "tlbi\tipas2le1, " << DisasmGZXR(rt);
+};
+
+op tlbi_ipas2le1is( 0b1101010100001[13] : 0b100[3] : 0b1000[4] : 0b0000[4] : 0b101[3] : rt[5] );
+tlbi_ipas2le1is.var format : {char const*} = {"base,2907"};
+
+tlbi_ipas2le1is.disasm = {
+  sink << "tlbi\tipas2le1is, " << DisasmGZXR(rt);
+};
+
+op tlbi_vaae1( 0b1101010100001[13] : 0b000[3] : 0b1000[4] : 0b0111[4] : 0b011[3] : rt[5] );
+tlbi_vaae1.var format : {char const*} = {"base,2922"};
+
+tlbi_vaae1.disasm = {
+  sink << "tlbi\tvaae1, " << DisasmGZXR(rt);
+};
+
+op tlbi_vaae1is( 0b1101010100001[13] : 0b000[3] : 0b1000[4] : 0b0011[4] : 0b011[3] : rt[5] );
+tlbi_vaae1is.var format : {char const*} = {"base,2923"};
+
+tlbi_vaae1is.disasm = {
+  sink << "tlbi\tvaae1is, " << DisasmGZXR(rt);
+};
+
+op tlbi_vaale1( 0b1101010100001[13] : 0b000[3] : 0b1000[4] : 0b0111[4] : 0b111[3] : rt[5] );
+tlbi_vaale1.var format : {char const*} = {"base,2924"};
+
+tlbi_vaale1.disasm = {
+  sink << "tlbi\tvaale1, " << DisasmGZXR(rt);
+};
+
+op tlbi_vaale1is( 0b1101010100001[13] : 0b000[3] : 0b1000[4] : 0b0011[4] : 0b111[3] : rt[5] );
+tlbi_vaale1is.var format : {char const*} = {"base,2925"};
+
+tlbi_vaale1is.disasm = {
+  sink << "tlbi\tvaale1is, " << DisasmGZXR(rt);
+};
+
+op tlbi_vae1( 0b1101010100001[13] : 0b000[3] : 0b1000[4] : 0b0111[4] : 0b001[3] : rt[5] );
+tlbi_vae1.var format : {char const*} = {"base,2926"};
+
+tlbi_vae1.disasm = {
+  sink << "tlbi\tvae1, " << DisasmGZXR(rt);
+};
+
+op tlbi_vae1is( 0b1101010100001[13] : 0b000[3] : 0b1000[4] : 0b0011[4] : 0b001[3] : rt[5] );
+tlbi_vae1is.var format : {char const*} = {"base,2927"};
+
+tlbi_vae1is.disasm = {
+  sink << "tlbi\tvae1is, " << DisasmGZXR(rt);
+};
+
+op tlbi_vae2( 0b1101010100001[13] : 0b100[3] : 0b1000[4] : 0b0111[4] : 0b001[3] : rt[5] );
+tlbi_vae2.var format : {char const*} = {"base,2928"};
+
+tlbi_vae2.disasm = {
+  sink << "tlbi\tvae2, " << DisasmGZXR(rt);
+};
+
+op tlbi_vae2is( 0b1101010100001[13] : 0b100[3] : 0b1000[4] : 0b0011[4] : 0b001[3] : rt[5] );
+tlbi_vae2is.var format : {char const*} = {"base,2929"};
+
+tlbi_vae2is.disasm = {
+  sink << "tlbi\tvae2is, " << DisasmGZXR(rt);
+};
+
+op tlbi_vae3( 0b1101010100001[13] : 0b110[3] : 0b1000[4] : 0b0111[4] : 0b001[3] : rt[5] );
+tlbi_vae3.var format : {char const*} = {"base,2930"};
+
+tlbi_vae3.disasm = {
+  sink << "tlbi\tvae3, " << DisasmGZXR(rt);
+};
+
+op tlbi_vae3is( 0b1101010100001[13] : 0b110[3] : 0b1000[4] : 0b0011[4] : 0b001[3] : rt[5] );
+tlbi_vae3is.var format : {char const*} = {"base,2931"};
+
+tlbi_vae3is.disasm = {
+  sink << "tlbi\tvae3is, " << DisasmGZXR(rt);
+};
+
+op tlbi_vale1( 0b1101010100001[13] : 0b000[3] : 0b1000[4] : 0b0111[4] : 0b101[3] : rt[5] );
+tlbi_vale1.var format : {char const*} = {"base,2932"};
+
+tlbi_vale1.disasm = {
+  sink << "tlbi\tvale1, " << DisasmGZXR(rt);
+};
+
+op tlbi_vale1is( 0b1101010100001[13] : 0b000[3] : 0b1000[4] : 0b0011[4] : 0b101[3] : rt[5] );
+tlbi_vale1is.var format : {char const*} = {"base,2933"};
+
+tlbi_vale1is.disasm = {
+  sink << "tlbi\tvale1is, " << DisasmGZXR(rt);
+};
+
+op tlbi_vale2( 0b1101010100001[13] : 0b100[3] : 0b1000[4] : 0b0111[4] : 0b101[3] : rt[5] );
+tlbi_vale2.var format : {char const*} = {"base,2934"};
+
+tlbi_vale2.disasm = {
+  sink << "tlbi\tvale2, " << DisasmGZXR(rt);
+};
+
+op tlbi_vale2is( 0b1101010100001[13] : 0b100[3] : 0b1000[4] : 0b0011[4] : 0b101[3] : rt[5] );
+tlbi_vale2is.var format : {char const*} = {"base,2935"};
+
+tlbi_vale2is.disasm = {
+  sink << "tlbi\tvale2is, " << DisasmGZXR(rt);
+};
+
+op tlbi_vale3( 0b1101010100001[13] : 0b110[3] : 0b1000[4] : 0b0111[4] : 0b101[3] : rt[5] );
+tlbi_vale3.var format : {char const*} = {"base,2936"};
+
+tlbi_vale3.disasm = {
+  sink << "tlbi\tvale3, " << DisasmGZXR(rt);
+};
+
+op tlbi_vale3is( 0b1101010100001[13] : 0b110[3] : 0b1000[4] : 0b0011[4] : 0b101[3] : rt[5] );
+tlbi_vale3is.var format : {char const*} = {"base,2937"};
+
+tlbi_vale3is.disasm = {
+  sink << "tlbi\tvale3is, " << DisasmGZXR(rt);
+};
+
+op tlbi_vmalle1( 0b1101010100001[13] : 0b000[3] : 0b1000[4] : 0b0111[4] : 0b000[3] : ?[5] );
+tlbi_vmalle1.var format : {char const*} = {"base,2938"};
+
+tlbi_vmalle1.disasm = {
+  sink << "tlbi\tvmalle1";
+};
+
+op tlbi_vmalle1is( 0b1101010100001[13] : 0b000[3] : 0b1000[4] : 0b0011[4] : 0b000[3] : ?[5] );
+tlbi_vmalle1is.var format : {char const*} = {"base,2939"};
+
+tlbi_vmalle1is.disasm = {
+  sink << "tlbi\tvmalle1is";
+};
+
+op tlbi_vmalls12e1( 0b1101010100001[13] : 0b100[3] : 0b1000[4] : 0b0111[4] : 0b110[3] : ?[5] );
+tlbi_vmalls12e1.var format : {char const*} = {"base,2940"};
+
+tlbi_vmalls12e1.disasm = {
+  sink << "tlbi\tvmalls12e1";
+};
+
+op tlbi_vmalls12e1is( 0b1101010100001[13] : 0b100[3] : 0b1000[4] : 0b0011[4] : 0b110[3] : ?[5] );
+tlbi_vmalls12e1is.var format : {char const*} = {"base,2941"};
+
+tlbi_vmalls12e1is.disasm = {
+  sink << "tlbi\tvmalls12e1is";
+};
+
+/*
+ * end of TLBI
+ *******************************************************************/

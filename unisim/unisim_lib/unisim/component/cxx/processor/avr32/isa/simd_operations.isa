@@ -1,0 +1,419 @@
+// PABS_SB/SH - packed absolute value
+
+op pabs_sb(0b111000000000[12]:rs[4]:><:0b001000111110[12]:rd[4])
+
+pabs_sb.disasm={
+	os << "pabs.sb\tr" << (unsigned int)rd << ",r" << (unsigned int)rs;
+}
+
+op pabs_sh(0b111000000000[12]:rs[4]:><:0b001000111111[12]:rd[4])
+
+pabs_sh.disasm={
+	os << "pabs_sh\tr" << (unsigned int)rd << ",r" << (unsigned int)rs;
+}
+
+//PACKSH_UB/SB - pack signed halfwords to bytes
+
+op packsh_ub(0b111[3]:rx[4]:0b00000[5]:ry[4]:><:0b001001001100[12]:rd[4])
+
+packsh_ub.disasm={
+
+	os << "packsh_ub\tr" << (unsigned int)rd << ",r" << (unsigned int)rx << ",r" << (unsigned int)ry;
+}
+
+op packsh_sb(0b111[3]:rx[4]:0b00000[5]:ry[4]:><:0b001001001101[12]:rd[4])
+
+packsh_sb.disasm={
+
+	os << "packsh_sb\tr" << (unsigned int)rd << ",r" << (unsigned int)rx << ",r" << (unsigned int)ry;
+}
+
+// PACKW_SH - pack words to signed halfwords
+
+op packw_sh(0b111[3]:rx[4]:0b00000[5]:ry[4]:><:0b001001000111[12]:rd[4])
+
+packw_sh.disasm={
+
+	os << "packw_sh\tr" << (unsigned int)rd << ",r" << (unsigned int)rx << ",r" << (unsigned int)ry;
+}
+
+// PADD_B/H - packed addition
+
+op padd_b(0b111[3]:rx[4]:0b00000[5]:ry[4]:><:0b001000110000[12]:rd[4])
+
+padd_b.disasm={
+
+	os << "padd_b\tr" << (unsigned int)rd << ",r" << (unsigned int)rx << ",r" << (unsigned int)ry;
+}
+
+op padd_h(0b111[3]:rx[4]:0b00000[5]:ry[4]:><:0b001000000000[12]:rd[4])
+
+padd_h.disasm={
+
+	os << "padd_h\tr" << (unsigned int)rd << ",r" << (unsigned int)rx << ",r" << (unsigned int)ry;
+}
+
+//PADDH_UB/SH - packed addition with halving
+
+op paddh_ub(0b111[3]:rx[4]:0b00000[5]:ry[4]:><:0b001000110110[12]:rd[4])
+
+paddh_ub.disasm={
+
+	os << "paddh_ub\tr" << (unsigned int)rd << ",r" << (unsigned int)rx << ",r" << (unsigned int)ry;
+}
+
+op paddh_sh(0b111[3]:rx[4]:0b00000[5]:ry[4]:><:0b001000001100[12]:rd[4])
+
+paddh_sh.disasm={
+
+	os << "paddh_sh\tr" << (unsigned int)rd << ",r" << (unsigned int)rx << ",r" << (unsigned int)ry;
+}
+
+// PADDS_UB/SB/UH/SH - packed addition with saturation
+
+op padds_ub(0b111[3]:rx[4]:0b00000[5]:ry[4]:><:0b001000110100[12]:rd[4])
+
+padds_ub.disasm={
+
+	os << "padds_ub\tr" << (unsigned int)rd << ",r" << (unsigned int)rx << ",r" << (unsigned int)ry;
+}
+
+op padds_sb(0b111[3]:rx[4]:0b00000[5]:ry[4]:><:0b001000110010[12]:rd[4])
+
+padds_sb.disasm={
+
+	os << "padds_sb\tr" << (unsigned int)rd << ",r" << (unsigned int)rx << ",r" << (unsigned int)ry;
+}
+
+op padds_uh(0b111[3]:rx[4]:0b00000[5]:ry[4]:><:0b001000001000[12]:rd[4])
+
+padds_uh.disasm={
+
+	os << "padds_uh\tr" << (unsigned int)rd << ",r" << (unsigned int)rx << ",r" << (unsigned int)ry;
+}
+
+op padds_sh(0b111[3]:rx[4]:0b00000[5]:ry[4]:><:0b001000000100[12]:rd[4])
+
+padds_sh.disasm={
+
+	os << "padds_sh\tr" << (unsigned int)rd << ",r" << (unsigned int)rx << ",r" << (unsigned int)ry;
+}
+
+//PADDSUB_H - packed halfword addition and subtraction
+
+op paddsub_h(0b111[3]:rx[4]:0b00000[5]:ry[4]:><:0b0010000100[10]:x[1]:y[1]:rd[4])
+
+paddsub_h.disasm={
+
+	os << "paddsub_h\tr" << (unsigned int)rd << ",r" << (unsigned int)rx << ":<" << x << ">,r" << (unsigned int)ry << ":<" << y << ">";
+}
+
+//PADDSUBH_SH - packed halfword addition substration with halving
+
+op paddsubh_sh(0b111[3]:rx[4]:0b00000[5]:ry[4]:><:0b0010001010[10]:x[1]:y[1]:rd[4])
+
+paddsubh_sh.disasm={
+
+	os << "paddsubh_sh\tr" << (unsigned int)rd << ",r" << (unsigned int)rx << ":<" << x << ">,r" << (unsigned int) ry << ":<" << y << ">";
+}
+
+// PADDSUBS_UH/SH - packed halfword addition and substraction with saturation
+
+op paddsubs_uh(0b111[3]:rx[4]:0b00000[5]:ry[4]:><:0b0010001000[10]:x[1]:y[1]:rd[4])
+
+paddsubs_uh.disasm={
+
+	os << "paddsubs_uh\tr" << (unsigned int)rd << ",r" << (unsigned int)rx << ":<" << x << ">,r" << (unsigned int)ry << ":<" << y << ">";
+}
+
+op paddsubs_sh(0b111[3]:rx[4]:0b00000[5]:ry[4]:><:0b0010000110[10]:x[1]:y[1]:rd[4])
+
+paddsubs_sh.disasm={
+
+	os << "paddsubs_sh\tr" << (unsigned int)rd << ",r" << (unsigned int)rx << ":<" << y << ">,r" << (unsigned int)ry << ":<" << y << ">";
+}
+
+// PADDX_H - packed halfword addition with crossed operand
+
+op paddx_h(0b111[3]:rx[4]:0b00000[5]:ry[4]:><:0b001000000010[12]:rd[4])
+
+paddx_h.disasm={
+
+	os << "paddx_h\tr" << (unsigned int)rd << ",r" << (unsigned int)rx << ",r" << (unsigned int)ry;
+}
+
+// PADDXH_SH - packed signed halword addition with crossed operand
+
+op paddxh_sh(0b111[3]:rx[4]:0b00000[5]:ry[4]:><:0b001000001110[12]:rd[4])
+
+paddxh_sh.disasm={
+
+	os << "paddxh_sh\tr" << (unsigned int)rd << ",r" << (unsigned int)rx << ",r" << (unsigned int)ry;
+}
+
+// PADDXS_UH/SH - packed halfword addition with crossed operand and saturation
+
+op paddxs_uh(0b111[3]:rx[4]:0b00000[5]:ry[4]:><:0b001000001010[12]:rd[4])
+
+paddxs_uh.disasm={
+
+	os << "paddxs_uh\tr" << (unsigned int)rd << ",r" << (unsigned int)rx << ",r" << (unsigned int)ry;
+}
+
+op paddxs_sh(0b111[3]:rx[4]:0b00000[5]:ry[4]:><:0b001000000110[12]:rd[4])
+
+paddxs_sh.disasm={
+
+	os << "paddxs_sh\tr" << (unsigned int)rd << ",r" << (unsigned int)rx << ",r" << (unsigned int)ry;
+}
+
+//PASR_B/H - packed arithmetic shift right
+
+op pasr_b(0b111[3]:rs[4]:0b00000[6]:sa[3]:><:0b001001000001[12]:rd[4])
+
+pasr_b.disasm={
+
+	os << "pasr_b\tr" << (unsigned int)rd << ",r" << (unsigned int)rs << ",0x" << std::hex << (int) sa;
+}
+
+op pasr_h(0b111[3]:rs[4]:0b00000[5]:sa[4]:><:0b001001000100[12]:rd[4])
+
+pasr_h.disasm={
+
+	os << "pasr_h\tr" << (unsigned int)rd << ",r" << (unsigned int)rs << ",0x" << std::hex << (int)sa;
+}
+
+//PAVG_UB/SH - packed average
+
+op pavg_ub(0b111[3]:rx[4]:0b00000[5]:ry[4]:><:0b001000111100[12]:rd[4])
+
+pavg_ub.disasm={
+
+	os << "pavg_ub\tr" << (unsigned int)rd << ",r" << (unsigned int)rx << ",r" << (unsigned int)ry;
+}
+
+op pavg_sh(0b111[3]:rx[4]:0b00000[5]:ry[4]:><:0b001000111101[12]:rd[4])
+
+pavg_sh.disasm={
+
+	os << "pavg_sh\tr" << (unsigned int)rd << ",r" << (unsigned int)rx << ",r" << (unsigned int)ry;
+}
+
+// PLSL_B/H - packed logical shift left
+
+op plsl_b(0b111[3]:rs[4]:0b000000[6]:sa[3]:><:0b001001000010[12]:rd[4])
+
+plsl_b.disasm={
+
+	os << "plsl_b\tr" << (unsigned int)rd << ",r" << (unsigned int)rs << ",0x" << std::hex <<(int) sa;
+}
+
+op plsl_h(0b111[3]:rs[4]:0b00000[5]:sa[4]:><:0b001001000101[12]:rd[4])
+
+plsl_h.disasm={
+
+	os << "plsl_h\tr" << (unsigned int)rd << ",r" << (unsigned int)rs << ",0x" << std::hex  << (int) sa;
+}
+
+// PLSR_B/H - packed logical shift right
+
+op plsr_b(0b111[3]:rs[4]:0b000000[6]:sa[3]:><:0b001001000011[12]:rd[4])
+
+plsr_b.disasm={
+
+	os << "plsr_b\tr" << (unsigned int)rd << ",r" << (unsigned int)rs << ",r" << std::hex << (int)sa;
+}
+
+op plsr_h(0b111[3]:rs[4]:0b00000[5]:sa[4]:><:0b001001000110[12]:rd[4])
+
+plsr_h.disasm={
+
+	os << "plsr_h\tr" << (unsigned int)rd << ",r" << (unsigned int)rs << ",r" << std::hex << (int)sa;
+}
+
+// PMAX_UB/SH - packed maximum value
+
+op pmax_ub(0b111[3]:rx[4]:0b00000[5]:ry[4]:><:0b001000111000[12]:rd[4])
+
+pmax_ub.disasm={
+
+	os << "pmax_ub\tr" << (unsigned int)rd << ",r" << (unsigned int)rx << ",r" << (unsigned int)ry;
+}
+
+op pmax_sh(0b111[3]:rx[4]:0b00000[5]:ry[4]:><:0b001000111001[12]:rd[4])
+
+pmax_sh.disasm={
+
+	os << "pmax_sh\tr" << (unsigned int)rd << ",r" << (unsigned int)rx << ",r" << (unsigned int)ry;
+}
+
+// PMIN_UB/SH - packed minimum value
+
+op pmin_ub(0b111[3]:rx[4]:0b00000[5]:ry[4]:><:0b001000111010[12]:rd[4])
+
+pmin_ub.disasm={
+
+	os << "pmin_ub\tr" << (unsigned int)rd << ",r" << (unsigned int)rx << ",r" << (unsigned int)ry;
+}
+
+op pmin_sh(0b111[3]:rx[4]:0b00000[5]:ry[4]:><:0b001000111011[12]:rd[4])
+
+pmin_sh.disasm={
+
+	os << "pmin_sh\tr" << (unsigned int)rd << ",r" << (unsigned int)rx << ",r" << (unsigned int)ry;
+}
+
+// PSAD - packed sum of absolute differences
+
+op psad(0b111[3]:rx[4]:0b00000[5]:ry[4]:><:0b001001000000[12]:rd[4])
+
+psad.disasm={
+
+	os << "psad\tr" << (unsigned int)rd << ",r" << (unsigned int)rx << ",r" << (unsigned int)ry;
+}
+
+// PSUB_B/H - packed substraction
+
+op psub_b(0b111[3]:rx[4]:0b00000[5]:ry[4]:><:0b001000110001[12]:rd[4])
+
+psub_b.disasm={
+
+	os << "psub_b\tr" << (unsigned int)rd << ",r" << (unsigned int)rx << ",r" << (unsigned int)ry;
+}
+
+op psub_h(0b111[3]:rx[4]:0b00000[5]:ry[4]:><:0b001000000001[12]:rd[4])
+
+psub_h.disasm={
+
+	os << "psub_h\tr" << (unsigned int)rd << ",r" << (unsigned int)rx << ",r" << (unsigned int)ry;
+}
+
+// PSUBADD_H - packed halfword substraction and addition
+
+op psubadd_h(0b111[3]:rx[4]:0b00000[5]:ry[4]:><:0b0010000101[10]:x[1]:y[1]:rd[4])
+
+psubadd_h.disasm={
+
+	os << "psubadd_h\tr" << (unsigned int)rd << ",r" << (unsigned int)rx << ":<" << x << ">,r" << (unsigned int)ry << ":<" << y << ">";
+}
+
+// PSUBADDH_SH - packed signed halfword substraction and addiction with halving
+
+op psubaddh_sh(0b111[3]:rx[4]:0b00000[5]:ry[4]:><:0b0010001011[10]:x[1]:y[1]:rd[4])
+
+psubaddh_sh.disasm={
+
+	os << "psubaddh_sh\tr" << (unsigned int)rd << ",r" << (unsigned int)rx << ":<" << x << ">,r" << (unsigned int)ry << ":<" << y << ">";
+}
+
+// PSUBADDS_UH/SH - packed halfword substraction and addition with saturation
+
+op psubadds_uh(0b111[3]:rx[4]:0b00000[5]:ry[4]:><:0b0010001001[10]:x[1]:y[1]:rd[4])
+
+psubadds_uh.disasm={
+
+	os << "psubadds_uh\tr" << (unsigned int)rd << ",r" << (unsigned int)rx << ":<" << HALF_WORD_PART_NAME[x] << ">,r" << (unsigned int)ry << ":<" << HALF_WORD_PART_NAME[y] << ">";
+}
+
+op psubadds_sh(0b111[3]:rx[4]:0b00000[5]:ry[4]:><:0b0010000111[10]:x[1]:y[1]:rd[4])
+
+psubadds_sh.disasm={
+
+	os << "psubadds_sh\tr" << (unsigned int)rd << ",r" << (unsigned int)rx << ":<" << x << ">,r" << (unsigned int)ry << ":<" << y << ">";
+}
+
+//PSUBH_UB/SH - packed substratction with halving
+
+op psubh_ub(0b111[3]:rx[4]:0b00000[5]:ry[4]:><:0b001000110111[12]:rd[4])
+
+psubh_ub.disasm={
+
+	os << "psubh_ub\tr" << (unsigned int)rd << ",r" << (unsigned int)rx << ",r" << (unsigned int)ry;
+}
+
+op psubh_sh(0b111[3]:rx[4]:0b00000[5]:ry[4]:><:0b001000001101[12]:rd[4])
+
+psubh_sh.disasm={
+
+	os << "psubh_sh\tr" << (unsigned int)rd << ",r" << (unsigned int)rx << ",r" << (unsigned int)ry;
+}
+
+// PSUBS_UB/SB/UH/SH - packed substraction with saturation
+
+op psubs_ub(0b111[3]:rx[4]:0b00000[5]:ry[4]:><:0b001000110101[12]:rd[4])
+
+psubs_ub.disasm={
+
+	os << "psubs_ub\tr" << (unsigned int)rd << ",r" << (unsigned int)rx << ",r" << (unsigned int)ry;
+}
+
+op psubs_sb(0b111[3]:rx[4]:0b00000[5]:ry[4]:><:0b001000110011[12]:rd[4])
+
+psubs_sb.disasm={
+
+	os << "psubs_sb\tr" <<(unsigned int)rd << ",r" << (unsigned int)rx << ",r" << (unsigned int)ry;
+}
+
+op psubs_uh(0b111[3]:rx[4]:0b00000[5]:ry[4]:><:0b001000001001[12]:rd[4])
+
+psubs_uh.disasm={
+
+	os << "psubs_uh\tr" << (unsigned int)rd << ",r" << (unsigned int)rx << ",r" << (unsigned int)ry;
+}
+
+op psubs_sh(0b111[3]:rx[4]:0b00000[5]:ry[4]:><:0b001000000101[12]:rd[4])
+
+psubs_sh.disasm={
+
+	os << "psubs_sh\tr" << (unsigned int)rd << ",r" << (unsigned int)rx << ",r" << (unsigned int)ry;
+}
+
+// PSUBX_H - packed halfword substraction with crossed operand
+
+op psubx_h(0b111[3]:rx[4]:0b00000[5]:ry[4]:><:0b001000000011[12]:rd[4])
+
+psubx_h.disasm={
+
+	os << "psubx_h\tr" << (unsigned int)rd << ",r" << (unsigned int)rx << ",r" << (unsigned int)ry;
+}
+
+// PSUBXH_SH - packed signed halfword substraction with crossed operand and halving
+
+op psubxh_sh(0b111[3]:rx[4]:0b00000[5]:ry[4]:><:0b001000001111[12]:rd[4])
+
+psubxh_sh.disasm={
+
+	os << "psubxh_sh\tr" << (unsigned int)rd << ",r" << (unsigned int)rx << ",r" << (unsigned int)ry;
+}
+
+// PSUBXS_UH/SH - packed halfword substraction with crossed operand and saturation
+
+op psubxs_uh(0b111[3]:rx[4]:0b00000[5]:ry[4]:><:0b001000001011[12]:rd[4])
+
+psubxs_uh.disasm={
+
+	os << "psubxs_uh\tr" << (unsigned int)rd << ",r" << (unsigned int)rx << ",r" << (unsigned int)ry;
+}
+
+op psubxs_sh(0b111[3]:rx[4]:0b00000[5]:ry[4]:><:0b001000000111[12]:rd[4])
+
+psubxs_sh.disasm={
+
+	os << "psubxs_sh\tr" << (unsigned int)rd << ",r" << (unsigned int)rx << ",r" << (unsigned int)ry;
+}
+
+//PUNPCKSB/UB_H - unpack bytes to halfwords
+
+op punpckub_h(0b111[3]:rs[4]:0b000000000[9]:><:0b00100100100[11]:k[1]:rd[4])
+
+punpckub_h.disasm={
+
+	os << "punpckub_h\tr" << (unsigned int)rd << ",r" << (unsigned int)rs << ":<" << k << ">";
+}
+op punpcksb_h(0b111[3]:rs[4]:0b000000000[9]:><:0b00100100101[11]:k[1]:rd[4])
+
+punpcksb_h.disasm={
+
+	os << "punpcksb_h\tr" << (unsigned int)rd << ",r" << (unsigned int)rs << ":<" << k << ">";
+}
+ 

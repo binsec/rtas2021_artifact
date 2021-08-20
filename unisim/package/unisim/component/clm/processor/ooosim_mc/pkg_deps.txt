@@ -1,0 +1,16 @@
+std/sstream
+unisim/component/clm/interfaces
+unisim/component/clm/memory
+unisim/component/clm/pipeline/commit
+unisim/component/clm/pipeline/common
+unisim/component/clm/pipeline/decode
+unisim/component/clm/pipeline/execute
+unisim/component/clm/pipeline/fetch
+unisim/component/clm/pipeline/issue
+unisim/component/clm/processor/ooosim
+unisim/component/clm/utility
+unisim/component/cxx/processor/powerpc
+unisim/kernel
+unisim/kernel/clm/engine
+unisim/service/interfaces/memory
+unisim/service/interfaces/memory_injection

@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="11"
+   height="11"
+   viewBox="0 0 2.9104167 2.9104164"
+   version="1.1"
+   id="svg4528"
+   inkscape:version="0.92.1 r15371"
+   sodipodi:docname="close-tab.svg"
+   inkscape:export-filename="/local/home/gmouchard/unisim/git/unisim/unisim_lib/unisim/kernel/http_server/close-tab.svg.png"
+   inkscape:export-xdpi="94.459297"
+   inkscape:export-ydpi="94.459297">
+  <defs
+     id="defs4522" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="63.356768"
+     inkscape:cx="6.3593234"
+     inkscape:cy="4.0489608"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0"
+     inkscape:window-width="1920"
+     inkscape:window-height="1140"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     units="px" />
+  <metadata
+     id="metadata4525">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-63.509297,-64.513557)">
+    <g
+       id="g4486"
+       transform="matrix(1.0999982,0,0,1.1000004,-6.3509439,-6.7422579)">
+      <path
+         inkscape:connector-curvature="0"
+         id="path5099"
+         d="m 63.757592,65.019814 2.155877,2.162487"
+         style="fill:#000000;fill-rule:evenodd;stroke:#000000;stroke-width:0.47850558;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+      <path
+         inkscape:connector-curvature="0"
+         id="path5099-6"
+         d="M 63.750963,67.182301 65.90684,65.019814"
+         style="fill:#000000;fill-rule:evenodd;stroke:#000000;stroke-width:0.47850558;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:9.60000038;stroke-dasharray:none;stroke-opacity:1" />
+    </g>
+  </g>
+</svg>

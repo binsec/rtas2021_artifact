@@ -215,7 +215,7 @@ $(eval $(call defcunit,codex,\
 	regex reduce cfg_analysis dhunk_analysis \
 	interval2symbol \
 	x86_types \
-	heap_typing x86_arch \
+	heap_typing x86_arch arm_arch \
 	tSetting dba2Codex record_cfg \
 	analysis_settings x86_settings \
 	other_settings \

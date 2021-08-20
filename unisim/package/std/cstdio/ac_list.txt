@@ -1,0 +1,1 @@
+AC_CHECK_HEADER([cstdio],, AC_MSG_ERROR([cstdio is missing]))

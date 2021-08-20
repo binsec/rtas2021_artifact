@@ -1,0 +1,115 @@
+/*
+ *  Copyright (c) 2007-2013,
+ *  Commissariat a l'Energie Atomique (CEA)
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without modification,
+ *  are permitted provided that the following conditions are met:
+ *
+ *   - Redistributions of source code must retain the above copyright notice, this
+ *     list of conditions and the following disclaimer.
+ *
+ *   - Redistributions in binary form must reproduce the above copyright notice,
+ *     this list of conditions and the following disclaimer in the documentation
+ *     and/or other materials provided with the distribution.
+ *
+ *   - Neither the name of CEA nor the names of its contributors may be used to
+ *     endorse or promote products derived from this software without specific prior
+ *     written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ *  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *  DISCLAIMED.
+ *  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ *  INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ *  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+ *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ *  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Authors: Daniel Gracia Perez (daniel.gracia-perez@cea.fr), Yves Lhuillier (yves.lhuillier@cea.fr)
+ */
+ 
+/**********************************************
+
+             ARM EMULATOR ISA
+
+**********************************************/
+
+namespace unisim::component::cxx::processor::arm::isa::arm32
+
+set addressclass {uint32_t}
+template <{typename} {ARCH}>
+set codetype scalar;
+
+decl {
+#include <iosfwd>
+#include <inttypes.h>
+} // end of decl
+
+impl {
+#include <unisim/component/cxx/processor/arm/isa/decode.hh>
+#include <unisim/component/cxx/processor/arm/disasm.hh>
+#include <unisim/component/cxx/processor/arm/execute.hh>
+#include <unisim/component/cxx/processor/arm/models.hh>
+#include <unisim/component/cxx/processor/arm/exception.hh>
+#include <unisim/util/arithmetic/arithmetic.hh>
+#include <unisim/util/likely/likely.hh>
+#include <testutils.hh>
+#include <iostream>
+#include <iomanip>
+
+} // end of impl
+
+action {void} execute({ARCH &} {cpu}) {
+  throw ut::DontTest( std::string( "warning, " ) + GetName() + " is not implemented." );
+}
+
+action {void} disasm({ARCH &} {cpu}, {std::ostream&} {buffer}) {
+  buffer << "Unknown instruction (arm32)";
+}
+
+action {bool} donttest() const { return false; }
+
+include "unisim/component/cxx/processor/arm/isa/arm32/data_processing.isa"
+include "unisim/component/cxx/processor/arm/isa/arm32/load_store.isa"
+include "unisim/component/cxx/processor/arm/isa/arm32/multiply.isa"
+include "unisim/component/cxx/processor/arm/isa/arm32/misc_arithmetic.isa"
+//include "unisim/component/cxx/processor/arm/isa/arm32/vfp.isa"
+//include "unisim/component/cxx/processor/arm/isa/arm32/neon.isa"
+
+group donttest begin;
+include "unisim/component/cxx/processor/arm/isa/arm32/hints.isa"
+include "unisim/component/cxx/processor/arm/isa/arm32/branch.isa"
+include "unisim/component/cxx/processor/arm/isa/arm32/coprocessor.isa"
+include "unisim/component/cxx/processor/arm/isa/arm32/exception.isa"
+include "unisim/component/cxx/processor/arm/isa/arm32/status_register_access.isa"
+group donttest end;
+
+donttest.donttest = { return true; };
+
+include "unisim/component/cxx/processor/arm/isa/arm32/ordering.isa"
+
+pld_imm.donttest = { return true; };
+pld_reg.donttest = { return true; };
+pli_imm.donttest = { return true; };
+pli_reg.donttest = { return true; };
+ldm_usr.donttest = { return true; };
+stm_usr.donttest = { return true; };
+
+ldrex.donttest = { return true; };
+ldrexh.donttest = { return true; };
+ldrexb.donttest = { return true; };
+ldrexd.donttest = { return true; };
+strex.donttest = { return true; };
+strexh.donttest = { return true; };
+strexb.donttest = { return true; };
+strexd.donttest = { return true; };
+clrex.donttest = { return true; };
+
+setend.donttest = { return true; };
+
+unconditional.donttest = { return true; };
+

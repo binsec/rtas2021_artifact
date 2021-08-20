@@ -1,0 +1,734 @@
+//----------------------------------------------------------------------
+
+//                  BIT INSTRUCTIONS
+
+//----------------------------------------------------------------------
+
+//BFEXTS - bitfield extract and sign-extend
+
+op bfexts(0b111[3]:rd[4]:0b11101[5]:rs[4]:><:0b1011[4]:0b00[2]:bp5[5]:w5[5])
+
+bfexts.execute={
+
+	if ((w5 == 0) || ((bp5 + w5) > 32)) return false; // the result is undefined
+	
+	uint32_t s= cpu->GetGPR(rs);
+
+	s= s >> bp5;           // shift
+	s= s & ((1UL<< w5)-1); // extract with mask            
+	uint32_t result=SignExtend(s,w5);
+	uint8_t neg=(int32_t)result<0;
+	uint8_t zero=result==0;
+	uint8_t carry=((result>>31) & 1);
+
+	cpu->SetGPR(rd,result);        // write back result
+	
+	cpu->SetSR_N(neg);             // set flags
+	cpu->SetSR_Z(zero);
+	cpu->SetSR_C(carry);
+
+	return true;  
+}
+
+bfexts.disasm={
+	os << "bfexts\t" << REG_NAME[rd] << "," <<  REG_NAME[rs] << ",0x" << std::hex <<(int) bp5 << ",0x" << ( int) w5 << std::dec;
+}
+
+//BFEXTU - bitfield extract and zero-extend
+
+op bfextu(0b111[3]:rd[4]:0b11101[5]:rs[4]:><:0b1100[4]:0b00[2]:bp5[5]:w5[5])
+
+bfextu.execute={
+	
+	if ((w5 == 0) || ((bp5 + w5) > 32)) return false; // the result is undefined
+	
+	uint32_t s= cpu->GetGPR(rs);
+
+	s= s >> bp5;
+	uint32_t result=s & ((1UL<< w5)-1);     
+	
+	uint8_t neg=(int32_t)result<0;
+	uint8_t zero=result==0;
+	uint8_t carry=((result>>31) & 1);
+
+	cpu->SetGPR(rd,result);
+	
+	cpu->SetSR_N(neg);
+	cpu->SetSR_Z(zero);
+	cpu->SetSR_C(carry); 
+
+	return true; 
+}
+
+
+bfextu.disasm={
+	os << "bfextu\t" << REG_NAME[rd] << "," << REG_NAME[rs] << ",0x" << std::hex <<(int) bp5 << ",0x" << ( int)w5 << std::dec;
+}
+
+//BFINS - bitfield insert
+
+op bfins(0b111[3]:rd[4]:0b11101[5]:rs[4]:><:0b1101[4]:0b00[2]:bp5[5]:w5[5])
+
+bfins.execute={
+
+   	if ((w5 == 0) || ((bp5 + w5) > 32)) return false; // the result is undefined
+
+	uint32_t s=cpu->GetGPR(rs);
+	uint32_t d=cpu->GetGPR(rd);
+	
+	s=s << bp5;
+	uint32_t mask=((1<< w5)-1)<< bp5;                  // initialize mask size w5 offset bp5
+	uint32_t result= (d & ~mask) | (s & mask);         // insert bietfield in 
+	uint8_t neg=(int32_t)result<0;
+	uint8_t zero=result==0;
+	uint8_t carry=((result>>31) & 1);
+	
+
+	cpu->SetGPR(rd,result); 
+	
+	cpu->SetSR_N(neg);
+	cpu->SetSR_Z(zero);
+	cpu->SetSR_C(carry);
+
+	return true;  
+}
+
+bfins.disasm={
+	os << "bfins\t" << REG_NAME[rd] << "," << REG_NAME[rs] << ",0x" << std::hex << ( int) bp5 << ",0x" << (unsigned int) w5 << std::dec;
+}
+
+
+//BLD - bit load from register to c and z
+
+op bld(0b111[3]:0b0110[4]:0b11011[5]:rd[4]:><:0b00000000000[11]:bp5[5])
+
+bld.execute={
+
+	uint32_t d=cpu->GetGPR(rd);
+
+	uint8_t result= (d >> bp5) & 1;
+	uint8_t zero= result;
+	uint8_t carry=result;
+
+	cpu->SetSR_Z(zero);   // write back the bit in flags C and Z
+	cpu->SetSR_C(carry);
+
+	return true;
+
+}
+
+bld.disasm={
+	os << "bld\t" << REG_NAME[rd] << ",0x" << std::hex << (int) bp5 << std::dec; 
+}
+
+//BREV - bit reverse
+
+op brev(0b010[3]:0b1110[4]:0b01001[5]:rd[4])
+
+brev.execute={
+
+	uint32_t d=cpu->GetGPR(rd);
+
+	uint32_t result=0;
+	uint8_t bit=0;
+	for(int i=0;i<32;i++)
+	{
+		bit=(d >> i) & 1;  // extract bit i
+		result=result | (bit <<(31-i)) ;//insert in result
+	}	
+	uint8_t zero= result==0;
+
+	cpu->SetGPR(rd,result);
+	cpu->SetSR_Z(zero);
+
+	return true;
+	
+}
+
+brev.disasm={
+	os << "brev\t" << REG_NAME[rd];
+}
+
+//BST - copy c to register
+
+op bst(0b111[3]:0b0111[4]:0b11011[5]:rd[4]:><:0b00000000000[11]:bp5[5])
+
+bst.execute={
+
+	uint32_t d=cpu->GetGPR(rd);
+	uint32_t c=cpu->GetSR_C();
+
+	uint32_t result= (d & ~(1<<bp5)) | (c << bp5); // insert c in the bp5 index position
+
+	cpu->SetGPR(rd,result);           // write back result in rd
+
+	return true;
+}
+
+bst.disasm={
+	os << "bst\t" << REG_NAME[rd] << ",0x" << std::hex << (int) bp5 << std::dec;
+}
+
+//CASTS - type cast to signed word
+
+op casts_h(0b010[3]:0b1110[4]:0b01000[5]:rd[4])
+
+casts_h.execute={
+
+	uint32_t d= cpu->GetGPR(rd);
+	
+	uint32_t result = SignExtend(d,16);
+	uint8_t neg= (int32_t)result <0;
+	uint8_t zero= result ==0;
+	uint8_t carry= (result >> 31) & 1;
+	
+	cpu->SetGPR(rd,result);
+
+	cpu->SetSR_N(neg);
+	cpu->SetSR_Z(zero);
+	cpu->SetSR_C(carry);
+
+	return true;
+}
+
+casts_h.disasm={
+	os << "casts.h\t" << REG_NAME[rd];
+}
+
+op casts_b(0b010[3]:0b1110[4]:0b00110[5]:rd[4])
+
+casts_b.execute={
+
+	uint32_t d= cpu->GetGPR(rd);
+	
+	uint32_t result = SignExtend(d,8);
+	uint8_t neg= (int32_t)result <0;
+	uint8_t zero= result ==0;
+	uint8_t carry = (result >> 31) &1;
+	
+	cpu->SetGPR(rd,result);
+
+	cpu->SetSR_N(neg);
+	cpu->SetSR_Z(zero);
+	cpu->SetSR_C(carry);
+
+	return true;
+}
+
+
+casts_b.disasm={
+	os << "casts.b\t" << REG_NAME[rd];
+}
+
+//CASTU - type cast to unsigned word
+
+op castu_h(0b010[3]:0b1110[4]:0b00111[5]:rd[4])
+
+castu_h.execute={
+
+	uint32_t d= cpu->GetGPR(rd);
+	
+	uint32_t result= d & 0x0000FFFF;
+	uint8_t neg= (int32_t)result <0;
+	uint8_t zero= result ==0;
+	uint8_t carry= (result >> 31) & 1;
+	
+	cpu->SetGPR(rd,result);
+
+	cpu->SetSR_N(neg);
+	cpu->SetSR_Z(zero);
+	cpu->SetSR_C(carry);
+
+	return true;
+}
+
+castu_h.disasm={
+	os << "castu.h\t" << REG_NAME[rd];
+}
+
+op castu_b(0b010[3]:0b1110[4]:0b00101[5]:rd[4])
+
+castu_b.execute={
+
+	uint32_t d= cpu->GetGPR(rd);
+	
+	uint32_t result = d & 0x000000FF;
+	uint8_t neg= (int32_t)result <0;
+	uint8_t zero= result ==0;
+	uint32_t carry= (result >> 31) & 1;
+	
+	cpu->SetGPR(rd,result);
+
+	cpu->SetSR_N(neg);
+	cpu->SetSR_Z(zero);
+	cpu->SetSR_C(carry);
+
+	return true;
+} 
+
+castu_b.disasm={
+	os << "castu.b\t" << REG_NAME[rd];
+}
+
+// CBR - clear bit in register
+
+op cbr(0b101[3]:shl<1>bp_4_1[4]:0b1110[4]:bp_0[1]:rd[4])
+
+cbr.var bp : {uint8_t} = { bp_4_1 | bp_0 }
+
+cbr.execute={
+
+	uint32_t d=cpu->GetGPR(rd);
+
+	uint32_t result= d & ~(1<<bp);
+	uint8_t zero= result == 0;
+
+	cpu->SetGPR(rd,result);
+	cpu->SetSR_Z(zero);
+
+	return true;
+}
+
+cbr.disasm={
+	os << "cbr\t" << REG_NAME[rd] << ",0x" <<std::hex << ( int) bp << std::dec;
+}
+
+//CLZ - count leading zeros
+
+op clz(0b111[3]:rs[4]:0b00000[5]:rd[4]:><:0b0001[4]:0b0010[4]:0b00000000[8])
+
+clz.execute={
+	
+	uint32_t s=cpu->GetGPR(rs);
+	
+	uint32_t result=CountLeadingZeros(s);
+	uint8_t zero= (result==0);
+	uint8_t carry= (result==32);
+
+	cpu->SetGPR(rd,result);
+
+	cpu->SetSR_Z(zero);
+	cpu->SetSR_C(carry);
+
+	return true;
+}
+
+clz.disasm={
+	os << "clz\t" << REG_NAME[rd] << "," << REG_NAME[rs];
+}
+
+//SBR - set bit in register
+
+op sbr(0b101[3]:shl<1>bp_4_1[4]:0b1101[4]:bp_0[1]:rd[4])
+
+sbr.var bp : {uint8_t} = { bp_4_1 | bp_0 } 
+
+sbr.execute={
+
+	uint32_t d=cpu->GetGPR(rd);
+
+	uint32_t result= d | (1<<bp);
+	uint8_t zero=0;            
+
+	cpu->SetGPR(rd,result);
+	cpu->SetSR_Z(zero);
+
+	return true;
+}
+
+sbr.disasm={
+	os << "sbr\t" << REG_NAME[rd] << ",0x"<< std::hex << (int) bp <<std::dec;
+}
+
+
+//SWAP_B -  swap bytes
+
+op swap_b(0b010[3]:0b1110[4]:0b01011[5]:rd[4])
+
+swap_b.execute={
+
+	uint32_t temp=cpu->GetGPR(rd);
+	 
+	uint32_t result = ByteSwap(temp);	
+
+	cpu->SetGPR(rd,result);
+
+	return true;
+}
+
+swap_b.disasm={
+
+	os << "swap.b\t" << REG_NAME[rd];
+}
+
+// SWAP_BH - swap bytes in halfword
+
+op swap_bh(0b010[3]:0b1110[4]:0b01100[5]:rd[4])
+
+swap_bh.execute={
+
+	uint32_t temp = cpu->GetGPR(rd);
+
+	uint32_t result= ((temp & 0x00FF0000)<<8) | ((temp & 0xFF000000)>>8) |((temp & 0x000000FF)<<8) | ((temp & 0x0000FF00)>>8);
+	
+// 	uint32_t d = cpu->GetGPR(rd);
+// 	uint16_t d_l = d;
+// 	uint16_t d_h = d >> 16;
+// 	uint32_t result= ((uint32_t) ByteSwap(d_h) << 16) | ByteSwap(d_l);
+	
+	cpu->SetGPR(rd,result);
+
+	return true;
+}
+
+swap_bh.disasm={
+
+	os << "swap.bh\t" << REG_NAME[rd];
+}
+
+
+//SWAP_H - swap halfwords
+
+op swap_h(0b010[3]:0b1110[4]:0b01010[5]:rd[4])
+
+swap_h.execute={
+
+	uint32_t temp = cpu->GetGPR(rd);
+
+	uint32_t result= RotateRight(temp,16);
+	
+	cpu->SetGPR(rd,result);
+
+	return true;
+}
+
+swap_h.disasm={
+
+	os << "swap.h\t" << REG_NAME[rd];
+}
+
+
+//---------------------------------------------------------------------------
+
+//                SHIFT INSTRUCTIONS
+
+//---------------------------------------------------------------------------
+
+
+//ASR - arithmetic shift right
+
+op asr_a(0b111[3]:rx[4]:0b00000[5]:ry[4]:><:0b0000[4]:0b10000100[8]:rd[4])
+
+asr_a.execute={
+
+	uint32_t x= cpu->GetGPR(rx);
+	uint32_t y= cpu->GetGPR(ry);
+	uint32_t sa = y & 0x0000001F;               // take 5 least significant bits
+	uint32_t result;
+	uint8_t bit_out;
+
+	result=ShiftArithmeticRight(x,sa,bit_out);
+	uint8_t neg= (int32_t)result <0;
+	uint8_t zero= result==0;
+	
+	cpu->SetGPR(rd,result);             // write back result    
+	
+	cpu->SetSR_N(neg);                  // set flag
+	cpu->SetSR_Z(zero);
+	cpu->SetSR_C(bit_out);
+
+	return true;
+}
+
+asr_a.disasm={
+	os << "asr\t" << REG_NAME[rd] << "," << REG_NAME[rx] << "," << REG_NAME[ry];
+}
+
+op asr_b(0b101[3]:shl<1>sa_4_1[4]:0b1010[4]:sa_0[1]:rd[4])
+
+asr_b.var sa : {uint8_t} = { sa_4_1 | sa_0 }
+
+asr_b.execute={
+
+	uint32_t d= cpu->GetGPR(rd);
+	uint32_t result;
+	uint8_t bit_out;
+
+	result=ShiftArithmeticRight(d,sa,bit_out);
+	uint8_t neg= (int32_t)result <0;
+	uint8_t zero= result==0;
+
+	cpu->SetGPR(rd,result);
+	
+	cpu->SetSR_N(neg);
+	cpu->SetSR_Z(zero);
+	cpu->SetSR_C(bit_out);
+
+	return true;
+}
+
+
+asr_b.disasm={
+	os << "asr\t" << REG_NAME[rd] << ",0x" << std::hex<<(unsigned int) sa << std::dec;
+}
+
+
+op asr_c(0b111[3]:rs[4]:0b00000[5]:rd[4]:><:0b0001[4]:0b0100[4]:0b000[3]:sa5[5])
+
+asr_c.execute={
+
+	uint32_t s= cpu->GetGPR(rs);
+	uint32_t result;
+	uint8_t bit_out;
+
+	result=ShiftArithmeticRight(s,sa5,bit_out);
+	uint8_t neg= (int32_t)result < 0;
+	uint8_t zero= result==0;
+
+	cpu->SetGPR(rd,result);
+	
+	cpu->SetSR_N(neg);
+	cpu->SetSR_Z(zero);
+	cpu->SetSR_C(bit_out);
+
+	return true;
+}
+
+asr_c.disasm={
+	os << "asr\t" << REG_NAME[rd] << "," << REG_NAME[rs] << ",0x" <<std::hex << (int) sa5 << std::dec ;
+}
+
+
+
+
+//LSL - logical shift left
+
+op lsl_a(0b111[3]:rx[4]:0b00000[5]:ry[4]:><:0b0000[4]:0b10010100[8]:rd[4])
+
+lsl_a.execute={
+	
+	uint32_t x= cpu->GetGPR(rx);
+	uint32_t y= cpu->GetGPR(ry);
+	uint32_t result;
+	uint8_t bit_out;
+
+	result=ShiftLeft(x,y,bit_out);
+	uint8_t neg= (int32_t)result <0;
+	uint8_t zero= result==0;
+
+	cpu->SetGPR(rd,result);
+	
+	cpu->SetSR_N(neg);
+	cpu->SetSR_Z(zero);
+	cpu->SetSR_C(bit_out);
+	
+	return true;
+}
+
+lsl_a.disasm={
+	os << "lsl\t" << REG_NAME[rd] << "," << REG_NAME[rx] << "," << REG_NAME[ry];
+}
+
+op lsl_b(0b101[3]:shl<1>sa_4_1[4]:0b1011[4]:sa_0[1]:rd[4])
+
+lsl_b.var sa : {uint8_t} = { sa_4_1 | sa_0 }
+
+lsl_b.execute={
+	
+	uint32_t d= cpu->GetGPR(rd);
+	uint32_t result;
+	uint8_t bit_out;
+
+	result=ShiftLeft(d,sa,bit_out);
+	uint8_t neg= (int32_t) result < 0;
+	uint8_t zero= result==0;
+
+	cpu->SetGPR(rd,result);
+	
+	cpu->SetSR_N(neg);
+	cpu->SetSR_Z(zero);
+	cpu->SetSR_C(bit_out);	
+	
+	return true;
+}
+
+lsl_b.disasm={
+	os << "lsl\t" << REG_NAME[rd] << ",0x" << std::hex << (int) sa<< std::dec;
+}
+
+
+op lsl_c(0b111[3]:rs[4]:0b00000[5]:rd[4]:><:0b0001[4]:0b0101[4]:0b000[3]:sa5[5])
+
+lsl_c.execute={
+	
+	uint32_t s= cpu->GetGPR(rs);
+	uint32_t result;
+	uint8_t bit_out;
+
+	result=ShiftLeft(s,sa5,bit_out);
+	uint8_t neg= (int32_t)result < 0;
+	uint8_t zero= result==0;
+
+	cpu->SetGPR(rd,result);
+	
+	cpu->SetSR_N(neg);
+	cpu->SetSR_Z(zero);
+	cpu->SetSR_C(bit_out);
+	
+	return true;
+}
+
+lsl_c.disasm={
+	os << "lsl\t" << REG_NAME[rd] << "," << REG_NAME[rs] << ",0x"<< std::hex << (int) sa5;
+}
+
+//LSR - logical shift right
+
+op lsr_a(0b111[3]:rx[4]:0b00000[5]:ry[4]:><:0b0000[4]:0b10100100[8]:rd[4])
+
+lsr_a.execute={
+
+	uint32_t x= cpu->GetGPR(rx);
+	uint32_t y= cpu->GetGPR(ry);
+	uint32_t result;
+	uint8_t bit_out;
+
+	result=ShiftRight(x,y,bit_out);
+	uint8_t neg= (int32_t)result < 0;
+	uint8_t zero= result==0;
+
+	cpu->SetGPR(rd,result);
+	
+	cpu->SetSR_N(neg);
+	cpu->SetSR_Z(zero);
+	cpu->SetSR_C(bit_out);
+	
+	return true;
+}
+
+lsr_a.disasm={
+	os << "lsr\t" << REG_NAME[rd] << "," << REG_NAME[rx] << "," << REG_NAME[ry];
+}
+
+
+op lsr_b(0b101[3]:shl<1>sa_4_1[4]:0b1100[4]:sa_0[1]:rd[4])
+
+lsr_b.var sa : {uint8_t} = { sa_4_1 | sa_0 }
+
+lsr_b.execute={
+	
+	uint32_t d= cpu->GetGPR(rd);
+	uint32_t result;
+	uint8_t bit_out;
+
+	result=ShiftRight(d,sa,bit_out);
+	uint8_t neg= (int32_t)result < 0;
+	uint8_t zero= result==0;
+
+	cpu->SetGPR(rd,result);
+	
+	cpu->SetSR_N(neg);
+	cpu->SetSR_Z(zero);
+	cpu->SetSR_C(bit_out);	
+	
+	return true;
+}
+
+lsr_b.disasm={
+	os << "lsr\t" << REG_NAME[rd] << ",0x" << std::hex << (int) sa;
+}
+
+op lsr_c(0b111[3]:rs[4]:0b00000[5]:rd[4]:><:0b0001[4]:0b0110[4]:0b000[3]:sa5[5])
+
+lsr_c.execute={
+	
+	uint32_t s= cpu->GetGPR(rs);
+	uint32_t result;
+	uint8_t bit_out;
+
+	result=ShiftRight(s,sa5,bit_out);
+	uint8_t neg=(int32_t)result < 0;
+	uint8_t zero= result==0;
+
+	cpu->SetGPR(rd,result);
+	
+	cpu->SetSR_N(neg);
+	cpu->SetSR_Z(zero);
+	cpu->SetSR_C(bit_out);
+	
+	return true;
+}
+
+lsr_c.disasm={
+	os << "lsr\t" << REG_NAME[rd] << "," << REG_NAME[rs] << ",0x" << std::hex << (int) sa5;
+}
+
+
+
+
+//ROL - rotate left through carry
+
+op rol(0b010[3]:0b1110[4]:0b01111[5]:rd[4])
+
+rol.execute={
+	
+	uint32_t d = cpu->GetGPR(rd);
+
+	uint8_t neg;
+	uint8_t zero;
+	uint8_t carry_in=cpu->GetSR_C();
+	uint8_t carry_out;
+
+	uint32_t result=RotateLeft(d, 1, carry_in , carry_out); // rotate one place to the left 
+	neg=(int32_t)result < 0;
+	zero= result==0;
+	
+	cpu->SetGPR(rd,result);
+	
+	cpu->SetSR_N(neg);
+	cpu->SetSR_Z(zero);
+	cpu->SetSR_C(carry_out);
+	
+	return true;
+
+}
+
+rol.disasm={
+
+	os << "rol\t" << REG_NAME[rd];
+}
+
+//ROR - rotate right through carry
+
+op ror(0b010[3]:0b1110[4]:0b10000[5]:rd[4])
+
+ror.execute={
+	
+	uint32_t d = cpu->GetGPR(rd);
+
+	uint8_t neg;
+	uint8_t zero;
+	uint8_t carry_in=cpu->GetSR_C();
+	uint8_t carry_out;
+
+	uint32_t result=RotateRight(d, 1, carry_in , carry_out); // rotate one place to the right
+	neg=(int32_t)result < 0;
+	zero= result==0;
+	
+	cpu->SetGPR(rd,result);
+	
+	cpu->SetSR_N(neg);
+	cpu->SetSR_Z(zero);
+	cpu->SetSR_C(carry_out);
+	
+	return true;
+
+}
+
+ror.disasm={
+
+	os << "ror\t" << REG_NAME[rd];
+}
+
+
+

@@ -1,0 +1,163 @@
+/*
+ *  Copyright (c) 2007-2016,
+ *  Commissariat a l'Energie Atomique (CEA)
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without modification,
+ *  are permitted provided that the following conditions are met:
+ *
+ *   - Redistributions of source code must retain the above copyright notice, this
+ *     list of conditions and the following disclaimer.
+ *
+ *   - Redistributions in binary form must reproduce the above copyright notice,
+ *     this list of conditions and the following disclaimer in the documentation
+ *     and/or other materials provided with the distribution.
+ *
+ *   - Neither the name of CEA nor the names of its contributors may be used to
+ *     endorse or promote products derived from this software without specific prior
+ *     written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ *  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *  DISCLAIMED.
+ *  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ *  INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ *  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+ *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ *  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Authors: Yves Lhuillier (yves.lhuillier@cea.fr), Daniel Gracia Perez (daniel.gracia-perez@cea.fr)
+ */
+ 
+/**********************************************
+
+        THUMB2 BRANCH INSTRUCTIONS
+
+**********************************************/
+ 
+op bl_w( 0b11110[5]: shl<12> sext<32> imm1[11]:> <: 0b11[2]: shl<23> j1[1]: 0b1[1]: shl<22> j2[1]: shl<1> imm0[11] );
+bl_w.var imm : {uint32_t} = {(imm1|imm0)^j1^j2^0xc00000};
+
+bl_w.disasm = {
+  buffer << "bl\t0x" << std::hex << ((this->GetAddr() + 4 + imm) & -2) << std::dec;
+};
+
+bl_w.execute = {
+  if (unlikely( not CheckCondition(cpu, cpu.itcond()) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  cpu.SetGPR( 14, cpu.GetNIA() | U32(1) );
+  cpu.Branch( cpu.GetGPR( 15 ) + U32(imm), ARCH::B_CALL );
+};
+
+op blx_w( 0b11110[5]: shl<12> sext<32> imm1[11]:> <: 0b11[2]: shl<23> j1[1]: 0b0[1]: shl<22> j2[1]: shl<2> imm0[10]: 0b0[1] );
+blx_w.var imm : {uint32_t} = {(imm1|imm0)^j1^j2^0xc00000};
+
+blx_w.disasm = {
+  buffer << "blx\t" << std::hex << "0x" << ((this->GetAddr() + 4 + imm) & -4) << std::dec;
+};
+
+blx_w.execute = {
+  if (unlikely( not CheckCondition(cpu, cpu.itcond()) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  cpu.SetGPR( 14, cpu.GetNIA() | U32(1) );
+  cpu.BranchExchange( (cpu.GetGPR( 15 ) + U32(imm)) & U32(-4), ARCH::B_CALL );
+};
+
+op cbnz( 0b1011[4]: nz[1]: 0b0[1]: shl<6> imm1[1]: 0b1[1]: shl<1> imm0[5]: rn[3] );
+cbnz.var imm : {uint32_t} = {imm1 | imm0};
+
+cbnz.disasm = {
+  buffer << "cb" << (nz ? "nz" : "z") << "\t" << DisasmRegister(rn) << ", 0x" << std::hex << ((this->GetAddr() + 4 + imm) & -2) << std::dec;
+};
+
+cbnz.execute = {
+  typedef typename ARCH::U32 U32;
+  typedef typename ARCH::BOOL BOOL;
+  
+  if (cpu.Test( (cpu.GetGPR( rn ) == U32(0)) xor BOOL(nz) ))
+    cpu.Branch( cpu.GetGPR( 15 ) + U32(imm), ARCH::B_JMP );
+};
+
+op bcc_w( 0b11110[5]: shl<20> sext<32> imm4[1]: cond[4]: shl<12> imm1[6]:> <: 0b10[2]: shl<18> imm2[1]: 0b0[1]: shl<19> imm3[1]: shl<1> imm0[11] );
+bcc_w.var imm : {uint32_t} = {imm4|imm3|imm2|imm1|imm0};
+bcc_w.var reject : {Reject} = {(cond & 0xe) == 0xe};
+
+bcc_w.disasm = {
+  buffer << "b" << DisasmCondition(cond) << ".w\t0x" << std::hex << ((this->GetAddr() + 4 + imm) & -2) << std::dec;
+};
+
+bcc_w.execute = {
+  // Note: according to specification, if InITBlock() then UNPREDICTABLE;
+  typedef typename ARCH::U32 U32;
+  
+  if (CheckCondition(cpu, cond ))
+    cpu.Branch( cpu.GetGPR( 15 ) + U32( imm ), ARCH::B_JMP );
+};
+
+op b_w( 0b1111[4]: 0b0[1]: shl<22> sext<32> imm4[1]: shl<12> imm1[10]:> <: 0b10[2]: shl<23> imm3[1]: 0b1[1]: shl<22> imm2[1]: shl<1> imm0[11] );
+b_w.var imm : {uint32_t} = {imm4^(imm3|imm2|imm1|imm0)^0xc00000};
+
+b_w.disasm = {
+  buffer << "b.w\t0x" << std::hex << ((this->GetAddr() + 4 + imm) & -2) << std::dec;
+};
+
+b_w.execute = {
+  if (unlikely( not CheckCondition(cpu, cpu.itcond()) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  cpu.Branch( cpu.GetGPR( 15 ) + U32(imm), ARCH::B_JMP );
+};
+
+op bxj( 0b111100111100[12]: ra[4]:> <: 0b1000111100000000[16] );
+bxj.disasm = { buffer << "bxj\t" << DisasmRegister(ra); };
+
+op it( 0b10111111[8]: firstcond[4]: mask[4] );
+it.var reject : {Reject} = {mask == 0};
+
+it.disasm = {
+  buffer << 'i' << DisasmITSequence(mask) << '\t' << DisasmCondition( firstcond, DisasmCondition::explicit_always );
+};
+
+it.execute = {
+  cpu.ITSetState( firstcond, mask );
+};
+
+op nop( 0b10111111[8]: idx[4]: 0b0000[4] );
+
+nop.disasm = {
+  buffer << "nop";
+  if (idx != 0) buffer << "\t{" << idx << "}";
+};
+
+nop.execute = {
+  if (unlikely( not CheckCondition(cpu, cpu.itcond()) )) return;
+};
+
+op tbb( 0b111010001101[12]: rn[4]:> <: 0b111100000000[12]: rm[4] );
+
+tbb.disasm = {
+  buffer << "tbb\t" << DisasmMemoryRR(rn,rm,true,true,false);
+};
+
+tbb.execute = {
+  if (unlikely( not CheckCondition(cpu, cpu.itcond()) )) return;
+  
+  cpu.Branch( cpu.GetGPR( 15 ) + (typename ARCH::U32( cpu.MemRead8( cpu.GetGPR( rn ) + cpu.GetGPR( rm ) ) ) << 1), ARCH::B_JMP );
+}
+
+op tbh( 0b111010001101[12]: rn[4]:> <: 0b111100000001[12]: rm[4] );
+
+tbh.disasm = {
+  buffer << "tbh\t" << DisasmMemoryRRI(rn,rm,0,1,true,true,false);
+};
+
+tbh.execute = {
+  if (unlikely( not CheckCondition(cpu, cpu.itcond()) )) return;
+  
+  cpu.Branch( cpu.GetGPR( 15 ) + (typename ARCH::U32( cpu.MemURead16( cpu.GetGPR( rn ) + (cpu.GetGPR( rm ) << 1) ) ) << 1), ARCH::B_JMP );
+}

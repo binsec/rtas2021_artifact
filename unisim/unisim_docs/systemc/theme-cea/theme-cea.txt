@@ -1,0 +1,13 @@
+CEA Theme for Beamer (pdflatex)
+
+           > This IS NOT an official template for CEA presentations. <
+
+INSTALL:
+--------
+	1. Untar the archive into beamer root directory (ie: /usr/share/texmf/tex/latex/beamer)
+
+BUGS:
+-----
+	First horizontal line is not maximal length.
+	If you find any other "bug", please, let me know.
+

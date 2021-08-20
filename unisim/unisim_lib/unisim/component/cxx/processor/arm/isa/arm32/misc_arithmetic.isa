@@ -1,0 +1,2340 @@
+/*
+ *  Copyright (c) 2007-2016,
+ *  Commissariat a l'Energie Atomique (CEA)
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without modification,
+ *  are permitted provided that the following conditions are met:
+ *
+ *   - Redistributions of source code must retain the above copyright notice, this
+ *     list of conditions and the following disclaimer.
+ *
+ *   - Redistributions in binary form must reproduce the above copyright notice,
+ *     this list of conditions and the following disclaimer in the documentation
+ *     and/or other materials provided with the distribution.
+ *
+ *   - Neither the name of CEA nor the names of its contributors may be used to
+ *     endorse or promote products derived from this software without specific prior
+ *     written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ *  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *  DISCLAIMED.
+ *  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ *  INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ *  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+ *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ *  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Authors: Yves Lhuillier (yves.lhuillier@cea.fr), Daniel Gracia Perez (daniel.gracia-perez@cea.fr)
+ */
+ 
+/**********************************************
+
+       SATURATING ARITHMETIC INSTRUCTIONS
+
+**********************************************/
+
+/*******************************************************************
+ * qadd (Saturating Add) instruction
+ *
+ * QADD adds two register values, saturates the result to the 32-bit
+ * signed integer range -2^31 to 2^31-1, and writes the result to the
+ * destination register. If saturation occurs, it sets the Q flag in
+ * the APSR.
+ */
+
+{ ARCH::Config::insns5E }: \
+op qadd( cond[4]: 0b00010000[8]: rn[4]: rd[4]: 0b0000[4]: 0b0101[4]: rm[4] );
+qadd.var reject : {Reject} = {(rd == 15) or (rm == 15) or (rn == 15)};
+
+qadd.disasm = {
+  buffer << "qadd" << DisasmCondition(cond) << '\t' << DisasmRegister(rd)
+         << ", " << DisasmRegister(rm) << ", " << DisasmRegister(rn);
+};
+
+qadd.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  
+  U32 op1 = cpu.GetGPR(rn), op2 = cpu.GetGPR(rm), res = op1 + op2;
+  
+  U32 saturation = SignedSat( res, ~op1 & ~op2 & res, op1 & op2 & ~res, SWP<32>() );
+  
+  cpu.CPSR().Set( Q, saturation | cpu.CPSR().Get( Q ) );
+  
+  cpu.SetGPR( rd, U32(res) );
+};
+
+/*
+ * end of qadd instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * qadd16 (Saturating Add 16) instruction
+ * 
+ * QADD16 performs two 16-bit integer additions, saturates the results
+ * to the 16-bit signed integer range -2^15 <= x <= 2^15-1, and writes
+ * the results to the destination register.
+ */
+
+{ ARCH::Config::insns6 }:                                       \
+op qadd16( cond[4]: 0b01100010[8]: rn[4]: rd[4]: 0b1111[4]: 0b0001[4]: rm[4] );
+qadd16.var reject : {Reject} = {(rd == 15) or (rm == 15) or (rn == 15)};
+
+qadd16.disasm = {
+  buffer << "qadd16" << DisasmCondition(cond) << '\t' << DisasmRegister(rd)
+         << ", " << DisasmRegister(rn) << ", " << DisasmRegister(rm);
+};
+
+qadd16.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  uint32_t const msbs(SWP<16>::msbmask);
+  
+  U32 op1 = cpu.GetGPR(rn), op2 = cpu.GetGPR(rm),
+      res = ((op1 & U32(~msbs)) + (op2 & U32(~msbs))) ^ ((op1 ^ op2) & U32(msbs));
+  
+  SignedSat( res, ~op1 & ~op2 & res, op1 & op2 & ~res, SWP<16>() );
+  
+  cpu.SetGPR( rd, U32(res) );
+};
+
+/*
+ * end of qadd16 instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * qadd8 (Saturating Add 8) instruction
+ *
+ * QADD8 performs four 8-bit integer additions, saturates the results
+ * to the 8-bit signed integer range -2^7 <= x <= 2^7-1, and writes
+ * the results to the destination register.
+
+ */
+
+{ ARCH::Config::insns6 }:                                       \
+op qadd8( cond[4]: 0b01100010[8]: rn[4]: rd[4]: 0b1111[4]: 0b1001[4]: rm[4] );
+qadd8.var reject : {Reject} = {(rd == 15) or (rm == 15) or (rn == 15)};
+
+qadd8.disasm = {
+  buffer << "qadd8" << DisasmCondition(cond) << '\t' << DisasmRegister(rd)
+         << ", " << DisasmRegister(rn) << ", " << DisasmRegister(rm);
+};
+
+qadd8.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  uint32_t const msbs(SWP<8>::msbmask);
+  
+  U32 op1 = cpu.GetGPR(rn), op2 = cpu.GetGPR(rm),
+      res = ((op1 & U32(~msbs)) + (op2 & U32(~msbs))) ^ ((op1 ^ op2) & U32(msbs));
+  
+  SignedSat( res, ~op1 & ~op2 & res, op1 & op2 & ~res, SWP<8>() );
+  
+  cpu.SetGPR( rd, U32(res) );
+};
+
+/*
+ * end of qadd8 instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * qsub (Saturating Subtract) instruction
+ * 
+ * QSUB subtracts one register value from another register value,
+ * saturates the result to the 32-bit signed integer range -2^31 <= x
+ * <= 2^31-1, and writes the result to the destination register. If
+ * saturation occurs, it sets the Q flag in the APSR.
+ */
+
+{ ARCH::Config::insns5E }: \
+op qsub( cond[4]: 0b00010010[8]: rn[4]: rd[4]: 0b0000[4]: 0b0101[4]: rm[4] );
+qsub.var reject : {Reject} = {(rd == 15) or (rm == 15) or (rn == 15)};
+
+qsub.disasm = {
+  buffer << "qsub" << DisasmCondition(cond) << '\t' << DisasmRegister(rd)
+         << ", " << DisasmRegister(rm) << ", " << DisasmRegister(rn);
+};
+
+qsub.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  
+  U32 op1 = cpu.GetGPR(rm), op2 = cpu.GetGPR(rn), res = op1 - op2;
+  
+  U32 saturation = SignedSat( res, ~op1 & op2 & res, op1 & ~op2 & ~res, SWP<32>() );
+  
+  cpu.CPSR().Set( Q, saturation | cpu.CPSR().Get( Q ) );
+  
+  cpu.SetGPR( rd, U32(res) );
+};
+
+/*
+ * end of qsub instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * qsub16 (Saturating Subtract 16) instruction
+ *
+ * QSUB16 performs two 16-bit integer subtractions, saturates the
+ * results to the 16-bit signed integer range -2^15 <= x <= 2^15-1, and
+ * writes the results to the destination register.
+ */
+
+{ ARCH::Config::insns6 }:                                       \
+op qsub16( cond[4]: 0b01100010[8]: rn[4]: rd[4]: 0b1111[4]: 0b0111[4]: rm[4] );
+qsub16.var reject : {Reject} = {(rd == 15) or (rm == 15) or (rn == 15)};
+
+qsub16.disasm = {
+  buffer << "qsub16" << DisasmCondition(cond) << '\t' << DisasmRegister(rd)
+         << ", " << DisasmRegister(rn) << ", " << DisasmRegister(rm);
+};
+
+qsub16.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  uint32_t const msbs(SWP<16>::msbmask);
+  
+  U32 op1 = cpu.GetGPR(rn), op2 = cpu.GetGPR(rm),
+      res = ((op1 | U32(msbs)) - (op2 & U32(~msbs))) ^ ((op1 ^ ~op2) & U32(msbs));
+
+  SignedSat( res, ~op1 & op2 & res, op1 & ~op2 & ~res, SWP<16>() );
+  
+  cpu.SetGPR( rd, U32(res) );
+};
+
+/*
+ * end of qsub16 instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * qsub8 (Saturating Subtract 8) instruction
+ *
+ * QSUB8 performs four 8-bit integer subtractions, saturates the
+ * results to the 8-bit signed integer range -2^7 <= x <= 2^7-1, and
+ * writes the results to the destination register.
+ */
+
+{ ARCH::Config::insns6 }:                                       \
+op qsub8( cond[4]: 0b01100010[8]: rn[4]: rd[4]: 0b1111[4]: 0b1111[4]: rm[4] );
+qsub8.var reject : {Reject} = {(rd == 15) or (rm == 15) or (rn == 15)};
+
+qsub8.disasm = {
+  buffer << "qsub8" << DisasmCondition(cond) << '\t' << DisasmRegister(rd)
+         << ", " << DisasmRegister(rn) << ", " << DisasmRegister(rm);
+};
+
+qsub8.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  uint32_t const msbs(SWP<8>::msbmask);
+  
+  U32 op1 = cpu.GetGPR(rn), op2 = cpu.GetGPR(rm),
+      res = ((op1 | U32(msbs)) - (op2 & U32(~msbs))) ^ ((op1 ^ ~op2) & U32(msbs));
+
+  SignedSat( res, ~op1 & op2 & res, op1 & ~op2 & ~res, SWP<8>() );
+  
+  cpu.SetGPR( rd, U32(res) );
+};
+
+/*
+ * end of qsub8 instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * qdadd instruction
+ */
+
+{ ARCH::Config::insns5E }: \
+op qdadd( cond[4]: 0b00010100[8]: rn[4]: rd[4]: 0b0000[4]: 0b0101[4]: rm[4] );
+qdadd.var reject : {Reject} = {(rd == 15) or (rm == 15) or (rn == 15)};
+
+qdadd.disasm = {
+  buffer << "qdadd" << DisasmCondition(cond) << '\t' << DisasmRegister(rd)
+         << ", " << DisasmRegister(rm) << ", " << DisasmRegister(rn);
+};
+
+qdadd.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  
+  U32 saturation = cpu.CPSR().Get( Q );
+  
+  U32 op1 = cpu.GetGPR(rn), tmp = op1 + op1;
+  saturation |= SignedSat( tmp, ~op1 & tmp, op1 & ~tmp, SWP<32>() );
+  
+  U32 op2 = U32(cpu.GetGPR(rm)), res = op2 + tmp;
+  saturation |= SignedSat( res, ~op2 & ~tmp & res, op2 & tmp & ~res, SWP<32>() );
+  
+  cpu.CPSR().Set( Q, saturation );
+  
+  cpu.SetGPR( rd, U32(res) );
+};
+
+/*
+ * end of qdadd instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * qdsub instruction
+ */
+
+{ ARCH::Config::insns5E }: \
+op qdsub( cond[4]: 0b00010110[8]: rn[4]: rd[4]: 0b0000[4]: 0b0101[4]: rm[4] );
+qdsub.var reject : {Reject} = {(rd == 15) or (rm == 15) or (rn == 15)};
+
+qdsub.disasm = {
+  buffer << "qdsub" << DisasmCondition(cond) << '\t' << DisasmRegister(rd)
+         << ", " << DisasmRegister(rm) << ", " << DisasmRegister(rn);
+};
+
+qdsub.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  
+  U32 saturation = cpu.CPSR().Get( Q );
+  
+  U32 op1 = cpu.GetGPR(rn), tmp = op1 + op1;
+  saturation |= SignedSat( tmp, ~op1 & tmp, op1 & ~tmp, SWP<32>() );
+  
+  U32 op2 = cpu.GetGPR(rm), res = op2 - tmp;
+  saturation |= SignedSat( res, ~op2 & tmp & res, op2 & ~tmp & ~res, SWP<32>() );
+  
+  cpu.CPSR().Set( Q, saturation );
+  
+  cpu.SetGPR( rd, U32(res) );
+};
+
+/*
+ * end of qdsub instruction
+ *******************************************************************/
+
+/**********************************************
+
+       PACKING INSTRUCTIONS
+
+**********************************************/
+
+/*******************************************************************
+ * pkh (Pack Halfword) instruction
+ *
+ * PKH combines one halfword of its first operand with the other
+ * halfword of its shifted second operand.
+ */
+
+{ ARCH::Config::insns6 }: \
+op pkh( cond[4]: 0b01101000[8]: rn[4]: rd[4]: imm[5]: shl<1> tb[1]: 0b01[2]: rm[4] );
+pkh.var reject : {Reject} = {(rd == 15) or (rm == 15) or (rn == 15)};
+
+pkh.disasm = {
+  buffer << "pkh" << (tb?"tb":"bt") << DisasmCondition(cond) << '\t'
+         << DisasmRegister(rd) << ", " << DisasmRegister(rn) << ", "
+         << DisasmRegister(rm) << DisasmShImm( tb, imm );
+};
+
+pkh.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  
+  U32 op1 = cpu.GetGPR(rn), op2 = ComputeImmShift( cpu, cpu.GetGPR(rm), tb, imm ), res(0);
+  
+  if (tb) res = (op1 & U32(0xffff0000)) | (op2 & U32(0x0000ffff));
+  else    res = (op2 & U32(0xffff0000)) | (op1 & U32(0x0000ffff));
+  
+  cpu.SetGPR( rd, res );
+};
+
+/*
+ * end of pkh instruction
+ *******************************************************************/
+
+/**********************************************
+
+       TO SORT INSTRUCTIONS
+
+**********************************************/
+
+/*******************************************************************
+ * sxtab16 (Signed Extend and Add Byte 16) instruction
+ *
+ * SXTAB16 extracts two 8-bit values from a register, sign-extends
+ * them to 16 bits each, adds the results to two 16-bit values from
+ * another register, and writes the final results to the destination
+ * register. You can specify a rotation by 0, 8, 16, or 24 bits before
+ * extracting the 8-bit values.
+ */
+
+op sxtab16( cond[4]: 0b01101000[8]: rn[4]: rd[4]: rotate[2]: 0b00[2]: 0b0111[4]: rm[4] );
+sxtab16.var ror : {uint8_t} = {8*rotate};
+sxtab16.var reject : {Reject} = {(rd == 15) or (rm == 15) or (rn == 15)};
+
+sxtab16.disasm = {
+  buffer << "sxtab16" << DisasmCondition(cond) << '\t'
+         << DisasmRegister(rd) << ", " << DisasmRegister(rn) << ", "
+         << DisasmRegister(rm) << DisasmShImm( ror?3:0, ror );
+};
+
+sxtab16.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  typedef typename ARCH::U16 U16;
+  typedef typename ARCH::S16 S16;
+  U32 rnval = cpu.GetGPR( rn ), rmval = RotateRight( cpu.GetGPR( rm ), ror );
+  S16 lo = S16( rmval << 8 ) >> 8, hi = S16( rmval >> 8 ) >> 8;
+  
+  lo += S16( rnval >> 0 ); hi += S16( rnval >> 16 );
+  cpu.SetGPR( rd, (U32( U16( lo ) ) << 0) | (U32( U16( hi ) ) << 16) );
+};
+
+/*
+ * end of sxtab16 instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * sxtb16 (Signed Extend Byte 16) instruction
+ *  
+ * SXTB16 extracts two 8-bit values from a register, sign-extends them
+ * to 16 bits each, and writes the results to the destination
+ * register. You can specify a rotation by 0, 8, 16, or 24 bits before
+ * extracting the 8-bit values.
+ */
+
+op sxtb16( cond[4]: 0b01101000[8]: 0b1111[4]: rd[4]: rotate[2]: 0b00[2]: 0b0111[4]: rm[4] );
+sxtb16.var ror : {uint8_t} = {8*rotate};
+sxtb16.var reject : {Reject} = {(rd == 15) or (rm == 15)};
+
+sxtb16.disasm = {
+  buffer << "sxtb16" << DisasmCondition(cond) << '\t' << DisasmRegister(rd)
+         << ", " << DisasmRegister(rm) << DisasmShImm( ror?3:0, ror );
+};
+
+sxtb16.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  typedef typename ARCH::U16 U16;
+  typedef typename ARCH::S16 S16;
+  U32 rmval = RotateRight( cpu.GetGPR( rm ), ror );
+  S16 lo = S16( rmval << 8 ) >> 8, hi = S16( rmval >> 8 ) >> 8;
+  cpu.SetGPR( rd, (U32( U16( lo ) ) << 0) | (U32( U16( hi ) ) << 16) );
+};
+
+/*
+ * end of sxtb16 instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * uxtab16 (Unsigned Extend and Add Byte 16) instruction
+ *
+ * UXTAB16 extracts two 8-bit values from a register, sign-extends
+ * them to 16 bits each, adds the results to two 16-bit values from
+ * another register, and writes the final results to the destination
+ * register. You can specify a rotation by 0, 8, 16, or 24 bits before
+ * extracting the 8-bit values.
+ */
+
+op uxtab16( cond[4]: 0b01101100[8]: rn[4]: rd[4]: rotate[2]: 0b00[2]: 0b0111[4]: rm[4] );
+uxtab16.var ror : {uint8_t} = {8*rotate};
+uxtab16.var reject : {Reject} = {(rd == 15) or (rm == 15) or (rn == 15)};
+
+uxtab16.disasm = {
+  buffer << "uxtab16" << DisasmCondition(cond) << '\t'
+         << DisasmRegister(rd) << ", " << DisasmRegister(rn)
+         << ", " << DisasmRegister(rm) << DisasmShImm( ror?3:0, ror );
+};
+
+uxtab16.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+   
+  typedef typename ARCH::U32 U32;
+  typedef typename ARCH::U16 U16;
+  U32 rnval = cpu.GetGPR( rn ), rmval = RotateRight( cpu.GetGPR( rm ), ror );
+  U16 lo = U16( rmval << 8 ) >> 8, hi = U16( rmval >> 8 ) >> 8;
+  lo += U16( rnval >> 0 ); hi += U16( rnval >> 16 );
+  cpu.SetGPR( rd, (U32( lo ) << 0) | (U32( hi ) << 16) );
+};
+
+/*
+ * end of uxtab16 instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * uxtb16 (Unsigned Extend Byte 16) instruction
+ *  
+ * UXTB16 extracts two 8-bit values from a register, unsign-extends
+ * them to 16 bits each, and writes the results to the destination
+ * register. You can specify a rotation by 0, 8, 16, or 24 bits before
+ * extracting the 8-bit values.
+ */
+
+op uxtb16( cond[4]: 0b01101100[8]: 0b1111[4]: rd[4]: rotate[2]: 0b00[2]: 0b0111[4]: rm[4] );
+uxtb16.var ror : {uint8_t} = {8*rotate};
+uxtb16.var reject : {Reject} = {(rd == 15) or (rm == 15)};
+
+uxtb16.disasm = {
+  buffer << "uxtb16" << DisasmCondition(cond) << '\t' << DisasmRegister(rd)
+         << ", " << DisasmRegister(rm) << DisasmShImm( ror?3:0, ror );
+};
+
+uxtb16.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  U32 rmval = RotateRight( cpu.GetGPR( rm ), ror );
+  cpu.SetGPR( rd, rmval & U32( 0x00ff00ff ) );
+};
+
+/*
+ * end of uxtb16 instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * sel (Select Bytes) instruction
+ *
+ * SEL selects each byte of its result from either its first operand
+ * or its second operand, according to the values of the GE flags.
+ */
+
+op sel( cond[4]: 0b01101000[8]: rn[4]: rd[4]: 0b1111[4]: 0b1011[4]: rm[4] );
+sel.var reject : {Reject} = {(rd == 15) or (rn == 15) or (rm == 15)};
+
+sel.disasm = {
+  buffer << "sel" << DisasmCondition(cond) << '\t' << DisasmRegister(rd)
+         << ", " << DisasmRegister(rn) << ", " << DisasmRegister(rm);
+};
+
+sel.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  typedef typename ARCH::U8  U8;
+  
+  U32 rnval = cpu.GetGPR( rn ), rmval = cpu.GetGPR( rm );
+  U32 word_mask(0);
+  
+  {
+    U8 cpsr_ge( cpu.CPSR().Get( GE ) );
+    for (unsigned byte_index = 0; byte_index < 4; byte_index++) {
+      U8 byte_mask = ((cpsr_ge >> byte_index) & U8(1)) - U8(1);
+      word_mask |= U32(byte_mask) << (8*byte_index);
+    }
+  }
+
+  U32 res = (rnval & ~word_mask) | (rmval & word_mask);
+  
+  cpu.SetGPR( rd, res );
+};
+
+/*
+ * end of sel instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * ssat (Signed Saturate) instruction
+ *  
+ * SSAT saturates an optionally-shifted signed value to a selectable
+ * signed range.  The Q flag is set if the operation saturates.
+ */
+
+op ssat( cond[4]: 0b0110101[7]: sat_imm[5]: rd[4]: imm[5]: shl<1> sh[1]: 0b01[2]: rn[4] );
+ssat.var reject : {Reject} = {(rd == 15) or (rn == 15)};
+
+ssat.disasm = {
+  buffer << "ssat" << DisasmCondition(cond) << '\t' << DisasmRegister(rd) << ", " << DisasmI(sat_imm+1)
+         << ", " << DisasmRegister(rn) << DisasmShImm(sh,imm);
+};
+
+ssat.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  typedef typename ARCH::S32 S32;
+  unsigned const ra = (31-sat_imm); // Right alignment
+  
+  U32 src = ComputeImmShift( cpu, cpu.GetGPR(rn), sh, imm ),
+      res = src << ra;
+  
+  S32 const bound = S32(-1 << sat_imm);
+  U32 of = U32(S32(src) > ~bound) << 31, uf = U32(S32(src) < bound) << 31;
+  
+  U32 saturation = SignedSat( res, of, uf, SWP<32>() );
+  
+  cpu.CPSR().Set( Q, saturation | cpu.CPSR().Get( Q ) );
+  
+  cpu.SetGPR( rd, U32(S32(res) >> ra) );
+};
+
+/*
+ * end of ssat instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * ssat16 (Signed Saturate 16) instruction
+ *  
+ * SSAT16 saturates two signed 16-bit values to a selectable signed
+ * range.  The Q flag is set if the operation saturates.
+ */
+
+op ssat16( cond[4]: 0b01101010[8]: sat_imm[4]: rd[4]: 0b1111[4]: 0b0011[4]: rn[4] );
+ssat16.var reject : {Reject} = {(rd == 15) or (rn == 15)};
+
+ssat16.disasm = {
+  buffer << "ssat16" << DisasmCondition(cond) << '\t' << DisasmRegister(rd)
+         << ", " << DisasmI(sat_imm+1) << ", " << DisasmRegister(rn);
+};
+
+ssat16.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  typedef typename ARCH::U16 U16;
+  typedef typename ARCH::S16 S16;
+  unsigned const ra = (15-sat_imm); // Right alignment
+  
+  U32 src = cpu.GetGPR(rn), res = src << ra;
+  
+  S16 const bound = S16(-1 << sat_imm);
+  U32 of = (U32(S16(src) > ~bound) << 15) | (U32(S16(src >> 16) > ~bound) << 31),
+      uf = (U32(S16(src) < bound) << 15) | (U32(S16(src >> 16) < bound) << 31);
+  
+  U32 saturation = SignedSat( res, of, uf, SWP<16>() );
+  
+  cpu.CPSR().Set( Q, saturation | cpu.CPSR().Get( Q ) );
+  
+  // undo right aligment and signed extend both halfword
+  cpu.SetGPR( rd, (U32(U16(S16(res>>16) >> ra)) << 16) | U32(U16(S16(res) >> ra)) );
+};
+
+/*
+ * end of ssat16 instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * usat (Unsigned Saturate) instruction
+ *  
+ * USAT saturates an optionally-shifted unsigned value to a selectable
+ * unsigned range.  The Q flag is set if the operation saturates.
+ */
+
+op usat( cond[4]: 0b0110111[7]: sat_imm[5]: rd[4]: imm[5]: shl<1> sh[1]: 0b01[2]: rn[4] );
+usat.var reject : {Reject} = {(rd == 15) or (rn == 15)};
+
+usat.disasm = {
+  buffer << "usat" << DisasmCondition(cond) << '\t' << DisasmRegister(rd) << ", " << DisasmI(sat_imm)
+         << ", " << DisasmRegister(rn) << DisasmShImm(sh,imm);
+};
+
+usat.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  typedef typename ARCH::S32 S32;
+  // ra is Right alignment minus one (because shifts by 32 are
+  // unpredictable)
+  unsigned const ra = (31-sat_imm);
+  
+  U32 src = ComputeImmShift( cpu, cpu.GetGPR(rn), sh, imm ),
+      res = (src << ra) << 1;
+  
+  S32 const bound = S32(~(-1 << sat_imm));
+  U32 of = U32(S32(src) > bound) << 31, uf = U32(S32(src) < S32(0)) << 31;
+  
+  U32 saturation = cpu.CPSR().Get( Q );
+  saturation |= UnsignedPSat( res, of, SWP<32>() );
+  saturation |= UnsignedNSat( res, ~uf, SWP<32>() );
+  
+  cpu.CPSR().Set( Q, saturation );
+  
+  cpu.SetGPR( rd, (res >> 1) >> ra );
+};
+
+/*
+ * end of usat instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * usat16 (Unsigned Saturate 16) instruction
+ *  
+ * USAT16 saturates two unsigned 16-bit values to a selectable unsigned
+ * range.  The Q flag is set if the operation saturates.
+ */
+
+op usat16( cond[4]: 0b01101110[8]: sat_imm[4]: rd[4]: 0b1111[4]: 0b0011[4]: rn[4] );
+usat16.var reject : {Reject} = {(rd == 15) or (rn == 15)};
+
+usat16.disasm = {
+  buffer << "usat16" << DisasmCondition(cond) << '\t' << DisasmRegister(rd)
+         << ", " << DisasmI(sat_imm) << ", " << DisasmRegister(rn);
+};
+
+usat16.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  typedef typename ARCH::U16 U16;
+  typedef typename ARCH::S16 S16;
+  unsigned const ra = (16-sat_imm); // Right alignment
+  
+  U32 src = cpu.GetGPR(rn), res = src << ra;
+  
+  S16 const bound = S16(~(-1 << sat_imm));
+  U32 of = (U32(S16(src) > bound) << 15) | (U32(S16(src >> 16) > bound) << 31),
+      uf = (U32(S16(src) < S16(0)) << 15) | (U32(S16(src >> 16) < S16(0)) << 31);
+  
+  U32 saturation = cpu.CPSR().Get( Q );
+  saturation |= UnsignedPSat( res, of, SWP<16>() );
+  saturation |= UnsignedNSat( res, ~uf, SWP<16>() );
+  
+  cpu.CPSR().Set( Q, saturation | cpu.CPSR().Get( Q ) );
+  
+  // undo right aligment and zero extend both halfword
+  cpu.SetGPR( rd, (U32(U16(res >> 16) >> ra) << 16) | U32(U16(res) >> ra) );
+};
+
+/*
+ * end of usat16 instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * sxtab (Signed Extend and Add Byte) instruction
+ *
+ * SXTAB extracts an 8-bit value from a register, sign-extends it to
+ * 32 bits, adds the result to the value in another register, and
+ * writes the final result to the destination register. You can
+ * specify a rotation by 0, 8, 16, or 24 bits before extracting the
+ * 8-bit value.
+ */
+
+op sxtab( cond[4]: 0b01101010[8]: rn[4]: rd[4]: rotate[2]: 0b00[2]: 0b0111[4]: rm[4] );
+sxtab.var ror : {uint8_t} = {8*rotate};
+sxtab.var reject : {Reject} = {(rd == 15) or (rm == 15) or (rn == 15)};
+
+sxtab.disasm = {
+  buffer << "sxtab" << DisasmCondition(cond) << '\t'
+         << DisasmRegister(rd) << ", " << DisasmRegister(rn) << ", "
+         << DisasmRegister(rm) << DisasmShImm( ror?3:0, ror );
+};
+
+sxtab.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  typedef typename ARCH::S32 S32;
+  typedef typename ARCH::S8  S8;
+  U32 rnval = cpu.GetGPR( rn ), rmval = RotateRight( cpu.GetGPR( rm ), ror );
+  cpu.SetGPR( rd, rnval + U32( S32( S8( rmval ) ) ) );
+};
+
+/*
+ * end of sxtab instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * sxtb (Signed Extend Byte) instruction
+ *  
+ * SXTB extracts an 8-bit value from a register, sign-extends it to 32
+ * bits, and writes the result to the destination register. The
+ * instruction can specify a rotation by 0, 8, 16, or 24 bits before
+ * extracting the 8-bit value.
+ */
+
+op sxtb( cond[4]: 0b01101010[8]: 0b1111[4]: rd[4]: rotate[2]: 0b00[2]: 0b0111[4]: rm[4] );
+sxtb.var ror : {uint8_t} = {rotate << 3};
+sxtb.var reject : {Reject} = {(rd == 15) or (rm == 15)};
+
+sxtb.disasm = {
+  buffer << "sxtb" << DisasmCondition(cond) << '\t' << DisasmRegister(rd)
+         << ", " << DisasmRegister(rm) << DisasmShImm( ror?3:0, ror );
+};
+
+sxtb.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  typedef typename ARCH::S32 S32;
+  typedef typename ARCH::S8  S8;
+  U32 rmval = RotateRight( cpu.GetGPR( rm ), ror );
+  cpu.SetGPR( rd, U32( S32( S8( rmval ) ) ) );
+};
+
+/*
+ * end of sxtb instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * sxtah (Signed Extend and Add Halfword) instruction
+ *  
+ * SXTAH extracts a 16-bit value from a register, sign-extends it to
+ * 32 bits, adds the result to a value from another register, and
+ * writes the final result to the destination register. You can
+ * specify a rotation by 0, 8, 16, or 24 bits before extracting the
+ * 16-bit value.
+ */
+
+op sxtah( cond[4]: 0b01101011[8]: rn[4]: rd[4]: rotate[2]: 0b00[2]: 0b0111[4]: rm[4] );
+sxtah.var ror : {uint8_t} = {8*rotate};
+sxtah.var reject : {Reject} = {(rd == 15) or (rm == 15) or (rn == 15)};
+
+sxtah.disasm = {
+  buffer << "sxtah" << DisasmCondition(cond) << '\t'
+         << DisasmRegister(rd) << ", " << DisasmRegister(rn) << ", "
+         << DisasmRegister(rm) << DisasmShImm( ror?3:0, ror );
+};
+
+sxtah.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  typedef typename ARCH::S32 S32;
+  typedef typename ARCH::S16 S16;
+  U32 rnval = cpu.GetGPR( rn ), rmval = RotateRight( cpu.GetGPR( rm ), ror );
+  cpu.SetGPR( rd, rnval + U32( S32( S16( rmval ) ) ) );
+};
+
+/*
+ * end of sxtah instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * sxth (Signed Extend Halfword) instruction
+ */
+
+op sxth( cond[4]: 0b01101011[8]: 0b1111[4]: rd[4]: rotate[2]: 0b00[2]: 0b0111[4]: rm[4] );
+sxth.var ror : {uint8_t} = {8*rotate};
+sxth.var reject : {Reject} = {(rd == 15) or (rm == 15)};
+
+sxth.disasm = {
+  buffer << "sxth" << DisasmCondition(cond) << '\t' << DisasmRegister(rd)
+         << ", " << DisasmRegister(rm) << DisasmShImm( ror?3:0, ror );
+};
+
+sxth.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  typedef typename ARCH::S32 S32;
+  typedef typename ARCH::S16 S16;
+  U32 rmval = RotateRight( cpu.GetGPR( rm ), ror );
+  cpu.SetGPR( rd, U32( S32( S16( rmval ) ) ) );
+};
+
+/*
+ * end of sxth instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * uxtab (Signed Extend and Add Byte) instruction
+ *
+ * UXTAB extracts an 8-bit value from a register, sign-extends it to
+ * 32 bits, adds the result to the value in another register, and
+ * writes the final result to the destination register. You can
+ * specify a rotation by 0, 8, 16, or 24 bits before extracting the
+ * 8-bit value.
+ */
+
+op uxtab( cond[4]: 0b01101110[8]: rn[4]: rd[4]: rotate[2]: 0b00[2]: 0b0111[4]: rm[4] );
+uxtab.var ror : {uint8_t} = {8*rotate};
+uxtab.var reject : {Reject} = {(rd == 15) or (rm == 15) or (rn == 15)};
+
+uxtab.disasm = {
+  buffer << "uxtab" << DisasmCondition(cond) << '\t'
+         << DisasmRegister(rd) << ", " << DisasmRegister(rn) << ", "
+         << DisasmRegister(rm) << DisasmShImm( ror?3:0, ror );
+};
+
+uxtab.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  typedef typename ARCH::U8  U8;
+  U32 rnval = cpu.GetGPR( rn ), rmval = RotateRight( cpu.GetGPR( rm ), ror );
+  cpu.SetGPR( rd, rnval + U32( U8( rmval ) ) );
+};
+
+/*
+ * end of uxtab instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * uxtb (Signed Extend Byte 16) instruction
+ *  
+ * UXTB extracts two 8-bit values from a register, sign-extends them
+ * to 16 bits each, and writes the results to the destination
+ * register. You can specify a rotation by 0, 8, 16, or 24 bits before
+ * extracting the 8-bit values.
+ */
+
+op uxtb( cond[4]: 0b01101110[8]: 0b1111[4]: rd[4]: rotate[2]: 0b00[2]: 0b0111[4]: rm[4] );
+uxtb.var ror : {uint32_t} = {rotate<<3};
+
+uxtb.disasm = {
+  buffer << "uxtb" << DisasmCondition(cond) << '\t' << DisasmRegister(rd)
+         << ", " << DisasmRegister(rm) << DisasmShImm( (ror ? 3 : 0), ror );
+};
+
+uxtb.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  typedef typename ARCH::U8 U8;
+  U32 rmval = RotateRight( cpu.GetGPR( rm ), ror );
+  cpu.SetGPR( rd, U32( U8( rmval ) ) );
+};
+
+/*
+ * end of uxtb instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * uxtah (Unsigned Extend and Add Halfword) instruction
+ *  
+ * UXTAH extracts a 16-bit value from a register, zero-extends it to
+ * 32 bits, adds the result to a value from another register, and
+ * writes the final result to the destination register. You can
+ * specify a rotation by 0, 8, 16, or 24 bits before extracting the
+ * 16-bit value.
+ */
+
+op uxtah( cond[4]: 0b01101111[8]: rn[4]: rd[4]: rotate[2]: 0b00[2]: 0b0111[4]: rm[4] );
+uxtah.var ror : {uint8_t} = {8*rotate};
+uxtah.var reject : {Reject} = {(rd == 15) or (rm == 15)};
+
+uxtah.disasm = {
+  buffer << "uxtah" << DisasmCondition(cond) << '\t'
+         << DisasmRegister(rd) << ", " << DisasmRegister(rn) << ", "
+         << DisasmRegister(rm) << DisasmShImm( ror?3:0, ror );
+};
+
+uxtah.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+	
+  typedef typename ARCH::U32 U32;
+  typedef typename ARCH::U16 U16;
+  U32 rnval = cpu.GetGPR( rn ), rmval = RotateRight( cpu.GetGPR( rm ), ror );
+  cpu.SetGPR( rd, rnval + U32( U16( rmval ) ) );
+};
+
+/*
+ * end of uxtah instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * uxth (Unsigned Extend Halfword) instruction
+ */
+
+op uxth( cond[4]: 0b01101111[8]: 0b1111[4]: rd[4]: rotate[2]: 0b00[2]: 0b0111[4]: rm[4] );
+uxth.var ror : {uint8_t} = {8*rotate};
+uxth.var reject : {Reject} = {(rd == 15) or (rm == 15)};
+
+uxth.disasm = {
+  buffer << "uxth" << DisasmCondition(cond) << '\t' << DisasmRegister(rd) << ", "
+                   << DisasmRegister(rm) << DisasmShImm( ror?3:0, ror );
+};
+
+uxth.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+	
+  typedef typename ARCH::U32 U32;
+  typedef typename ARCH::U16 U16;
+  U32 rmval = RotateRight( cpu.GetGPR( rm ), ror );
+  cpu.SetGPR( rd, U32( U16( rmval ) ) );
+};
+
+/*
+ * end of uxth instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * usad8 (Unsigned Sum of Absolute Differences) instruction
+ *
+ * USAD8 performs four unsigned 8-bit subtractions, and adds the
+ * absolute values of the differences together.
+ */
+
+{ ARCH::Config::insns6 }: \
+op usad8( cond[4]: 0b01111000[8]: rd[4]: 0b1111[4]: rm[4]: 0b0001[4]: rn[4] );
+usad8.var reject : {Reject} = {(rd == 15) or (rn == 15) or (rm == 15)};
+
+usad8.disasm = {
+  buffer << "usad8" << DisasmCondition(cond) << '\t' << DisasmRegister(rd)
+         << ", " << DisasmRegister(rn) << ", " << DisasmRegister(rm);
+};
+
+usad8.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+	
+  typedef typename ARCH::U32 U32;
+  typedef typename ARCH::S32 S32;
+
+  U32 op1 = cpu.GetGPR(rn), op2 = cpu.GetGPR(rm), res(0);
+  
+  for (unsigned byte = 0; byte < 4; byte++) {
+    U32 a = (op1 >> (8*byte)) & U32(0xff), b = (op2 >> (8*byte)) & U32(0xff), d = a - b;
+    // Compute abs by arithetic means
+    U32 neg( S32(d) >> 8 );
+    res += ((d ^ neg) + (neg & U32(1)));
+  }
+  
+  cpu.SetGPR( rd, res );
+};
+
+/*
+ * end of usad8 instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * usada8 (Unsigned Sum of Absolute Differences and Accumulate) instruction
+ *
+ * USADA8 performs four unsigned 8-bit subtractions, and adds the
+ * absolute values of the differences to a 32-bit accumulate operand.
+ */
+
+{ ARCH::Config::insns6 }: \
+op usada8( cond[4]: 0b01111000[8]: rd[4]: ra[4]: rm[4]: 0b0001[4]: rn[4] );
+usada8.var reject : {Reject} = {(rd == 15) or (rn == 15) or (rm == 15)};
+
+usada8.disasm = {
+  buffer << "usada8" << DisasmCondition(cond) << '\t' << DisasmRegister(rd)
+         << ", " << DisasmRegister(rn) << ", " << DisasmRegister(rm) << ", " << DisasmRegister(ra);
+};
+
+usada8.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+	
+  typedef typename ARCH::U32 U32;
+  typedef typename ARCH::S32 S32;
+
+  U32 op1 = cpu.GetGPR(rn), op2 = cpu.GetGPR(rm), res = cpu.GetGPR(ra);
+  
+  for (unsigned byte = 0; byte < 4; byte++) {
+    U32 a = (op1 >> (8*byte)) & U32(0xff), b = (op2 >> (8*byte)) & U32(0xff), d = a - b;
+    // Compute abs by arithetic means
+    U32 neg( S32(d) >> 8 );
+    res += ((d ^ neg) + (neg & U32(1)));
+  }
+  
+  cpu.SetGPR( rd, res );
+};
+
+/*
+ * end of usada8 instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * sbfx (Signed Bit Field Extract) instruction
+ *
+ * SBFX extracts any number of adjacent bits at any position from a
+ * register, sign-extends them to 32 bits, and writes the result to
+ * the destination register.
+ */
+
+op sbfx( cond[4]: 0b01111[5]: 0b0[1]: 0b1[1]: widthm1[5]: rd[4]: lsb[5]: 0b101[3]: rn[4] );
+sbfx.var width : {uint32_t} = {widthm1+1};
+sbfx.var reject : {Reject} = {(lsb + widthm1) > 31};
+
+sbfx.disasm = {
+  buffer << "sbfx" << DisasmCondition(cond) << '\t'
+         << DisasmRegister(rd) << ", " << DisasmRegister(rn)
+         << ", " << DisasmI(lsb) << ", " << DisasmI(widthm1+1);
+};
+
+sbfx.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+	
+  typedef typename ARCH::U32 U32;
+  typedef typename ARCH::S32 S32;
+  cpu.SetGPR( rd, U32((S32(cpu.GetGPR( rn )) << (32 - width - lsb)) >> (32 - width)) );
+};
+
+/*
+ * end of sbfx instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * bfi (Bit Field Insert) instruction
+ * 
+ * BFI copies any number of low order bits from a register into the
+ * same number of adjacent bits at any position in the destination
+ * register.
+ */
+
+op bfi( cond[4]: 0b0111110[7]: msb[5]: rd[4]: lsb[5]: 0b001[3]: rn[4] );
+bfi.var width : {uint32_t} = {msb-lsb+1};
+bfi.var clear : {uint32_t} = {~(((uint64_t(1) << width)-1) << lsb)};
+bfi.var reject : {Reject} = {msb < lsb};
+
+bfi.disasm = {
+  buffer << "bfi"  << DisasmCondition(cond) << '\t'
+         << DisasmRegister(rd) << ", " << DisasmRegister(rn) << ", "
+         << DisasmI(lsb) << ", " << DisasmI(width);
+};
+
+bfi.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+  
+  // if (msb < lsb) UNPREDICTABLE
+  typedef typename ARCH::U32 U32;
+  cpu.SetGPR( rd, (cpu.GetGPR( rd ) & U32(clear)) | ((cpu.GetGPR( rn ) << lsb) & U32(~clear)) );
+};
+
+/*
+ * end of bfi instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * bfc (Bit Field Clear) instruction
+ *
+ * BFC clears any number of adjacent bits at any position in a
+ * register, without affecting the other bits in the register.
+ */
+
+op bfc( cond[4]: 0b0111110[7]: msb[5]: rd[4]: lsb[5]: 0b001[3]: 0b1111[4] );
+bfc.var width : {uint32_t} = {msb-lsb+1};
+bfc.var clear : {uint32_t} = {~(((uint64_t(1) << width)-1) << lsb)};
+bfc.var reject : {Reject} = {msb < lsb};
+
+bfc.disasm = {
+  buffer << "bfc"  << DisasmCondition(cond) << '\t' << DisasmRegister(rd) << ", " << DisasmI(lsb) << ", " << DisasmI(width);
+};
+
+bfc.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+  
+  // if (msb < lsb) UNPREDICTABLE
+  typedef typename ARCH::U32 U32;
+  cpu.SetGPR( rd, cpu.GetGPR( rd ) & U32(clear) );
+};
+
+/*
+ * end of bfc instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * ubfx (Unsigned Bit Field Extract) instruction
+ *
+ * UBFX extracts any number of adjacent bits at any position from a
+ * register, zero-extends them to 32 bits, and writes the result to
+ * the destination register.
+ */
+
+op ubfx( cond[4]: 0b01111[5]: 0b1[1]: 0b1[1]: widthm1[5]: rd[4]: lsb[5]: 0b101[3]: rn[4] );
+ubfx.var width : {uint32_t} = {widthm1+1};
+ubfx.var reject : {Reject} = {(lsb + widthm1) > 31};
+
+ubfx.disasm = {
+  buffer << "ubfx" << DisasmCondition(cond) << '\t'
+         << DisasmRegister(rd) << ", " << DisasmRegister(rn)
+         << ", " << DisasmI(lsb) << ", " << DisasmI(widthm1+1);
+};
+
+ubfx.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+  
+  cpu.SetGPR( rd, (cpu.GetGPR( rn ) << (32 - width - lsb)) >> (32 - width) );
+};
+
+/*
+ * end of ubfx instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * uadd16 (Unsigned Add 16) instruction
+ * 
+ * UADD16 performs two 16-bit unsigned integer additions, and writes
+ * the results to the dest ination register.  It sets the APSR.GE bits
+ * according to the results of the additions.
+ */
+
+{ ARCH::Config::insns6 }:                                              \
+op uadd16( cond[4]: 0b01100101[8]: rn[4]: rd[4]: 0b1111[4]: 0b0001[4]: rm[4] );
+uadd16.var reject : {Reject} = {(rd == 15) or (rn == 15) or (rm == 15)};
+
+uadd16.disasm = {
+  buffer << "uadd16" << DisasmCondition(cond) << '\t' << DisasmRegister(rd)
+         << ", " << DisasmRegister(rn) << ", " << DisasmRegister(rm);
+};
+
+uadd16.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  uint32_t const msbs(SWP<16>::msbmask);
+  
+  U32 op1 = cpu.GetGPR(rn), op2 = cpu.GetGPR(rm),
+      res = ((op1 & U32(~msbs)) + (op2 & U32(~msbs))) ^ ((op1 ^ op2) & U32(msbs)),
+      cv = ((op1 & op2) | (~res & (op1 | op2))) & U32(msbs); //< Carries vector
+  
+  cpu.SetGPR( rd, res );
+  cpu.CPSR().Set( GE, ((cv>>15)|(cv>>14)|(cv>>29)|(cv>>28)) & U32(0xf) );
+};
+
+/*
+ * end of uadd16 instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * uadd8 (unsigned add 8) instruction
+ * 
+ * UADD8 performs four unsigned 8-bit integer additions, and writes
+ * the results to the destination register. It sets the APSR.GE bits
+ * according to the results of the additions.
+ */
+
+{ ARCH::Config::insns6 }:                                              \
+op uadd8( cond[4]: 0b01100101[8]: rn[4]: rd[4]: 0b1111[4]: 0b1001[4]: rm[4] );
+uadd8.var reject : {Reject} = {(rd == 15) or (rn == 15) or (rm == 15)};
+
+uadd8.disasm = {
+  buffer << "uadd8" << DisasmCondition(cond) << '\t' << DisasmRegister(rd)
+         << ", " << DisasmRegister(rn) << ", " << DisasmRegister(rm);
+};
+
+uadd8.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  uint32_t const msbs(SWP<8>::msbmask);
+  
+  U32 op1 = cpu.GetGPR(rn), op2 = cpu.GetGPR(rm),
+      res = ((op1 & U32(~msbs)) + (op2 & U32(~msbs))) ^ ((op1 ^ op2) & U32(msbs)),
+      cv = ((op1 & op2) | (~res & (op1 | op2))) & U32(msbs); //< Carries vector
+  
+  cpu.SetGPR( rd, res );
+  cpu.CPSR().Set( GE, ((cv>>7)|(cv>>14)|(cv>>21)|(cv>>28)) & U32(0xf) );
+};
+
+/*
+ * end of uadd8 instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * usub16 (Unsigned Subtract 16) instruction
+ * 
+ * USUB16 performs two 16-bit unsigned integer subtractions, and
+ * writes the results to the destination register. It sets the APSR.GE
+ * bits according to the results of the subtractions.
+ */
+
+{ ARCH::Config::insns6 }:                                              \
+op usub16( cond[4]: 0b01100101[8]: rn[4]: rd[4]: 0b1111[4]: 0b0111[4]: rm[4] );
+usub16.var reject : {Reject} = {(rd == 15) or (rn == 15) or (rm == 15)};
+
+usub16.disasm = {
+  buffer << "usub16" << DisasmCondition(cond) << '\t' << DisasmRegister(rd)
+         << ", " << DisasmRegister(rn) << ", " << DisasmRegister(rm);
+};
+
+usub16.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  uint32_t const msbs(SWP<16>::msbmask);
+  
+  U32 op1 = cpu.GetGPR(rn), op2 = cpu.GetGPR(rm),
+      res = ((op1 | U32(msbs)) - (op2 & U32(~msbs))) ^ ((op1 ^ ~op2) & U32(msbs)),
+      cv = ((op1 & ~op2) | (~res & (op1 | ~op2))) & U32(msbs); //< Carries vector
+  
+  cpu.SetGPR( rd, U32(res) );
+  cpu.CPSR().Set( GE, ((cv>>15)|(cv>>14)|(cv>>29)|(cv>>28)) & U32(0xf) );
+};
+
+/*
+ * end of usub16 instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * usub8 (Unsigned Subtract 8) instruction
+ *
+ * USUB8 performs four 8-bit unsigned integer subtractions, and writes
+ * the results to the destination register. It sets the APSR.GE bits
+ * according to the results of the subtractions.
+ */
+
+{ ARCH::Config::insns6 }:                                       \
+op usub8( cond[4]: 0b01100101[8]: rn[4]: rd[4]: 0b1111[4]: 0b1111[4]: rm[4] );
+usub8.var reject : {Reject} = {(rd == 15) or (rn == 15) or (rm == 15)};
+
+usub8.disasm = {
+  buffer << "usub8" << DisasmCondition(cond) << '\t' << DisasmRegister(rd)
+         << ", " << DisasmRegister(rn) << ", " << DisasmRegister(rm);
+};
+
+usub8.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  uint32_t const msbs(SWP<8>::msbmask);
+  
+  U32 op1 = cpu.GetGPR(rn), op2 = cpu.GetGPR(rm),
+      res = ((op1 | U32(msbs)) - (op2 & U32(~msbs))) ^ ((op1 ^ ~op2) & U32(msbs)),
+      cv = ((op1 & ~op2) | (~res & (op1 | ~op2))) & U32(msbs); //< Carries vector
+  
+  cpu.SetGPR( rd, U32(res) );
+  cpu.CPSR().Set( GE, ((cv>>7)|(cv>>14)|(cv>>21)|(cv>>28)) & U32(0xf) );
+};
+
+/*
+ * end of usub8 instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * sadd16 (Signed Add 16) instruction
+ *
+ * SADD16 performs two 16-bit signed integer additions, and writes the
+ * results to the destination register. It sets the APSR.GE bits
+ * according to the results of the additions.
+ */
+
+{ ARCH::Config::insns6 }:                                                  \
+op sadd16( cond[4]: 0b01100001[8]: rn[4]: rd[4]: 0b1111[4]: 0b0001[4]: rm[4] );
+sadd16.var reject : {Reject} = {(rd == 15) or (rn == 15) or (rm == 15)};
+
+sadd16.disasm = {
+  buffer << "sadd16" << DisasmCondition(cond) << '\t' << DisasmRegister(rd)
+         << ", " << DisasmRegister(rn) << ", " << DisasmRegister(rm);
+};
+
+sadd16.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  uint32_t const msbs(SWP<16>::msbmask);
+  
+  U32 op1 = cpu.GetGPR(rn), op2 = cpu.GetGPR(rm),
+      res = ((op1 & U32(~msbs)) + (op2 & U32(~msbs))) ^ ((op1 ^ op2) & U32(msbs)),
+      gev = (((op1 & op2 & ~res) | (~op1 & ~op2 & res)) ^ ~res) & U32(msbs); //< GE vector
+  
+  cpu.SetGPR( rd, res );
+  cpu.CPSR().Set( GE, ((gev>>15)|(gev>>14)|(gev>>29)|(gev>>28)) & U32(0xf) );
+};
+
+/*
+ * end of sadd16 instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * sadd8 (Signed Add 8) instruction
+ *
+ * SADD8 performs four 8-bit signed integer additions, and writes the
+ * results to the destination register. It sets the APSR.GE bits
+ * according to the results of the additions
+ */
+
+{ ARCH::Config::insns6 }:                                              \
+op sadd8( cond[4]: 0b01100001[8]: rn[4]: rd[4]: 0b1111[4]: 0b1001[4]: rm[4] );
+sadd8.var reject : {Reject} = {(rd == 15) or (rn == 15) or (rm == 15)};
+
+sadd8.disasm = {
+  buffer << "sadd8" << DisasmCondition(cond) << '\t' << DisasmRegister(rd)
+         << ", " << DisasmRegister(rn) << ", " << DisasmRegister(rm);
+};
+
+sadd8.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  uint32_t const msbs(SWP<8>::msbmask);
+  
+  U32 op1 = cpu.GetGPR(rn), op2 = cpu.GetGPR(rm),
+      res = ((op1 & U32(~msbs)) + (op2 & U32(~msbs))) ^ ((op1 ^ op2) & U32(msbs)),
+      gev = (((op1 & op2 & ~res) | (~op1 & ~op2 & res)) ^ ~res) & U32(msbs); //< GE vector
+  
+  cpu.SetGPR( rd, res );
+  cpu.CPSR().Set( GE, ((gev>>7)|(gev>>14)|(gev>>21)|(gev>>28)) & U32(0xf) );
+};
+
+/*
+ * end of sadd8 instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * ssub16 (Signed Substract 16) instruction
+ *
+ * SSUB16 performs two 16-bit signed integer subtract ions, and writes
+ * the results to the destination register.  It sets the APSR.GE bits
+ * according to the results of the subtractions.
+ */
+
+{ ARCH::Config::insns6 }:                                       \
+op ssub16( cond[4]: 0b01100001[8]: rn[4]: rd[4]: 0b1111[4]: 0b0111[4]: rm[4] );
+ssub16.var reject : {Reject} = {(rd == 15) or (rn == 15) or (rm == 15)};
+
+ssub16.disasm = {
+  buffer << "ssub16" << DisasmCondition(cond) << '\t' << DisasmRegister(rd)
+         << ", " << DisasmRegister(rn) << ", " << DisasmRegister(rm);
+};
+
+ssub16.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  uint32_t const msbs(SWP<16>::msbmask);
+  
+  U32 op1 = cpu.GetGPR(rn), op2 = cpu.GetGPR(rm),
+      res = ((op1 | U32(msbs)) - (op2 & U32(~msbs))) ^ ((op1 ^ ~op2) & U32(msbs)),
+      gev = (((op1 & ~op2 & ~res) | (~op1 & op2 & res)) ^ ~res) & U32(msbs); //< GE vector
+  
+  cpu.SetGPR( rd, U32(res) );
+  cpu.CPSR().Set( GE, ((gev>>15)|(gev>>14)|(gev>>29)|(gev>>28)) & U32(0xf) );
+};
+
+/*
+ * end of ssub16 instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * ssub8 (Signed Substract 8) instruction
+ *
+ * SSUB8 performs four 8-bit signed integer subtractions, and writes
+ * the results to the destination register.  It sets the APSR.GE bits
+ * according to the results of the subtractions.
+ */
+
+{ ARCH::Config::insns6 }:                                              \
+op ssub8( cond[4]: 0b01100001[8]: rn[4]: rd[4]: 0b1111[4]: 0b1111[4]: rm[4] );
+ssub8.var reject : {Reject} = {(rd == 15) or (rn == 15) or (rm == 15)};
+
+ssub8.disasm = {
+  buffer << "ssub8" << DisasmCondition(cond) << '\t' << DisasmRegister(rd)
+         << ", " << DisasmRegister(rn) << ", " << DisasmRegister(rm);
+};
+
+ssub8.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  uint32_t const msbs(SWP<8>::msbmask);
+  
+  U32 op1 = cpu.GetGPR(rn), op2 = cpu.GetGPR(rm),
+      res = ((op1 | U32(msbs)) - (op2 & U32(~msbs))) ^ ((op1 ^ ~op2) & U32(msbs)),
+      gev = (((op1 & ~op2 & ~res) | (~op1 & op2 & res)) ^ ~res) & U32(msbs); //< GE vector
+  
+  cpu.SetGPR( rd, U32(res) );
+  cpu.CPSR().Set( GE, ((gev>>7)|(gev>>14)|(gev>>21)|(gev>>28)) & U32(0xf) );
+};
+
+/*
+ * end of ssub8 instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * uqadd16 (Unsigned Saturating Add 16) instruction
+ * 
+ * UQADD16 performs two unsigned 16-bit integer additions, saturates
+ * the results to the 16-bit unsigned integer range 0 <= x <= 2^16-1,
+ * and writes the results to the destination register.
+ */
+
+{ ARCH::Config::insns6 }:                                       \
+op uqadd16( cond[4]: 0b01100110[8]: rn[4]: rd[4]: 0b1111[4]: 0b0001[4]: rm[4] );
+uqadd16.var reject : {Reject} = {(rd == 15) or (rn == 15) or (rm == 15)};
+
+uqadd16.disasm = {
+  buffer << "uqadd16" << DisasmCondition(cond) << '\t' << DisasmRegister(rd)
+         << ", " << DisasmRegister(rn) << ", " << DisasmRegister(rm);
+};
+
+uqadd16.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  uint32_t const msbs(SWP<16>::msbmask);
+  
+  U32 op1 = cpu.GetGPR(rn), op2 = cpu.GetGPR(rm),
+      res = ((op1 & U32(~msbs)) + (op2 & U32(~msbs))) ^ ((op1 ^ op2) & U32(msbs));
+  
+  UnsignedPSat( res, ((op1 & op2) | (~res & (op1 | op2))), SWP<16>() );
+  
+  cpu.SetGPR( rd, U32(res) );
+};
+
+/*
+ * end of uqadd16 instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * uqadd8 (Unsigned Saturating Add 8) instruction
+ * 
+ * UQADD8 performs four unsigned 8-bit integer additions, satura tes
+ * the results to the 8-bit unsigned integer range 0 <= x <= 2^8-1,
+ * and writes the results to the destination register
+ */
+
+{ ARCH::Config::insns6 }: \
+op uqadd8( cond[4]: 0b01100110[8]: rn[4]: rd[4]: 0b1111[4]: 0b1001[4]: rm[4] );
+uqadd8.var reject : {Reject} = {(rd == 15) or (rn == 15) or (rm == 15)};
+
+uqadd8.disasm = {
+  buffer << "uqadd8" << DisasmCondition(cond) << '\t' << DisasmRegister(rd)
+         << ", " << DisasmRegister(rn) << ", " << DisasmRegister(rm);
+};
+
+uqadd8.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  uint32_t const msbs(SWP<8>::msbmask);
+  
+  U32 op1 = cpu.GetGPR(rn), op2 = cpu.GetGPR(rm),
+      res = ((op1 & U32(~msbs)) + (op2 & U32(~msbs))) ^ ((op1 ^ op2) & U32(msbs));
+  
+  UnsignedPSat( res, ((op1 & op2) | (~res & (op1 | op2))), SWP<8>() );
+  
+  cpu.SetGPR( rd, U32(res) );
+};
+
+/*
+ * end of uqadd8 instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * uqsub16 (Unsigned Saturating Subtract 16) instruction
+ * 
+ * UQSUB16 performs two unsigned 16-bit integer subtractions,
+ * saturates the results to the 16-bit unsigned integer range 0 <= x
+ * <= 2^16-1, and writes the results to the destination register.
+ */
+
+{ ARCH::Config::insns6 }: \
+op uqsub16( cond[4]: 0b01100110[8]: rn[4]: rd[4]: 0b1111[4]: 0b0111[4]: rm[4] );
+uqsub16.var reject : {Reject} = {(rd == 15) or (rn == 15) or (rm == 15)};
+
+uqsub16.disasm = {
+  buffer << "uqsub16" << DisasmCondition(cond) << '\t' << DisasmRegister(rd)
+         << ", " << DisasmRegister(rn) << ", " << DisasmRegister(rm);
+};
+
+uqsub16.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  uint32_t const msbs(SWP<16>::msbmask);
+  
+  U32 op1 = cpu.GetGPR(rn), op2 = cpu.GetGPR(rm),
+      res = ((op1 | U32(msbs)) - (op2 & U32(~msbs))) ^ ((op1 ^ ~op2) & U32(msbs));
+  
+  UnsignedNSat( res, ((op1 & ~op2) | (~res & (op1 | ~op2))), SWP<16>() );
+  
+  cpu.SetGPR( rd, U32(res) );
+};
+
+/*
+ * end of uqsub16 instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * uqsub8 (Unsigned Saturating Subtract 8) instruction
+ * 
+ * UQSUB8 performs four unsigned 8-bit integer
+ * subtractions, saturates the results to the 8-bit unsigned integer
+ * range 0 <= x < 255, and writes the results to the destination
+ * register.
+ */
+
+{ ARCH::Config::insns6 }: \
+op uqsub8( cond[4]: 0b01100110[8]: rn[4]: rd[4]: 0b1111[4]: 0b1111[4]: rm[4] );
+uqsub8.var reject : {Reject} = {(rd == 15) or (rn == 15) or (rm == 15)};
+
+uqsub8.disasm = {
+  buffer << "uqsub8" << DisasmCondition(cond) << '\t' << DisasmRegister(rd)
+         << ", " << DisasmRegister(rn) << ", " << DisasmRegister(rm);
+};
+
+uqsub8.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  uint32_t const msbs(SWP<8>::msbmask);
+  
+  U32 op1 = cpu.GetGPR(rn), op2 = cpu.GetGPR(rm),
+      res = ((op1 | U32(msbs)) - (op2 & U32(~msbs))) ^ ((op1 ^ ~op2) & U32(msbs));
+  
+  UnsignedNSat( res, ((op1 & ~op2) | (~res & (op1 | ~op2))), SWP<8>() );
+  
+  cpu.SetGPR( rd, U32(res) );
+};
+
+/*
+ * end of uqsub8 instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * uhadd16 (Unsigned Halving Add 16) instruction
+ * 
+ * UHADD16 erforms two unsigned 16-bit integer additions, halves the
+ * results, and writes the results to the destination register.
+ */
+
+{ ARCH::Config::insns6 }: \
+op uhadd16( cond[4]: 0b01100111[8]: rn[4]: rd[4]: 0b1111[4]: 0b0001[4]: rm[4] );
+uhadd16.var reject : {Reject} = {(rd == 15) or (rn == 15) or (rm == 15)};
+
+uhadd16.disasm = {
+  buffer << "uhadd16" << DisasmCondition(cond) << '\t' << DisasmRegister(rd)
+         << ", " << DisasmRegister(rn) << ", " << DisasmRegister(rm);
+};
+
+uhadd16.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  uint32_t const msbs(SWP<16>::msbmask), lsbs(SWP<16>::lsbmask);
+  
+  U32 op1 = cpu.GetGPR(rn), op2 = cpu.GetGPR(rm),
+      res = (((op1 >> 1) & U32(~msbs)) + ((op2 >> 1) & U32(~msbs))) + (op1&op2&U32(lsbs));
+  
+  cpu.SetGPR( rd, res );
+};
+
+/*
+ * end of uhadd16 instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * uhadd8 (Unsigned Halving Add 8) instruction
+ * 
+ * UHADD8 performs four un signed 8-bit integer additions, halves the
+ * results, and writes the results to the destination register.
+ */
+
+{ ARCH::Config::insns6 }: \
+op uhadd8( cond[4]: 0b01100111[8]: rn[4]: rd[4]: 0b1111[4]: 0b1001[4]: rm[4] );
+uhadd8.var reject : {Reject} = {(rd == 15) or (rn == 15) or (rm == 15)};
+
+uhadd8.disasm = {
+  buffer << "uhadd8" << DisasmCondition(cond) << '\t' << DisasmRegister(rd)
+         << ", " << DisasmRegister(rn) << ", " << DisasmRegister(rm);
+};
+
+uhadd8.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  uint32_t const msbs(SWP<8>::msbmask), lsbs(SWP<8>::lsbmask);
+  
+  U32 op1 = cpu.GetGPR(rn), op2 = cpu.GetGPR(rm),
+      res = (((op1 >> 1) & U32(~msbs)) + ((op2 >> 1) & U32(~msbs))) + (op1&op2&U32(lsbs));
+  
+  cpu.SetGPR( rd, res );
+};
+
+/*
+ * end of uhadd8 instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * shadd16 (Signed Halving Add 16) instruction
+ *
+ * SHADD16 performs two signed 16-bit integer additions, halves the
+ * results, and writes the results to the destination register.
+ */
+
+{ ARCH::Config::insns6 }:                                              \
+op shadd16( cond[4]: 0b01100011[8]: rn[4]: rd[4]: 0b1111[4]: 0b0001[4]: rm[4] );
+shadd16.var reject : {Reject} = {(rd == 15) or (rn == 15) or (rm == 15)};
+
+shadd16.disasm = {
+  buffer << "shadd16" << DisasmCondition(cond) << '\t' << DisasmRegister(rd)
+         << ", " << DisasmRegister(rn) << ", " << DisasmRegister(rm);
+};
+
+shadd16.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  uint32_t const msbs(SWP<16>::msbmask), lsbs(SWP<16>::lsbmask);
+  
+  U32 op1 = cpu.GetGPR(rn), op2 = cpu.GetGPR(rm),
+      res = ((((op1 >> 1) & U32(~msbs)) + ((op2 >> 1) & U32(~msbs))) + (op1&op2&U32(lsbs))) ^ ((op1 ^ op2) & U32(msbs));
+  
+  cpu.SetGPR( rd, res );
+};
+
+/*
+ * end of shadd16 instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * shadd8 (Signed Halving Add 8) instruction
+ *
+ * SHADD8 performs four signed 8-bit integer a dditions, halves the
+ * results, and writes the results to the destination register.
+ */
+
+{ ARCH::Config::insns6 }:                                              \
+op shadd8( cond[4]: 0b01100011[8]: rn[4]: rd[4]: 0b1111[4]: 0b1001[4]: rm[4] );
+shadd8.var reject : {Reject} = {(rd == 15) or (rn == 15) or (rm == 15)};
+
+shadd8.disasm = {
+  buffer << "shadd8" << DisasmCondition(cond) << '\t' << DisasmRegister(rd)
+         << ", " << DisasmRegister(rn) << ", " << DisasmRegister(rm);
+};
+
+shadd8.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  uint32_t const msbs(SWP<8>::msbmask), lsbs(SWP<8>::lsbmask);
+  
+  U32 op1 = cpu.GetGPR(rn), op2 = cpu.GetGPR(rm),
+      res = ((((op1 >> 1) & U32(~msbs)) + ((op2 >> 1) & U32(~msbs))) + (op1&op2&U32(lsbs))) ^ ((op1 ^ op2) & U32(msbs));
+  
+  cpu.SetGPR( rd, res );
+};
+
+/*
+ * end of shadd8 instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * uhsub16 (Unsigned Halving Subtract 16) instruction
+ *
+ * UHSUB16 performs two unsigned 16-bit integer subtractions, halves
+ * the results, and writes the results to the destination register.
+ */
+
+{ ARCH::Config::insns6 }: \
+op uhsub16( cond[4]: 0b01100111[8]: rn[4]: rd[4]: 0b1111[4]: 0b0111[4]: rm[4] );
+uhsub16.var reject : {Reject} = {(rd == 15) or (rn == 15) or (rm == 15)};
+
+uhsub16.disasm = {
+  buffer << "uhsub16" << DisasmCondition(cond) << '\t' << DisasmRegister(rd)
+         << ", " << DisasmRegister(rn) << ", " << DisasmRegister(rm);
+};
+
+uhsub16.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  uint32_t const msbs(SWP<16>::msbmask), lsbs(SWP<16>::lsbmask);
+  
+  U32 op1 = cpu.GetGPR(rn), op2 = cpu.GetGPR(rm),
+      res = ((((op1 >> 1) | U32(msbs)) - ((op2 >> 1) & U32(~msbs))) - (~op1&op2&U32(lsbs))) ^ U32(msbs);
+  
+  cpu.SetGPR( rd, res );
+};
+
+/*
+ * end of uhsub16 instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * uhsub8 (Unsigned Halving Subtract 8) instruction
+ *
+ * UHSUB8 performs four unsigned 8-bit integer subtractions, halves
+ * the results, and writes the results to the destination register.
+ */
+
+{ ARCH::Config::insns6 }: \
+op uhsub8( cond[4]: 0b01100111[8]: rn[4]: rd[4]: 0b1111[4]: 0b1111[4]: rm[4] );
+uhsub8.var reject : {Reject} = {(rd == 15) or (rn == 15) or (rm == 15)};
+
+uhsub8.disasm = {
+  buffer << "uhsub8" << DisasmCondition(cond) << '\t' << DisasmRegister(rd)
+         << ", " << DisasmRegister(rn) << ", " << DisasmRegister(rm);
+};
+
+uhsub8.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  uint32_t const msbs(SWP<8>::msbmask), lsbs(SWP<8>::lsbmask);
+  
+  U32 op1 = cpu.GetGPR(rn), op2 = cpu.GetGPR(rm),
+      res = ((((op1 >> 1) | U32(msbs)) - ((op2 >> 1) & U32(~msbs))) - (~op1&op2&U32(lsbs))) ^ U32(msbs);
+  
+  cpu.SetGPR( rd, res );
+};
+
+/*
+ * end of uhsub8 instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * shsub16 (Signed Halving Subtract 16) instruction
+ *
+ * SHSUB16 performs two signed 16-bit integer subtractions, halves the
+ * results, and writes the results to the destination register.
+ */
+
+{ ARCH::Config::insns6 }:                                              \
+op shsub16( cond[4]: 0b01100011[8]: rn[4]: rd[4]: 0b1111[4]: 0b0111[4]: rm[4] );
+shsub16.var reject : {Reject} = {(rd == 15) or (rn == 15) or (rm == 15)};
+
+shsub16.disasm = {
+  buffer << "shsub16" << DisasmCondition(cond) << '\t' << DisasmRegister(rd)
+         << ", " << DisasmRegister(rn) << ", " << DisasmRegister(rm);
+};
+
+shsub16.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  uint32_t const msbs(SWP<16>::msbmask), lsbs(SWP<16>::lsbmask);
+  
+  U32 op1 = cpu.GetGPR(rn), op2 = cpu.GetGPR(rm),
+      res = (((((op1 >> 1) | U32(msbs)) - ((op2 >> 1) & U32(~msbs))) - (~op1&op2&U32(lsbs)))) ^ ((~op1 ^ op2) & U32(msbs));
+  
+  cpu.SetGPR( rd, res );
+};
+
+/*
+ * end of shsub16 instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * shsub8 (Signed Halving Subtract 8) instruction
+ *
+ * SHSUB8 performs four signed 8-bit integer subtractions, halves the
+ * results, and writes the results to the destination register.
+ */
+
+{ ARCH::Config::insns6 }:                                              \
+op shsub8( cond[4]: 0b01100011[8]: rn[4]: rd[4]: 0b1111[4]: 0b1111[4]: rm[4] );
+shsub8.var reject : {Reject} = {(rd == 15) or (rn == 15) or (rm == 15)};
+
+shsub8.disasm = {
+  buffer << "shsub8" << DisasmCondition(cond) << '\t' << DisasmRegister(rd)
+         << ", " << DisasmRegister(rn) << ", " << DisasmRegister(rm);
+};
+
+shsub8.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  uint32_t const msbs(SWP<8>::msbmask), lsbs(SWP<8>::lsbmask);
+  
+  U32 op1 = cpu.GetGPR(rn), op2 = cpu.GetGPR(rm),
+      res = ((((op1 >> 1) | U32(msbs)) - ((op2 >> 1) & U32(~msbs))) - (~op1&op2&U32(lsbs))) ^ ((~op1 ^ op2) & U32(msbs));
+  
+  cpu.SetGPR( rd, res );
+};
+
+/*
+ * end of shsub8 instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * qasx (Saturating Add and Subtract with Exchange) instruction
+ * 
+ * QASX exchanges the two halfwords of the second operand, performs
+ * one 16-bit integer addition and one 16-bit subtraction, saturates
+ * the results to the 16-bit signed integer range -2^15 <= x <=
+ * 2^15-1, and writes the results to the destination register.
+ */
+
+{ ARCH::Config::insns6 }:                                       \
+op qasx( cond[4]: 0b01100010[8]: rn[4]: rd[4]: 0b1111[4]: 0b0011[4]: rm[4] );
+qasx.var reject : {Reject} = {(rd == 15) or (rn == 15) or (rm == 15)};
+
+qasx.disasm = {
+  buffer << "qasx" << DisasmCondition(cond) << '\t' << DisasmRegister(rd)
+         << ", " << DisasmRegister(rn) << ", " << DisasmRegister(rm);
+};
+
+qasx.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  typedef typename ARCH::S32 S32;
+  typedef typename ARCH::S16 S16;
+  typedef typename ARCH::U16 U16;
+
+  U32 op1 = cpu.GetGPR(rn), op2 = cpu.GetGPR(rm);
+  
+  S32 diff = S32(S16(op1    )) - S32(S16(op2>>16));
+  S32 sum  = S32(S16(op1>>16)) + S32(S16(op2    ));
+  
+  S32 const bound( -1 << 15 );
+  U32 uf = (U32(sum <  bound) << 31) | (U32(diff <  bound) << 15);
+  U32 of = (U32(sum > ~bound) << 31) | (U32(diff > ~bound) << 15);
+  
+  U32 res = (U32(U16(sum)) << 16) | U32(U16(diff));
+  
+  SignedSat( res, of, uf, SWP<16>() );
+  
+  cpu.SetGPR( rd, res );
+};
+
+/*
+ * end of qasx instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * qsax (Saturating Subtract and Add with Exchange) instruction
+ * 
+ * QSAX exchanges the two halfwords of the second operand, performs
+ * one 16-bit integer subtraction and one 16- bit addition, saturates
+ * the results to the 16-bit signed integer range -2^15 <= x <=
+ * 2^15-1, and writes the results to the destination register.
+ */
+
+{ ARCH::Config::insns6 }:                                       \
+op qsax( cond[4]: 0b01100010[8]: rn[4]: rd[4]: 0b1111[4]: 0b0101[4]: rm[4] );
+qsax.var reject : {Reject} = {(rd == 15) or (rn == 15) or (rm == 15)};
+
+qsax.disasm = {
+  buffer << "qsax" << DisasmCondition(cond) << '\t' << DisasmRegister(rd)
+         << ", " << DisasmRegister(rn) << ", " << DisasmRegister(rm);
+};
+
+qsax.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  typedef typename ARCH::S32 S32;
+  typedef typename ARCH::S16 S16;
+  typedef typename ARCH::U16 U16;
+
+  U32 op1 = cpu.GetGPR(rn), op2 = cpu.GetGPR(rm);
+  
+  S32 sum  = S32(S16(op1    )) + S32(S16(op2>>16));
+  S32 diff = S32(S16(op1>>16)) - S32(S16(op2    ));
+  
+  S32 const bound( -1 << 15 );
+  U32 uf = (U32(diff <  bound) << 31) | (U32(sum <  bound) << 15);
+  U32 of = (U32(diff > ~bound) << 31) | (U32(sum > ~bound) << 15);
+  
+  U32 res = (U32(U16(diff)) << 16) | U32(U16(sum));
+  
+  SignedSat( res, of, uf, SWP<16>() );
+  
+  cpu.SetGPR( rd, res );
+};
+
+/*
+ * end of qsax instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * uqasx (Unsigned Saturating Add and Subtract with Exchange) instruction
+ * 
+ * UQASX exchanges the two halfwords of the second operand, performs
+ * one unsigned 16-bit integer addi tion and one unsigned 16-bit
+ * subtraction, saturates the results to the 16-bit unsigned integer
+ * range 0 <= x <= 2^16-1, and writes the results to the destination
+ * register.
+ */
+
+{ ARCH::Config::insns6 }:                                       \
+op uqasx( cond[4]: 0b01100110[8]: rn[4]: rd[4]: 0b1111[4]: 0b0011[4]: rm[4] );
+uqasx.var reject : {Reject} = {(rd == 15) or (rn == 15) or (rm == 15)};
+
+uqasx.disasm = {
+  buffer << "uqasx" << DisasmCondition(cond) << '\t' << DisasmRegister(rd)
+         << ", " << DisasmRegister(rn) << ", " << DisasmRegister(rm);
+};
+
+uqasx.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  typedef typename ARCH::S32 S32;
+  typedef typename ARCH::U16 U16;
+
+  U32 op1 = cpu.GetGPR(rn), op2 = cpu.GetGPR(rm);
+  
+  S32 diff = S32(U16(op1    )) - S32(U16(op2>>16));
+  S32 sum  = S32(U16(op1>>16)) + S32(U16(op2    ));
+  
+  S32 const bound( ~(-1 << 16) );
+  U32 nuf = (U32(sum >= S32(0)) << 31) | (U32(diff >= S32(0)) << 15);
+  U32 of =  (U32(sum > bound) << 31) | (U32(diff > bound) << 15);
+  
+  U32 res = (U32(U16(sum)) << 16) | U32(U16(diff));
+  
+  UnsignedPSat( res, of, SWP<16>() );
+  UnsignedNSat( res, nuf, SWP<16>() );
+  
+  cpu.SetGPR( rd, res );
+};
+
+/*
+ * end of uqasx instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * uqsax (Unsigned Saturating Subtract and Add with Exchange) instruction
+ * 
+ * UQSAX exchanges the two halfwords of the second operand, performs
+ * one unsigned 16-bit integer subt raction and one unsigned 16- bit
+ * addition, saturates the results to the 16-bit unsigned integer
+ * range 0 <= x <= 2^16-1, and writes the results to the destination
+ * register.
+ */
+
+{ ARCH::Config::insns6 }: \
+op uqsax( cond[4]: 0b01100110[8]: rn[4]: rd[4]: 0b1111[4]: 0b0101[4]: rm[4] );
+uqsax.var reject : {Reject} = {(rd == 15) or (rn == 15) or (rm == 15)};
+
+uqsax.disasm = {
+  buffer << "uqsax" << DisasmCondition(cond) << '\t' << DisasmRegister(rd)
+         << ", " << DisasmRegister(rn) << ", " << DisasmRegister(rm);
+};
+
+uqsax.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  typedef typename ARCH::S32 S32;
+  typedef typename ARCH::U16 U16;
+
+  U32 op1 = cpu.GetGPR(rn), op2 = cpu.GetGPR(rm);
+  
+  S32 sum  = S32(U16(op1    )) + S32(U16(op2>>16));
+  S32 diff = S32(U16(op1>>16)) - S32(U16(op2    ));
+  
+  S32 const bound( ~(-1 << 16) );
+  U32 nuf = (U32(diff >= S32(0)) << 31) | (U32(sum >= S32(0)) << 15);
+  U32 of =  (U32(diff > bound) << 31) | (U32(sum > bound) << 15);
+  
+  U32 res = (U32(U16(diff)) << 16) | U32(U16(sum));
+  
+  UnsignedPSat( res, of, SWP<16>() );
+  UnsignedNSat( res, nuf, SWP<16>() );
+  
+  cpu.SetGPR( rd, res );
+};
+
+/*
+ * end of uqsax instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * sasx (Signed Add and Subtract with Exchange) instruction
+ * 
+ * SASX exchanges the tw o halfwords of the second operand, performs
+ * one 16-bit integer addition and one 16-bit subtraction, and writes
+ * the results to the destination register.  It sets the APSR.GE bits
+ * according to the results.
+ */
+
+{ ARCH::Config::insns6 }:                                              \
+op sasx( cond[4]: 0b01100001[8]: rn[4]: rd[4]: 0b1111[4]: 0b0011[4]: rm[4] );
+sasx.var reject : {Reject} = {(rd == 15) or (rn == 15) or (rm == 15)};
+
+sasx.disasm = {
+  buffer << "sasx" << DisasmCondition(cond) << '\t' << DisasmRegister(rd)
+         << ", " << DisasmRegister(rn) << ", " << DisasmRegister(rm);
+};
+
+sasx.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  typedef typename ARCH::S32 S32;
+  typedef typename ARCH::S16 S16;
+  typedef typename ARCH::U16 U16;
+
+  U32 op1 = cpu.GetGPR(rn), op2 = cpu.GetGPR(rm);
+  
+  S32 diff = S32(S16(op1    )) - S32(S16(op2>>16));
+  S32 sum  = S32(S16(op1>>16)) + S32(S16(op2    ));
+  
+  U32 gev = (U32(sum >= S32(0)) * U32(0xc)) | (U32(diff >= S32(0)) * U32(0x3));
+  U32 res = (U32(U16(sum)) << 16) | U32(U16(diff));
+  
+  cpu.CPSR().Set( GE, gev );
+  cpu.SetGPR( rd, res );
+};
+
+/*
+ * end of sasx instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * ssax (Signed Subtract and Add with Exchange) instruction
+ *
+ * SSAX exchanges the two halfwords of the second operand, performs
+ * one 16-bit integer subtraction and one 16-bit addition, and writes
+ * the results to the destination register.  It sets the APSR.GE bits
+ * according to the results.
+ */
+
+{ ARCH::Config::insns6 }:                                              \
+op ssax( cond[4]: 0b01100001[8]: rn[4]: rd[4]: 0b1111[4]: 0b0101[4]: rm[4] );
+ssax.var reject : {Reject} = {(rd == 15) or (rn == 15) or (rm == 15)};
+
+ssax.disasm = {
+  buffer << "ssax" << DisasmCondition(cond) << '\t' << DisasmRegister(rd)
+         << ", " << DisasmRegister(rn) << ", " << DisasmRegister(rm);
+};
+
+ssax.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  typedef typename ARCH::S32 S32;
+  typedef typename ARCH::S16 S16;
+  typedef typename ARCH::U16 U16;
+
+  U32 op1 = cpu.GetGPR(rn), op2 = cpu.GetGPR(rm);
+  
+  S32 sum  = S32(S16(op1    )) + S32(S16(op2>>16));
+  S32 diff = S32(S16(op1>>16)) - S32(S16(op2    ));
+  
+  U32 gev = (U32(diff >= S32(0)) * U32(0xc)) | (U32(sum >= S32(0)) * U32(0x3));
+  U32 res = (U32(U16(diff)) << 16) | U32(U16(sum));
+  
+  cpu.CPSR().Set( GE, gev );
+  cpu.SetGPR( rd, res );
+};
+
+/*
+ * end of ssax instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * uasx (Unsigned Add and Subtract with Exchange) instruction
+ *
+ * UASX exchanges the two halfwords of the second operand, performs
+ * one unsigned 16-bit integer addition and one unsigned 16-bit
+ * subtraction, and writes the results to the destination register.
+ * It sets the APSR.GE bits according to the results.
+ */
+
+{ ARCH::Config::insns6 }:                                              \
+op uasx( cond[4]: 0b01100101[8]: rn[4]: rd[4]: 0b1111[4]: 0b0011[4]: rm[4] );
+uasx.var reject : {Reject} = {(rd == 15) or (rn == 15) or (rm == 15)};
+
+uasx.disasm = {
+  buffer << "uasx" << DisasmCondition(cond) << '\t' << DisasmRegister(rd)
+         << ", " << DisasmRegister(rn) << ", " << DisasmRegister(rm);
+};
+
+uasx.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  typedef typename ARCH::S32 S32;
+  typedef typename ARCH::U16 U16;
+
+  U32 op1 = cpu.GetGPR(rn), op2 = cpu.GetGPR(rm);
+  
+  S32 diff = S32(U16(op1    )) - S32(U16(op2>>16));
+  S32 sum  = S32(U16(op1>>16)) + S32(U16(op2    ));
+  
+  U32 gev = (U32(sum >= S32(0x10000)) * U32(0xc)) | (U32(diff >= S32(0)) * U32(0x3));
+  U32 res = (U32(U16(sum)) << 16) | U32(U16(diff));
+  
+  cpu.CPSR().Set( GE, gev );
+  cpu.SetGPR( rd, res );
+};
+
+/*
+ * end of uasx instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * usax (Unsigned Subtract and Add with Exchange) instruction
+ *
+ * USAX exchanges the two halfwords of the second operand, performs
+ * one unsigned 16-bit integer subtraction and one unsigned 16-bit
+ * addition, and writes the results to the destination register.  It
+ * sets the APSR.GE bits according to the results.
+ */
+
+{ ARCH::Config::insns6 }:                                              \
+op usax( cond[4]: 0b01100101[8]: rn[4]: rd[4]: 0b1111[4]: 0b0101[4]: rm[4] );
+usax.var reject : {Reject} = {(rd == 15) or (rn == 15) or (rm == 15)};
+
+usax.disasm = {
+  buffer << "usax" << DisasmCondition(cond) << '\t' << DisasmRegister(rd)
+         << ", " << DisasmRegister(rn) << ", " << DisasmRegister(rm);
+};
+
+usax.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  typedef typename ARCH::S32 S32;
+  typedef typename ARCH::U16 U16;
+
+  U32 op1 = cpu.GetGPR(rn), op2 = cpu.GetGPR(rm);
+  
+  S32 sum  = S32(U16(op1    )) + S32(U16(op2>>16));
+  S32 diff = S32(U16(op1>>16)) - S32(U16(op2    ));
+  
+  U32 gev = (U32(diff >= S32(0)) * U32(0xc)) | (U32(sum >= S32(0x10000)) * U32(0x3));
+  U32 res = (U32(U16(diff)) << 16) | U32(U16(sum));
+  
+  cpu.CPSR().Set( GE, gev );
+  cpu.SetGPR( rd, res );
+};
+
+/*
+ * end of usax instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * shasx (Signed Halving Add and Subtract with Exchange) instruction
+ * 
+ * SHASX exchanges the two halfwords of the second operand, performs
+ * one signed 16-bit integer addition and one signed 16-bit
+ * subtraction, halves the results, and writes the results to the
+ * destination register.
+ */
+
+{ ARCH::Config::insns6 }:                                              \
+op shasx( cond[4]: 0b01100011[8]: rn[4]: rd[4]: 0b1111[4]: 0b0011[4]: rm[4] );
+shasx.var reject : {Reject} = {(rd == 15) or (rn == 15) or (rm == 15)};
+
+shasx.disasm = {
+  buffer << "shasx" << DisasmCondition(cond) << '\t' << DisasmRegister(rd)
+         << ", " << DisasmRegister(rn) << ", " << DisasmRegister(rm);
+};
+
+shasx.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  typedef typename ARCH::S32 S32;
+  typedef typename ARCH::S16 S16;
+  typedef typename ARCH::U16 U16;
+
+  U32 op1 = cpu.GetGPR(rn), op2 = cpu.GetGPR(rm);
+  
+  S32 diff = S32(S16(op1    )) - S32(S16(op2>>16));
+  S32 sum  = S32(S16(op1>>16)) + S32(S16(op2    ));
+  
+  U32 res = (U32(U16(sum >> 1)) << 16) | U32(U16(diff >> 1));
+  
+  cpu.SetGPR( rd, res );
+};
+
+/*
+ * end of shasx instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * shsax (Signed Halving Subtract and Add with Exchange) instruction
+ *
+ * SHSAX exchanges the two halfwords of the second operand, performs
+ * one signed 16-bit integer subtraction and one signed 16-bit
+ * addition, halves the results, and writes the results to the
+ * destination register.
+ */
+
+{ ARCH::Config::insns6 }:                                              \
+op shsax( cond[4]: 0b01100011[8]: rn[4]: rd[4]: 0b1111[4]: 0b0101[4]: rm[4] );
+shsax.var reject : {Reject} = {(rd == 15) or (rn == 15) or (rm == 15)};
+
+shsax.disasm = {
+  buffer << "shsax" << DisasmCondition(cond) << '\t' << DisasmRegister(rd)
+         << ", " << DisasmRegister(rn) << ", " << DisasmRegister(rm);
+};
+
+shsax.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  typedef typename ARCH::S32 S32;
+  typedef typename ARCH::S16 S16;
+  typedef typename ARCH::U16 U16;
+
+  U32 op1 = cpu.GetGPR(rn), op2 = cpu.GetGPR(rm);
+  
+  S32 sum  = S32(S16(op1    )) + S32(S16(op2>>16));
+  S32 diff = S32(S16(op1>>16)) - S32(S16(op2    ));
+  
+  U32 res = (U32(U16(diff >> 1)) << 16) | U32(U16(sum >> 1));
+  
+  cpu.SetGPR( rd, res );
+};
+
+/*
+ * end of shsax instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * uhasx (Unsigned Halving Add and Subtract with Exchange) instruction
+ *
+ * UHASX exchanges the two halfwords of the second operand, performs
+ * one unsigned 16-bit integer addition and one unsigned 16-bit
+ * subtraction, halves the results, and writes the results to the
+ * destination register.
+ */
+
+{ ARCH::Config::insns6 }: \
+op uhasx( cond[4]: 0b01100111[8]: rn[4]: rd[4]: 0b1111[4]: 0b0011[4]: rm[4] );
+uhasx.var reject : {Reject} = {(rd == 15) or (rn == 15) or (rm == 15)};
+
+uhasx.disasm = {
+  buffer << "uhasx" << DisasmCondition(cond) << '\t' << DisasmRegister(rd)
+         << ", " << DisasmRegister(rn) << ", " << DisasmRegister(rm);
+};
+
+uhasx.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  typedef typename ARCH::S32 S32;
+  typedef typename ARCH::U16 U16;
+
+  U32 op1 = cpu.GetGPR(rn), op2 = cpu.GetGPR(rm);
+  
+  S32 diff = S32(U16(op1    )) - S32(U16(op2>>16));
+  S32 sum  = S32(U16(op1>>16)) + S32(U16(op2    ));
+  
+  U32 res = (U32(U16(sum >> 1)) << 16) | U32(U16(diff >> 1));
+  
+  cpu.SetGPR( rd, res );
+};
+
+/*
+ * end of uhasx instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * uhsax (Unsigned Halving Subtract and Add with Exchange) instruction
+ *
+ * UHSAX exchanges the two halfwords of the second operand, performs
+ * one unsigned 16-bit integer subtraction and one unsigned 16-bit
+ * addition, halves the result s, and writes the results to the
+ * destination register.
+ */
+
+{ ARCH::Config::insns6 }: \
+op uhsax( cond[4]: 0b01100111[8]: rn[4]: rd[4]: 0b1111[4]: 0b0101[4]: rm[4] );
+uhsax.var reject : {Reject} = {(rd == 15) or (rn == 15) or (rm == 15)};
+
+uhsax.disasm = {
+  buffer << "uhsax" << DisasmCondition(cond) << '\t' << DisasmRegister(rd)
+         << ", " << DisasmRegister(rn) << ", " << DisasmRegister(rm);
+};
+
+uhsax.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  typedef typename ARCH::S32 S32;
+  typedef typename ARCH::U16 U16;
+
+  U32 op1 = cpu.GetGPR(rn), op2 = cpu.GetGPR(rm);
+  
+  S32 sum  = S32(U16(op1    )) + S32(U16(op2>>16));
+  S32 diff = S32(U16(op1>>16)) - S32(U16(op2    ));
+  
+  U32 res = (U32(U16(diff >> 1)) << 16) | U32(U16(sum >> 1));
+  
+  cpu.SetGPR( rd, res );
+};
+
+/*
+ * end of uhsax instruction
+ *******************************************************************/
+

@@ -1,0 +1,13 @@
+libc/stdint
+m4/pthread
+std/cerrno
+std/cstring
+std/string
+std/vector
+unisim/kernel
+unisim/kernel/logger
+unisim/kernel/variable
+unisim/kernel/variable/netstreamer_protocol
+unisim/service/interfaces/char_io
+unisim/util/likely
+unisim/util/netstreamer

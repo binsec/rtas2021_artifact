@@ -1,0 +1,13 @@
+libc/fcntl
+libc/inttypes
+libc/unistd
+m4/bsd_sockets
+std/cerrno
+std/cstring
+std/string
+std/vector
+sys/types
+unisim/kernel
+unisim/kernel/logger
+unisim/kernel/variable
+unisim/service/interfaces/char_io

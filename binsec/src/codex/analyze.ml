@@ -16,8 +16,18 @@ let initialize_codex () =
   end;
   Codex_config.set_ptr_size 32
 
-(*module Arch = Ks_arch.Make(RB)(Dba2Codex.Domain)*)
-module Arch = X86_arch.Make (Dba2CodexC.Domain) (Dba2CodexC.EvalPred)
+module type ARCH = sig
+  module Registers : Arch_settings.Registers with module Domain = Dba2CodexC.Domain
+end
+
+let m_arch =
+  match Kernel_options.Machine.isa () with
+  | Machine.(ARM _) ->
+      (module Arm_arch.Make (Dba2CodexC.Domain) (Dba2CodexC.EvalPred) : ARCH)
+  | Machine.(X86 _) ->
+      (module X86_arch.Make (Dba2CodexC.Domain) (Dba2CodexC.EvalPred) : ARCH)
+
+module Arch = (val m_arch)
 
 open Dba2CodexC
 

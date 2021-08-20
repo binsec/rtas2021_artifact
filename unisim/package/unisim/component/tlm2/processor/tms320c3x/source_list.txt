@@ -1,0 +1,2 @@
+unisim/component/tlm2/processor/tms320c3x/cpu_tms320vc33.cc
+unisim/component/tlm2/processor/tms320c3x/cpu_tms320vc33_debug.cc

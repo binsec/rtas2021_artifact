@@ -1,0 +1,486 @@
+\section{TLM Interface}
+\label{tlm_interface}
+
+The proposed TLM interface has a single method called \texttt{Send},
+see~Figure~\ref{fig:interface1}. An initiator calls \texttt{Send} to
+initiate a transaction with a target. \texttt{Send} is non-blocking:
+it means that \texttt{Send} must not call the SystemC
+\texttt{wait} primitive. Method \texttt{Send} returns a boolean to
+indicate to the initiator if the target can serve the request. If
+\texttt{Send} has failed, the initiator should retry it later. Target
+method \texttt{Send} takes a reference to the message as argument, not
+a copy, so that both initiator and target can share the message. The
+message contains three things: the request, the response, and an
+event. The initiator puts the request in the message before calling
+\texttt{Send}. If any response to the request is expected, the
+initiator puts an event in the message, and waits while the target
+puts the response in the message, and notifies the event embedded in
+the message (not necessarily before returning from \texttt{Send}).
+The initiator should not check the response before the target has
+notified the embedded event. The request and response types are
+specified as template parameters of class TlmMessage.
+
+% Transaction REQ, RSP
+% Nonblocking
+% Return value (wait)
+
+% \begin{figure}[h]
+%   \begin{center}
+%     \includegraphics[width=13.0cm]{liberty_handshaking.eps}
+%     \caption{\label{fig:liberty_handshaking} Contrat de communication de l'environnement LSE de Liberty.}
+%   \end{center}
+% \end{figure}
+
+\begin{figure}[h]
+  \begin{center}
+    \input{tlm/interface1}
+    \caption{\label{fig:interface1} TLM interface (simplified).}
+  \end{center}
+\end{figure}
+
+\subsection{Drawbacks \& Programming facilities: Pointer and event stack}
+\label{drawbacks_and_programming_facilities}
+
+% Two problems to solve:
+% - message dissapears because send is nonblocking (write example).
+
+\textbf{Message sharing drawbacks}. Sharing the message avoids
+unecessary data movements between the initiator and the target, thus
+speeding up simulation, but it can complexify the task of the
+initiator's writer. The message and especially the request must stay
+alive until the target actually uses it. For instance, if the initiator
+request does not imply a target response, the initiator can not
+deallocate (either in the stack or the heap) the message once the
+\texttt{Send} has returned . A simple example of a such behavior is a
+write request without acknowledge served by a memory, i.e. the target.
+The initiator does not need to wait for a response from the memory,
+but still cannot deallocate the message until the memory has
+effectively written back the data. The problem is that the initiator's
+writer can't know when the message can be freed, unless the
+programmer has a well understanding of the complete simulator, thus
+knwowing the behavior of each simulator module.
+
+\textbf{Simplifying message sharing}. To symplify the task of the
+initiator's writer, a light-weight garbage collector is provided to
+the programmer handling automatic deallocation of memory resources,
+i.e. the message, once it is no longer used by other modules. The
+garbage collector has a fast memory allocator and keeps track of alive
+reference to the objects with a reference counter. The object
+reference counter is incremented each time a reference to the object
+is created, and decremented each time a reference to the object dies.
+A class \texttt{Pointer} representing a reference to an object has
+been added. The class \texttt{Pointer} is responsible for incrementing
+and decrementing the reference counter and calling the garbage
+collector once the objects can effectively be freed. A fast allocator
+for object pointed by an instance of class \texttt{Pointer} is
+provided to the programmer through an overloaded \texttt{new} C++
+operator. This overloaded \texttt{new} operator takes an argument which
+is the instance of class \texttt{Pointer} holding the object
+reference. An example of use is presented
+on~Figure~\ref{fig:new_operator}. An integer is allocated using the
+overloaded \texttt{new} operator, then initialized to value
+\texttt{1}. A pointer is created and initialized to point to the newly
+allocated integer.
+
+\begin{figure}[h]
+  \begin{center}
+    \input{tlm/new_operator}
+    \caption{\label{fig:new_operator} Example of use of class
+      \texttt{Pointer} and the overloaded \texttt{new} C++ operator.}
+  \end{center}
+\end{figure}
+
+The reference to the message has been replaced in the TLM interface by
+this special pointer, see~Figure~\ref{fig:interface2}. Members
+\texttt{req} and \texttt{rsp} have been replaced by this special
+pointer too.
+
+\begin{figure}[h]
+  \begin{center}
+    \input{tlm/interface2}
+    \caption{\label{fig:interface2} TLM interface (simplified with
+      garbage collector).}
+  \end{center}
+\end{figure}
+
+% - chaining communication steps.
+
+\begin{figure}[h]
+  \begin{center}
+    \includegraphics[width=10.0cm]{tlm/chaining_communication_steps.pdf}
+    \caption{\label{fig:chaining_communication_steps} Chaining communication steps.}
+  \end{center}
+\end{figure}
+
+\textbf{Chaining communication steps}. Most of the time a single event
+is sufficient for a simple communication scheme. Sometimes several
+communication steps are needed before the message actually reachs the
+target. For instance, consider an intermediate module is placed
+between the initiator and the target,
+see~Figure~\ref{fig:chaining_communication_steps}.  Module~A is an
+initiator. Module~B is both a target and an initiator. Module~C is a
+target. The time spent in module~B affects the total transaction time
+between initiator module~A and final target module~C. While the time
+spent when processing the transition of the message from A-B to B-C
+can be easily computed in module~B \texttt{Send} method, if a single
+event is used, the computation of the time spent when the response
+goes through B can not be computed, because the response will be
+directly notified from module~C to module~A. To account for this
+additional delay, only one event is not sufficient. Actually, an
+additional event is needed to make module~B wait module~C, while
+module~A still waits the target module, which is module~B not
+module~C. A stack of events has been introduced to simplify the
+programming of chained communication steps. Such communication schemes
+are quite common in networks, where intermediate modules would be
+switches. Before sending a message, an initiator puts both the request
+and the event into the message. Actually, the event is pushed on a
+stack. After the \texttt{Send}, the initiator still waits for the
+event it has pushed on the stack. Once the event is notified, the
+initiator is unblocked and can do a pop on the stack to remove its
+event. The TLM interface has been updated to add support for an event
+stack, see~Figure~\ref{fig:interface3} (note that access methods to
+the stack of events have been omitted from the Figure).
+
+\begin{figure}[h]
+  \begin{center}
+    \input{tlm/interface3}
+    \caption{\label{fig:interface3} TLM interface (with an event stack).}
+  \end{center}
+\end{figure}
+
+\section{Untimed TLM}
+\label{sec:untimed_tlm}
+
+\begin{figure}[h]
+  \begin{center}
+    \includegraphics[width=\textwidth]{tlm/utlm_principle.pdf}
+    \caption{\label{fig:utlm_principle} Untimed TLM: principle.}
+  \end{center}
+\end{figure}
+
+This section will demonstrate the use of the TLM interface and message
+to design untimed TLM models. In an Untimed TLM (UTLM) model, the
+delays for serving requests is not considered,
+see~Figure~\ref{fig:utlm_principle}. The simulated time is stuck to
+zero and only delta cycles occur during simulation. The initiator
+calls target method \texttt{Send} to make the target serve the
+request. If the initiator waits for a response, i.e. waits for the
+response event, the target triggers the response event for the next
+delta cycle, see Figure~\ref{fig:utlm_principle}~(a). While making the initiator wait the response
+  event may seem not necessary for untimed models, actually it is necessary
+  because the target method \texttt{Send} may not trigger the response
+  event before leaving control to the caller initiator thread
+  but in another delta cycle. For example, the target may need to receive a
+  message from another module to set the response and trigger the
+  response event, see Figure~\ref{fig:utlm_principle}~(b).
+  As a side effect, forcing this design methodology facilitates the untimed
+  and timed models cosimulation, and enables a smooth transition from untimed models to
+  timed models.
+
+Consider the example of a system
+with one processor and one memory: the processor is an initiator
+whereas the memory is a target. Examples of request and response are
+provided on Figure~\ref{fig:memory_req_rsp}. The processor can send
+\texttt{READ} or \texttt{WRITE} requests to the memory. When the
+request is a write, \texttt{MemoryRequest} member \texttt{write\_data}
+helds the data to write.
+
+\begin{figure}[p]
+\begin{minipage}{\textwidth}
+  \begin{center}
+    \input{tlm/memory_req_rsp}
+    \caption{\label{fig:memory_req_rsp} Example of memory request \& response.}
+  \end{center}
+\end{minipage}
+\begin{minipage}{\textwidth}
+~\vspace{3.0cm}
+\end{minipage}
+\begin{minipage}{\textwidth}
+  \begin{center}
+    \input{tlm/utlm_memory}
+    \caption{\label{fig:utlm_memory} Example of UTLM memory module.}
+  \end{center}
+\end{minipage}
+\end{figure}
+
+A source code example for the processor is provided on
+Figure~\ref{fig:utlm_processor}. The processor module has only one
+SystemC thread: \texttt{Run}. Thread \texttt{Run} calls
+\texttt{PerformRead} and \texttt{PerformWrite} member methods. These
+two methods do memory requests using SystemC port \texttt{port}. The
+\texttt{PerformRead} operation is the following:
+
+\begin{enumerate}
+\item[{\large \ding{202}}] a memory request is allocated;
+\item[{\large \ding{203}}] a message is allocated, and initialized
+  with the request and the response event;
+\item[{\large \ding{204}}] the request is filled;
+\item[{\large \ding{205}}] the message is sent using port method
+  \texttt{Send}; \texttt{Send} is retried until it has
+  succeeded;
+\item[{\large \ding{206}}] if \texttt{Send} has failed, the processor
+  waits for one delta cycle before actually retrying \texttt{Send};
+\item[{\large \ding{207}}] once \texttt{Send} has succeeded, the
+  processor waits for the response event;
+\item[{\large \ding{208}}] once \texttt{wait} is finished, the
+  processor can use the response.
+\end{enumerate}
+
+The \texttt{PerformWrite} operation is the following:
+\begin{enumerate}
+\item[{\large \ding{202}}] a memory request is allocated;
+\item[{\large \ding{203}}] a message is allocated, and initialized
+  with the request and the response event;
+\item[{\large \ding{204}}] the request is filled;
+\item[{\large \ding{205}}] the message is sent using port
+  \texttt{Send} methods; \texttt{Send} is retried until it has
+  succeeded;
+\item[{\large \ding{206}}] if \texttt{Send} has failed, the processor
+  waits for one delta cycle before actually retrying \texttt{Send};
+\end{enumerate}
+
+When \texttt{Send} fails and the processor has to wait for a delta
+cycle before retrying (see item {\large \ding{206}} from the previous
+operations), the programmer should use a private event to first notify
+using \texttt{notify\_delayed} SystemC method and after that, perform
+the \texttt{wait}, which effectively provoques a one delta cycle wait.
+% We will see later, that \texttt{notify\_delayed} is only necessary
+% when writing UTLM models, but not necessary for TTLM models.
+
+\begin{figure}[p]
+  \begin{center}
+    \input{tlm/utlm_processor}
+    \caption{\label{fig:utlm_processor} Example of UTLM processor
+      module.}
+  \end{center}
+\end{figure}
+
+A source code example for the memory is provided on
+Figure~\ref{fig:utlm_memory}. The memory module has no thread. The
+memory requests are directly served by memory method \texttt{Send}
+within the processor module thread. Member method \texttt{Send}
+operation is the following:
+
+\begin{enumerate}
+\item[{\large \ding{202}}] the request is taken from the message;
+\item[{\large \ding{203}}] the response is allocated;
+\item[{\large \ding{204}}] if the request is a \texttt{READ}, the
+  reponse is filled with the read data; the response is put in the
+  message and the response event is notified for the next delta cycle;
+\item[{\large \ding{205}}] if the request is a \texttt{WRITE}, the
+  data to write is written back in the memory.
+\end{enumerate}
+
+
+\section{Timed TLM}
+\label{sec:timed_tlm}
+
+\begin{figure}[h]
+  \begin{center}
+    \includegraphics[width=\textwidth]{tlm/ttlm_principle.pdf}
+    \caption{\label{fig:ttlm_principle} Timed TLM: principle.}
+  \end{center}
+\end{figure}
+
+In this section, the use of the TLM interface and message with time
+(TTLM) will be demonstrated on several examples with an increasing
+complexity. The first example presents how to add time to the untimed
+model using one-to-one communication scheme, see
+section~\ref{sec:untimed_tlm}. The next example presents a N-to-M
+communication scheme using a router between the processors and the
+memory, and applying contention over the processors requests. The last
+example presents an N-to-M communication scheme using a router between
+the processors and the memories, and applying contention over
+processors requests and memories responses. As several
+processors/memories compete for accessing to the router, the router is
+using an arbitration algorithm.  The arbitration algorithm assigns a
+fixed time slot to each processor/memory.
+
+In the proposed model the initiator must place itself in the right
+time when sending a request, i.e., calling the \texttt{Send} method.
+For that purpose, the initiator must use the \texttt{wait} method.
+When the target needs to reply to a request the \texttt{notify} method
+is used over the response event with the estimated time taken by the
+target, see Figure~\ref{fig:ttlm_principle}. The target module
+  can trigger the response event when executing the \texttt{Send}
+  method, i.e., in the initiator thread, see
+  Figure~\ref{fig:ttlm_principle}~(a); or during another cycle (or
+  delta cycle), for example, the target module may need that another
+  initiator module sends a message to it before triggering the first
+  initiator response event, see Figure~\ref{fig:ttlm_principle}~(b).
+Note that unlike in the UTLM model \texttt{notify\_delayed} is no
+longer needed, unless the notification takes zero time.
+
+\subsection{Example: Simple Model}
+The modifications to the UTLM example to make it TTLM are minimal.
+Processor and memory now have time parameters among their template
+parameters (i.e., \texttt{FREQUENCY} and \texttt{READ\_CYCLES}), which
+are used to compute the processor and memory processing times.
+
+The main modification in the processor module is the substitution and
+addition of calls to the SystemC primitive \texttt{wait} with time,
+see {\large \ding{202}} and {\large \ding{203}} on
+Figure~\ref{fig:ttlm_processor}\footnote{This implementation is
+  innefficient, because a call to the \texttt{wait} method is done
+  (that is, a SystemC synchronization) for each executed instruction.
+  Better implementations can be done, but this is not the objective of
+  this example.}. For example, it is used when trying to send a
+read/write request, and the request fails, see {\large \ding{202}} on
+Figure~\ref{fig:ttlm_processor}.  Another use is to advance the
+internal clock of the module after an instruction execution, see
+{\large \ding{203}} on Figure~\ref{fig:ttlm_processor}.
+
+To convert the memory module to a TTLM module, we have only modified
+the call to the \texttt{notify} method, see {\large \ding{202}} on
+Figure~\ref{fig:ttlm_memory}, to indicate the time the memory needs to
+set the response, the response delay time. Note that the memory sets
+the response before notifying it, and that the response could be used
+before the delay time, however the module that receives the response
+should never suppose so, i.e., another implementation of the memory
+could have wait the delay time before setting the response and simply
+make a \texttt{notify\_delayed} to make it available.
+
+\begin{figure}[p]
+  \begin{center}
+    \input{tlm/ttlm_processor}
+    \caption{\label{fig:ttlm_processor} Example of TTLM processor.}
+  \end{center}
+\end{figure}
+
+\begin{figure}[p]
+\begin{minipage}{\textwidth}
+  \begin{center}
+    \input{tlm/ttlm_memory}
+    \caption{\label{fig:ttlm_memory} Example of TTLM memory.}
+  \end{center}
+\end{minipage}
+\begin{minipage}{\textwidth}
+~\vspace{2.5cm}
+\end{minipage}
+\begin{minipage}{\textwidth}
+  \begin{center}
+    \input{tlm/ttlm_router}
+    \caption{\label{fig:ttlm_router} Untimed implementation of the
+      \texttt{router} module.}
+  \end{center}
+\end{minipage}
+\end{figure}
+
+
+\subsection{Example: Request contention}
+\label{subsec:example_request_contention}
+
+\begin{figure}[h]
+  \begin{center}
+    \includegraphics[width=7.0cm]{tlm/n_to_m.pdf}
+    \caption{\label{fig:n_to_n} M-initiators~x~N-targets.}
+  \end{center}
+\end{figure}
+
+This example shows how a module can perform contention over the
+request. For that purpose a new module is added: the \texttt{router}
+module which connects the processors to multiple memories, see
+Figure~\ref{fig:n_to_n}. For a simple untimed implementation of the
+\texttt{router} module see Figure~\ref{fig:ttlm_router}. This
+implementation does not make any contention over the incomming
+requests, neither over responses. This example is going to show how to
+implement contention over the incomming requests, later
+Section~\ref{subsec:example_response_contention} will show how to
+implement contention over the responses.
+
+The \texttt{router} module implements a round robin scheduling
+algorithm to give access to the memories, i.e., if two processors are
+simulated processor 0 has access to the memories during cycles 0, 2,
+4,\ldots , and processor 1 at cycles 1, 3, 5,\ldots.
+Figure~\ref{fig:ttlm_router_adv} shows a possible implementation. In
+this implementation, the \texttt{router} module is a hierarchical
+module that associates to each input port a \texttt{MasterPortModule}
+module which actually implements the contention, see {\large
+  \ding{202}} on Figure~\ref{fig:ttlm_router_adv}.
+
+\texttt{MasterPortModule} bufferizes all the incomming requests and
+dispatches them in the incomming order during the time windows
+associated to the port using a thread. This module implements the
+\texttt{Send} method from the \texttt{TlmSendIf} interface to handle
+incomming requests, see {\large \ding{202}} and {\large \ding{203}} on
+Figure~\ref{fig:ttlm_router_adv}. A buffer holds incomming requests
+and the \texttt{Dispatch} thread of the module dispatches them to the
+right output port during the time windows of the incomming port, see
+{\large \ding{204}} on Figure~\ref{fig:ttlm_router_adv}.  To execute
+the \texttt{Dispatch} process at the right time windows the
+\texttt{dispatch\_event} (from which the \texttt{Dispatch} process
+depends) has to be carefully triggered. In this example, the
+\texttt{dispatch\_event} is triggered with the right delay when a new
+request is queued (note that time can be equal to zero, which means
+that the event will be notified during the next delta cycle, but the
+SystemC clock will not be modified), see {\large \ding{205}} on
+Figure~\ref{fig:ttlm_router_adv}. In case the buffer is not empty
+after dispatching the oldest request (or if the oldest request has not
+been accepted) another \texttt{dispatch\_event} is triggered, to
+execute the \texttt{Dispatch} thread during the next time window and
+send pending requests, see {\large \ding{206}} on
+Figure~\ref{fig:ttlm_router_adv}.
+
+
+\subsection{Example: Response contention}
+\label{subsec:example_response_contention}
+Section~\ref{subsec:example_request_contention} showed how contention
+can be done over incomming requests. However, in many situations
+contention over the responses is also desired. This example, modifies
+the previously shown \texttt{router} with requests contention to
+support contention over responses. For the new implementation of the
+\texttt{router} see Figure~\ref{fig:ttlm_router_adv2}.
+
+The \hfill hierarchical \hfill \texttt{router} \hfill module \hfill contains \hfill the \hfill definition \hfill of \hfill an \hfill additional \hfill module: the \texttt{SlavePortController} module, see
+{\large \ding{202}} on Figure~\ref{fig:ttlm_router_adv2}. An instance
+of this module is associated to each output port, and connected to
+each of the instances of \texttt{MasterPortController}.
+
+To easily handle multiple responses it implements the
+\texttt{ResponseReceived} method from the \texttt{ResponseListener}
+utility class (included in the source distribution of the TLM model
+presented in this document), see {\large \ding{203}} and {\large
+  \ding{204}} on Figure~\ref{fig:ttlm_router_adv2}.  Conceptually, the
+\texttt{ResponseListener} utility class allows to send a message
+through a port with the \texttt{Send} method provided by this class,
+and be notified when the response is received thanks to the
+\texttt{ResponseReceived} method.
+
+The \texttt{SlavePortController} also implements the \texttt{Send}
+method from the \texttt{TlmSendIf} interface to handle requests
+comming from the \texttt{MasterPortController} modules, see {\large
+  \ding{203}} and {\large \ding{205}} on
+Figure~\ref{fig:ttlm_router_adv2}. The \texttt{Send} method checks if
+the request requires a response:
+\begin{itemize}
+\item if not it just forwards the request to the output port, see
+  {\large \ding{206}} on Figure~\ref{fig:ttlm_router_adv2};
+\item if a response is required then it uses the \texttt{Send} method
+  provided by the \texttt{ResponseListener} class to forward send the
+  request through the output port, and be notified (through the
+  \texttt{ResponseReceived} method when the response is available, see
+  {\large \ding{207}} on Figure~\ref{fig:ttlm_router_adv2}.
+\end{itemize}
+
+When a response to a message is received the
+\texttt{SlavePortController} handles it as the
+\texttt{MasterPortController}, that is, it puts the message in a
+buffer and dispatches it with the \texttt{Dispatch} thread during the
+time windows given to the port, see {\large \ding{208}} on
+Figure~\ref{fig:ttlm_router_adv2}.
+
+\begin{figure}[p]
+  \begin{center}
+    \input{tlm/ttlm_router_adv}
+    \caption{\label{fig:ttlm_router_adv} Example of TTLM router module
+      with requests contention.}
+  \end{center}
+\end{figure}
+
+\begin{figure}[p]
+  \begin{center}
+    \input{tlm/ttlm_router_adv2}
+    \caption{\label{fig:ttlm_router_adv2} Example of TTLM router
+      module with requests and responses contention.}
+  \end{center}
+\end{figure}

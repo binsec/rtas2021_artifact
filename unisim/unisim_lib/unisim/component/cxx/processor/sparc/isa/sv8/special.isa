@@ -1,0 +1,209 @@
+/*
+ *  Copyright (c) 2007-2020,
+ *  Commissariat a l'Energie Atomique (CEA)
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without 
+ *  modification, are permitted provided that the following conditions are met:
+ *
+ *   - Redistributions of source code must retain the above copyright notice, 
+ *     this list of conditions and the following disclaimer.
+ *
+ *   - Redistributions in binary form must reproduce the above copyright notice,
+ *     this list of conditions and the following disclaimer in the documentation
+ *     and/or other materials provided with the distribution.
+ *
+ *   - Neither the name of CEA nor the names of its contributors may be used to
+ *     endorse or promote products derived from this software without specific 
+ *     prior written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
+ *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
+ *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
+ *  ARE DISCLAIMED.
+ *  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY 
+ *  DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES 
+ *  (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; 
+ *  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND 
+ *  ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT 
+ *  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF 
+ *  THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Authors: Yves Lhuillier (yves.lhuillier@cea.fr)
+ */
+
+/* Read State Register Instructions */
+
+op rdasr( 0b10[2]:rd[5]:0b101000[6]:rs1[5]:?[1]:?[13] )
+
+rdasr.disasm = {
+  if( rs1 == 0 )                   os << "rd %y, %r" << rd;
+  else if( rs1 == 15 and rd == 0 ) os << "stbar";
+  else                             os << "rd %asr" << rs1 << ", %r" << rd;
+}
+
+rdasr.execute = {
+  if( rs1 == 0 ) { // unpriviledged
+    sparcv8.m_gpr[rd] = sparcv8.m_y;
+  } else if( rs1 == 15 and rd == 0 ) {
+    sparcv8.hwtrap( Trap_t::illegal_instruction ); // XXX: stbar
+  } else if( rs1 < 16 ) {
+    sparcv8.hwtrap( Trap_t::illegal_instruction );
+  } else {
+    if( sparcv8.asr_perm( rs1 ) ) sparcv8.m_gpr[rd] = sparcv8.rdasr( rs1 );
+    else                          sparcv8.hwtrap( Trap_t::privileged_instruction );
+  }
+}
+
+op rdpsr( 0b10[2]:rd[5]:0b101001[6]:?[5]:?[1]:?[13] )
+
+rdpsr.disasm = {
+  os << "rd %psr, %r" << rd;
+}
+
+rdpsr.execute = {
+  if( not sparcv8.super() ) { sparcv8.hwtrap( Trap_t::privileged_instruction ); return; }
+  sparcv8.m_gpr[rd] = sparcv8.m_psr;
+}
+
+op rdwim( 0b10[2]:rd[5]:0b101010[6]:?[5]:?[1]:?[13] )
+
+rdwim.disasm = {
+  os << "rd %wim, %r" << rd;
+}
+
+rdwim.execute = {
+  if( not sparcv8.super() ) { sparcv8.hwtrap( Trap_t::privileged_instruction ); return; }
+  sparcv8.m_gpr[rd] = sparcv8.m_wim & uint32_t((uint64_t( 1 ) << sparcv8.nwindows())-1);
+}
+
+op rdtbr( 0b10[2]:rd[5]:0b101011[6]:?[5]:?[1]:?[13] )
+
+rdtbr.disasm = {
+  os << "rd %tbr, %r" << rd;
+}
+
+rdtbr.execute = {
+  if( not sparcv8.super() ) { sparcv8.hwtrap( Trap_t::privileged_instruction ); return; }
+  sparcv8.m_gpr[rd] = sparcv8.m_tbr;
+}
+
+/* Write State Register Instructions */
+
+op wrasr( 0b10[2]:rd[5]:0b110000[6]:rs1[5]:0b0[1]:?[8]:rs2[5] )
+
+wrasr.disasm = {
+  if( rd == 0 )  os << "wr %r" << rs1 << ", %r" << rs2 << ", %y";
+  else           os << "wr %r" << rs1 << ", %r" << rs2 << ", %asr" << rd;
+}
+
+wrasr.execute = {
+  if( rd == 0 ) { // unpriviledged
+    sparcv8.m_y = sparcv8.m_gpr[rs1] ^ sparcv8.m_gpr[rs2];
+  } else if( rd < 16 ) {
+    sparcv8.hwtrap( Trap_t::illegal_instruction );
+  } else {
+    if( sparcv8.asr_perm( rd ) ) sparcv8.wrasr( rd, sparcv8.m_gpr[rs1] ^ sparcv8.m_gpr[rs2] );
+    else                         sparcv8.hwtrap( Trap_t::privileged_instruction );
+  }
+}
+
+op wrasri( 0b10[2]:rd[5]:0b110000[6]:rs1[5]:0b1[1]:sext<32> simm13[13] )
+
+wrasri.disasm = {
+  if( rd == 0 )  os << "wr %r" << rs1 << ", " << simm13 << ", %y";
+  else           os << "wr %r" << rs1 << ", " << simm13 << ", %asr" << rd;
+}
+
+wrasri.execute = {
+  if( rd == 0 ) { // unpriviledged
+    sparcv8.m_y = sparcv8.m_gpr[rs1] ^ simm13;
+  } else if( rd < 16 ) {
+    sparcv8.hwtrap( Trap_t::illegal_instruction );
+  } else {
+    if( sparcv8.asr_perm( rd ) ) sparcv8.wrasr( rd, sparcv8.m_gpr[rs1] ^ simm13 );
+    else                         sparcv8.hwtrap( Trap_t::privileged_instruction );
+  }
+}
+
+op wrpsr( 0b10[2]:?[5]:0b110001[6]:rs1[5]:0b0[1]:?[8]:rs2[5] )
+
+wrpsr.disasm = {
+  os << "wr %r" << rs1 << ", %r" << rs2 << ", %psr";
+}
+
+wrpsr.execute = {
+  if( not sparcv8.super() ) { sparcv8.hwtrap( Trap_t::privileged_instruction ); return; }
+  uint32_t res = sparcv8.m_gpr[rs1] ^ sparcv8.m_gpr[rs2];
+  if( (res & 0x1f) >= sparcv8.nwindows() ) { sparcv8.hwtrap( Trap_t::illegal_instruction ); return; }
+  sparcv8.m_psr = res;
+}
+
+op wrpsri( 0b10[2]:?[5]:0b110001[6]:rs1[5]:0b1[1]:sext<32> simm13[13] )
+
+wrpsri.disasm = {
+  os << "wr %r" << rs1 << ", " << simm13 << ", %psr";
+}
+
+wrpsri.execute = {
+  if( not sparcv8.super() ) { sparcv8.hwtrap( Trap_t::privileged_instruction ); return; }
+  uint32_t res = sparcv8.m_gpr[rs1] ^ simm13;
+  if( (res & 0x1f) >= sparcv8.nwindows() ) { sparcv8.hwtrap( Trap_t::illegal_instruction ); return; }
+  sparcv8.m_psr = res;
+}
+
+op wrwim( 0b10[2]:?[5]:0b110010[6]:rs1[5]:0b0[1]:?[8]:rs2[5] )
+
+wrwim.disasm = {
+  os << "wr %r" << rs1 << ", %r" << rs2 << ", %wim";
+}
+
+wrwim.execute = {
+  if( not sparcv8.super() ) { sparcv8.hwtrap( Trap_t::privileged_instruction ); return; }
+  sparcv8.m_wim = (sparcv8.m_gpr[rs1] ^ sparcv8.m_gpr[rs2]) & uint32_t((uint64_t( 1 ) << sparcv8.nwindows())-1);
+}
+
+op wrwimi( 0b10[2]:?[5]:0b110010[6]:rs1[5]:0b1[1]:sext<32> simm13[13] )
+
+wrwimi.disasm = {
+  os << "wr %r" << rs1 << ", " << simm13 << ", %wim";
+}
+
+wrwimi.execute = {
+  if( not sparcv8.super() ) { sparcv8.hwtrap( Trap_t::privileged_instruction ); return; }
+  sparcv8.m_wim = (sparcv8.m_gpr[rs1] ^ simm13) & uint32_t((uint64_t( 1 ) << sparcv8.nwindows())-1);
+}
+
+op wrtbr( 0b10[2]:?[5]:0b110011[6]:rs1[5]:0b0[1]:?[8]:rs2[5] )
+
+wrtbr.disasm = {
+  os << "wr %r" << rs1 << ", %r" << rs2 << ", %tbr";
+}
+
+wrtbr.execute = {
+  if( not sparcv8.super() ) { sparcv8.hwtrap( Trap_t::privileged_instruction ); return; }
+  sparcv8.m_tbr = (sparcv8.m_gpr[rs1] ^ sparcv8.m_gpr[rs2]);
+}
+
+op wrtbri( 0b10[2]:?[5]:0b110011[6]:rs1[5]:0b1[1]:sext<32> simm13[13] )
+
+wrtbri.disasm = {
+  os << "wr %r" << rs1 << ", " << simm13 << ", %tbr";
+}
+
+wrtbri.execute = {
+  if( not sparcv8.super() ) { sparcv8.hwtrap( Trap_t::privileged_instruction ); return; }
+  sparcv8.m_tbr = (sparcv8.m_gpr[rs1] ^ simm13) & uint32_t((uint64_t( 1 ) << sparcv8.nwindows())-1);
+}
+
+/* Unimplemented Instruction */
+
+op unimp( 0b00[2]:?[5]:0b000[3]:const22[22] )
+
+unimp.disasm = {
+  os << "unimp " << const22;
+}
+
+unimp.execute = {
+  sparcv8.hwtrap( Trap_t::illegal_instruction );
+}

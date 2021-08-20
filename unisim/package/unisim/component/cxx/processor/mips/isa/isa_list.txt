@@ -1,0 +1,5 @@
+unisim/component/cxx/processor/mips/isa/floating-point.isa
+unisim/component/cxx/processor/mips/isa/mips32r2.isa
+unisim/component/cxx/processor/mips/isa/mips64.isa
+unisim/component/cxx/processor/mips/isa/mipsel.isa
+unisim/component/cxx/processor/mips/isa/special.isa

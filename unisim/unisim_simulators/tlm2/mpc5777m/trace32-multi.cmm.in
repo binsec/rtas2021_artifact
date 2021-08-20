@@ -1,0 +1,16 @@
+SYStem.GDBconfig GDBSERVER OFF
+SYStem.CPU MPC5777M
+CORE.NUMBER 3
+SYStem.PORT 127.0.0.1:12347
+SYStem.GDBFILE C:\unisim-mpc5777m-@PACKAGE_VERSION@\sim\share\unisim-mpc5777m-@PACKAGE_VERSION@\soft\app\Z4_2\boot.elf
+
+OS.screen C:\unisim-mpc5777m-@PACKAGE_VERSION@\sim\bin\unisim-mpc5777m-@PACKAGE_VERSION@.exe -c sim_config.xml -s gdb-server0.wait-connection-mode=never -s gdb-server1.wait-connection-mode=never -s gdb-server2.mode=multi-thread
+
+wait 14.
+SYStem.Mode Attach
+
+Data.LOAD.ELF C:\unisim-mpc5777m-@PACKAGE_VERSION@\sim\share\unisim-mpc5777m-@PACKAGE_VERSION@\soft\app\Z7_0\boot.elf /NOCODE /NOCLEAR
+Data.LOAD.ELF C:\unisim-mpc5777m-@PACKAGE_VERSION@\sim\share\unisim-mpc5777m-@PACKAGE_VERSION@\soft\app\Z7_1\boot.elf /NOCODE /NOCLEAR
+Data.LOAD.ELF C:\unisim-mpc5777m-@PACKAGE_VERSION@\sim\share\unisim-mpc5777m-@PACKAGE_VERSION@\soft\app\Z4_2\boot.elf /NOCODE /NOCLEAR
+sYmbol.SourcePATH.Set C:\unisim-mpc5777m-@PACKAGE_VERSION@\sim\share\unisim-mpc5777m-@PACKAGE_VERSION@\soft
+CORE.SELECT 2

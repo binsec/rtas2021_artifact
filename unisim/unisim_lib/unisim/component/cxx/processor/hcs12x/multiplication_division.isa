@@ -1,0 +1,403 @@
+/*
+ *  Copyright (c) 2008,
+ *  Commissariat a l'Energie Atomique (CEA)
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without modification,
+ *  are permitted provided that the following conditions are met:
+ *
+ *   - Redistributions of source code must retain the above copyright notice, this
+ *     list of conditions and the following disclaimer.
+ *
+ *   - Redistributions in binary form must reproduce the above copyright notice,
+ *     this list of conditions and the following disclaimer in the documentation
+ *     and/or other materials provided with the distribution.
+ *
+ *   - Neither the name of CEA nor the names of its contributors may be used to
+ *     endorse or promote products derived from this software without specific prior
+ *     written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ *  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *  DISCLAIMED.
+ *  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ *  INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ *  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+ *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ *  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Authors: Reda   Nouacer  (reda.nouacer@cea.fr)
+ */
+
+
+// EMUL: 16 by 16 Bit Multiply (unsigned) (D) x (Y) => Y:D
+op emul(0x13[8])
+
+emul.getCycles = { return 1; }
+
+emul.disasm = {
+	string mnem = "EMUL";
+	
+	sink << mnem;
+	return mnem;
+}
+
+emul.execute = {
+	uint32_t result = (uint32_t) cpu->getRegD() * cpu->getRegY();
+
+	cpu->setRegY(result >> 16);
+	cpu->setRegD((uint16_t) result);
+
+	if ((result & 0x00008000) == 0x00008000) { cpu->ccr->setC(); } else { cpu->ccr->clrC(); }	
+	if (result == 0) { cpu->ccr->setZ(); } else { cpu->ccr->clrZ(); }
+	if ((result & 0x80000000) == 0x80000000) { cpu->ccr->setN(); } else { cpu->ccr->clrN(); }
+
+	return getCycles();
+}
+
+// EMULS: 16 by 16 Bit Multiply (signed) (D) x (Y) => Y:D
+op emuls(0x18[8]:0x13[8])
+
+emuls.getCycles = { return 3; }
+
+emuls.disasm = {
+	string mnem = "EMULS";
+	
+	sink << mnem;
+	return mnem;
+}
+
+emuls.execute = {
+	uint32_t result = (uint32_t) cpu->getRegD() * cpu->getRegY();
+
+	cpu->setRegY((uint16_t) (result >> 16));
+	cpu->setRegD((uint16_t) result);
+
+/*
+ * C: Set if bit 15 of the result is set; cleared otherwise
+ */
+	if ((result & 0x8000) == 0x8000) { cpu->ccr->setC(); } else { cpu->ccr->clrC(); }	
+
+/*
+ * Z: Set if result is 0x00000000; cleared otherwise
+ */	
+	if (result == 0) { cpu->ccr->setZ(); } else { cpu->ccr->clrZ(); }
+
+/*
+ * N: Set if the MSB of the result is set; cleared otherwise
+ */
+	if ((result & 0x80000000) == 0x80000000) { cpu->ccr->setN(); } else { cpu->ccr->clrN(); }
+
+	return getCycles();
+}
+
+// MUL: 8 by 8 Bit Multiply (unsigned) (A) x (B) => A:B
+op mul(0x12[8])
+
+mul.getCycles = { return 1; }
+
+mul.disasm = {
+	string mnem = "MUL";
+	
+	sink << mnem;
+	return mnem;
+}
+
+mul.execute = {
+	uint16_t result = cpu->getRegA() * cpu->getRegB();
+
+	cpu->setRegD(result);
+
+	if ((result & 0x0080) == 0x0080) { cpu->ccr->setC(); } else { cpu->ccr->clrC(); }	
+
+	return getCycles();
+}
+
+// EDIV: 32 by 16 bit to 16 bit divide (unsigned) (Y:D) div (X) => Y remainder => D
+op ediv(0x11[8])
+
+ediv.getCycles = { return 11; }
+
+ediv.disasm = {
+	string mnem = "EDIV";
+	
+	sink << mnem;
+	return mnem;
+}
+
+ediv.execute = {
+	// TODO
+	/*
+	 * source_url: http://www.embeddedrelated.com/groups/68hc12/show/3775.php
+	 * 
+	 * U16 X, Y, Z;
+	 * X = (U16)(((U32)Y * 1000) / (U16)Z);
+	 * 
+	 * with an EMUL and an EDIV is that if the 32/16 bit EDIV division overflows, then the
+	 * HC12 does not generate a result at all (it just sets the V flag). 
+	 * Therefore using a simple EDIV does not generate the same result
+	 * for all possible Y and Z's as calculating it with longs.
+	 */
+
+	uint32_t dividend = ((uint32_t) cpu->getRegY() << 16) | cpu->getRegD();
+	uint16_t divisor = cpu->getRegX();
+	uint32_t quotion = cpu->getRegY();
+	uint16_t remind = cpu->getRegD();
+	 
+	if (divisor == 0) {
+		// TODO: throw an exception "division by 0"
+		cpu->ccr->setC();
+	} else {
+		cpu->ccr->clrC();
+		quotion = dividend / divisor;
+		remind = dividend % divisor;
+		
+		if (quotion > 0xFFFF) {
+			cpu->ccr->setV();
+		} else {
+			cpu->ccr->clrV();
+	
+			cpu->setRegY((uint16_t) quotion);
+			cpu->setRegD(remind);
+		}  
+
+		if (quotion == 0) { cpu->ccr->setZ(); } else { cpu->ccr->clrZ(); }
+		if ((((uint16_t) quotion) & 0x8000) == 0x8000 ) { cpu->ccr->setN(); } else { cpu->ccr->clrN(); }
+
+	}
+
+	return getCycles();
+}
+
+// EDIVS: 32 by 16 bit to 16 bit divide (signed)  (Y:D) div (X) => Y remainder => D
+op edivs(0x18[8]:0x14[8])
+
+edivs.getCycles = { return 12; }
+
+edivs.disasm = {
+	string mnem = "EDIVS";
+	
+	sink << mnem;
+	return mnem;
+}
+
+edivs.execute = {
+	
+	uint32_t dividend = ((uint32_t) cpu->getRegY() << 16) | (0x00FF & cpu->getRegD());
+	uint16_t divisor = cpu->getRegX();
+	uint32_t quotion = cpu->getRegY();
+	uint16_t remind = cpu->getRegD();
+	 
+	if (divisor == 0) {
+		// TODO: throw an exception "division by 0"
+		cpu->ccr->setC();
+	} else {
+		cpu->ccr->clrC();
+		
+		quotion = dividend / divisor;
+		remind = dividend % divisor;
+
+		if (quotion > 0x7FFF) { 
+			/* NOTA: 
+			 * For EDIVS, there is a mistake in specification about setting V.
+			 */
+			cpu->ccr->setV();
+		} else {
+			cpu->ccr->clrV();
+			
+			cpu->setRegY((uint16_t) quotion); // cpu->setRegY((uint16_t) quotion | ((quotion >> 16) & 0x8000));
+			cpu->setRegD(remind);
+		}  
+			
+		if (quotion == 0) { cpu->ccr->setZ(); } else { cpu->ccr->clrZ(); }
+		if ((((uint16_t) quotion) & 0x8000) == 0x8000 ) { cpu->ccr->setN(); } else { cpu->ccr->clrN(); }
+
+	}
+
+	return getCycles();
+}
+
+// FDIV: 16 by 16 fractional divide
+op fdiv(0x18[8]:0x11[8])
+
+fdiv.getCycles = { return 12; }
+
+fdiv.disasm = {
+	string mnem = "FDIV";
+	
+	sink << mnem;
+	return mnem;
+}
+
+fdiv.execute = {
+	/* FDIV is equivalent to multiplying the numerator by 2^16 and then performing 32 by 16-bit integer division. */
+	
+	uint32_t dividend = (uint32_t) cpu->getRegD() << 16;
+	uint16_t divisor = cpu->getRegX();
+	uint16_t quotion = 0xFFFF;
+	uint16_t remind = cpu->getRegD();
+	
+	if (divisor == 0) { 
+		cpu->ccr->setC(); 
+	} else { 
+		cpu->ccr->clrC(); 
+		if (dividend >= divisor) {
+			cpu->ccr->setV();
+		} else {
+			cpu->ccr->clrV();
+			quotion = dividend / divisor;
+			remind = dividend % divisor;
+		} 
+	}
+	
+	cpu->setRegX(quotion);
+	cpu->setRegD(remind);
+	if (quotion == 0) { cpu->ccr->setZ(); }  else { cpu->ccr->clrZ(); }
+
+	return getCycles();
+}
+
+// IDIV: 16 by 16 integer divide (unsigned)
+op idiv(0x18[8]:0x10[8])
+
+idiv.getCycles = { return 12; }
+
+idiv.disasm = {
+	string mnem = "IDIV";
+	
+	sink << mnem;
+	return mnem;
+}
+
+idiv.execute = {
+/* In the case of division by zero, C is set, the quotient is set to 0xFFFF,
+and the remainder is indeterminate. */
+
+	uint16_t dividend = cpu->getRegD();
+	uint16_t divisor = cpu->getRegX();
+	uint16_t quotion = 0xFFFF;
+	uint16_t remind = dividend;
+
+	cpu->ccr->clrV();	
+	if (divisor == 0) { 
+		cpu->ccr->setC(); 
+	} else { 
+		cpu->ccr->clrC(); 
+		quotion = dividend / divisor;
+		remind = dividend % divisor;
+	}
+	
+	cpu->setRegX(quotion);
+	cpu->setRegD(remind);
+	if (quotion == 0) { cpu->ccr->setZ(); }  else { cpu->ccr->clrZ(); }
+
+	return getCycles();
+}
+
+// IDIVS: 16 by 16 integer divide (signed)
+op idivs(0x18[8]:0x15[8])
+
+idivs.getCycles = { return 12; }
+
+idivs.disasm = {
+	string mnem = "IDIVS";
+	
+	sink << mnem;
+	return mnem;
+}
+
+idivs.execute = {
+	/* In the case of division by zero, C is set, the quotient is set to 0xFFFF,
+and the remainder is indeterminate. */
+
+	uint16_t dividend = cpu->getRegD();
+	uint16_t divisor = cpu->getRegX();
+	uint16_t quotion = 0xFFFF;
+	uint16_t remind = dividend;
+
+	cpu->ccr->clrV();	
+	if (divisor == 0) { 
+		cpu->ccr->setC(); 
+	} else { 
+		cpu->ccr->clrC(); 
+		quotion = dividend / divisor;
+		remind = dividend % divisor;
+	}
+	
+	cpu->setRegX(quotion);
+	cpu->setRegD(remind);
+/*
+ * V: Set if the result was > 0x7FFF or < 0x8000; cleared otherwise
+ * V: Set for numerator 0x8000 (-32768) and denominator 0xFFFF (-1) result is (+32768)
+ * Undefined after division by zero
+ */
+	if ((dividend == 0x8000) && (divisor == 0xFFFF)) { cpu->ccr->setV(); } else { cpu->ccr->clrV();}
+	if (quotion == 0) { cpu->ccr->setZ(); }  else { cpu->ccr->clrZ(); }
+	if ((quotion & 0x8000) == 0x8000) { cpu->ccr->setN(); } else { cpu->ccr->clrN(); } 
+
+	return getCycles();
+}
+
+
+/* ********* Multiply and Accumulate instruction ********* */
+
+// EMACS: Multiply an Accumulate Instruction
+op emacs(0x18[8]:0x12[8]:opr16a[16])
+
+emacs.getCycles = { return 9; }
+
+emacs.disasm = {
+	string mnem = "EMACS";
+	
+	sink << mnem << " 0x" << std::hex << opr16a;
+	return mnem;
+}
+
+emacs.execute = {
+	/* operation: (M(X) : M(X+1)) × (M(Y) : M(Y+1)) + (M ~ M+3) ⇒ M ~ M+3 */
+
+	uint16_t xOpr, yOpr;
+	uint32_t accOpr, result, inter;
+	
+	
+	xOpr = cpu->memRead16(cpu->getRegX());
+	yOpr = cpu->memRead16(cpu->getRegY());
+	accOpr = cpu->memRead16(opr16a);
+	accOpr = (accOpr << 16) | cpu->memRead16(opr16a+2); 
+	
+	inter = (uint32_t) xOpr * yOpr;
+	result =  inter + accOpr;
+	
+	cpu->memWrite16(opr16a, (uint16_t) (result >> 16));
+	cpu->memWrite16(opr16a+2, (uint16_t) result);
+	
+	// N: Set if MSB of result is set; cleared otherwise
+	if ((result & 0x80000000) == 0x80000000) { cpu->ccr->setN(); } else { cpu->ccr->clrN(); }
+	
+	// Z: Set if result is 0x00000000; cleared otherwise
+	if (result == 0) { cpu->ccr->setZ(); } else { cpu->ccr->clrZ(); }
+	 /*
+	  * I: Intermediate result
+	  * R: Result
+	  * M: 32 bit accumulator in memory (second operand in the addition)
+	  * */
+	  
+	/* V: (M31 • I31 • !R31) + (!M31 • !I31 • R31)
+	 * Set if result > 0x7FFFFFFF (+ overflow) or < 0x80000000 (– underflow)
+	 * Indicates two’s complement overflow
+	 */
+	// if (result > 0x7FFFFFFF) { cpu->ccr->setV(); } else { cpu->ccr->clrV(); }
+	if ((((accOpr & 0x80000000) & (inter & 0x80000000) & ~(result & 0x80000000)) | (~(accOpr & 0x80000000) & ~(inter & 0x80000000) & (result & 0x80000000))) >> 31) { cpu->ccr->setV();} else { cpu->ccr->clrV();}
+
+	/* C: (M15 • I15) + (I15 • !R15) + (!R15 • M15)
+	 * Set if there was a carry from bit 15 of the result; cleared otherwise
+	 * Indicates a carry from low word to high word of the result occurred
+	 */
+	if ((((accOpr & 0x00008000) & (inter & 0x00008000)) | ((inter & 0x00008000) & ~(result & 0x00008000)) | (~(result & 0x00008000) & (accOpr & 0x00008000))) >> 15) { cpu->ccr->setC();} else { cpu->ccr->clrC();}
+
+	return getCycles();
+}
+

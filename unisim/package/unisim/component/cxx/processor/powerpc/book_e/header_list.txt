@@ -1,0 +1,4 @@
+unisim/component/cxx/processor/powerpc/book_e/cpu.hh
+unisim/component/cxx/processor/powerpc/book_e/l1d.hh
+unisim/component/cxx/processor/powerpc/book_e/l1i.hh
+unisim/component/cxx/processor/powerpc/book_e/mmu.hh

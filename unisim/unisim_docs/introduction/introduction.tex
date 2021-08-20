@@ -1,0 +1,64 @@
+\section{Purpose of this document}
+
+This document is a project to document UNISIM, an "open source" simulation framework based on SystemC.
+The document is decomposed into several parts:
+\begin{itemize}
+	\item First, the documentation of currently available UNISIM Simulators:
+	\begin{itemize}
+		\item In Chapter~\ref{armemu}: armemu, a user level ARM TLM simulator with Linux system call translation capability
+		\item In Chapter~\ref{arm7tdmi}: arm7tdmi, an ARM7TDMI TLM simulator
+		\item In Chapter~\ref{arm966e_s}: arm966e\_s, an ARM966E/S TLM simulator
+		\item In Chapter~\ref{ppcemu}, ppcemu, a user level PowerPC TLM simulator with Linux system call translation capability
+		\item In Chapter~\ref{ppcemu_system}, ppcemu-system, a full-system TLM simulator of an MPC7447A/MPC107 board (similar to a PowerMac G4 PCI machine) which can boot a Linux for PowerMac
+		\item In Chapter~\ref{embedded_ppc_g4_board}, embedded-ppc-g4-board, a full-system TLM simulator of an MPC7447A/MPC107 embedded board
+		\item In Chapter~\ref{S12XEMU}, s12xemu, a timed system level simulator of the Freescale processor MC9S12XDP512
+
+		\item In Chapter~\ref{tms320c3x}, tms320c3x, a TMS320C3X simulator that comes in two flavour: standalone C++ or TLM 2.0 compliant
+	\end{itemize}
+	\item Second, the documentation of technologies currently behind UNISIM
+	\begin{itemize}
+		\item In Chapter~\ref{genisslib}: GenISSLib, an Instruction Set Simulator Generator
+		\item In Chapter~\ref{tlm_ttlm}: the TLM (Transaction Level Modeling) methodology used to develop the UNISIM TLM simulators
+		\item In Chapter~\ref{services}: The framework services which bring features such as debug support, program loading facilities, interface with the underlying host hardware \ldots
+	\end{itemize}
+	\item Third, the documentation related to the validation of UNISIM
+	\begin{itemize}
+		\item In Chapter~\ref{arm7tdmi_validation}: Validation of the UNISIM ARM7TDMI Microprocessor Simulator
+	\end{itemize}
+\end{itemize}
+
+Although we make efforts to document UNISIM, lot of documentations still lack or are incomplete. This include the following subjects:
+\begin{itemize}
+	\item A comprehensive documentation of the UNISIM simulation components (i.e. the SystemC modules)
+	\item The cycle level simulators
+	\item The cycle level fast engine (derived from FastSysC: \url{http://unisim.org/site/_media/publications/fastsysc.pdf?id=speed\%3Afastsysc&cache=cache})
+	\item The cycle level simulation methodology
+\end{itemize}
+
+The following section introduces the rationals behind UNISIM.
+
+\section{Overview of research challenges}
+
+Software simulation is the crux of all processor and systems-on-chips design processes. Due to the growing complexity of hardware on-chip systems, the growing complexity of software applications, and the growing impact of technology issues (power, process variability,...) on system design, software simulation methodology must rapidly evolve in the following ways:
+
+\begin{itemize}
+\item \textbf{Design systems by composing multiple hardware blocks}, possibly described at different levels of detail/granularity, using standardized architecture interfaces, rather than one large and monolithic system at a single granularity level (cycle-level or TLM). SystemC popularized modular multi-granularity simulators with the goal of enabling design by composition; but the lack of \textbf{standardized architecture-level interfaces}, and \textbf{common communication protocols} between these interfaces, makes it impossible, in practice, to seamlessly connect together many theoretically pluggable SystemC modules.\\
+\emph{UNISIM proposes, on top of SystemC, a set of architecture interfaces, and communication protocols between these interfaces, at different design granularity levels.}
+\item \textbf{Relying on industry standards}. Even though SystemC has shortcomings, its popularity in the embedded industry provides the foundations for a common and interoperable platform.\\
+\emph{The goal of UNISIM is to build upon SystemC and add missing features to this environment. UNISIM is *not* a new environment, it is a SystemC *add-on*.}
+\item \textbf{Acknowledging the importance of legacy: keep using your own simulators}. Developing a simulator may require many man-years. One cannot expect industry or academic groups to easily shift to new environments.\\
+\emph{Simulators based on different environments, developed by different groups, can interoperate with minimal efforts, thanks to UNISIM architecture interfaces and communication protocols.}\\
+The main requirement is to modify existing simulators so that they become slaves of the UNISIM simulation engine, i.e., they can be called by UNISIM.
+\item \textbf{Automatic Design-Space Exploration (DSE)}. The growing complexity of hardware designs calls for more automated design methods.\\
+\emph{One of the major objectives of UNISIM is to enable automatic and systematic design-space exploration.}\\
+Among other features, automatic DSE is achieved thanks to the standardized architecture interfaces, and by empowering simulator modules with parameters introspection capabilities, as well as the possibility to query parameters of modules they are connected to. The UNISIM group is currently setting up an architecture browser which will automatically and permanently explore all possible architecture configurations, and maintain a permanent ranking of possible architectures, under various performance constraints.
+\item \textbf{A common repository to facilitate reuse, sharing and comparison}. Exploring a large set of designs means having many different compatible alternatives for each hardware blocks.\\
+\emph{With the intent of fostering a large library of modules, UNISIM comes with an open repository, where academics and engineers can upload open-source modules while retaining the full intellectual property of their work, and apply the license of their choice. The only requirement is that these modules or models implement at least one of UNISIM interfaces, in order to compose them with other modules.}
+\item Easily plug a set of standardized services and capabilities into any simulator. The first set of such services is technology-related. Energy/Power is now just as important a metric as execution time for most processors and SoCs. And system design should increasingly factor in other metrics, such as temperature, area cost, and more intricate process variability issues (clock domains, wire lengths, defects, etc). The second set of services is software-related. The role of O/S for multi-cores, which are now commonplace, and the use of complex O/S such as Linux in embedded systems, makes it almost compulsory to move from user-level simulation to full-system simulation.\\
+\emph{UNISIM proposes a set of *services interfaces* for plugging many such models within simulators. In addition, it proposes a set of default such services implementations, but which can be easily replaced by other tools. These services include energy, area and cost (based on the CACTI model), and prototype full-system support now exists.}
+\item \textbf{Transparent techniques for speeding up simulation}. Cycle-Level simulation of a large application running on a large single-core or a multi-core can require days. Simulation speed is thus becoming a critical design bottleneck. Powerful alternatives exist (e.g., smart sampling techniques) but cannot yet be used transparently for simulating any design, especially multi-cores or heterogeneous systems-on-chips.\\
+\emph{UNISIM is developing techniques for improving simulation speed, which can be transparently used with any target architecture.}
+\item \textbf{Distributed control simulator code for true and extensive simulator reuse}. SystemC is based on the attractive intuition that hardware blocks can be mapped to corresponding simulator modules. However, in practice, most of simulator code corresponds to control code, and hardware control is not necessarily as cleanly separated into blocks, making it excruciatingly difficult to reuse.\\
+\emph{UNISIM proposes to distribute control code in order to enable true reuse of a large share of simulation code.}\\
+This property is only available to simulators natively written in UNISIM. Native UNISIM simulators are either cycle-level or TLM (transaction-level modeling) simulators. Control distribution uses the same communication protocol used between architecture interfaces, so no new coding principles and syntax need to be learnt.
+\end{itemize}

@@ -1,0 +1,14 @@
+#nav-marker2
+{
+	visibility:visible;
+}
+
+.content .video-gallery img, .content .image-gallery img
+{
+	width:256px;
+}
+
+.content .video-gallery p, .content .image-gallery p
+{
+	font-size:12px;
+}

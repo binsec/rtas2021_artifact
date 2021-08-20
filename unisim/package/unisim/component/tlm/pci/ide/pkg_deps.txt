@@ -1,0 +1,6 @@
+libc/string
+unisim/component/cxx/pci/ide
+unisim/component/tlm/message
+unisim/kernel
+unisim/kernel/logger
+unisim/kernel/tlm

@@ -1,0 +1,100 @@
+=============================================
+=   HOW TO BUILD UNISIM BINARY PACKAGES ?   =
+=============================================
+
+1) The bash script at https://unisim.org/svn/devel/package/build-packages.sh is able to build binary packages for UNISIM.
+Usage:
+  ./build-packages.sh i386-deb <version> <SystemC 2.2.0 install dir> <TLM 2.0 install dir>
+  ./build-packages.sh i386-rpm <version> <SystemC 2.2.0 install dir> <TLM 2.0 install dir>
+  ./build-packages.sh mingw32 <version> <SystemC 2.2.0 tarball> <TLM 2.0 tarball>
+  ./build-packages.sh powerpc-darwin <version> <SystemC 2.2.0 tarball> <TLM 2.0 tarball>
+  ./build-packages.sh i386-darwin <version> <SystemC 2.2.0 tarball> <TLM 2.0 tarball>
+
+The script is intended to be run under a Linux i386 or x86_64 (preferably Ubuntu Linux)
+
+============
+ .deb (i386)
+============
+
+Requirements:
+ - dpkg
+ - the UNISIM source tarballs in the current working directory
+
+$ build-packages i386-deb 1.0-1 ${HOME}/systemc ${HOME}/TLM-2008-06-09
+
+You should obtain:
+ - unisim-lib_1.0-1_i386.deb
+ - unisim-simulators_1.0-1_i386.deb
+ - unisim-tools_1.0-1_i386.deb
+
+============
+ .rpm (i386)
+============
+
+Requirements:
+ - rpm (ubuntu)
+ - rpm-build (mandriva)
+ - the UNISIM source tarballs must be in the current working directory
+
+$ build-packages i386-rpm 1.0-1 ${HOME}/systemc ${HOME}/TLM-2008-06-09
+
+You should obtain:
+ - unisim-lib-1.0-1.i386.rpm
+ - unisim-simulators-1.0-1.i386.rpm
+ - unisim-tools-1.0-1.i386.rpm
+
+==============================
+ Windows .exe installer (i386)
+==============================
+
+Requirements:
+ - wine
+ - INNO setup (http://www.jrsoftware.org/isinfo.php) installed in ${HOME}/.wine/drive_c/Program\ Files/Inno\ Setup\ 5/ (don't worry: this is the default installation directory !)
+ - mingw32, mingw32-binutils, mingw32-runtime (mingw32 cross-compiler for Windows)
+     - ubuntu: $ apt-get install mingw32
+     - mandriva: Convert the three .deb packages into .rpm packages using 'alien'
+                 $ wget ftp://ftp.free.fr/mirrors/ftp.ubuntu.com/ubuntu/pool/universe/m/mingw32/mingw32_4.2.1.dfsg-1ubuntu1_i386.deb
+                 $ wget ftp://ftp.free.fr/mirrors/ftp.ubuntu.com/ubuntu/pool/universe/m/mingw32-binutils/mingw32-binutils_2.17.50-20070129.1-1_i386.deb
+                 $ wget ftp://ftp.free.fr/mirrors/ftp.ubuntu.com/ubuntu/pool/universe/m/mingw32-runtime/mingw32-runtime_3.12-1_all.deb
+                 $ fakeroot alien --to-rpm mingw32_4.2.1.dfsg-1ubuntu1_i386.deb
+                 $ fakeroot alien --to-rpm mingw32-binutils_2.17.50-20070129.1-1_i386.deb
+                 $ fakeroot alien --to-rpm mingw32-runtime_3.12-1_all.deb
+
+ - the UNISIM source tarballs must be in the current working directory
+
+$ build-packages mingw32 1.0-1 ${HOME}/systemc-2.2.0.tgz ${HOME}/TLM-2.0.tar.gz
+
+You should obtain:
+ - unisim-lib-1.0-1.exe
+ - unisim-simulators-1.0-1.exe
+ - unisim-tools-1.0-1.exe
+
+=================================
+ .tar.gz for Darwin/MacOSX (i386)
+=================================
+
+Requirements:
+ - follow the instructions at http://biolpc22.york.ac.uk/pub/linux-mac-cross/
+ - the UNISIM source tarballs must be in the current working directory
+
+$ build-packages i386-darwin 1.0-1 ${HOME}/systemc-2.2.0.tgz ${HOME}/TLM-2.0.tar.gz
+
+You should obtain:
+ - unisim-lib-1.0-1-i686-darwin.tar.gz
+ - unisim-simulators-1.0-1-i686-darwin.tar.gz
+ - unisim-tools-1.0-1-i686-darwin.tar.gz
+
+=======================================
+ .tar.gz for Darwin/MacOSX (PowerPC 32)
+=======================================
+
+Requirements:
+ - follow the instructions at http://biolpc22.york.ac.uk/pub/linux-mac-cross/
+ - the UNISIM source tarballs must be in the current working directory
+
+$ build-packages powerpc-darwin 1.0-1 ${HOME}/systemc-2.2.0.tgz ${HOME}/TLM-2.0.tar.gz
+
+You should obtain:
+ - unisim-lib-1.0-1-powerpc-darwin.tar.gz
+ - unisim-simulators-1.0-1-powerpc-darwin.tar.gz
+ - unisim-tools-1.0-1-powerpc-darwin.tar.gz

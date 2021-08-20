@@ -1,0 +1,2 @@
+unisim/component/cxx/processor/sparc/asi.hh
+unisim/component/cxx/processor/sparc/trap.hh

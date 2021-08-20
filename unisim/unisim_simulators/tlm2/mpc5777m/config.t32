@@ -1,0 +1,11 @@
+PBI=GDB
+
+;OS=
+;SYS=.
+;TMP=.
+
+SCREEN=
+FONT=SMALL
+
+; Printer settings
+PRINTER=WINDOWS

@@ -1,0 +1,6 @@
+unisim/util/loader/elf_loader/elf32_loader.hh
+unisim/util/loader/elf_loader/elf64_loader.hh
+unisim/util/loader/elf_loader/elf_loader.hh
+unisim/util/loader/elf_loader/elf32.h
+unisim/util/loader/elf_loader/elf64.h
+unisim/util/loader/elf_loader/elf_common.h

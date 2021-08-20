@@ -1,0 +1,3 @@
+unisim/component/tlm2/com/xilinx/xps_gpio/gpio_leds.tcc
+unisim/component/tlm2/com/xilinx/xps_gpio/gpio_switches.tcc
+unisim/component/tlm2/com/xilinx/xps_gpio/xps_gpio.tcc

@@ -1,0 +1,4 @@
+unisim/util/simfloat/Samples/BasicIntegerOperation.cpp
+unisim/util/simfloat/Samples/FloatInvariant.cpp
+unisim/util/simfloat/Samples/NumberBetween.cpp
+unisim/util/simfloat/Samples/Read.cpp

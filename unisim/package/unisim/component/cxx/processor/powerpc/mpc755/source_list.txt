@@ -1,0 +1,2 @@
+unisim/component/cxx/processor/powerpc/mpc755/mpc755.cc
+unisim/component/cxx/processor/powerpc/mpc755/mpc755_debug.cc

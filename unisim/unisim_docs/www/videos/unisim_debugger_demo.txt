@@ -1,0 +1,1 @@
+A debug session using UNISIM Workbench over UNISIM Star12X virtual platform

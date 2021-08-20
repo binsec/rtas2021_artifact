@@ -1,0 +1,155 @@
+<div class="content-item">
+	<div class="content-item-title"><h2>Table of content</h2></div>
+	<div class="content-item-body">
+		<ul>
+			<li>Overview of the project: <a href="#overview">view</a></li>
+			<li>Use cases: <a href="#use-cases">view</a></li>
+			<li>Genealogy of the project: <a href="#genealogy-of-the-project">view</a></li>
+			<li>About us: <a href="#about-us">view</a></li>
+		</ul>
+	</div>
+</div>
+
+<div class="item-separator"></div>
+
+<a name="overview"></a>
+<div class="content-item">
+	<div class="content-item-title"><h2>Overview of the project</h2></div>
+	<div class="content-item-body">
+		<p>
+			UNISIM provides several virtual platforms and a framework to ease the development of new virtual platforms.
+			A virtual platform is a software tool, often called simulator, that mimics the behavior of an electronic system so that software can run on it before silicon or FPGA implementation of that electronic system is available.
+			The simulated electronic system can include lots of microprocessors and devices.
+			<br>
+			Depending on the needed representativeness and simulator development budget, a simulator can be as simple as an <a class="online-document" href="http://en.wikipedia.org/wiki/Instruction_set_simulator">instruction set simulator</a> as well as a <a class="online-document" href="http://en.wikipedia.org/wiki/Full_system_simulator">full system simulator</a>.
+			A full system simulator, not only executes the microprocessor instruction set, like an instruction set simulator, but also simulates buses, I/O devices, sensors, actuators, so that real application workloads and operating systems can run on them.
+			Most of UNISIM virtual platforms are full system simulators, which means that they are sufficiently representative of the real hardware that whole operating systems (e.g. Linux, VxWorks), unmodified software stacks (e.g. an AUTOSAR software stack), and industrial applications can run on them.
+			<br>
+			The UNISIM virtual platforms are modular: a simulator is the assembly of properly configured simulation components (e.g. CPU, RAM, buses).
+			They are written in C/C++ and based on industry standards, like <a class="online-document" href="http://standards.ieee.org/getieee/1666/index.html">IEEE1666<sup>TM</sup></a>, <a class="online-document" href="http://www.systemc.org/downloads/standards">OSCI SystemC<sup>TM</sup></a> and <a class="online-document" href="http://www.systemc.org/downloads/standards">OSCI SystemC<sup>TM</sup> TLM 2.0</a>.
+		</p>
+		<img id="overview-image" src=``IMAGES/overview.png`` alt=``IMAGES/overview.png``>
+		<p>
+			Several open source virtual platforms for different targets (<a href="arm.html">ARM</a>, <a href="powerpc.html">PowerPC</a>, <a href="s12x.html">Star12X</a>, and <a href="tms320c3x.html">TMS320C3X</a>) and different hosts (Linux, Windows, Mac OS X) are available for download <a href="download.html">here</a>.
+			These virtual platforms have been evaluated and used in various industry domains such as automotive, avionic, military, electrical equipments for medium tension, nuclear safety.
+		</p>
+	</div>
+</div>
+
+<div class="item-separator"></div>
+
+<a name="use-cases"></a>
+<div class="content-item">
+	<div class="content-item-title"><h2>Use cases</h2></div>
+	<div class="content-item-body">
+		<h3>
+			Development of SystemC IPs (intellectual property) and new virtual platforms
+		</h3>
+		<p>
+			UNISIM is an open development environment that comprise a SystemC module library, and a set of services (debugging, program loaders, …). It can be a fundation for the development of new SystemC IPs and new virtual virtual platforms.
+		</p>
+		<h3>
+			Hybrid virtual platform
+		</h3>
+		<p>
+			UNISIM/SystemC and an FPGA accelerator can be mixed to build some hybrid virtual platforms for instance simulating processor cores within UNISIM/SystemC, and prototyping specialized IPs/devices within an FPGA accelerator. Hybridization allows using indifferently both UNISIM/SystemC IPs (on a standard host machine) and VHDL IPs (on an FPGA accelerator), but also speeding up simulation of large systems.
+		</p>
+		<h3>
+			Non-intrusive debugging and testing of software
+		</h3>
+		<p>
+			It means that, unlike on the real hardware, software can be debugged and tested without affecting either its functional and/or temporal behavior. With such virtual instrumentation, the user can seamlessly stop and resume execution of software, profile the software, inspect the system status, inject values on the sensors, modify the state of program variables and microprocessor/device registers, and then analyze the result without modifying the software.
+		</p>
+		<h3>
+			Hardware/software integration
+		</h3>
+		<p>
+			Software stack can be debugged and tested within a representative hardware environment before the availability of either the FPGA prototypes or the real hardware. The software stack can be composed of low level software (e.g. drivers), of a real-time operating system, and of applications generated from high level models (Papyrus, Matlab Simulink, Statemate Stateflow, &hellip;)
+		</p>
+	</div>
+</div>
+
+<div class="item-separator"></div>
+
+<a name="genealogy-of-the-project"></a>
+<div class="content-item">
+	<div class="content-item-title"><h2>Genealogy of the project</h2></div>
+	<div class="content-item-body">
+		<p>
+			<a href="http://unisim.org">UNISIM</a> provides academia and industry with a simulation platform to ease architectural exploration and hardware/software codesign.
+			The "UNISIM Virtual Platforms" project has started several years ago within the UNISIM simulation environment.
+			Our goal was to enable hardware/software integration and validation on fast simulators with high level of abstraction.
+			Hence, we started working on several virtual platforms at transaction level of modeling and a framework to ease the development of new virtual platforms.
+			The "UNISIM Virtual Platforms" project is the visible results of these works.
+			The UNISIM simulation environment was enhanced with a Toolbox architecture through a maturation project (&ldquo;<a href="http://www.digiteo.fr/Digiteo_OMTE/en">OMTE</a>&rdquo;) financed/managed by Digiteo.
+			In this project, which took place in 2009, <a href="http://www-list.cea.fr/gb/index_gb.htm">CEA List</a> worked in collaboration with the <a href="http://en.inria.fr/domaines-epi/algorithmics-programming-software-and-architecture/architecture-and-compiling/alchemy">ALCHEMY team</a> involving partners from <a href="http://en.inria.fr">INRIA</a> Saclay, <a href="http://www.u-psud.fr/en/index.html">University Paris 11</a> and <a href="http://www.cnrs.fr/index.php">CNRS</a>. 
+		</p>
+	</div>
+</div>
+
+<div class="item-separator"></div>
+
+<a name="about-us"></a>
+<div class="content-item">
+	<div class="content-item-title"><h2>About us</h2></div>
+	<div class="content-item-body">
+		<p>
+			The "UNISIM Virtual Platforms" project is currently maintained by <a class="online-document" href="http://www-list.cea.fr/gb/index_gb.htm">CEA List</a>&nbsp;(<a class="online-document" href="http://www-list.cea.fr/labos/gb/LSL/index.html">Software Reliability Laboratory</a>), member of <a class="online-document" href="http://www.digiteo.fr">Digiteo</a>.
+		</p>
+		<table class="image-gallery">
+			<tr>
+				<td>
+					<a href="http://www-list.cea.fr/gb/index_gb.htm"><img src=``GLYPHES/logo_cea_list.png`` alt=""></a>
+				</td>
+				<td>
+					<a href="http://www.digiteo.fr" ><img src=``GLYPHES/logo_digiteo.png`` alt=""></a>
+				</td>
+			</tr>
+		</table>
+		<table class="image-gallery">
+			<tr>
+				<td>
+					<img src=``GLYPHES/_STR7447.jpg`` alt="">
+				</td>
+				<td>
+					<img src=``GLYPHES/_STR7476.jpg`` alt="">
+				</td>
+			</tr>
+		</table>
+		<p>
+			Crédit photos: P. Stroppa/CEA
+		</p>
+
+		<p>
+			If you have some specific needs, we can build your own virtual platform, either within an industrial/research project or under a commercial contract.
+			Indeed, we`re used to build custom virtual platforms using existing simulation components in the UNISIM framework, but also developping missing simulation components.
+			For instance, several virtual platforms have been developped within the following research projects:
+		</p>
+		<ul>
+			<li>
+				<a href="http://www.systematic.org">System@tic</a>&nbsp;<a href="http://www.usine-logicielle.org/index.php?option=com_content&amp;task=view&amp;id=17&amp;Itemid=30&amp;limit=1&amp;limitstart=2&amp;lang=en">Usine Logicielle/MoDriVal</a>
+			</li>
+			<li>
+				<a href="http://www.agence-nationale-recherche.fr">ANR</a>&nbsp;<a href="http://www.systematic-paris-region.org/fr/projets/hecosim">Hecosim</a>
+			</li>
+			<li>
+				<a href="http://www.agence-nationale-recherche.fr">ANR</a>&nbsp;<a href="http://www.soclib.fr">SocLib</a>
+			</li>
+			<li>
+				<a href="http://www.itea2.org">ITEA2</a>&nbsp;<a href="http://www.twins-itea.org">TWINS</a>
+			</li>
+			<li>
+				<a href="http://www.itea2.org">ITEA2</a>&nbsp;<a href="http://www.opees.org">OPEES</a>
+			</li>
+			<li>
+				<a href="http://www.medeaplus.org">MEDEA+</a>&nbsp;<a href="http://www.lomosa.org">LoMoSA+</a>
+			</li>
+			<li>
+				<a href="http://www.catrene.org">CATRENE</a>&nbsp;<a href="http://www.comcas.eu">COMCAS</a>
+			</li>
+		</ul>
+		<p>
+			Fill free to contact us for any form of collaboration at support<img class="glyph" src=``GLYPHES/at.png`` alt="&lt;at&gt;">unisim-vp.org
+		</p>
+	</div>
+</div>

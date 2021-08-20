@@ -1,0 +1,321 @@
+/*
+ *  Copyright (c) 2008,
+ *  Commissariat a l'Energie Atomique (CEA)
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without modification,
+ *  are permitted provided that the following conditions are met:
+ *
+ *   - Redistributions of source code must retain the above copyright notice, this
+ *     list of conditions and the following disclaimer.
+ *
+ *   - Redistributions in binary form must reproduce the above copyright notice,
+ *     this list of conditions and the following disclaimer in the documentation
+ *     and/or other materials provided with the distribution.
+ *
+ *   - Neither the name of CEA nor the names of its contributors may be used to
+ *     endorse or promote products derived from this software without specific prior
+ *     written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ *  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *  DISCLAIMED.
+ *  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ *  INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ *  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+ *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ *  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Authors: Reda   Nouacer  (reda.nouacer@cea.fr)
+ */
+
+
+op movb_0B(0x18[8]:0x0B[8]:> <:ii[8]:> <:opr16a[16])
+
+movb_0B.getCycles = { return 3;}
+
+movb_0B.disasm = { 
+	string mnem = "MOVB";
+	
+	sink << mnem << " #0x" << std::hex << ii << ",0x" << std::hex << opr16a;
+	return mnem;
+}
+
+movb_0B.execute = {
+	physical_address_t addr = opr16a;
+
+	cpu->memWrite8(addr,ii);
+
+	return getCycles();
+}
+
+op movb_08(0x18[8]:0x08[8]:> <:*xb[XB]:> <:ii[8])
+
+movb_08.getCycles = { return XbModes::GetIDXCycles(xb->getXbMode(), 3, 3, 4, 4, 5); }
+
+movb_08.disasm = {
+	string mnem = "MOVB";
+	
+	sink << mnem << " #0x" << std::hex << ii << ",";
+	xb->disasm(sink);
+	return mnem;
+}
+
+movb_08.execute = {
+	physical_address_t addr = xb->getEAddr(cpu);
+
+	cpu->memWrite8(addr,ii);
+
+	return getCycles();
+}
+
+
+op movb_0C(0x18[8]:0x0C[8]:> <:opr16asrc[16]:opr16adst[16])
+
+movb_0C.getCycles = { return 5; }
+
+movb_0C.disasm = {
+	string mnem = "MOVB";
+	
+	sink << mnem << " 0x" << std::hex << opr16asrc << ",0x" << std::hex << opr16adst;
+	return mnem;
+}
+
+movb_0C.execute = {
+	physical_address_t addrsrc = opr16asrc;
+	physical_address_t addrdst = opr16adst;
+
+	uint8_t tmp = cpu->memRead8(addrsrc);
+	cpu->memWrite8(addrdst, tmp);
+
+	return getCycles();
+}
+
+op movb_09(0x18[8]:0x09[8]:> <:*xb[XB]:> <:opr16asrc[16])
+
+movb_09.getCycles = { return XbModes::GetIDXCycles(xb->getXbMode(), 4, 5, 5, 5, 6); }
+
+movb_09.disasm = {
+	string mnem = "MOVB";
+	
+	sink << mnem << " 0x" <<  std::hex << opr16asrc << ", ";
+	xb->disasm(sink);
+
+	return mnem;
+}
+
+movb_09.execute = {
+	uint16_t addr = xb->getEAddr(cpu);
+	uint8_t tmp = cpu->memRead8(opr16asrc);
+	cpu->memWrite8(addr, tmp);
+
+	return getCycles();
+}
+
+op movb_0D(0x18[8]:0x0D[8]:> <:*xb[XB]:> <:opr16a[16])
+
+movb_0D.getCycles = { return XbModes::GetIDXCycles(xb->getXbMode(), 4, 5, 5, 6, 7); }
+
+movb_0D.disasm = {
+	string mnem = "MOVB";
+	
+	sink << mnem << " ";
+	xb->disasm(sink);
+	sink << ", 0x" << std::hex << opr16a;
+	return mnem;
+}
+
+movb_0D.execute = {
+	physical_address_t addrxb = xb->getEAddr(cpu);
+	physical_address_t addropr16a = opr16a;
+
+	uint8_t tmp = cpu->memRead8(addrxb);
+	cpu->memWrite8(addropr16a, tmp);
+
+	return getCycles();
+}
+
+op movb_0A(0x18[8]:0x0A[8]:> <:*xbsrc[XB]:> <:*xbdst[XB])
+
+movb_0A.getCycles = { 
+
+	switch (xbsrc->getXbMode())
+	{
+		case XbModes::IDX: return XbModes::GetIDXCycles(xbdst->getXbMode(), 4, 4, 5, 5, 6);
+		case XbModes::IDX1: return XbModes::GetIDXCycles(xbdst->getXbMode(), 5, 5, 6, 6, 7);
+		case XbModes::IDX2: return XbModes::GetIDXCycles(xbdst->getXbMode(), 5, 5, 6, 6, 6);
+		case XbModes::IDXD_Ind: return XbModes::GetIDXCycles(xbdst->getXbMode(), 6, 6, 7, 7, 8);
+		case XbModes::IDX2_Ind: return XbModes::GetIDXCycles(xbdst->getXbMode(), 7, 7, 8, 8, 9);
+		default: return 0x00;
+	}
+}
+
+movb_0A.disasm = {
+	string mnem = "MOVB";
+	
+	sink << mnem << " ";
+	xbsrc->disasm(sink);
+	sink << ",";
+	xbdst->disasm(sink);
+	return mnem;
+}
+
+movb_0A.execute = {
+	uint16_t addrsrc = xbsrc->getEAddr(cpu);
+	uint16_t addrdst = xbdst->getEAddr(cpu);
+	uint8_t  tmp = cpu->memRead8(addrsrc);
+	cpu->memWrite8(addrdst, tmp);
+
+	return getCycles();
+}
+
+// ---------
+
+op movw_03(0x18[8]:0x03[8]:> <:opr16i[16]:> <:opr16a[16])
+
+movw_03.getCycles = { return 4; }
+
+movw_03.disasm = {
+	string mnem = "MOVW";
+	 
+	sink << mnem << " #0x" << std::hex << opr16i << ",0x" << std::hex << opr16a;
+	return mnem;
+}
+
+movw_03.execute = {
+	physical_address_t addr = opr16a;
+
+	cpu->memWrite16(addr,opr16i);
+
+	return getCycles();
+}
+
+op movw_04(0x18[8]:0x04[8]:> <:opr16asrc[16]:opr16adst[16])
+
+movw_04.getCycles = { return 5; }
+
+movw_04.disasm = {
+	string mnem = "MOVW";
+	
+	sink << mnem << " 0x" << std::hex << opr16asrc << ",0x" << std::hex << opr16adst;
+	return mnem;
+}
+
+movw_04.execute = {
+	physical_address_t addrsrc = opr16asrc;
+	physical_address_t addrdst = opr16adst;
+
+	uint16_t tmp = cpu->memRead16(addrsrc);
+	cpu->memWrite16(addrdst, tmp);
+
+	return getCycles();
+}
+
+// Movw_18_00 IDX IDX1 IDX2 [D,IDX] [IDX2]
+
+op movw_00(0x18[8]:0x00[8]:> <:*xb[XB]:> <:opr16i[16])
+
+movw_00.disasm = {
+	string mnem = "MOVW";
+	
+	sink << mnem << " #0x" << std::hex << opr16i << ",";
+	xb->disasm(sink);
+	return mnem;
+}
+
+movw_00.execute = {
+	physical_address_t addr = xb->getEAddr(cpu);
+
+	cpu->memWrite16(addr,opr16i);
+
+	return getCycles();
+}
+
+
+
+/* 
+ * Movbw_18_01 IDX IDX1 IDX2 [D,IDX] [IDX2]
+ * */
+op movw_01(0x18[8]:0x01[8]:> <:*xb[XB]:> <:opr16asrc[16])
+
+movw_01.getCycles = { return XbModes::GetIDXCycles(xb->getXbMode(), 4, 5, 5, 5, 6); }
+
+movw_01.disasm = {
+	string mnem = "MOVW";
+	
+	sink << mnem << " 0x" <<  std::hex << opr16asrc << ",";
+	xb->disasm(sink);
+	return mnem;
+}
+
+movw_01.execute = {
+	physical_address_t addr = xb->getEAddr(cpu);
+	physical_address_t addrsrc = opr16asrc;
+
+	uint16_t tmp = cpu->memRead16(addrsrc);
+	cpu->memWrite16(addr, tmp);
+
+	return getCycles();
+}
+
+
+op movw_05(0x18[8]:0x05[8]:> <:*xb[XB]:> <:opr16a[16])
+
+movw_05.getCycles = { return XbModes::GetIDXCycles(xb->getXbMode(), 4, 5, 5, 6, 7); }
+
+movw_05.disasm = {
+	string mnem = "MOVW";
+	
+	sink << mnem << " ";
+	xb->disasm(sink);
+	sink << ",0x" << std::hex << opr16a;
+	return mnem;
+}
+
+movw_05.execute = {
+	physical_address_t addrxb = xb->getEAddr(cpu);
+	physical_address_t addrdst = opr16a;
+
+	uint16_t tmp = cpu->memRead16(addrxb);
+	cpu->memWrite16(addrdst, tmp);
+
+	return getCycles();
+}
+
+op movw_02(0x18[8]:0x02[8]:> <:*xbsrc[XB]:> <:*xbdst[XB])
+
+movw_02.getCycles = { 
+
+	switch (xbsrc->getXbMode())
+	{
+		case XbModes::IDX: return XbModes::GetIDXCycles(xbdst->getXbMode(), 4, 5, 5, 6, 7);
+		case XbModes::IDX1: return XbModes::GetIDXCycles(xbdst->getXbMode(), 4, 5, 5, 6, 7);
+		case XbModes::IDX2: return XbModes::GetIDXCycles(xbdst->getXbMode(), 5, 6, 6, 7, 8);
+		case XbModes::IDXD_Ind: return XbModes::GetIDXCycles(xbdst->getXbMode(), 5, 6, 6, 7, 8);
+		case XbModes::IDX2_Ind: return XbModes::GetIDXCycles(xbdst->getXbMode(), 6, 7, 6, 8, 9);
+		default: return 0x00;
+	}
+}
+
+movw_02.disasm = {
+	string mnem = "MOVW";
+	
+	sink << mnem << " ";
+	xbsrc->disasm(sink);
+	sink << ",";
+	xbdst->disasm(sink);
+	return mnem;
+}
+
+movw_02.execute = {
+	physical_address_t addrsrc = xbsrc->getEAddr(cpu);
+	physical_address_t addrdst = xbdst->getEAddr(cpu);
+	
+	uint16_t  tmp = cpu->memRead16(addrsrc);
+	cpu->memWrite16(addrdst, tmp);
+
+	return getCycles();
+}

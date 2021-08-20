@@ -1,0 +1,13 @@
+unisim/component/clm/cache/cache2_wb.hh
+unisim/component/clm/cache/cache_coherency_protocol.hh
+unisim/component/clm/cache/cache_common.hh
+unisim/component/clm/cache/cache_common_mc.hh
+unisim/component/clm/cache/cache_container_counter.hh
+unisim/component/clm/cache/cache_container.hh
+unisim/component/clm/cache/cache_mperfect.hh
+unisim/component/clm/cache/cache_wb.hh
+unisim/component/clm/cache/cache_wb_mc.hh
+unisim/component/clm/cache/MSHR_container.hh
+unisim/component/clm/cache/MSHR_container_prefetcher.hh
+unisim/component/clm/cache/mesi.h
+unisim/component/clm/cache/msi.h

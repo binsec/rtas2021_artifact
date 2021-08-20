@@ -1,0 +1,4 @@
+unisim/component/tlm/memory/ram/memory_32.cc
+unisim/component/tlm/memory/ram/memory_32_debug.cc
+unisim/component/tlm/memory/ram/memory_64.cc
+unisim/component/tlm/memory/ram/memory_64_debug.cc

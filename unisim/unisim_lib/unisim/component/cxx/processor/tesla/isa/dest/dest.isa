@@ -1,0 +1,295 @@
+/*
+ *  Copyright (c) 2009,
+ *  University of Perpignan (UPVD),
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without modification,
+ *  are permitted provided that the following conditions are met:
+ *
+ *   - Redistributions of source code must retain the above copyright notice, this
+ *     list of conditions and the following disclaimer.
+ *
+ *   - Redistributions in binary form must reproduce the above copyright notice,
+ *     this list of conditions and the following disclaimer in the documentation
+ *     and/or other materials provided with the distribution.
+ *
+ *   - Neither the name of UPVD nor the names of its contributors may be used to
+ *     endorse or promote products derived from this software without specific prior
+ *     written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ *  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *  DISCLAIMED.
+ *  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ *  INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ *  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+ *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ *  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Authors: Sylvain Collange (sylvain.collange@univ-perp.fr)
+ */
+
+namespace unisim::component::cxx::processor::tesla::isa::dest
+set endianness little
+set addressclass {typename CONFIG::address_t}
+template <{class} {CONFIG}>
+
+decl {
+#include <unisim/component/cxx/processor/tesla/cpu.hh>
+#include <unisim/component/cxx/processor/tesla/exec.hh>
+#include <unisim/component/cxx/processor/tesla/disasm.hh>
+#include <unisim/component/cxx/processor/tesla/flags.hh>
+//#include <unisim/component/cxx/processor/tesla/operation.hh>
+
+namespace unisim {
+namespace component {
+namespace cxx {
+namespace processor {
+namespace tesla {
+
+template<class CONFIG>
+class CPU;
+
+template<class CONFIG>
+class Instruction;
+
+namespace isa {
+namespace dest {
+using namespace unisim::component::cxx::processor::tesla;
+}
+}
+
+} // end of namespace tesla 
+} // end of namespace processor
+} // end of namespace cxx
+} // end of namespace component
+} // end of namespace unisim
+
+}
+
+impl {
+#include <unisim/component/cxx/processor/tesla/instruction.hh>
+}
+
+var needWritePred : {bool}
+
+constructor action initialize() {
+	this->needWritePred = true;
+}
+
+action {void} write({CPU<CONFIG> *} {cpu}, {Instruction<CONFIG> *} {insn}, \
+	{bitset<CONFIG::WARP_SIZE>} {mask}) \
+{
+	throw IllegalInstructionException<CONFIG>();
+}
+
+action {void} writePred({CPU<CONFIG> *} {cpu}, \
+	{VectorFlags<CONFIG>} {flags}, \
+	{bitset<CONFIG::WARP_SIZE>} {mask}) \
+{
+	throw IllegalInstructionException<CONFIG>();
+}
+
+action {bitset<CONFIG::WARP_SIZE>} predMask({CPU<CONFIG> *} {cpu}) \
+{
+	throw IllegalInstructionException<CONFIG>();
+}
+
+action {void} disasm({CPU<CONFIG> *} {cpu}, {Instruction<CONFIG> const *} {insn}, {ostream&} {os}) {
+	os << "???";
+}
+
+action {void} disasmPred({CPU<CONFIG> *} {cpu}, {Instruction<CONFIG> const *} {insn}, {ostream&} {os}) {
+	os << "???";
+}
+
+action {void} classify({typename CONFIG::operationstats_t &} {stats}, \
+	{DataType} {dt}) {
+}
+
+// Should have two formats
+// - one for int ops with w32
+// - one for float ops
+
+// little-endian
+op alu_full_normal( \
+	/*subop*/?[3]:?[2]:/*w32*/?[1]:?[12]: \
+	pred_reg[2]:pred_cond[5]:set_pred[1]:set_pred_reg[2]:output_reg[1]:/*addr_hi*/?[1]:/*marker*/0[2]: \
+	/*op*/?[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src3_cm*/?[1]:/*src2_cm*/?[1]:/*src2*/?[7]:/*src1*/?[7]: \
+	dest[7]:/*flow*/0[1]:/*long*/1[1] \
+)
+
+op alu_full_end( \
+	/*subop*/?[3]:?[2]:/*w32*/?[1]:?[12]: \
+	pred_reg[2]:pred_cond[5]:set_pred[1]:set_pred_reg[2]:output_reg[1]:/*addr_hi*/?[1]:/*marker*/1[2]: \
+	/*op*/?[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src3_cm*/?[1]:/*src2_cm*/?[1]:/*src2*/?[7]:/*src1*/?[7]: \
+	dest[7]:/*flow*/0[1]:/*long*/1[1] \
+)
+
+op alu_full_join( \
+	/*subop*/?[3]:?[2]:/*w32*/?[1]:?[12]: \
+	pred_reg[2]:pred_cond[5]:set_pred[1]:set_pred_reg[2]:output_reg[1]:/*addr_hi*/?[1]:/*marker*/2[2]: \
+	/*op*/?[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src3_cm*/?[1]:/*src2_cm*/?[1]:/*src2*/?[7]:/*src1*/?[7]: \
+	dest[7]:/*flow*/0[1]:/*long*/1[1] \
+)
+
+
+group alu_full(alu_full_normal, alu_full_end, alu_full_join)
+
+alu_full.predMask = {
+	return IsPredSet(pred_cond, cpu->GetFlags(pred_reg));
+}
+
+alu_full.write = {
+	typedef Instruction<CONFIG> Insn;
+	DataType dt = insn->OperandDataType(OpDest);
+	if(output_reg)
+	{
+		// Long insn : o127 = sink
+		if(dest != 127) {
+			assert(false);
+			throw "Output reg not implemented!";
+		}
+	}
+	else
+	{
+		insn->WriteReg(dest, Insn::TempDest, dt, mask);
+	}
+}
+
+alu_full.writePred = {
+	// TODO: During writeback?...
+	if(set_pred) {
+		cpu->GetFlags(set_pred_reg).Write(flags, mask);
+		if(cpu->TraceReg()) {
+			cpu->DumpFlags(set_pred_reg, cerr);
+		}
+	}
+}
+
+alu_full.disasm = {
+	RegType rt = insn->OperandRegType(OpDest);
+	// Disasm set pred
+	if(set_pred)
+	{
+		os << "p" << set_pred_reg;
+		os << "|";
+	}
+	
+	if(output_reg)
+	{
+		// o127 (long) or o63 (short instr) = sink??
+		// BTW, when is a short insn able to write to an output reg?
+		if(dest != 127) {
+			os << "o" << dest;
+		}
+		else {
+			// bit bucket
+			os << "_";
+		}
+	}
+	else
+	{
+		DisasmReg(dest, rt, os);
+	}
+}
+
+alu_full.disasmPred = {
+	if(pred_cond != CD_TR)
+	{
+		os << "@p" << pred_reg;
+		os << "." << CondCodeString(Cond(pred_cond)) << " ";
+	}
+}
+
+alu_full.classify = {
+	if(!output_reg) {
+		stats.SetRegNum(dest, dt, OpDest);	// Count GPRs only
+	}
+}
+
+alu_full.initialize = {
+	this->needWritePred = set_pred;
+}
+
+op alu_imm( \
+	/*subop*/?[3]:?[1]:?[26]:/*marker*/3[2]: \
+	/*op*/?[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src3_cm*/?[1]:/*src2_cm*/?[1]:/*src2*/?[7]:/*src1*/?[7]: \
+	?[1]:dest[6]:/*flow*/0[1]:/*long*/1[1] \
+)
+
+op alu_half(\
+	/*op*/?[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src3_cm*/?[1]:/*src2_cm*/?[1]:/*src2*/?[7]:/*src1*/?[7]: \
+	?[1]:dest[6]:/*flow*/0[1]:/*long*/0[1])
+
+group alu_halfimm(alu_imm, alu_half)
+
+alu_halfimm.predMask = {
+	return bitset<CONFIG::WARP_SIZE>().set();
+}
+
+alu_halfimm.write = {
+	typedef Instruction<CONFIG> Insn;
+	DataType dt = insn->OperandDataType(OpDest);
+	insn->WriteReg(dest, Insn::TempDest, dt, mask);
+}
+
+alu_halfimm.writePred = {
+}
+
+alu_halfimm.disasm = {
+	RegType rt = insn->OperandRegType(OpDest);
+	DisasmReg(dest, rt, os);
+}
+
+alu_halfimm.disasmPred = {
+}
+
+alu_halfimm.classify = {
+	stats.SetRegNum(dest, dt, OpDest);
+}
+
+alu_halfimm.initialize = {
+	this->needWritePred = false;
+}
+
+// TODO: forbid immediate or...?
+op flow_full( \
+	/*subop*/?[3]:/*?*/?[1]:?[14]: \
+	pred_reg[2]:pred_cond[5]:set_pred[1]:set_pred_reg[2]:output_reg[1]:/*addr_hi*/?[1]:/*marker*/?[2]: \
+	/*op*/?[4]:/*target_addr*/?[19]:/*dest*/0[7]:/*flow*/1[1]:/*IWidth*/1[1] \
+)
+
+flow_full.predMask = {
+	return IsPredSet(pred_cond, cpu->GetFlags(pred_reg));
+}
+
+flow_full.writePred = {
+	if(set_pred) {
+		assert(false);	// ???
+		cpu->GetFlags(set_pred_reg).Write(flags, mask);
+		if(cpu->TraceReg()) {
+			cpu->DumpFlags(set_pred_reg, cerr);
+		}
+	}
+}
+
+flow_full.disasm = {
+	os << "???";
+}
+
+flow_full.disasmPred = {
+	if(pred_cond != CD_TR)
+	{
+		os << "@p" << pred_reg;
+		os << "." << CondCodeString(Cond(pred_cond)) << " ";
+	}
+}
+
+flow_full.initialize = {
+	this->needWritePred = set_pred;
+}
+

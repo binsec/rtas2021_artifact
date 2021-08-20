@@ -1,0 +1,7 @@
+unisim/kernel
+unisim/kernel/logger
+unisim/kernel/tlm2
+unisim/kernel/variable/endian
+unisim/util/debug
+unisim/util/likely
+unisim/util/reg/core

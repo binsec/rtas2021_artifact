@@ -1,0 +1,406 @@
+/*
+ *  Copyright (c) 2008,
+ *  Commissariat a l'Energie Atomique (CEA)
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without modification,
+ *  are permitted provided that the following conditions are met:
+ *
+ *   - Redistributions of source code must retain the above copyright notice, this
+ *     list of conditions and the following disclaimer.
+ *
+ *   - Redistributions in binary form must reproduce the above copyright notice,
+ *     this list of conditions and the following disclaimer in the documentation
+ *     and/or other materials provided with the distribution.
+ *
+ *   - Neither the name of CEA nor the names of its contributors may be used to
+ *     endorse or promote products derived from this software without specific prior
+ *     written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ *  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *  DISCLAIMED.
+ *  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ *  INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ *  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+ *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ *  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Authors: Reda   Nouacer  (reda.nouacer@cea.fr)
+ */
+
+
+namespace unisim::component::cxx::processor::hcs12x::XB
+
+// decoder( cisc, sub )
+set codetype buffer
+set subdecoder_p true
+
+// address {uint16_t}
+set addressclass {uint16_t}
+//set addressclass {uint32_t}
+
+// big_endian
+set endianness big
+
+decl {
+
+#include <iosfwd>
+#include <iostream>
+#include <vector>
+#include <cassert>
+
+#include <unisim/component/cxx/processor/hcs12x/hcs12x.hh>
+
+namespace unisim { namespace component { namespace cxx { namespace processor { namespace hcs12x { namespace XB {
+
+class XbModes {
+public:
+	enum MODE {IDX=0, IDX1=1, IDX2=2, IDXD_Ind=3, IDX2_Ind=4, Unknown=0xFF};
+
+	static inline uint8_t GetIDXCycles(uint8_t xbMode, uint8_t idx, uint8_t idx1, uint8_t idx2, uint8_t idxd_ind, uint8_t idx2_ind)
+	{
+		switch (xbMode)
+		{
+			case XbModes::IDX: return idx;
+			case XbModes::IDX1: return idx1;
+			case XbModes::IDX2: return idx2;
+			case XbModes::IDXD_Ind: return idxd_ind;
+			case XbModes::IDX2_Ind: return idx2_ind;
+			default: return 0xff;
+		}
+	} 	
+
+};
+
+} } } } } }  // end namespaces
+
+}
+
+impl {
+using namespace std;
+
+}
+
+action {uint8_t} getXbMode () \
+{ 
+	return XbModes::Unknown; 
+}
+
+action {void} disasm({ostream&} {sink}) {
+	sink << "?";
+}
+
+action {uint16_t} getEAddr ( {CPU *} {cpu} ) { assert( false ); return 0; }
+
+action {void} getRegsLabel ( {vector<string>} {&vect} ) { return; }
+
+
+action {void} pre_execute({ostream&} {sink}) {
+
+	vector<string> vect;
+	getRegsLabel(vect);
+	
+	vector<string>::iterator iter1 = vect.begin();
+
+	while( iter1 != vect.end()) {
+
+		if (((string) *iter1).compare("X") == 0) {
+			sink << "asm(\"" << "PSHX \");\n";
+		}
+		if (((string) *iter1).compare("Y") == 0) {
+			sink << "asm(\"" << "PSHY \");\n";
+		}
+		if (((string) *iter1).compare("SP") == 0) {
+//			sink << "asm(\"" << "LDX SP \");\n";
+		}
+		if (((string) *iter1).compare("PC") == 0) {
+//			sink << "asm(\"" << "LDY PC \");\n";
+		}
+		if (((string) *iter1).compare("A") == 0) {
+			sink << "asm(\"" << "PSHA \");\n";
+		}
+		if (((string) *iter1).compare("B") == 0) {
+			sink << "asm(\"" << "PSHB \");\n";
+		}
+		if (((string) *iter1).compare("D") == 0) {
+			sink << "asm(\"" << "PSHD \");\n";
+		}
+		
+		iter1++;
+	}    
+	
+}
+
+action {void} post_execute({ostream&} {sink}) {
+
+	vector<string> vect;
+	getRegsLabel(vect);
+	
+	vector<string>::iterator iter1 = vect.end();
+
+	while( iter1 != vect.begin()) {
+		iter1--;
+
+		if (((string) *iter1).compare("X") == 0) {
+			sink << "asm(\"" << "PULX \");\n";
+		}
+		if (((string) *iter1).compare("Y") == 0) {
+			sink << "asm(\"" << "PULY \");\n";
+		}
+		if (((string) *iter1).compare("SP") == 0) {
+//			sink << "asm(\"" << "STX SP \");\n";
+		}
+		if (((string) *iter1).compare("PC") == 0) {
+//			sink << "asm(\"" << "JMP Y \");\n";
+		}
+		if (((string) *iter1).compare("A") == 0) {
+			sink << "asm(\"" << "PULA \");\n";
+		}
+		if (((string) *iter1).compare("B") == 0) {
+			sink << "asm(\"" << "PULB \");\n";
+		}
+		if (((string) *iter1).compare("D") == 0) {
+			sink << "asm(\"" << "PULD \");\n";
+		}
+	}    
+
+}
+
+
+op xb_5bit_cst (rr[2]:0b0[1]:sext<8> nnnnn[5])
+
+xb_5bit_cst.getXbMode = { return XbModes::IDX; }
+
+xb_5bit_cst.getEAddr = {
+
+	uint16_t addr = cpu->xb_getAddrRegValue(rr) + nnnnn;
+	
+    return addr;
+
+}
+
+xb_5bit_cst.disasm = {
+	
+	string regLabel = CPU::xb_getAddrRegLabel(rr);
+	
+	sink << std::dec << nnnnn << "," << regLabel;
+
+}
+
+xb_5bit_cst.getRegsLabel = {
+	
+	string regLabel(CPU::xb_getAddrRegLabel(rr));
+	vect.push_back(regLabel);
+}
+
+op xb_9_cst_z0 (0b111[3]:rr[2]:0b00[2]:s[1]:> <:n8[8])
+
+xb_9_cst_z0.getXbMode = { return XbModes::IDX1; }
+
+xb_9_cst_z0.getEAddr = {
+
+	uint16_t addr;
+/*	
+	if (s==0) {
+		addr = cpu->xb_getAddrRegValue(rr) + (n8 & 0xFF);
+	} else {
+		addr = cpu->xb_getAddrRegValue(rr) + (n8 & 0xFF) - 256;
+	}
+*/
+	int32_t val = (int32_t) ((n8 << 24) >> 24);
+	if (s==0) {
+		addr = cpu->xb_getAddrRegValue(rr) + val;
+	} else {
+		addr = cpu->xb_getAddrRegValue(rr) + val - 256;
+	}
+
+	return addr;
+
+}
+
+xb_9_cst_z0.disasm = {
+
+	string regLabel = CPU::xb_getAddrRegLabel(rr);
+/*	
+	if (s==0) {
+		sink << std::dec << (n8 & 0xFF) << "," << regLabel;
+	} else {
+		sink << std::dec << (n8 & 0xFF) - 256 << "," << regLabel;
+	}
+*/
+	int32_t val = (int32_t) ((n8 << 24) >> 24);
+	if (s==0) {
+		sink << std::dec << val << "," << regLabel;
+	} else {
+		sink << std::dec << val - 256 << "," << regLabel;
+	}
+	
+}
+
+xb_9_cst_z0.getRegsLabel = {
+
+	string regLabel(CPU::xb_getAddrRegLabel(rr));
+	vect.push_back(regLabel);
+}
+
+op xb_16bit_cst_z1_s0 (0b111[3]:rr[2]:0b010[3]:> <:n16[16])
+
+xb_16bit_cst_z1_s0.getXbMode = { return XbModes::IDX2; }
+
+xb_16bit_cst_z1_s0.getEAddr = {
+
+	physical_address_t addr = cpu->xb_getAddrRegValue(rr) + (n16 & 0xFFFF);
+
+	// Constant offset 16-bit signed
+   	return addr;
+}
+
+xb_16bit_cst_z1_s0.disasm = {
+
+	// constant offset 16-bit signed
+	string regLabel = CPU::xb_getAddrRegLabel(rr);
+	sink << std::dec << (n16 & 0xFFFF) << "," << regLabel;
+}
+
+xb_16bit_cst_z1_s0.getRegsLabel = {
+
+	string regLabel(CPU::xb_getAddrRegLabel(rr));
+	vect.push_back(regLabel);
+}
+
+op xb_16bit_cst_z1_s1 (0b111[3]:rr[2]:0b011[3]:> <:sext<16> n16[16])
+
+xb_16bit_cst_z1_s1.getXbMode = { return XbModes::IDX2_Ind; }
+
+xb_16bit_cst_z1_s1.getEAddr = {
+
+	physical_address_t addr = cpu->xb_getAddrRegValue(rr) + n16;
+
+	// 16-bit offset indexed-indirect
+	return cpu->memRead16(addr);
+}
+
+xb_16bit_cst_z1_s1.disasm = {
+
+	// 16-bit offset index-indirect
+	string regLabel = CPU::xb_getAddrRegLabel(rr);
+	sink << "[" << std::dec << n16 << "," << regLabel << "]";
+}
+
+xb_16bit_cst_z1_s1.getRegsLabel = {
+
+	string regLabel(CPU::xb_getAddrRegLabel(rr));
+	vect.push_back(regLabel);
+}
+
+op xb_auto(rr[2]:0b1[1]:p[1]:nnnn[4])
+
+xb_auto.getXbMode = { return XbModes::IDX; }
+
+xb_auto.getEAddr = {
+
+	uint16_t regOldVal = cpu->xb_getAddrRegValue(rr);
+	uint16_t regNewVal;
+
+	short val = nnnn;
+	// if (val > 7) then decrement else increment
+	if (val < 8) // increment index register
+	{
+		regNewVal = regOldVal + val + 1;
+	} else { // decrement index register
+		regNewVal = regOldVal + val - 16;
+	}
+
+	cpu->xb_setAddrRegValue(rr,regNewVal);	
+
+	if (p == 0) {
+		// Auto pre-
+		return regNewVal;
+	} else {
+		// Auto post-
+		return regOldVal;
+	}
+	
+}
+
+xb_auto.disasm = {
+
+	string	regLabel = CPU::xb_getAddrRegLabel(rr);
+	char	sign = '+';
+	short  val = nnnn;
+
+	if (val > 7) {
+		val = val - 16;
+	} else {
+		val = val + 1;
+	}
+	
+	if (val < 0) {
+		sign = '-';
+		val = -1*val;
+	}
+
+	sink << std::dec << val << ",";
+	if (p == 0) {
+		sink << sign << regLabel;
+	} else {
+		sink << regLabel << sign;
+	}
+}
+
+xb_auto.getRegsLabel = {
+
+	string	regLabel(CPU::xb_getAddrRegLabel(rr));
+	vect.push_back(regLabel);
+}
+
+op xb_acc_offset (0b111[3]:rr[2]:0b1[1]:aa[2])
+
+xb_acc_offset.getXbMode = { return XbModes::IDX; }
+
+xb_acc_offset.getEAddr = {
+	uint16_t addrRegVal = cpu->xb_getAddrRegValue(rr);
+	uint16_t accRegVal = cpu->xb_getAccRegValue(aa);
+	
+	return addrRegVal + accRegVal; 
+}
+
+xb_acc_offset.disasm = {
+
+	string addrRegLabel = CPU::xb_getAddrRegLabel(rr);
+	string accRegLabel = CPU::xb_getAccRegLabel(aa);
+	
+	sink << accRegLabel << "," << addrRegLabel;
+}
+
+xb_acc_offset.getRegsLabel = {
+
+	string addrRegLabel(CPU::xb_getAddrRegLabel(rr));
+	string accRegLabel(CPU::xb_getAccRegLabel(aa));
+	
+	vect.push_back(accRegLabel);
+	vect.push_back(addrRegLabel);
+}
+
+op xb_accD_offset_idx_ind (0b111[3]:rr[2]:0b111[3])
+
+xb_accD_offset_idx_ind.getXbMode = { return XbModes::IDXD_Ind; }
+
+xb_accD_offset_idx_ind.getEAddr = {
+
+	return cpu->memRead16(cpu->getRegD() + cpu->xb_getAddrRegValue(rr));
+}
+
+xb_accD_offset_idx_ind.disasm = {
+	string regLabel = CPU::xb_getAddrRegLabel(rr);
+	sink << "[D," << regLabel << "]";
+}
+
+xb_accD_offset_idx_ind.getRegsLabel = {
+	string regLabel(CPU::xb_getAddrRegLabel(rr));
+	vect.push_back(regLabel);
+}

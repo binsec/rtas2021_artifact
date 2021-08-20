@@ -1,0 +1,8 @@
+libc/inttypes
+m4/systemc
+std/cmath
+unisim/component/tlm/message
+unisim/kernel/logger
+unisim/kernel/tlm
+unisim/service/interfaces/memory
+unisim/util/garbage_collector

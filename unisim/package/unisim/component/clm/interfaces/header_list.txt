@@ -1,0 +1,4 @@
+unisim/component/clm/interfaces/instruction_interface.hh
+unisim/component/clm/interfaces/memreq.hh
+unisim/component/clm/interfaces/memreq_interface.hh
+unisim/component/clm/interfaces/memreq_mc.hh

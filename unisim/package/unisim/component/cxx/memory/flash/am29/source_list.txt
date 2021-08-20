@@ -1,0 +1,7 @@
+unisim/component/cxx/memory/flash/am29/am29.cc
+unisim/component/cxx/memory/flash/am29/am29lv160d.cc
+unisim/component/cxx/memory/flash/am29/am29lv160d_config.cc
+unisim/component/cxx/memory/flash/am29/am29lv800b.cc
+unisim/component/cxx/memory/flash/am29/am29lv800b_config.cc
+unisim/component/cxx/memory/flash/am29/s29gl256p.cc
+unisim/component/cxx/memory/flash/am29/s29gl256p_config.cc

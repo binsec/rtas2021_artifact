@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<variables>
+	<object name="cpu">
+		<variable name="cpu.max-inst">
+			<type>parameter</type>
+			<data_type>unsigned 64-bit integer</data_type>
+			<value>0xffffffffffffffff</value>
+			<description></description>
+		</variable>
+		<variable name="cpu.trap-on-instruction-counter">
+			<type>parameter</type>
+			<data_type>unsigned 64-bit integer</data_type>
+			<value>0xffffffffffffffff</value>
+			<description></description>
+		</variable>
+		<variable name="cpu.mimic-dev-board">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>false</value>
+			<description></description>
+		</variable>
+		<variable name="cpu.enable-parallel-load-bug">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>true</value>
+			<description>When using parallel loads (LDF src2, dst2 || LDF src1, dst1) the src1 load doesn't transform incorrect zero values to valid zero representation, instead they copy the contents of the memory to the register. Set to this parameter to false to transform incorrect zero values.</description>
+		</variable>
+		<variable name="cpu.enable-rnd-bug">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>true</value>
+			<description>If enabled the `rnd` instruction sets the Z flag to 0 systematically, as it is done in the evaluation board. Otherwise, Z is unchanged as it is written in the documentation.</description>
+		</variable>
+		<variable name="cpu.enable-parallel-store-bug">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>true</value>
+			<description>If enabled, when using parallel stores (STF src2, dst2 || STF src1, dst1) the first store is treated as a NOP.</description>
+		</variable>
+		<variable name="cpu.enable-float-ops-with-non-ext-regs">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>false</value>
+			<description>If enabled non extended registers can be used on all the float instructions, however the behavior is not documented and can differ between chips revision. If disabled, it stops simulation when using non extended registers on float instructions.</description>
+		</variable>
+		<variable name="cpu.verbose-all">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>false</value>
+			<description></description>
+		</variable>
+		<variable name="cpu.verbose-setup">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>false</value>
+			<description></description>
+		</variable>
+	</object>
+	<object name="kernel_logger">
+		<variable name="kernel_logger.std_err">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>true</value>
+			<description>Show logger output through the standard error output</description>
+		</variable>
+		<variable name="kernel_logger.std_out">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>false</value>
+			<description>Show logger output through the standard output</description>
+		</variable>
+		<variable name="kernel_logger.std_err_color">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>false</value>
+			<description>Colorize logger output through the standard error output (only works if std_err is active)</description>
+		</variable>
+		<variable name="kernel_logger.std_out_color">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>false</value>
+			<description>Colorize logger output through the standard output (only works if std_out is active)</description>
+		</variable>
+		<variable name="kernel_logger.file">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>false</value>
+			<description>Keep logger output in a file</description>
+		</variable>
+		<variable name="kernel_logger.filename">
+			<type>parameter</type>
+			<data_type>string</data_type>
+			<value>logger_output.txt</value>
+			<description>Filename to keep logger output (the option file must be activated)</description>
+		</variable>
+		<variable name="kernel_logger.xml_file">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>false</value>
+			<description>Keep logger output in a file xml formatted</description>
+		</variable>
+		<variable name="kernel_logger.xml_filename">
+			<type>parameter</type>
+			<data_type>string</data_type>
+			<value>logger_output.xml</value>
+			<description>Filename to keep logger xml output (the option xml_file must be activated)</description>
+		</variable>
+		<variable name="kernel_logger.xml_file_gzipped">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>false</value>
+			<description>If the xml_file option is active, the output file will be compressed (a .gz extension will be automatically added to the xml_filename option</description>
+		</variable>
+	</object>
+	<object name="loader">
+		<variable name="loader.filename">
+			<type>parameter</type>
+			<data_type>string</data_type>
+			<value></value>
+			<description></description>
+		</variable>
+		<variable name="loader.dump-headers">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>false</value>
+			<description></description>
+		</variable>
+		<variable name="loader.verbose-write">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>false</value>
+			<description></description>
+		</variable>
+	</object>
+	<object name="memory">
+		<variable name="memory.org">
+			<type>parameter</type>
+			<data_type>unsigned 64-bit integer</data_type>
+			<value>0x0</value>
+			<description>memory origin/base address</description>
+		</variable>
+		<variable name="memory.bytesize">
+			<type>parameter</type>
+			<data_type>unsigned 32-bit integer</data_type>
+			<value>0</value>
+			<description>memory size in bytes</description>
+		</variable>
+	</object>
+	<object name="rom-loader">
+		<variable name="rom-loader.filename">
+			<type>parameter</type>
+			<data_type>string</data_type>
+			<value></value>
+			<description></description>
+		</variable>
+		<variable name="rom-loader.dump-headers">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>false</value>
+			<description></description>
+		</variable>
+		<variable name="rom-loader.verbose-write">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>false</value>
+			<description></description>
+		</variable>
+	</object>
+	<object name="ti-c-io">
+		<variable name="ti-c-io.enable">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>false</value>
+			<description>enable/disable TI C I/O support</description>
+		</variable>
+		<variable name="ti-c-io.warning-as-error">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>false</value>
+			<description>Whether Warnings are considered as error or not</description>
+		</variable>
+		<variable name="ti-c-io.pc-register-name">
+			<type>parameter</type>
+			<data_type>string</data_type>
+			<value>PC</value>
+			<description>Name of the CPU program counter register</description>
+		</variable>
+		<variable name="ti-c-io.c-io-buffer-symbol-name">
+			<type>parameter</type>
+			<data_type>string</data_type>
+			<value>__CIOBUF_</value>
+			<description>C I/O buffer symbol name</description>
+		</variable>
+		<variable name="ti-c-io.c-io-breakpoint-symbol-name">
+			<type>parameter</type>
+			<data_type>string</data_type>
+			<value>C$$IO$$</value>
+			<description>C I/O breakpoint symbol name</description>
+		</variable>
+		<variable name="ti-c-io.c-exit-breakpoint-symbol-name">
+			<type>parameter</type>
+			<data_type>string</data_type>
+			<value>C$$EXIT</value>
+			<description>C EXIT breakpoint symbol name</description>
+		</variable>
+		<variable name="ti-c-io.verbose-all">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>false</value>
+			<description>globally enable/disable verbosity</description>
+		</variable>
+		<variable name="ti-c-io.verbose-io">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>false</value>
+			<description>enable/disable verbosity while I/Os</description>
+		</variable>
+		<variable name="ti-c-io.verbose-setup">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>false</value>
+			<description>enable/disable verbosity while setup</description>
+		</variable>
+		<variable name="ti-c-io.enable-lseek-bug">
+			<type>parameter</type>
+			<data_type>boolean</data_type>
+			<value>false</value>
+			<description>enable/disable lseek bug (as code composer)</description>
+		</variable>
+	</object>
+</variables>

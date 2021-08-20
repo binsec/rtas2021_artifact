@@ -1,0 +1,4 @@
+unisim/component/cxx/processor/tms320c3x/config.hh
+unisim/component/cxx/processor/tms320c3x/cpu.hh
+unisim/component/cxx/processor/tms320c3x/exception.hh
+unisim/component/cxx/processor/tms320c3x/register.hh

@@ -1,0 +1,6 @@
+unisim/service/sdl/mac_linux_fr_keymap.xml
+unisim/service/sdl/mac_linux_us_keymap.xml
+unisim/service/sdl/mac_osx_us_keymap.xml
+unisim/service/sdl/pc_linux_fr_keymap.xml
+unisim/service/sdl/pc_linux_us_keymap.xml
+unisim/service/sdl/pc_windows_keymap.xml

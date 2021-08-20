@@ -1,0 +1,8 @@
+libc/inttypes
+std/queue
+unisim/kernel
+unisim/kernel/logger
+unisim/kernel/tlm2
+unisim/kernel/variable
+unisim/kernel/variable/sc_time
+unisim/service/interfaces/char_io

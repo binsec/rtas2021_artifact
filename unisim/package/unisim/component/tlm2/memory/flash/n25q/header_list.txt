@@ -1,0 +1,4 @@
+unisim/component/tlm2/memory/flash/n25q/config.hh
+unisim/component/tlm2/memory/flash/n25q/n25q032a.hh
+unisim/component/tlm2/memory/flash/n25q/n25q_defs.hh
+unisim/component/tlm2/memory/flash/n25q/n25q.hh

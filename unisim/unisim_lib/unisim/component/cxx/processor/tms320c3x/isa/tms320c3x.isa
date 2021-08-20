@@ -1,0 +1,158 @@
+/*
+ *  Copyright (c) 2009,
+ *  Commissariat a l'Energie Atomique (CEA)
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without modification,
+ *  are permitted provided that the following conditions are met:
+ *
+ *   - Redistributions of source code must retain the above copyright notice, this
+ *     list of conditions and the following disclaimer.
+ *
+ *   - Redistributions in binary form must reproduce the above copyright notice,
+ *     this list of conditions and the following disclaimer in the documentation
+ *     and/or other materials provided with the distribution.
+ *
+ *   - Neither the name of CEA nor the names of its contributors may be used to
+ *     endorse or promote products derived from this software without specific prior
+ *     written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ *  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *  DISCLAIMED.
+ *  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ *  INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ *  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+ *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ *  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Authors: Daniel Gracia Perez (daniel.gracia-perez@cea.fr)
+ *          Gilles Mouchard (gilles.mouchard@cea.fr)
+ */
+
+/**********************************************
+
+             ARM EMULATOR ISA
+
+**********************************************/
+
+namespace unisim::component::cxx::processor::tms320c3x::isa::tms320c3x
+set endianness little
+set addressclass {typename CONFIG::address_t}
+template <{class} {CONFIG}, {bool} {DEBUG}>
+
+decl {
+#include <iosfwd>
+
+/* code to be inserted at the declaration of the library */
+
+/* Forward declaration of the cpu */
+namespace unisim {
+namespace component {
+namespace cxx {
+namespace processor {
+namespace tms320c3x {
+
+template<class CONFIG, bool DEBUG>
+class CPU;
+
+} // end of namespace tms320c3x
+} // end of namespace processor
+} // end of namespace cxx
+} // end of namespace component
+} // end of namespace unisim
+
+} // end of decl
+
+impl {
+/* code to be included at the beginning of the implementation of the library */
+#include <iostream>
+#include <string>
+#include "unisim/component/cxx/processor/tms320c3x/exception.hh"
+
+namespace unisim {
+namespace component {
+namespace cxx {
+namespace processor {
+namespace tms320c3x {
+
+using std::ostream;
+using std::hex;
+using std::dec;
+using std::endl;
+using std::string;
+
+static const char *REG_NAME[] = {
+	"R0",  "R1",  "R2",  "R3",  "R4",  "R5",  "R6",  "R7",
+	"AR0", "AR1", "AR2", "AR3", "AR4", "AR5", "AR6", "AR7",
+	"DP", "IR0", "IR1",  "BK",  "SP",  "ST",  "IE",  "IF",
+	"IOF",  "RS",  "RE",  "RC",    0,     0,     0,     0
+};
+
+static const char *COND_NAME[] = {
+	"U",    // 00000
+	"LO",   // 00001
+	"LS",   // 00010
+	"HI",   // 00011
+	"HS",   // 00100
+	"EQ",   // 00101
+	"NE",   // 00110
+	"LT",   // 00111
+	"LE",   // 01000
+	"GT",   // 01001
+	"GE",   // 01010
+	0,      // 01011
+	"NV",   // 01100
+	"V",    // 01101
+	"NUF",  // 01110
+	"UF",   // 01111
+	"NLV",  // 10000
+	"LV",   // 10001
+	"NLUF", // 10010
+	"LUF",  // 10011
+	"ZUF",  // 10100
+	0,      // 10101
+	0,      // 10110
+	0,      // 10111
+	0,      // 11000
+	0,      // 11001
+	0,      // 11010
+	0,      // 11011
+	0,      // 11100
+	0,      // 11101
+	0,      // 11110
+    0       // 11111
+};
+
+using unisim::util::arithmetic::SignedAdd32;
+using unisim::util::arithmetic::SignedSatAdd32;
+using unisim::util::arithmetic::SignedSub32;
+using unisim::util::arithmetic::SignedSatSub32;
+using unisim::util::arithmetic::RotateLeft;
+using unisim::util::arithmetic::RotateRight;
+using unisim::util::arithmetic::ShiftLeft;
+using unisim::util::arithmetic::ShiftRight;
+using unisim::util::arithmetic::ShiftArithmeticRight;
+using unisim::util::arithmetic::SignExtend;
+
+} // end of namespace tms320c3x
+} // end of namespace processor
+} // end of namespace cxx
+} // end of namespace component
+} // end of namespace unisim
+
+}
+
+// include "constructors_dec.isa"
+include "actions_dec.isa"
+
+include "load_store.isa"
+include "2op.isa"
+include "3op.isa"
+include "control.isa"
+include "power.isa"
+include "interlock.isa"
+include "parallel.isa"

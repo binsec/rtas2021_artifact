@@ -1,0 +1,1 @@
+AC_CHECK_HEADER([stack],, AC_MSG_ERROR([stack is missing]))

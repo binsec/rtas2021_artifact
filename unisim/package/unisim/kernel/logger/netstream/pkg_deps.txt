@@ -1,0 +1,9 @@
+m4/pthread
+std/cstring
+std/iostream
+std/sstream
+std/string
+unisim/kernel/logger
+unisim/kernel/variable
+unisim/kernel/variable/netstreamer_protocol
+unisim/util/netstreamer

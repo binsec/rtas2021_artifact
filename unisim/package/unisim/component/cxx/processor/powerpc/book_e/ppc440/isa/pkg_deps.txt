@@ -1,0 +1,17 @@
+std/iosfwd
+std/iostream
+unisim/component/cxx/processor/powerpc
+unisim/component/cxx/processor/powerpc/book_e
+unisim/component/cxx/processor/powerpc/book_e/ppc440
+unisim/component/cxx/processor/powerpc/isa/book_e
+unisim/component/cxx/processor/powerpc/isa/book_i/branch
+unisim/component/cxx/processor/powerpc/isa/book_i/cond_reg
+unisim/component/cxx/processor/powerpc/isa/book_i/fixed_point
+unisim/component/cxx/processor/powerpc/isa/book_i/floating_point
+unisim/component/cxx/processor/powerpc/isa/book_ii
+unisim/component/cxx/processor/powerpc/isa/book_iii_e
+unisim/component/cxx/processor/powerpc/isa/book_i/legacy_int_mac
+unisim/component/cxx/processor/powerpc/isa/book_i/legacy_move_assist
+unisim/component/cxx/processor/powerpc/isa/book_i/syscall
+unisim/util/arithmetic
+unisim/util/likely

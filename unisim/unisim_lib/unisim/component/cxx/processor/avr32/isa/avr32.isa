@@ -1,0 +1,269 @@
+/*
+ *  Copyright (c) 2014,
+ *  Commissariat a l'Energie Atomique (CEA)
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without modification,
+ *  are permitted provided that the following conditions are met:
+ *
+ *   - Redistributions of source code must retain the above copyright notice, this
+ *     list of conditions and the following disclaimer.
+ *
+ *   - Redistributions in binary form must reproduce the above copyright notice,
+ *     this list of conditions and the following disclaimer in the documentation
+ *     and/or other materials provided with the distribution.
+ *
+ *   - Neither the name of CEA nor the names of its contributors may be used to
+ *     endorse or promote products derived from this software without specific prior
+ *     written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ *  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *  DISCLAIMED.
+ *  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ *  INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ *  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+ *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ *  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Authors: Julien Lisita (julien.lisita@cea.fr)
+ *          Gilles Mouchard (gilles.mouchard@cea.fr)
+ */
+
+decl {
+
+#include <unisim/util/arithmetic/arithmetic.hh>
+#include <iosfwd>
+#include <cmath>
+
+using namespace unisim::util::arithmetic;
+
+}
+
+set endianness big
+set codetype buffer
+set addressclass {typename CONFIG::address_t}
+template <{class} {CONFIG}>
+
+impl {
+
+namespace unisim {
+namespace component {
+namespace cxx {
+namespace processor {
+namespace avr32 {
+
+static const char *REG_NAME[16] = {
+	"r0", "r1",  "r2",  "r3",  "r4", "r5", "r6", "r7",
+	"r8", "r9", "r10", "r11", "r12", "sp", "lr", "pc"
+};
+
+static const char *BYTE_PART_NAME[4] = {
+	"b",  "l","u",  "t"
+};
+
+static const char *HALF_WORD_PART_NAME[2] = {
+	"b",  "t"
+};
+
+static const char *COND[16] = {
+	"eq",  "ne", "cc/hs", "cs/lo", "ge", "lt", "mi", "pl","ls","gt","le","hi","vs","vc","qs","al" 
+};
+
+static const uint8_t REG_LIST8_R0_R3 = 1;
+static const uint8_t REG_LIST8_R4_R7 = 2;
+static const uint8_t REG_LIST8_R8_R9 = 4;
+static const uint8_t REG_LIST8_R10 = 8;
+static const uint8_t REG_LIST8_R11 = 16;
+static const uint8_t REG_LIST8_R12 = 32;
+static const uint8_t REG_LIST8_LR = 64;
+static const uint8_t REG_LIST8_PC = 128;
+static const uint8_t REG_LIST8_LR_R12 = REG_LIST8_LR | REG_LIST8_R12;
+
+static const uint16_t REG_LIST16_R0 = 1;
+static const uint16_t REG_LIST16_R1 = 2;
+static const uint16_t REG_LIST16_R2 = 4;
+static const uint16_t REG_LIST16_R3 = 8;
+static const uint16_t REG_LIST16_R4 = 16;
+static const uint16_t REG_LIST16_R5 = 32;
+static const uint16_t REG_LIST16_R6 = 64;
+static const uint16_t REG_LIST16_R7 = 128;
+static const uint16_t REG_LIST16_R8 = 256;
+static const uint16_t REG_LIST16_R9 = 512;
+static const uint16_t REG_LIST16_R10 = 1024;
+static const uint16_t REG_LIST16_R11 = 2048;
+static const uint16_t REG_LIST16_R12 = 4096;
+static const uint16_t REG_LIST16_LR = 8192;
+static const uint16_t REG_LIST16_SP = 16384;
+static const uint16_t REG_LIST16_PC = 32768;
+static const uint16_t REG_LIST16_LR_R12 = REG_LIST16_LR | REG_LIST16_R12;
+
+static const unsigned int REG_R0 = 0;
+static const unsigned int REG_R1 = 1;
+static const unsigned int REG_R2 = 2;
+static const unsigned int REG_R3 = 3;
+static const unsigned int REG_R4 = 4;
+static const unsigned int REG_R5 = 5;
+static const unsigned int REG_R6 = 6;
+static const unsigned int REG_R7 = 7;
+static const unsigned int REG_R8 = 8;
+static const unsigned int REG_R9 = 9;
+static const unsigned int REG_R10 = 10;
+static const unsigned int REG_R11 = 11;
+static const unsigned int REG_R12 = 12;
+static const unsigned int REG_SP = 13;
+static const unsigned int REG_LR = 14;
+static const unsigned int REG_PC = 15;
+
+static const unsigned int COND_EQ = 0;
+static const unsigned int COND_NE = 1;
+static const unsigned int COND_CC_HS=2;
+static const unsigned int COND_CS_LO=3;
+static const unsigned int COND_GE=4;
+static const unsigned int COND_LT=5;
+static const unsigned int COND_MI=6;
+static const unsigned int COND_PL=7;
+static const unsigned int COND_LS=8;
+static const unsigned int COND_GT=9;
+static const unsigned int COND_LE=10;
+static const unsigned int COND_HI=11;
+static const unsigned int COND_VS=12;
+static const unsigned int COND_VC=13;
+static const unsigned int COND_QS=14;
+static const unsigned int COND_AL=15;
+
+static const unsigned int SIZE_BYTE = 8;
+static const unsigned int SIZE_HALF_WORD = 16;
+static const unsigned int SIZE_WORD = 32;
+static const unsigned int SIZE_DOUBLE_WORD = 64;
+
+} // end of namespace avr32
+} // end of namespace processor
+} // end of namespace cxx
+} // end of namespace component
+} // end of namespace unisim
+
+}
+
+
+
+action {bool} execute({typename CONFIG::STATE *} {cpu}) {
+	cpu->SetException(CONFIG::EXC_ILLEGAL_OPCODE);
+	return false;
+}
+
+action {void} disasm({typename CONFIG::STATE *} {cpu}, {std::ostream&} {os}) {
+	os << "???";
+}
+
+include "unisim/component/cxx/processor/avr32/isa/arithmetic_operations.isa" 
+include "unisim/component/cxx/processor/avr32/isa/bit_shift_operations.isa"
+include "unisim/component/cxx/processor/avr32/isa/coprocessor_interface.isa"
+include "unisim/component/cxx/processor/avr32/isa/data_transfer_operations.isa"
+include "unisim/component/cxx/processor/avr32/isa/dsp_operations.isa"
+include "unisim/component/cxx/processor/avr32/isa/instruction_flow.isa"
+include "unisim/component/cxx/processor/avr32/isa/logic_operations.isa"
+include "unisim/component/cxx/processor/avr32/isa/multiplication_operations.isa"
+include "unisim/component/cxx/processor/avr32/isa/simd_operations.isa"
+include "unisim/component/cxx/processor/avr32/isa/system_control_operations.isa"
+
+group unimplemented_ops(\
+	cache, \
+	mfdr, \
+	mtdr, \
+	mtsr, \
+	sync, \
+	tlbr, \
+	tlbs, \
+	tlbw, \
+	cop,\
+	incjosp,\
+	ldc0_d,\
+	ldc0_w,\
+	ldc_d_a,\
+	ldc_d_b,\
+	ldc_d_c,\
+	ldcm_d,\
+	ldcm_w_a,\
+	ldcm_w_b,\
+	ldc_w_a,\
+	ldc_w_b,\
+	ldc_w_c,\
+	mvcr_d,\
+	mvcr_w,\
+	mvrc_d,\
+	mvrc_w,\
+	pabs_sb,\
+	pabs_sh,\
+	packsh_sb,\
+	packsh_ub,\
+	packw_sh,\
+	padd_b,\
+	padd_h,\
+	paddh_sh,\
+	paddh_ub,\
+	padds_sb,\
+	padds_sh,\
+	padds_ub,\
+	paddsub_h,\
+	paddsubh_sh,\
+	paddsubs_sh,\
+	paddsubs_uh,\
+	padds_uh,\
+	paddx_h,\
+	paddxh_sh,\
+	paddxs_sh,\
+	paddxs_uh,\
+	pasr_b,\
+	pasr_h,\
+	pavg_sh,\
+	pavg_ub,\
+	plsl_b,\
+	plsl_h,\
+	plsr_b,\
+	plsr_h,\
+	pmax_sh,\
+	pmax_ub,\
+	pmin_sh,\
+	pmin_ub,\
+	popjc,\
+	psad,\
+	psubadd_h,\
+	psubaddh_sh,\
+	psubadds_sh,\
+	psubadds_uh,\
+	psub_b,\
+	psub_h,\
+	psubh_sh,\
+	psubh_ub,\
+	psubs_sb,\
+	psubs_sh,\
+	psubs_ub,\
+	psubs_uh,\
+	psubx_h,\
+	psubxh_sh,\
+	psubxs_sh,\
+	psubxs_uh,\
+	punpcksb_h,\
+	punpckub_h,\
+	pushjc,\
+	retj,\
+	stc0_d,\
+	stc0_w,\
+	stc_d_a,\
+	stc_d_b,\
+	stc_d_c,\
+	stcm_d,\
+	stcm_w_a,\
+	stcm_w_b,\
+	stc_w_a,\
+	stc_w_b,\
+	stc_w_c)
+
+unimplemented_ops.execute={
+	cpu->SetException(CONFIG::EXC_UNIMPLEMENTED_INSTRUCTION);
+	return false;
+}

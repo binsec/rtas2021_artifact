@@ -1,0 +1,523 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://web.resource.org/cc/"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="572"
+   height="324.42001"
+   id="svg2"
+   sodipodi:version="0.32"
+   inkscape:version="0.45.1"
+   sodipodi:docbase="/local/home/gmouchard/unisim/svn/documentation/tutorials/2008.05_Tutorial_Continental/systemc_cycle"
+   sodipodi:docname="fibonacci_with_wait_states.svg"
+   inkscape:output_extension="org.inkscape.output.svg.inkscape"
+   version="1.0">
+  <defs
+     id="defs4">
+    <marker
+       inkscape:stockid="Arrow2Lstart"
+       orient="auto"
+       refY="0"
+       refX="0"
+       id="Arrow2Lstart"
+       style="overflow:visible">
+      <path
+         id="path7074"
+         style="font-size:12px;fill-rule:evenodd;stroke-width:0.625;stroke-linejoin:round"
+         d="M 8.7185878,4.0337352 L -2.2072895,0.016013256 L 8.7185884,-4.0017078 C 6.97309,-1.6296469 6.9831476,1.6157441 8.7185878,4.0337352 z "
+         transform="matrix(1.1,0,0,1.1,1.1,0)" />
+    </marker>
+    <marker
+       inkscape:stockid="Arrow2Lend"
+       orient="auto"
+       refY="0"
+       refX="0"
+       id="Arrow2Lend"
+       style="overflow:visible">
+      <path
+         id="path7077"
+         style="font-size:12px;fill-rule:evenodd;stroke-width:0.625;stroke-linejoin:round"
+         d="M 8.7185878,4.0337352 L -2.2072895,0.016013256 L 8.7185884,-4.0017078 C 6.97309,-1.6296469 6.9831476,1.6157441 8.7185878,4.0337352 z "
+         transform="matrix(-1.1,0,0,-1.1,-1.1,0)" />
+    </marker>
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     gridtolerance="10000"
+     guidetolerance="10"
+     objecttolerance="10"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="1"
+     inkscape:cx="375"
+     inkscape:cy="120"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer1"
+     showgrid="true"
+     showguides="false"
+     inkscape:grid-points="false"
+     inkscape:window-width="1203"
+     inkscape:window-height="947"
+     inkscape:window-x="235"
+     inkscape:window-y="91"
+     width="572px"
+     height="324.42px"
+     units="mm"
+     inkscape:grid-bbox="false" />
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-19.999999,-31.362182)">
+    <rect
+       style="fill:#ffffff;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1.08193409px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       id="rect2178"
+       width="209.91806"
+       height="245.91806"
+       x="375.89267"
+       y="42.359325"
+       inkscape:export-filename="/local/home/gmouchard/unisim/svn/documentation/tutorials/2008.05_Tutorial_Continental/systemc_cycle/path9221.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
+    <text
+       xml:space="preserve"
+       style="font-size:18px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       x="476.66663"
+       y="181.07375"
+       id="text2184"
+       inkscape:export-filename="/local/home/gmouchard/unisim/svn/documentation/tutorials/2008.05_Tutorial_Continental/systemc_cycle/path9221.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90"><tspan
+         sodipodi:role="line"
+         id="tspan2186"
+         x="476.66663"
+         y="181.07375">Memory</tspan></text>
+    <g
+       id="g2292"
+       transform="translate(-119,39)">
+      <rect
+         inkscape:export-ydpi="90"
+         inkscape:export-xdpi="90"
+         inkscape:export-filename="/local/home/gmouchard/unisim/svn/documentation/tutorials/2008.05_Tutorial_Continental/systemc_cycle/path9221.png"
+         y="239.31836"
+         x="594.85168"
+         height="20"
+         width="20"
+         id="rect6078"
+         style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-opacity:1" />
+      <path
+         inkscape:export-ydpi="90"
+         inkscape:export-xdpi="90"
+         inkscape:export-filename="/local/home/gmouchard/unisim/svn/documentation/tutorials/2008.05_Tutorial_Continental/systemc_cycle/path9221.png"
+         id="path7251"
+         d="M 592.85168,309.31836 L 602.85168,309.31836 L 602.85168,299.31836 L 612.85168,299.31836 L 612.85168,309.31836 L 622.85168,309.31836"
+         style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+      <path
+         inkscape:export-ydpi="90"
+         inkscape:export-xdpi="90"
+         inkscape:export-filename="/local/home/gmouchard/unisim/svn/documentation/tutorials/2008.05_Tutorial_Continental/systemc_cycle/path9221.png"
+         id="path9213"
+         d="M 600.47401,253.5157 L 603.99901,253.5157 L 603.99901,243.12102 L 607.52402,243.12102 L 607.52402,253.5157 L 611.04902,253.5157"
+         style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.60532033px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+      <path
+         inkscape:export-ydpi="90"
+         inkscape:export-xdpi="90"
+         id="path9221"
+         d="M 605.35168,288.81836 C 605.35168,278.81836 605.35168,268.81836 605.35168,258.81836"
+         style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;marker-end:url(#Arrow2Lend);stroke-opacity:1" />
+      <text
+         inkscape:export-ydpi="90"
+         inkscape:export-xdpi="90"
+         inkscape:export-filename="/local/home/gmouchard/unisim/svn/documentation/tutorials/2008.05_Tutorial_Continental/systemc_cycle/path9221.png"
+         id="text4153"
+         y="232.06197"
+         x="581.55499"
+         style="font-size:18px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         xml:space="preserve"><tspan
+           y="232.06197"
+           x="581.55499"
+           id="tspan4155"
+           sodipodi:role="line">clock</tspan></text>
+    </g>
+    <rect
+       style="fill:#ffffff;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1.08193409px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       id="rect2190"
+       width="209.91806"
+       height="245.91806"
+       x="27.655134"
+       y="42.359325"
+       inkscape:export-filename="/local/home/gmouchard/unisim/svn/documentation/tutorials/2008.05_Tutorial_Continental/systemc_cycle/path9221.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
+    <g
+       id="g2240"
+       transform="translate(-119,40.369163)">
+      <rect
+         inkscape:export-ydpi="90"
+         inkscape:export-xdpi="90"
+         inkscape:export-filename="/local/home/gmouchard/unisim/svn/documentation/tutorials/2008.05_Tutorial_Continental/systemc_cycle/path9221.png"
+         y="54.371254"
+         x="484.88266"
+         height="20"
+         width="20"
+         id="rect6074"
+         style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-opacity:1" />
+      <path
+         inkscape:export-ydpi="90"
+         inkscape:export-xdpi="90"
+         inkscape:export-filename="/local/home/gmouchard/unisim/svn/documentation/tutorials/2008.05_Tutorial_Continental/systemc_cycle/path9221.png"
+         id="path7253"
+         d="M 350.93061,64.390556 L 484.65767,64.390556"
+         style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1.09588242px;stroke-linecap:butt;stroke-linejoin:miter;marker-end:url(#Arrow2Lend);stroke-opacity:1" />
+      <text
+         inkscape:export-ydpi="90"
+         inkscape:export-xdpi="90"
+         inkscape:export-filename="/local/home/gmouchard/unisim/svn/documentation/tutorials/2008.05_Tutorial_Continental/systemc_cycle/path9221.png"
+         id="text8224"
+         y="71.081703"
+         x="510.55942"
+         style="font-size:18px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         xml:space="preserve"><tspan
+           y="71.081703"
+           x="510.55942"
+           id="tspan8226"
+           sodipodi:role="line">write</tspan></text>
+      <rect
+         inkscape:export-ydpi="90"
+         inkscape:export-xdpi="90"
+         inkscape:export-filename="/local/home/gmouchard/unisim/svn/documentation/tutorials/2008.05_Tutorial_Continental/systemc_cycle/path9221.png"
+         y="54.371254"
+         x="346.33072"
+         height="20"
+         width="20"
+         id="rect2194"
+         style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-opacity:1" />
+      <text
+         inkscape:export-ydpi="90"
+         inkscape:export-xdpi="90"
+         inkscape:export-filename="/local/home/gmouchard/unisim/svn/documentation/tutorials/2008.05_Tutorial_Continental/systemc_cycle/path9221.png"
+         id="text2198"
+         y="71.081703"
+         x="292.5744"
+         style="font-size:18px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         xml:space="preserve"><tspan
+           y="71.081703"
+           x="292.5744"
+           id="tspan2200"
+           sodipodi:role="line">write</tspan></text>
+    </g>
+    <g
+       id="g2265"
+       transform="translate(-119,40.387184)">
+      <rect
+         inkscape:export-ydpi="90"
+         inkscape:export-xdpi="90"
+         inkscape:export-filename="/local/home/gmouchard/unisim/svn/documentation/tutorials/2008.05_Tutorial_Continental/systemc_cycle/path9221.png"
+         y="96.311455"
+         x="485.38266"
+         height="20"
+         width="20"
+         id="rect6076"
+         style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-opacity:1" />
+      <text
+         inkscape:export-ydpi="90"
+         inkscape:export-xdpi="90"
+         inkscape:export-filename="/local/home/gmouchard/unisim/svn/documentation/tutorials/2008.05_Tutorial_Continental/systemc_cycle/path9221.png"
+         id="text8228"
+         y="113.0219"
+         x="513.59167"
+         style="font-size:18px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         xml:space="preserve"><tspan
+           y="113.0219"
+           x="513.59167"
+           id="tspan8230"
+           sodipodi:role="line">addr</tspan></text>
+      <path
+         inkscape:export-ydpi="90"
+         inkscape:export-xdpi="90"
+         inkscape:export-filename="/local/home/gmouchard/unisim/svn/documentation/tutorials/2008.05_Tutorial_Continental/systemc_cycle/path9221.png"
+         id="path8232"
+         d="M 352.92652,106.33166 L 484.66077,106.33166"
+         style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1.08769333px;stroke-linecap:butt;stroke-linejoin:miter;marker-end:url(#Arrow2Lend);stroke-opacity:1" />
+      <rect
+         inkscape:export-ydpi="90"
+         inkscape:export-xdpi="90"
+         inkscape:export-filename="/local/home/gmouchard/unisim/svn/documentation/tutorials/2008.05_Tutorial_Continental/systemc_cycle/path9221.png"
+         y="96.311455"
+         x="346.11417"
+         height="20"
+         width="20"
+         id="rect2206"
+         style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-opacity:1" />
+      <text
+         inkscape:export-ydpi="90"
+         inkscape:export-xdpi="90"
+         inkscape:export-filename="/local/home/gmouchard/unisim/svn/documentation/tutorials/2008.05_Tutorial_Continental/systemc_cycle/path9221.png"
+         id="text2228"
+         y="113.0219"
+         x="297.81396"
+         style="font-size:18px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         xml:space="preserve"><tspan
+           y="113.0219"
+           x="297.81396"
+           id="tspan2230"
+           sodipodi:role="line">addr</tspan></text>
+    </g>
+    <g
+       id="g2274"
+       transform="translate(-119,40.348113)">
+      <rect
+         inkscape:export-ydpi="90"
+         inkscape:export-xdpi="90"
+         inkscape:export-filename="/local/home/gmouchard/unisim/svn/documentation/tutorials/2008.05_Tutorial_Continental/systemc_cycle/path9221.png"
+         y="138.30875"
+         x="483.53967"
+         height="20"
+         width="20"
+         id="rect8234"
+         style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-opacity:1" />
+      <text
+         inkscape:export-ydpi="90"
+         inkscape:export-xdpi="90"
+         inkscape:export-filename="/local/home/gmouchard/unisim/svn/documentation/tutorials/2008.05_Tutorial_Continental/systemc_cycle/path9221.png"
+         id="text8236"
+         y="153.02408"
+         x="513.03967"
+         style="font-size:18px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         xml:space="preserve"><tspan
+           y="153.02408"
+           x="513.03967"
+           id="tspan8238"
+           sodipodi:role="line">data_in</tspan></text>
+      <path
+         inkscape:export-ydpi="90"
+         inkscape:export-xdpi="90"
+         inkscape:export-filename="/local/home/gmouchard/unisim/svn/documentation/tutorials/2008.05_Tutorial_Continental/systemc_cycle/path9221.png"
+         id="path8240"
+         d="M 350.37861,148.32804 L 484.10421,148.32804"
+         style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1.09582245px;stroke-linecap:butt;stroke-linejoin:miter;marker-start:none;marker-end:url(#Arrow2Lend);stroke-opacity:1" />
+      <rect
+         inkscape:export-ydpi="90"
+         inkscape:export-xdpi="90"
+         inkscape:export-filename="/local/home/gmouchard/unisim/svn/documentation/tutorials/2008.05_Tutorial_Continental/systemc_cycle/path9221.png"
+         y="138.30875"
+         x="346.39764"
+         height="20"
+         width="20"
+         id="rect2210"
+         style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-opacity:1" />
+      <text
+         inkscape:export-ydpi="90"
+         inkscape:export-xdpi="90"
+         inkscape:export-filename="/local/home/gmouchard/unisim/svn/documentation/tutorials/2008.05_Tutorial_Continental/systemc_cycle/path9221.png"
+         id="text2232"
+         y="153.02408"
+         x="262.28271"
+         style="font-size:18px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         xml:space="preserve"><tspan
+           y="153.02408"
+           x="262.28271"
+           id="tspan2234"
+           sodipodi:role="line">data_out</tspan></text>
+    </g>
+    <g
+       id="g2283"
+       transform="translate(-119,39)">
+      <rect
+         inkscape:export-ydpi="90"
+         inkscape:export-xdpi="90"
+         inkscape:export-filename="/local/home/gmouchard/unisim/svn/documentation/tutorials/2008.05_Tutorial_Continental/systemc_cycle/path9221.png"
+         y="181.61508"
+         x="483.53967"
+         height="20"
+         width="20"
+         id="rect3152"
+         style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-opacity:1" />
+      <text
+         inkscape:export-ydpi="90"
+         inkscape:export-xdpi="90"
+         inkscape:export-filename="/local/home/gmouchard/unisim/svn/documentation/tutorials/2008.05_Tutorial_Continental/systemc_cycle/path9221.png"
+         id="text3154"
+         y="196.33041"
+         x="513.03967"
+         style="font-size:18px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         xml:space="preserve"><tspan
+           y="196.33041"
+           x="513.03967"
+           id="tspan3156"
+           sodipodi:role="line">data_out</tspan></text>
+      <path
+         inkscape:export-ydpi="90"
+         inkscape:export-xdpi="90"
+         inkscape:export-filename="/local/home/gmouchard/unisim/svn/documentation/tutorials/2008.05_Tutorial_Continental/systemc_cycle/path9221.png"
+         id="path3158"
+         d="M 368.39845,191.59703 L 484.31843,191.59703"
+         style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1.02456498px;stroke-linecap:butt;stroke-linejoin:miter;marker-start:url(#Arrow2Lstart);marker-end:none;stroke-opacity:1" />
+      <rect
+         inkscape:export-ydpi="90"
+         inkscape:export-xdpi="90"
+         inkscape:export-filename="/local/home/gmouchard/unisim/svn/documentation/tutorials/2008.05_Tutorial_Continental/systemc_cycle/path9221.png"
+         y="181.61508"
+         x="345.89764"
+         height="20"
+         width="20"
+         id="rect2208"
+         style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-opacity:1" />
+      <text
+         inkscape:export-ydpi="90"
+         inkscape:export-xdpi="90"
+         inkscape:export-filename="/local/home/gmouchard/unisim/svn/documentation/tutorials/2008.05_Tutorial_Continental/systemc_cycle/path9221.png"
+         id="text2236"
+         y="196.33041"
+         x="274.28271"
+         style="font-size:18px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         xml:space="preserve"><tspan
+           y="196.33041"
+           x="274.28271"
+           id="tspan2238"
+           sodipodi:role="line">data_in</tspan></text>
+    </g>
+    <g
+       id="g2300"
+       transform="translate(-476.14923,39.680656)">
+      <rect
+         inkscape:export-ydpi="90"
+         inkscape:export-xdpi="90"
+         inkscape:export-filename="/local/home/gmouchard/unisim/svn/documentation/tutorials/2008.05_Tutorial_Continental/systemc_cycle/path9221.png"
+         y="239.31836"
+         x="594.85168"
+         height="20"
+         width="20"
+         id="rect2302"
+         style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-opacity:1" />
+      <path
+         inkscape:export-ydpi="90"
+         inkscape:export-xdpi="90"
+         inkscape:export-filename="/local/home/gmouchard/unisim/svn/documentation/tutorials/2008.05_Tutorial_Continental/systemc_cycle/path9221.png"
+         id="path2304"
+         d="M 592.85168,309.31836 L 602.85168,309.31836 L 602.85168,299.31836 L 612.85168,299.31836 L 612.85168,309.31836 L 622.85168,309.31836"
+         style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+      <path
+         inkscape:export-ydpi="90"
+         inkscape:export-xdpi="90"
+         inkscape:export-filename="/local/home/gmouchard/unisim/svn/documentation/tutorials/2008.05_Tutorial_Continental/systemc_cycle/path9221.png"
+         id="path2306"
+         d="M 600.47401,253.5157 L 603.99901,253.5157 L 603.99901,243.12102 L 607.52402,243.12102 L 607.52402,253.5157 L 611.04902,253.5157"
+         style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.60532033px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+      <path
+         inkscape:export-ydpi="90"
+         inkscape:export-xdpi="90"
+         id="path2308"
+         d="M 605.35168,288.81836 C 605.35168,278.81836 605.35168,268.81836 605.35168,258.81836"
+         style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;marker-end:url(#Arrow2Lend);stroke-opacity:1" />
+      <text
+         inkscape:export-ydpi="90"
+         inkscape:export-xdpi="90"
+         inkscape:export-filename="/local/home/gmouchard/unisim/svn/documentation/tutorials/2008.05_Tutorial_Continental/systemc_cycle/path9221.png"
+         id="text2310"
+         y="232.06197"
+         x="581.55499"
+         style="font-size:18px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         xml:space="preserve"><tspan
+           y="232.06197"
+           x="581.55499"
+           id="tspan2312"
+           sodipodi:role="line">clock</tspan></text>
+    </g>
+    <text
+       xml:space="preserve"
+       style="font-size:18px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       x="44.769531"
+       y="177.47189"
+       id="text2314"
+       inkscape:export-filename="/local/home/gmouchard/unisim/svn/documentation/tutorials/2008.05_Tutorial_Continental/systemc_cycle/path9221.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90"><tspan
+         sodipodi:role="line"
+         id="tspan2316"
+         x="44.769531"
+         y="177.47189">Fibonacci</tspan></text>
+    <g
+       id="g2415"
+       transform="translate(-119.10646,-0.589059)" />
+    <g
+       id="g2431"
+       transform="translate(-118.47125,-128.83289)">
+      <g
+         id="g2447">
+        <rect
+           style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-opacity:1"
+           id="rect2433"
+           width="20"
+           height="20"
+           x="483.53967"
+           y="181.61508"
+           inkscape:export-filename="/local/home/gmouchard/unisim/svn/documentation/tutorials/2008.05_Tutorial_Continental/systemc_cycle/path9221.png"
+           inkscape:export-xdpi="90"
+           inkscape:export-ydpi="90" />
+        <text
+           xml:space="preserve"
+           style="font-size:18px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+           x="513.03967"
+           y="196.33041"
+           id="text2435"
+           inkscape:export-filename="/local/home/gmouchard/unisim/svn/documentation/tutorials/2008.05_Tutorial_Continental/systemc_cycle/path9221.png"
+           inkscape:export-xdpi="90"
+           inkscape:export-ydpi="90"><tspan
+             sodipodi:role="line"
+             id="tspan2437"
+             x="513.03967"
+             y="196.33041">busy</tspan></text>
+        <path
+           style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1.02456498px;stroke-linecap:butt;stroke-linejoin:miter;marker-start:url(#Arrow2Lstart);marker-end:none;stroke-opacity:1"
+           d="M 368.39845,191.59703 L 484.31843,191.59703"
+           id="path2439"
+           inkscape:export-filename="/local/home/gmouchard/unisim/svn/documentation/tutorials/2008.05_Tutorial_Continental/systemc_cycle/path9221.png"
+           inkscape:export-xdpi="90"
+           inkscape:export-ydpi="90" />
+        <rect
+           style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-opacity:1"
+           id="rect2441"
+           width="20"
+           height="20"
+           x="345.89764"
+           y="181.61508"
+           inkscape:export-filename="/local/home/gmouchard/unisim/svn/documentation/tutorials/2008.05_Tutorial_Continental/systemc_cycle/path9221.png"
+           inkscape:export-xdpi="90"
+           inkscape:export-ydpi="90" />
+        <text
+           xml:space="preserve"
+           style="font-size:18px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+           x="296.28271"
+           y="196.33041"
+           id="text2443"
+           inkscape:export-filename="/local/home/gmouchard/unisim/svn/documentation/tutorials/2008.05_Tutorial_Continental/systemc_cycle/path9221.png"
+           inkscape:export-xdpi="90"
+           inkscape:export-ydpi="90"><tspan
+             sodipodi:role="line"
+             id="tspan2445"
+             x="296.28271"
+             y="196.33041">busy</tspan></text>
+      </g>
+    </g>
+  </g>
+</svg>

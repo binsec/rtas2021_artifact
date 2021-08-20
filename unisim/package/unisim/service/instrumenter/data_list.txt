@@ -1,0 +1,8 @@
+unisim/service/instrumenter/icon_cont.svg
+unisim/service/instrumenter/icon_halt.svg
+unisim/service/instrumenter/icon_intr.svg
+unisim/service/instrumenter/icon.svg
+unisim/service/instrumenter/status_style.css
+unisim/service/instrumenter/style.css
+unisim/service/instrumenter/script.js
+unisim/service/instrumenter/favicon.ico

@@ -1,0 +1,2 @@
+unisim/component/cxx/interconnect/xilinx/dcr_controller/config.hh
+unisim/component/cxx/interconnect/xilinx/dcr_controller/dcr_controller.hh

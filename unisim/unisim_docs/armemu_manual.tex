@@ -1,0 +1,51 @@
+\documentclass[a4paper,11pt]{article}
+\usepackage{graphicx}
+\usepackage{pifont}
+\usepackage{ulem}
+\usepackage{supertabular}
+\usepackage{fancyhdr}
+\usepackage{rotating}
+\usepackage{verbatim}
+\usepackage{appendix}
+
+\voffset -1.5cm
+\hoffset 0.0cm
+\textheight 25cm
+\textwidth 16cm
+\topmargin 0.0cm
+\oddsidemargin 0.0cm
+\evensidemargin 0.0cm
+
+\newcommand{\VROT}[1]{\begin{turn}{90}#1\end{turn}}     % vertical text
+\def\X{$\surd$}     % tick symbol
+
+\newenvironment{script}{\endgraf\footnotesize\verbatim}{\endverbatim}
+
+\usepackage{hyperref}%                   % Utilisation de HyperTeX
+
+\hypersetup{
+    pdfauthor   = {Daniel Gracia P\'erez},%
+    pdftitle    = {UNISIM ARMEmu Simulator Manual},%
+    pdfsubject  = {UNISIM},%
+    pdfkeywords = {simulation framework, architectural exploration, embedded system design, system verification},%
+    pdfcreator  = {rubber},%
+    pdfproducer = {rubber}
+}
+
+\begin{document}
+% \addtolength{\hoffset}{-2.0cm}
+% \addtolength{\voffset}{-2.0cm}
+\title{UNISIM\\ ARMEmu Simulator Manual}
+\author{Daniel Gracia P\'erez}
+\date{}
+
+\maketitle
+\tableofcontents
+\listoffigures
+\listoftables
+
+\newpage
+\section{Simulator technical reference (generated)}
+\input{armemu/armemu}
+
+\end{document}

@@ -1,0 +1,2 @@
+unisim/component/cxx/bridge/pci_isa/bridge_32.cc
+unisim/component/cxx/bridge/pci_isa/bridge_64.cc

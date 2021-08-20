@@ -1,0 +1,11 @@
+libc/inttypes
+std/algorithm
+std/cstring
+std/iostream
+std/map
+std/ostream
+std/stdexcept
+std/vector
+unisim/util/arithmetic
+unisim/util/endian
+unisim/util/identifier

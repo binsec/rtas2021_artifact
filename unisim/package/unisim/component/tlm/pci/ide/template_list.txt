@@ -1,0 +1,2 @@
+unisim/component/tlm/pci/ide/pci_dev.tcc
+unisim/component/tlm/pci/ide/pci_ide_module.tcc

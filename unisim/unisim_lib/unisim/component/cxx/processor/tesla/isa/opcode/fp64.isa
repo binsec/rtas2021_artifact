@@ -1,0 +1,302 @@
+/*
+ *  Copyright (c) 2009,
+ *  University of Perpignan (UPVD),
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without modification,
+ *  are permitted provided that the following conditions are met:
+ *
+ *   - Redistributions of source code must retain the above copyright notice, this
+ *     list of conditions and the following disclaimer.
+ *
+ *   - Redistributions in binary form must reproduce the above copyright notice,
+ *     this list of conditions and the following disclaimer in the documentation
+ *     and/or other materials provided with the distribution.
+ *
+ *   - Neither the name of UPVD nor the names of its contributors may be used to
+ *     endorse or promote products derived from this software without specific prior
+ *     written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ *  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *  DISCLAIMED.
+ *  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ *  INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ *  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+ *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ *  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Authors: Sylvain Collange (sylvain.collange@univ-perp.fr)
+ */
+
+// DFMA
+
+{CONFIG::CAP_DP}:op dfma_full_noconst_normal( \
+	/*subop*/2[3]:/*?*/0[1]:src3_neg[1]:src1_neg[1]:0[2]:rounding_mode[2]:/*src1_sh*/?[1]:/*src3*/?[7]\
+	:/*pred_reg*/?[2]:/*pred_cond*/?[5]:/*set_pred*/?[1]:/*set_pred_reg*/?[2]:/*output_reg*/?[1]:/*addr_hi*/?[1]:/*marker*/0[2]: \
+	0xe[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src3_cm*/0[1]:/*src2_cm*/0[1]:?[21]:0[1]:/*IWidth*/1[1]\
+)
+
+//specialize fsmad_full_noconst_normal(src3_neg=0, src1_neg=0, rounding_mode=0)
+
+{CONFIG::CAP_DP}:op dfma_full_noconst_end( \
+	/*subop*/2[3]:/*?*/0[1]:src3_neg[1]:src1_neg[1]:0[2]:rounding_mode[2]:/*src1_sh*/?[1]:/*src3*/?[7]\
+	:/*pred_reg*/?[2]:/*pred_cond*/?[5]:/*set_pred*/?[1]:/*set_pred_reg*/?[2]:/*output_reg*/?[1]:/*addr_hi*/?[1]:/*marker*/1[2]: \
+	0xe[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src3_cm*/0[1]:/*src2_cm*/0[1]:?[21]:0[1]:/*IWidth*/1[1]\
+)
+
+{CONFIG::CAP_DP}:op dfma_full_noconst_join( \
+	/*subop*/2[3]:/*?*/0[1]:src3_neg[1]:src1_neg[1]:0[2]:rounding_mode[2]:/*src1_sh*/?[1]:/*src3*/?[7]\
+	:/*pred_reg*/?[2]:/*pred_cond*/?[5]:/*set_pred*/?[1]:/*set_pred_reg*/?[2]:/*output_reg*/?[1]:/*addr_hi*/?[1]:/*marker*/2[2]: \
+	0xe[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src3_cm*/0[1]:/*src2_cm*/0[1]:?[21]:0[1]:/*IWidth*/1[1]\
+)
+
+group dfma_full(dfma_full_noconst_normal, dfma_full_noconst_end, dfma_full_noconst_join)
+
+
+// Sat?
+
+dfma_full.disasm = {
+	buffer << "fma";
+	insn->DisasmControl(buffer);
+	buffer << ".f64";
+	DisasmRounding(rounding_mode, buffer);
+	buffer << " ";
+	insn->DisasmDest(buffer);
+
+	buffer << ", ";
+	DisasmSign(src1_neg, buffer);
+	insn->DisasmSrc1(buffer);
+	
+	buffer << ", ";
+	insn->DisasmSrc2(buffer);
+	
+	buffer << ", ";
+	DisasmSign(src3_neg, buffer);
+	insn->DisasmSrc3(buffer);
+}
+
+/*dfma_full.execute = {
+	typedef VectorRegister<CONFIG> reg_t;
+	// dest = a * b + c
+	reg_t & a = insn->GetSrc1();
+	reg_t & b = insn->GetSrc2();
+	reg_t & c = insn->GetSrc3();
+	
+	CONFIG::vfp32::Mad(a, b, c, src1_neg, 0, src3_neg, rounding_mode);
+}*/
+
+
+// DADD
+
+{CONFIG::CAP_DP}:op dadd_full_noconst_normal( \
+	/*subop*/3[3]:/*?*/0[1]:src3_neg[1]:src1_neg[1]:0[2]:rounding_mode[2]:?[20]:/*marker*/0[2]: \
+	0xe[4]:/*addr*/?[3]:/*src3_cm*/0[1]:/*src2_cm*/0[1]:?[21]:0[1]:/*IWidth*/1[1]\
+)
+
+{CONFIG::CAP_DP}:op dadd_full_noconst_end( \
+	/*subop*/3[3]:/*?*/0[1]:src3_neg[1]:src1_neg[1]:0[2]:rounding_mode[2]:?[20]:/*marker*/1[2]: \
+	0xe[4]:/*addr*/?[3]:/*src3_cm*/0[1]:/*src2_cm*/0[1]:?[21]:0[1]:/*IWidth*/1[1]\
+)
+
+{CONFIG::CAP_DP}:op dadd_full_noconst_join( \
+	/*subop*/3[3]:/*?*/0[1]:src3_neg[1]:src1_neg[1]:0[2]:rounding_mode[2]:?[20]:/*marker*/2[2]: \
+	0xe[4]:/*addr*/?[3]:/*src3_cm*/0[1]:/*src2_cm*/0[1]:?[21]:0[1]:/*IWidth*/1[1]\
+)
+
+group dadd_full(dadd_full_noconst_normal, dadd_full_noconst_end, dadd_full_noconst_join)
+
+dadd_full.disasm = {
+//	cpu.DisasmPred(pred_cond, pred_reg, buffer);
+
+	buffer << "add";
+	insn->DisasmControl(buffer);
+	buffer << ".f64";
+	
+	DisasmRounding(rounding_mode, buffer);
+	buffer << " ";
+	insn->DisasmDest(buffer);
+
+	buffer << ", ";
+	DisasmSign(src1_neg, buffer);
+	insn->DisasmSrc1(buffer);
+	
+	buffer << ", ";
+	DisasmSign(src3_neg, buffer);
+	insn->DisasmSrc3(buffer);
+}
+
+
+// DMUL
+
+{CONFIG::CAP_DP}:op dmul_full_noconst_normal( \
+	/*subop*/4[3]:/*?*/0[1]:src2_neg[1]:src1_neg[1]:0[2]:rounding_mode[2]:/*src1_sh*/?[1]:/*src3*/?[7]\
+	:/*pred_reg*/?[2]:/*pred_cond*/?[5]:/*set_pred*/?[1]:/*set_pred_reg*/?[2]:/*output_reg*/?[1]:/*addr_hi*/?[1]:/*marker*/0[2]: \
+	0xe[4]:/*addr*/?[3]:/*src3_cm*/0[1]:/*src2_cm*/0[1]:?[21]:0[1]:/*IWidth*/1[1]\
+)
+
+{CONFIG::CAP_DP}:op dmul_full_noconst_end( \
+	/*subop*/4[3]:/*?*/0[1]:src2_neg[1]:src1_neg[1]:0[2]:rounding_mode[2]:/*src1_sh*/?[1]:/*src3*/?[7]\
+	:/*pred_reg*/?[2]:/*pred_cond*/?[5]:/*set_pred*/?[1]:/*set_pred_reg*/?[2]:/*output_reg*/?[1]:/*addr_hi*/?[1]:/*marker*/1[2]: \
+	0xe[4]:/*addr*/?[3]:/*src3_cm*/0[1]:/*src2_cm*/0[1]:?[21]:0[1]:/*IWidth*/1[1]\
+)
+
+{CONFIG::CAP_DP}:op dmul_full_noconst_join( \
+	/*subop*/4[3]:/*?*/0[1]:src2_neg[1]:src1_neg[1]:0[2]:rounding_mode[2]:/*src1_sh*/?[1]:/*src3*/?[7]\
+	:/*pred_reg*/?[2]:/*pred_cond*/?[5]:/*set_pred*/?[1]:/*set_pred_reg*/?[2]:/*output_reg*/?[1]:/*addr_hi*/?[1]:/*marker*/2[2]: \
+	0xe[4]:/*addr*/?[3]:/*src3_cm*/0[1]:/*src2_cm*/0[1]:?[21]:0[1]:/*IWidth*/1[1]\
+)
+
+group dmul_full(dmul_full_noconst_normal, dmul_full_noconst_end, dmul_full_noconst_join)
+
+dmul_full.disasm = {
+
+	buffer << "mul";
+	insn->DisasmControl(buffer);
+	buffer << ".f64";
+	
+	DisasmRounding(rounding_mode, buffer);
+	buffer << " ";
+	insn->DisasmDest(buffer);
+
+	buffer << ", ";
+	DisasmSign(src1_neg, buffer);
+	insn->DisasmSrc1(buffer);
+	
+	buffer << ", ";
+	DisasmSign(src2_neg, buffer);
+	insn->DisasmSrc2(buffer);
+}
+
+// DSET
+
+// TODO: forbid immediate?
+// TODO: setcond > 7 (or flag??)
+{CONFIG::CAP_DP}:op dset_full( \
+	/*subop*/7[3]:/*?*/0[1]:src3_neg[1]:0[1]:/*const seg*/?[4]:/*src1_sh*/?[1]:src1_abs[1]:0[2]:setcond[4]\
+	:/*pred_reg*/?[2]:/*pred_cond*/?[5]:/*set_pred*/?[1]:/*set_pred_reg*/?[2]:/*output_reg*/?[1]:/*addr_hi*/?[1]:/*marker*/?[2]: \
+	0xe[4]:?[26]:0[1]:/*IWidth*/1[1]\
+)
+
+group dset(dset_full)
+
+dset.init = {
+	typedef Operation<CONFIG> inherited;
+	inherited::op_type[OpDest] = DT_U32;	// Always 32-bit?
+	inherited::op_type[OpSrc1] = DT_F64;
+	inherited::op_type[OpSrc2] = DT_F64;
+	inherited::op_type[OpSrc3] = DT_NONE;
+}
+
+dset.classify = {
+	stats->SetFP64();
+}
+
+dset.disasm = {
+	buffer << "set.";
+	buffer << SetCondString(SetCond(setcond));
+	insn->DisasmControl(buffer);
+	buffer << ".f64";
+	
+	buffer << " ";
+	insn->DisasmDest(buffer);
+	buffer << ", ";
+	if(src1_abs) {
+		buffer << "|";
+	}
+	insn->DisasmSrc1(buffer);
+	if(src1_abs) {
+		buffer << "|";
+	}
+	
+	buffer << ", ";
+	insn->DisasmSrc2(buffer);
+	
+}
+
+
+// DMAX
+
+op dmax_full_normal( \
+	/*subop*/6[3]:/*?*/0[1]:/*src3_neg*/0[1]:/*src1_neg*/0[1]:/*const seg*/?[4]:/*src1_sh*/?[1]:abs_sat[2]:?[17]:/*marker*/0[2]: \
+	0xe[4]:?[26]:0[1]:/*IWidth*/1[1]\
+)
+
+//specialize fsmax_full_normal(abs_sat=0)
+
+op dmax_full_end( \
+	/*subop*/6[3]:/*?*/0[1]:/*src3_neg*/0[1]:/*src1_neg*/0[1]:/*const seg*/?[4]:/*src1_sh*/?[1]:abs_sat[2]:?[17]:/*marker*/1[2]: \
+	0xe[4]:?[26]:0[1]:/*IWidth*/1[1]\
+)
+
+op dmax_full_join( \
+	/*subop*/6[3]:/*?*/0[1]:/*src3_neg*/0[1]:/*src1_neg*/0[1]:/*const seg*/?[4]:/*src1_sh*/?[1]:abs_sat[2]:?[17]:/*marker*/2[2]: \
+	0xe[4]:?[26]:0[1]:/*IWidth*/1[1]\
+)
+
+group dmax_full(dmax_full_normal, dmax_full_end, dmax_full_join)
+
+dmax_full.disasm = {
+	buffer << "max";
+	insn->DisasmControl(buffer);
+	buffer << ".f64";
+	buffer << AbsSatString(AbsSat(abs_sat));
+	
+	buffer << " ";
+	insn->DisasmDest(buffer);
+
+	buffer << ", ";
+	insn->DisasmSrc1(buffer);
+	
+	buffer << ", ";
+	insn->DisasmSrc2(buffer);
+}
+
+// Input operands 1, 2, 3 and output operand of type DT_F64
+group fp64d123(dfma_full)
+
+fp64d123.init = {
+	typedef Operation<CONFIG> inherited;
+	inherited::op_type[OpDest] = DT_F64;
+	inherited::op_type[OpSrc1] = DT_F64;
+	inherited::op_type[OpSrc2] = DT_F64;
+	inherited::op_type[OpSrc3] = DT_F64;
+}
+
+fp64d123.classify = {
+	stats->SetFP64();
+}
+
+// Input operands 1, 2 and output operand of type DT_F64
+group fp64d12(dmul_full, dmax_full)
+
+fp64d12.init = {
+	typedef Operation<CONFIG> inherited;
+	inherited::op_type[OpDest] = DT_F64;
+	inherited::op_type[OpSrc1] = DT_F64;
+	inherited::op_type[OpSrc2] = DT_F64;
+	inherited::op_type[OpSrc3] = DT_NONE;
+}
+
+fp64d12.classify = {
+	stats->SetFP64();
+}
+
+// Input operands 1, 3 and output operand of type DT_F64
+group fp64d13(dadd_full)
+
+fp64d13.init = {
+	typedef Operation<CONFIG> inherited;
+	inherited::op_type[OpDest] = DT_F64;
+	inherited::op_type[OpSrc1] = DT_F64;
+	inherited::op_type[OpSrc2] = DT_NONE;
+	inherited::op_type[OpSrc3] = DT_F64;
+}
+
+fp64d13.classify = {
+	stats->SetFP64();
+}
+

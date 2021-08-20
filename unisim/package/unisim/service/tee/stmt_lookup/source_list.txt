@@ -1,0 +1,2 @@
+unisim/service/tee/stmt_lookup/tee_32.cc
+unisim/service/tee/stmt_lookup/tee_64.cc

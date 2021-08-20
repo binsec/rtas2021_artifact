@@ -1,0 +1,224 @@
+/*
+ *  Copyright (c) 2009,
+ *  University of Perpignan (UPVD),
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without modification,
+ *  are permitted provided that the following conditions are met:
+ *
+ *   - Redistributions of source code must retain the above copyright notice, this
+ *     list of conditions and the following disclaimer.
+ *
+ *   - Redistributions in binary form must reproduce the above copyright notice,
+ *     this list of conditions and the following disclaimer in the documentation
+ *     and/or other materials provided with the distribution.
+ *
+ *   - Neither the name of UPVD nor the names of its contributors may be used to
+ *     endorse or promote products derived from this software without specific prior
+ *     written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ *  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *  DISCLAIMED.
+ *  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ *  INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ *  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+ *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ *  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Authors: Sylvain Collange (sylvain.collange@univ-perp.fr)
+ */
+
+namespace unisim::component::cxx::processor::tesla::isa::src1
+set endianness little
+
+set addressclass {typename CONFIG::address_t}
+template <{class} {CONFIG}>
+
+decl {
+#include <unisim/component/cxx/processor/tesla/cpu.hh>
+#include <unisim/component/cxx/processor/tesla/exec.hh>
+#include <unisim/component/cxx/processor/tesla/disasm.hh>
+#include <unisim/component/cxx/processor/tesla/flags.hh>
+//#include <unisim/component/cxx/processor/tesla/operation.hh>
+
+namespace unisim {
+namespace component {
+namespace cxx {
+namespace processor {
+namespace tesla {
+
+template<class CONFIG>
+class CPU;
+
+template<class CONFIG>
+class Instruction;
+
+template<class CONFIG>
+class Operation;
+
+namespace isa {
+namespace src1 {
+using namespace unisim::component::cxx::processor::tesla;
+}
+}
+
+} // end of namespace tesla 
+} // end of namespace processor
+} // end of namespace cxx
+} // end of namespace component
+} // end of namespace unisim
+
+}
+
+impl {
+#include <unisim/component/cxx/processor/tesla/instruction.hh>
+}
+
+//action {void} execute({CPU<CONFIG> *} {cpu}) {
+//	throw IllegalInstructionException<CONFIG>();
+//}
+
+//constructor action initialize() {
+//}
+
+action {void} read({CPU<CONFIG> *} {cpu}, {Instruction<CONFIG> *} {insn}) {
+	throw IllegalInstructionException<CONFIG>();
+}
+
+action {void} disasm({CPU<CONFIG> *} {cpu}, {Instruction<CONFIG> const *} {insn}, {ostream&} {os}) {
+	os << "???";
+}
+
+action {void} classify({typename CONFIG::operationstats_t &} {stats}, \
+	{DataType} {dt}) {
+}
+
+// template
+// op alu_full_normal(/*subop*/?[3]:/*?*/?[1]:/*src3_neg*/?[1]:/*src1_neg*/[1]:0[1]:/*src2_imm*/?[1]:*rounding_mode*/?[2]:src1_sh[1]:/*src3*/[7]\
+//	:/*pred_reg*/?[2]:/*pred_cond*/?[5]:/*set_pred*/[1]:/*set_pred_reg*/[2]:/*ignore_output*/[1]:/*addr_hi*/[1]:/*marker*/0[2]:\
+//	/*op*/?[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src3_cm*/?[1]:/*src2_cm*/?[1]:/*src2*/?[7]:src1[7]:\
+//	/*dest*/?[7]:/*flow*/0[1]:/*long*/1[1])
+
+
+// Reg
+
+op alu_full_normal_reg(/*subop*/?[3]:/*?*/?[1]:/*src3_neg*/?[1]:/*src1_neg*/?[1]:?[2]:/*rounding_mode*/?[2]:/*src1_sh*/0[1]:/*src3*/?[7]\
+	:/*pred_reg*/?[2]:/*pred_cond*/?[5]:/*set_pred*/?[1]:/*set_pred_reg*/?[2]:/*ignore_output*/?[1]:/*addr_hi*/?[1]:/*marker*/0[2]:\
+	/*op*/?[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src3_cm*/?[1]:/*src2_cm*/?[1]:/*src2*/?[7]:src1[7]:\
+	/*dest*/?[7]:/*flow*/0[1]:/*long*/1[1])
+
+op alu_full_end_reg(/*subop*/?[3]:/*?*/?[1]:/*src3_neg*/?[1]:/*src1_neg*/?[1]:?[2]:/*rounding_mode*/?[2]:/*src1_sh*/0[1]:/*src3*/?[7]\
+	:/*pred_reg*/?[2]:/*pred_cond*/?[5]:/*set_pred*/?[1]:/*set_pred_reg*/?[2]:/*ignore_output*/?[1]:/*addr_hi*/?[1]:/*marker*/1[2]:\
+	/*op*/?[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src3_cm*/?[1]:/*src2_cm*/?[1]:/*src2*/?[7]:src1[7]:\
+	/*dest*/?[7]:/*flow*/0[1]:/*long*/1[1])
+
+op alu_full_join_reg(/*subop*/?[3]:/*?*/?[1]:/*src3_neg*/?[1]:/*src1_neg*/?[1]:?[2]:/*rounding_mode*/?[2]:/*src1_sh*/0[1]:/*src3*/?[7]\
+	:/*pred_reg*/?[2]:/*pred_cond*/?[5]:/*set_pred*/?[1]:/*set_pred_reg*/?[2]:/*ignore_output*/?[1]:/*addr_hi*/?[1]:/*marker*/2[2]:\
+	/*op*/?[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src3_cm*/?[1]:/*src2_cm*/?[1]:/*src2*/?[7]:src1[7]:\
+	/*dest*/?[7]:/*flow*/0[1]:/*long*/1[1])
+
+// Immediate -> like half instruction... almost?
+op alu_imm_reg(/*subop*/?[3]:/*?*/?[1]:/*imm*/?[26]:/*marker*/3[2]:\
+	/*op*/?[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src1_sh*/0[1]:/*src2_cm*/?[1]:/*src2_neg*/?[1]:/*src2*/?[6]:/*src1_neg*/?[1]:src1[6]:\
+	/*dest*/?[7]:/*flow*/0[1]:/*long*/1[1])
+
+op alu_half_reg(\
+	/*op*/?[4]:/*addr_lo*/?[2]:/*addr_imm*/?[1]:/*src1_sh*/0[1]:/*src2_cm*/?[1]:/*src2_neg*/?[1]:/*src2*/?[6]:/*src1_neg*/?[1]:src1[6]:\
+	/*dest*/?[7]:/*flow*/0[1]:/*long*/0[1])
+
+
+group alu_reg(alu_full_normal_reg, alu_full_end_reg, alu_full_join_reg, alu_imm_reg, alu_half_reg)
+
+alu_reg.read = {
+	typedef Instruction<CONFIG> Insn;
+	insn->ReadReg(src1, Insn::TempSrc1, insn->OperandRegType(OpSrc1));
+}
+
+alu_reg.disasm = {
+	RegType rt = insn->OperandRegType(OpSrc1);
+	DisasmReg(src1, rt, os);
+}
+
+alu_reg.classify = {
+	stats.SetRegNum(src1, dt, OpSrc1);
+}
+
+// Shared
+
+op alu_full_normal_shared(/*subop*/?[3]:/*?*/?[1]:/*src3_neg*/?[1]:/*src1_neg*/?[1]:0[1]:/*src2_imm*/?[1]:/*rounding_mode*/?[2]:/*src1_sh*/1[1]:/*src3*/?[7]\
+	:/*pred_reg*/?[2]:/*pred_cond*/?[5]:/*set_pred*/?[1]:/*set_pred_reg*/?[2]:/*ignore_output*/?[1]:addr_hi[1]:/*marker*/0[2]:\
+	/*op*/?[4]:addr_lo[2]:addr_incr[1]:/*src3_cm*/?[1]:/*src2_cm*/?[1]:/*src2*/?[7]:smtype[2]:src1[5]:\
+	/*dest*/?[7]:/*flow*/0[1]:/*long*/1[1])
+
+op alu_full_end_shared(/*subop*/?[3]:/*?*/?[1]:/*src3_neg*/?[1]:/*src1_neg*/?[1]:0[1]:/*src2_imm*/?[1]:/*rounding_mode*/?[2]:/*src1_sh*/1[1]:/*src3*/?[7]\
+	:/*pred_reg*/?[2]:/*pred_cond*/?[5]:/*set_pred*/?[1]:/*set_pred_reg*/?[2]:/*ignore_output*/?[1]:addr_hi[1]:/*marker*/1[2]:\
+	/*op*/?[4]:addr_lo[2]:addr_incr[1]:/*src3_cm*/?[1]:/*src2_cm*/?[1]:/*src2*/?[7]:smtype[2]:src1[5]:\
+	/*dest*/?[7]:/*flow*/0[1]:/*long*/1[1])
+
+op alu_full_join_shared(/*subop*/?[3]:/*?*/?[1]:/*src3_neg*/?[1]:/*src1_neg*/?[1]:0[1]:/*src2_imm*/?[1]:/*rounding_mode*/?[2]:/*src1_sh*/1[1]:/*src3*/?[7]\
+	:/*pred_reg*/?[2]:/*pred_cond*/?[5]:/*set_pred*/?[1]:/*set_pred_reg*/?[2]:/*ignore_output*/?[1]:addr_hi[1]:/*marker*/2[2]:\
+	/*op*/?[4]:addr_lo[2]:addr_incr[1]:/*src3_cm*/?[1]:/*src2_cm*/?[1]:/*src2*/?[7]:smtype[2]:src1[5]:\
+	/*dest*/?[7]:/*flow*/0[1]:/*long*/1[1])
+
+op alu_imm_shared(/*subop*/?[3]:/*?*/?[1]:/*imm*/?[26]:/*marker*/3[2]:\
+	/*op*/?[4]:addr_lo[2]:addr_incr[1]:/*src1_sh*/1[1]:/*src2_cm*/?[1]:/*src2_neg*/?[1]:/*src2*/?[6]:/*src1_neg*/?[1]:smtype[2]:src1[4]:\
+	/*dest*/?[7]:/*flow*/0[1]:/*long*/1[1])
+
+op alu_half_shared(\
+	/*op*/?[4]:addr_lo[2]:addr_incr[1]:/*src1_sh*/1[1]:/*src2_cm*/?[1]:/*src2_neg*/?[1]:/*src2*/?[6]:/*src1_neg*/?[1]:smtype[2]:src1[4]:\
+	/*dest*/?[7]:/*flow*/0[1]:/*long*/0[1])
+
+// TODO: half ops
+
+group alu_full_shared(alu_full_normal_shared, alu_full_end_shared, alu_full_join_shared)
+
+alu_full_shared.read = {
+	typedef Instruction<CONFIG> Insn;
+	VectorRegister<CONFIG> & vr = insn->Temp(Insn::TempSrc1);
+	
+	if(addr_incr) {
+		// Immediate = 0 (post-increment)
+		cpu->GatherShared(vr, 0, addr_lo, addr_hi, 1, insn->Mask(), SMType(smtype));
+		// side effect: increment ai
+		// TODO: Argh, this should be done on writeback stage!
+		cpu->GetAddr((addr_hi << 2) | addr_lo).Increment(SMTypeToDataType(SMType(smtype)), src1, insn->Mask());
+	}
+	else {
+		// always immediate
+		cpu->GatherShared(vr, src1, addr_lo, addr_hi, 1, insn->Mask(), SMType(smtype));
+	}
+}
+
+alu_full_shared.disasm = {
+	DisasmShared(src1, addr_lo, addr_hi, 1, SMType(smtype), os, addr_incr);
+}
+
+alu_full_shared.classify = {
+	stats.SetInputShared();
+}
+
+
+group alu_immhalf_shared(alu_imm_shared, alu_half_shared)
+
+alu_immhalf_shared.read = {
+	typedef Instruction<CONFIG> Insn;
+	VectorRegister<CONFIG> & vr = insn->Temp(Insn::TempSrc1);
+	cpu->GatherShared(vr, src1, addr_lo, 0, 1, insn->Mask(), SMType(smtype));
+	if(addr_incr) {
+		// side effect: increment ai
+		cpu->GetAddr(addr_lo).Increment(SMTypeToDataType(SMType(smtype)), src1, insn->Mask());
+	}
+}
+
+alu_immhalf_shared.disasm = {
+	DisasmShared(src1, addr_lo, 0, 1, SMType(smtype), os, addr_incr);
+}
+
+alu_immhalf_shared.classify = {
+	stats.SetInputShared();
+}
+

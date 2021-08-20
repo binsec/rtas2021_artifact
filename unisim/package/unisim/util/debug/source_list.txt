@@ -1,0 +1,15 @@
+unisim/util/debug/breakpoint_registry_32.cc
+unisim/util/debug/breakpoint_registry_64.cc
+unisim/util/debug/profile_32.cc
+unisim/util/debug/profile_64.cc
+unisim/util/debug/simple_field_registry.cc
+unisim/util/debug/simple_register_registry.cc
+unisim/util/debug/stmt_32.cc
+unisim/util/debug/stmt_64.cc
+unisim/util/debug/symbol_32.cc
+unisim/util/debug/symbol_64.cc
+unisim/util/debug/symbol_table_32.cc
+unisim/util/debug/symbol_table_64.cc
+unisim/util/debug/type.cc
+unisim/util/debug/watchpoint_registry_32.cc
+unisim/util/debug/watchpoint_registry_64.cc

@@ -1,0 +1,39 @@
+\subsection{Benchmark Suite}
+\label{sec:benchmark_suite}
+
+While the validation performed in the previous section ensures the correct individual behavior of the tested instructions, it does not test the interaction between them, and some instructions are still missing, like all the load/store instructions, branch instructions, and the system call instruction.
+To test the missing instructions and their interactions different real world applications are better suited.
+
+The applications used for this validation are the SPEC2000 CINT.
+The following is a list of the applications used with a small description extracted from the SPEC2000 documentation:
+\begin{itemize}
+	\item \textbf{gzip:} gzip (GNU zip) is a popular data compression program written by Jean-Loup Gailly $<$gzip@gnu.org$>$ for the GNU project. gzip uses Lempel-Ziv coding (LZ77) as its compression algorithm.
+	\item \textbf{vpr:} VPR is a placement and routing program; it automatically implements a technology-mapped circuit (i.e. a netlist, or hypergraph, composed of FPGA logic blocks and I/O pads and their required connections) in a Field-Programmable Gate Array (FPGA) chip.  VPR is an example of an integrated circuit computer-aided design program, and algorithmically it belongs to the combinatorial optimization class of programs.
+	\item \textbf{gcc:} this application is based on gcc Version 2.7.2.2. It generates code for a Motorola 88100 processor. The benchmark runs as a compiler with many of its optimization flags enabled.
+	\item \textbf{mcf:} a benchmark derived from a program used for single-depot vehicle scheduling in public mass transportation. The program is written in C, the benchmark version uses almost exclusively integer arithmetic.
+	\item \textbf{crafty:} Crafty is a high-performance Computer Chess program that is designed around a 64bit word. It runs on 32 bit machines using the ``long long'' (or similar, as \_int64 in Microsoft C) data type.  It is primarily an integer code, with a significant number of logical operations such as and, or, exclusive or and shift.  It can be configured to run a reproducible set of searches to compare the integer/branch prediction/pipe-lining facilities of a processor.
+	\item \textbf{parser:} parser does the grungy job of chopping the user's input sentence into words, processing the special commands, and calling all the functions necessary to parse the input sentence.
+	\item \textbf{eon:} Eon is a probabilistic ray tracer based on Kajiya's 1986 ACM SIGGRAPH conference paper. It sends a number of 3D lines (rays) into a 3D polygonal model. Intersections between the lines and the polygons are computed, and new lines are generated to compute light incident at these intersection points. The final result of the computation is an image as seen by camera. The computational demands of the program are much like a traditional deterministic ray tracer as described in basic computer graphics texts, but it has less memory coherence because many of the random rays generated in the same part of the code traverse very different parts of 3D space.
+	\item \textbf{perlbmk:} perlbmk is a cut-down version of Perl v5.005\_03, the popular scripting language. SPEC's version of Perl has had most of OS-specific features removed.
+	\item \textbf{gap:} gap implements a language and library designed mostly for computing in groups (GAP is an acronym for Groups, Algorithms and Programming).
+	\item \textbf{vortex:} VORTEx is a single-user object-oriented database transaction benchmark  which which exercises a system kernel coded in integer C.
+	\item \textbf{bzip2:} bzip2 is based on Julian Seward's bzip2 version 0.1. The only difference between bzip2 0.1 and bzip2 is that SPEC's version of bzip2 performs no file I/O other than reading the input. All compression and decompression happens entirely in memory. This is to help isolate the work done to only the CPU and memory subsystem.
+	\item \textbf{twolf:} The TimberWolfSC placement and global routing package is used in the process of creating the lithography artwork needed for the production of microchips. Specifically, it determines the placement and global connections for groups of transistors (known as standard cells) which constitute the microchip. The placement problem is a permutation. The TimberWolfSC program (twolf) uses simulated annealing as a heuristic to find very good solutions for the row-based standard cell design style.  In this design style, transistors are grouped together to form standard cells.
+\end{itemize}
+
+All these applications were developed in order to stress the cpu and the memory system, which covers the memory and branch instructions validation missing in the random tests presented in Section~\ref{sec:random_tests}. 
+Additionally, while not in an intensive manner, those applications test the functionality of the system call instruction.
+
+\subsubsection{Results}
+
+All those applications have been successfully run in the ARM7TDMI simulator, and their outputs match those of to the target plaform.
+Three different input sets (provided with the SPEC2000) have been used for each of the application:
+\begin{itemize}
+	\item \textbf{train:} small input set that has been mainly used during the development of the simulator.
+	\item \textbf{test:} medium size input set.
+	\item \textbf{ref:} large size input set, recommended by the SPEC2000 manual to fully stress the CPU and the memory system.
+\end{itemize}
+
+All the SPEC2000 applications were used during the development of the simulator, and no other tests were performed until all of them were successfully simulated.
+After that the random tests (see Section~\ref{sec:random_tests}) were performed founding only one error (with the \texttt{mrc} instruction).
+Finally, the system test presented in the following Section were performed to validate the system level behavior of the ARM7TDMI simulator.

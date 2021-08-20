@@ -1,0 +1,16 @@
+libc/inttypes
+libc/stdio
+libc/stdlib
+std/fstream
+std/list
+std/string
+unisim/kernel
+unisim/kernel/logger
+unisim/kernel/variable
+unisim/service/interfaces/blob
+unisim/service/interfaces/loader
+unisim/service/interfaces/memory
+unisim/service/interfaces/register
+unisim/service/interfaces/registers
+unisim/util/endian
+unisim/util/xml

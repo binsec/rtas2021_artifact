@@ -1,0 +1,4 @@
+unisim/component/cxx/processor/powerpc/config.hh
+unisim/component/cxx/processor/powerpc/cpu.hh
+unisim/component/cxx/processor/powerpc/disasm.hh
+unisim/component/cxx/processor/powerpc/floating.hh

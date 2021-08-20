@@ -1,0 +1,5 @@
+unisim/component/clm/pipeline/common/data_bus_arbiter_mc.hh
+unisim/component/clm/pipeline/common/simple_arbiter.hh
+unisim/component/clm/pipeline/common/simple_arbiter_mb.hh
+unisim/component/clm/pipeline/common/simple_arbiter_mc.hh
+unisim/component/clm/pipeline/common/simple_arbiter_onetoall_mc.hh

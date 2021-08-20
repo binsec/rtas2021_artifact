@@ -1,0 +1,8 @@
+unisim/component/cxx/processor/powerpc/e200/mpc57xx/cpu.hh
+unisim/component/cxx/processor/powerpc/e200/mpc57xx/dmem.hh
+unisim/component/cxx/processor/powerpc/e200/mpc57xx/floating.hh
+unisim/component/cxx/processor/powerpc/e200/mpc57xx/genfflags.hh
+unisim/component/cxx/processor/powerpc/e200/mpc57xx/imem.hh
+unisim/component/cxx/processor/powerpc/e200/mpc57xx/l1d.hh
+unisim/component/cxx/processor/powerpc/e200/mpc57xx/l1i.hh
+unisim/component/cxx/processor/powerpc/e200/mpc57xx/mpu.hh

@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=@SIM_PROGRAM_NAME@ (@SIM_VERSION@)
+Comment=@SIM_DESCRIPTION@
+Icon=/usr/share/@ARMEMU_EXEC_NAME@/logo/unisim.ico
+Exec=/usr/bin/@ARMEMU_EXEC_NAME@ -s enable-press-enter-at-exit=true
+Categories=Development;Emulator;ConsoleOnly;
+Terminal=true
+

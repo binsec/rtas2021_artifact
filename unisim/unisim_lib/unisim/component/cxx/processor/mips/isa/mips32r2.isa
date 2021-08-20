@@ -1,0 +1,93 @@
+op movf (0[6]:rs[5]:cc[3]:0[2]:rd[5]:0[5]:1[6]);
+
+movf.disasm = { sink << "movf\t" << PrintGPR(rd) << ',' << PrintGPR(rs) << ',' << PrintR("$fcc",cc); };
+
+op movt (0[6]:rs[5]:cc[3]:1[2]:rd[5]:0[5]:1[6]);
+
+movt.disasm = { sink << "movt\t" << PrintGPR(rd) << ',' << PrintGPR(rs) << ',' << PrintR("$fcc",cc); };
+
+op movz (0[6]:rs[5]:rt[5]:rd[5]:0[5]:0xa[6]);
+
+movz.disasm = { sink << "movz\t" << PrintGPR(rd) << ',' << PrintGPR(rs) << ',' << PrintGPR(rt); };
+
+op movn (0[6]:rs[5]:rt[5]:rd[5]:0[5]:0xb[6]);
+
+movn.disasm = { sink << "movn\t" << PrintGPR(rd) << ',' << PrintGPR(rs) << ',' << PrintGPR(rt); };
+
+op lsa (0[6]:rs[5]:rt[5]:rd[5]:0[3]:i[2]:5[6]);
+
+lsa.disasm = { sink << "lsa\t" << PrintGPR(rd) << ',' << PrintGPR(rs) << ',' << PrintGPR(rt) << ',' << PrintHex(i+1); };
+
+op rorv (0[6]:rs[5]:rt[5]:rd[5]:0[5]:0x46[6]);
+
+rorv.disasm = { sink << "rorv\t" << PrintGPR(rd) << ',' << PrintGPR(rt) << ',' << PrintGPR(rs); };
+
+op ror (0[6]:0[4]:1[1]:rt[5]:rd[5]:sa[5]:2[6]);
+ror.disasm = { sink << "rorv\t" << PrintGPR(rd) << ',' << PrintGPR(rt) << ',' << PrintI(sa); };
+
+op mflhxu(0[6]:0[5]:0[5]:rc[5]:0[5]:0x52[6]);
+mflhxu.disasm = { sink << "mflhxu\t" << PrintGPR(rc); };
+
+op mtlhx(0[6]:ra[5]:0[5]:0[5]:0[5]:0x53[6]);
+mtlhx.disasm = { sink << "mtlhx\t" << PrintGPR(ra); };
+
+op jr_hb(0[6]:ra[5]:0[5]:0[5]:0x10[5]:0x08[6]);
+jr_hb.disasm = { sink << "jr.hb\t" << PrintGPR(ra); };
+
+op jalr_hb(0[6]:ra[5]:0[5]:rc[5]:0x10[5]:0x09[6]);
+jalr_hb.disasm = \
+{
+  sink << "jalr.hb\t";
+  if (rc != 31) sink << PrintGPR(rc) << ",";
+  sink << PrintGPR(ra);
+};
+
+op multp(0[6]:ra[5]:rb[5]:0[5]:0x11[5]:0x19[6]);
+multp.disasm = { sink << "multp\t" << PrintGPR(ra) << "," << PrintGPR(rb); };
+
+op aclr(1[6]:ra[5]:7[5]:0[1]:imm[3]:sext offset[12]);
+aclr.disasm = { sink << "aclr\t" << PrintHex(imm) << ',' << PrintI(offset) << '(' << PrintGPR(ra) << ')'; };
+
+op aset(1[6]:ra[5]:7[5]:1[1]:imm[3]:sext offset[12]);
+aset.disasm = { sink << "aset\t" << PrintHex(imm) << ',' << PrintI(offset) << '(' << PrintGPR(ra) << ')'; };
+
+op bposge32(1[6]:0[5]:28[5]:shl<2> sext offset[16]);
+bposge32.disasm = { sink << "bposge32\t" << PrintHex(this->GetAddr() + offset + 4); };
+
+op rdhwr(31[6]:0[5]:rt[5]:rd[5]:0[5]:0b111011[6]);
+rdhwr.disasm = { sink << "rdhwr\t" << PrintGPR(rt) << ',' << PrintR("$",rd); };
+
+rdhwr.execute = { core.SetGPR(rt, core.GetHWR(rd)); };
+
+op clz(28[6]:rs[5]:rt[5]:rd[5]:0[5]:0b100000[6]);
+clz.disasm = \
+{
+  sink << "clz\t" << PrintGPR(rd);
+  if (rd != rt) sink << " or " << PrintGPR(rt);
+  sink << ',' << PrintGPR(rs);
+};
+
+op di(16[6]:11[5]:rt[5]:12[5]:0[5]:0[1]:0[2]:0[3]);
+di.disasm = { sink << "di"; if (rt) sink << ',' << PrintGPR(rt); };
+
+op ext(31[6]:rs[5]:rt[5]:msbd[5]:lsb[5]:0[6]);
+ext.disasm = { sink << "ext\t" << PrintGPR(rt) << ',' << PrintGPR(rs) << ',' << PrintI(lsb) << ',' << PrintI(msbd+1); };
+
+op ins(31[6]:rs[5]:rt[5]:msb[5]:lsb[5]:4[6]);
+ins.disasm = { sink << "ins\t" << PrintGPR(rt) << ',' << PrintGPR(rs) << ',' << PrintI(lsb) << ',' << PrintI(msb-lsb+1); };
+
+/*Multiply and Add Unsigned Word to Hi*/
+op maddu(28[6]:rs[5]:rt[5]:0[5]:0[5]:1[6]);
+maddu.disasm = { sink << "maddu\t" << PrintGPR(rt) << ',' << PrintGPR(rs); };
+
+/*Multiply Word to GPR*/
+op mul(28[6]:rs[5]:rt[5]:rd[5]:0[5]:2[6]);
+mul.disasm = { sink << "mul\t" << PrintGPR(rd) << ',' << PrintGPR(rs) << ',' << PrintGPR(rt); };
+
+/*Sign-Extend Byte*/
+op seb(31[6]:0[5]:rt[5]:rd[5]:16[5]:32[6]);
+seb.disasm = { sink << "seb\t" << PrintGPR(rd) << ',' << PrintGPR(rt); };
+
+/*Sign-Extend Halfword*/
+op seh(31[6]:0[5]:rt[5]:rd[5]:24[5]:32[6]);
+seh.disasm = { sink << "seh\t" << PrintGPR(rd) << ',' << PrintGPR(rt); };

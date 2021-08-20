@@ -1,0 +1,383 @@
+diff --git a/README.md b/README.md
+index e0a06f2..302c356 100644
+--- a/README.md
++++ b/README.md
+@@ -49,7 +49,7 @@ https://github.org/mesonbuild/meson and use `meson.py` directly.  Refer to the
+ 
+ ### Library Dependencies
+ 
+-The library requires a compiler with C++11 support. It was successfully tested
++The library requires a compiler with C++14 support. It was successfully tested
+ with the following toolchains:
+ 
+ - ``gcc-5``, ``gcc-6``, ``gcc-7``
+diff --git a/meson.build b/meson.build
+index 8788f2a..7206e1b 100644
+--- a/meson.build
++++ b/meson.build
+@@ -32,14 +32,14 @@ project_incs = include_directories('src')
+ 
+ stdcheck_code = '''
+ #include "tvs/utils/cppver.h"
+-#if TVS_CPLUSPLUS < 201103L
+-#  error "Need at least C++11 support"
++#if TVS_CPLUSPLUS < 201402L
++#  error "Need at least C++14 support"
+ #endif
+ '''
+ 
+-if not meson.get_compiler('cpp').compiles(stdcheck_code, name : 'c++11 (or higher)',
++if not meson.get_compiler('cpp').compiles(stdcheck_code, name : 'c++14 (or higher)',
+                                           include_directories: project_incs)
+-  error('Need a compiler with C++11 (or higher) support.')
++  error('Need a compiler with C++14 (or higher) support.')
+ endif
+ 
+ sc_required = ''
+@@ -87,8 +87,15 @@ if get_option('with_systemc')
+   # error "SystemC version check failed."
+   #endif
+ 
+-  extern "C" int
++  extern "C"
++  #if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
++  __declspec(dllexport)
++  #endif
++  int
+   sc_main(int argc, char* argv[]) { return 0; }
++  #if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
++  int main(int argc, char *argv[]) { return sc_core::sc_elab_and_sim(argc, argv); }
++  #endif
+   '''
+ 
+     sc_ver = sc_version_required.split('.')
+diff --git a/src/tvs/meson.build b/src/tvs/meson.build
+index 3aa0b56..46e21bc 100644
+--- a/src/tvs/meson.build
++++ b/src/tvs/meson.build
+@@ -49,6 +49,7 @@ report_headers = files(
+   )
+ 
+ tracing_headers = files(
++  'tracing/report_msgs.h',
+   'tracing/timed_duration.h',
+   'tracing/timed_object.h',
+   'tracing/timed_ranges.h',
+@@ -72,6 +73,7 @@ tracing_headers = files(
+   )
+ 
+ processor_headers = files(
++  'tracing/processors/policies.h',
+   'tracing/processors/timed_stream_processor_base.h',
+   'tracing/processors/timed_stream_processor_binop.h',
+   'tracing/processors/timed_stream_vcd_processor.h',
+diff --git a/src/tvs/tracing/processors/timed_stream_processor_base.cpp b/src/tvs/tracing/processors/timed_stream_processor_base.cpp
+index 7744736..92afb73 100644
+--- a/src/tvs/tracing/processors/timed_stream_processor_base.cpp
++++ b/src/tvs/tracing/processors/timed_stream_processor_base.cpp
+@@ -38,23 +38,37 @@ timed_stream_processor_base::timed_stream_processor_base() = default;
+ void
+ timed_stream_processor_base::notify(reader_base_type&)
+ {
+-  const auto availp = [](auto const& r) { return r->available(); };
+-
+-  const auto time_cmp = [](auto const& lhs, auto const& rhs) {
+-    return lhs->available_until() < rhs->available_until();
+-  };
+-
+   const auto begin = inputs_.cbegin();
+   const auto end = inputs_.cend();
+ 
+-  while (std::all_of(begin, end, availp)) {
+-
+-    // determine minimum front value duration on each run
+-    auto const& stream = std::min_element(begin, end, time_cmp);
+-    auto duration = (*stream)->front_duration();
+-
++  do
++  {
++    auto it = ((unavailable_input_it != end) ? unavailable_input_it : begin);
++    
++    while(it != end)
++    {
++      auto const& r = *it;
++      
++      if(!r->available())
++      {
++        if(it != unavailable_input_it)
++        {
++          unavailable_input_it = it;
++        }
++        return;
++      }
++      // determine minimum front value duration on each run
++      auto front_duration = r->front_duration();
++      if((min_front_duration != duration_type::zero_time) && (front_duration < min_front_duration)) min_front_duration = front_duration;
++      it++;
++    }
++    
++    unavailable_input_it = end;
++    
+     // let the user process all readers with the minimum front duration
+-    auto advance = process(duration);
++    auto advance = process(min_front_duration);
++
++    min_front_duration = duration_type::zero_time;
+ 
+     // wait until next token arrives when no duration was returned
+     if (advance == duration_type::zero_time)
+@@ -63,6 +77,7 @@ timed_stream_processor_base::notify(reader_base_type&)
+     // update this stream processor's local time after processing
+     commit(advance);
+   }
++  while(1);
+ }
+ 
+ timed_stream_processor_base::duration_type
+@@ -79,6 +94,8 @@ timed_stream_processor_base::do_add_input(reader_ptr_type&& reader)
+ {
+   reader->listen(*this);
+   inputs_.emplace_back(std::move(reader));
++  unavailable_input_it = inputs_.cend();
++  min_front_duration = duration_type::zero_time;
+ }
+ 
+ void
+diff --git a/src/tvs/tracing/processors/timed_stream_processor_base.h b/src/tvs/tracing/processors/timed_stream_processor_base.h
+index 4b5d3ed..a1530a0 100644
+--- a/src/tvs/tracing/processors/timed_stream_processor_base.h
++++ b/src/tvs/tracing/processors/timed_stream_processor_base.h
+@@ -131,6 +131,8 @@ private:
+ 
+   reader_collection_type inputs_;
+   writer_collection_type outputs_;
++  reader_collection_type::const_iterator unavailable_input_it;
++  duration_type min_front_duration;
+ };
+ 
+ template<typename T, typename Traits>
+diff --git a/src/tvs/tracing/processors/timed_stream_vcd_processor.cpp b/src/tvs/tracing/processors/timed_stream_vcd_processor.cpp
+index cf218e1..1595390 100644
+--- a/src/tvs/tracing/processors/timed_stream_vcd_processor.cpp
++++ b/src/tvs/tracing/processors/timed_stream_vcd_processor.cpp
+@@ -29,12 +29,16 @@ vcd_stream_container_base::scope() const
+ 
+ timed_stream_vcd_processor::timed_stream_vcd_processor(char const* modscope,
+                                                        std::ostream& out,
+-                                                       char vcd_start_signal)
++                                                       char vcd_start_signal,
++                                                       char vcd_end_signal)
+   : named_object(modscope)
+   , out_(out)
+-  , vcd_id_(vcd_start_signal)
++  , vcd_idx_(0)
++  , vcd_start_signal_(vcd_start_signal)
++  , vcd_end_signal_(vcd_end_signal)
+   , header_written_(false)
+   , scale_(1.0 * sysx::si::picoseconds)
++  , max_time_(sysx::units::impl::value_helper<time_type>::max())
+ {}
+ 
+ timed_stream_vcd_processor::~timed_stream_vcd_processor() = default;
+@@ -78,26 +82,64 @@ timed_stream_vcd_processor::process(duration_type /* unused */)
+     header_written_ = true;
+   }
+ 
+-  unsigned long scaled =
+-    sysx::units::sc_time_cast<sysx::units::time_type>(this->local_time()) /
+-    scale_;
+-
+-  out_ << "#" << scaled << "\n";
+-
++  time_type const& loc_time = this->local_time();
++  
++  for (auto&& vcd : this->vcd_streams_) {
++    auto& rd = vcd->reader();
++    if (rd.local_time() == loc_time) {
++      if (vcd->front_value_changed())
++      {
++        sysx::utils::uint64 scaled =
++          sysx::units::sc_time_cast<sysx::units::time_type>(loc_time) /
++          scale_;
++
++        out_ << "#" << scaled << "\n";
++        break;
++      }
++    }
++  }
++  
+   // figure out the next local time to advance to
+-  std::vector<time_type> next;
++  time_type min_next = max_time_;
+ 
+   // write the first tuple of all synchronised streams
+   for (auto&& vcd : this->vcd_streams_) {
+     auto& rd = vcd->reader();
+-    if (rd.local_time() == this->local_time()) {
++    if (rd.local_time() == loc_time) {
+       vcd->print_front_value(out_);
+       rd.pop();
+     }
+-    next.push_back(rd.local_time());
++    time_type const& next = rd.local_time();
++    if(next < min_next) min_next = next;
+   }
+ 
+-  return *std::min_element(next.begin(), next.end()) - local_time();
++  return min_next - local_time();
++}
++
++std::string timed_stream_vcd_processor::new_vcd_identifier()
++{
++  unsigned int idx = vcd_idx_++;
++  unsigned int max_std_identifiers = vcd_end_signal_ - vcd_start_signal_ + 1;
++  std::string result;
++  
++  // check if there's enough standard identifiers for our VCD streams
++  if(idx < (max_std_identifiers - 1)) {
++    // build a standard VCD identifier (the last standard allowable identifier is never returned because we use it as a prefix for our extended identifiers that are only compliant with non-standard EVCD file format)
++    result = vcd_start_signal_ + idx;
++  } else {
++    // build a non-standard extended VCD file format (EVCD) identifier
++    idx -= max_std_identifiers - 1;
++    
++    do {
++      result += vcd_start_signal_ + (idx % max_std_identifiers);
++      idx /= max_std_identifiers;
++    } while(idx != 0);
++    
++    result += vcd_end_signal_;
++        
++    std::reverse(result.begin(), result.end());
++  }  
++  return result;
+ }
+ 
+ } // namespace tracing
+diff --git a/src/tvs/tracing/processors/timed_stream_vcd_processor.h b/src/tvs/tracing/processors/timed_stream_vcd_processor.h
+index 8ed340b..7a71543 100644
+--- a/src/tvs/tracing/processors/timed_stream_vcd_processor.h
++++ b/src/tvs/tracing/processors/timed_stream_vcd_processor.h
+@@ -53,7 +53,7 @@ struct vcd_stream_container_base
+ {
+   using reader_base_type = timed_reader_base;
+ 
+-  explicit vcd_stream_container_base(char id,
++  explicit vcd_stream_container_base(const std::string& id,
+                                      std::string const& scope,
+                                      std::string const& name)
+     : id_(id)
+@@ -64,6 +64,7 @@ struct vcd_stream_container_base
+   virtual void header_defn(std::ostream&) const = 0;
+   virtual void print_front_value(std::ostream&) = 0;
+   virtual void default_value(std::ostream& out) const = 0;
++  virtual bool front_value_changed() const = 0;
+ 
+   virtual reader_base_type& reader() const = 0;
+ 
+@@ -74,7 +75,7 @@ struct vcd_stream_container_base
+   virtual ~vcd_stream_container_base() = default;
+ 
+ protected:
+-  char id_;
++  std::string id_;
+   std::string scope_;
+   std::string name_;
+ };
+@@ -92,9 +93,10 @@ struct vcd_stream_container : vcd_stream_container_base
+   vcd_stream_container(reader_type& reader,
+                        std::string const& scope,
+                        std::string const& name,
+-                       char id)
++                       const std::string& id)
+     : base_type(id, scope, name)
+     , reader_(reader)
++    , value_()
+   {}
+ 
+ private:
+@@ -125,8 +127,11 @@ private:
+ 
+   void print_front_value(std::ostream& out) override
+   {
+-    value_type val = this->reader_.front().value();
+-    do_print_val(out, val);
++    value_type const& val = this->reader_.front().value();
++    if(val != value_) {
++      do_print_val(out, val);
++      value_ = val;
++    }
+   }
+ 
+   void do_print_val(std::ostream& out, value_type const& val) const
+@@ -142,7 +147,13 @@ private:
+     out << this->id_ << "\n";
+   }
+ 
++  bool front_value_changed() const
++  {
++	  return this->reader_.front().value() != value_;
++  }
++  
+   reader_type& reader_;
++  value_type value_;
+ };
+ 
+ /**
+@@ -165,7 +176,8 @@ struct timed_stream_vcd_processor
+ public:
+   timed_stream_vcd_processor(char const* modscope,
+                              std::ostream& out,
+-                             char vcd_start_signal = 33);
++                             char vcd_start_signal = 33,
++                             char vcd_end_signal = 126);
+ 
+   ~timed_stream_vcd_processor() override;
+ 
+@@ -205,7 +217,7 @@ private:
+       host::gen_unique_name("vcd_reader"), stream);
+ 
+     vcd_streams_.emplace_back(std::make_unique<container_type>(
+-      *reader, scope, override_name, vcd_id_++));
++      *reader, scope, override_name, new_vcd_identifier()));
+ 
+     // move the reader (including ownership) to the backend of the processor,
+     // making it sensitive to the committed values
+@@ -215,17 +227,23 @@ private:
+   duration_type process(duration_type dur) override;
+ 
+   void write_header();
++  
++  std::string new_vcd_identifier();
+ 
+   std::vector<vcd_stream_ptr_type> vcd_streams_;
+ 
+   std::ostream& out_;
+-  char vcd_id_;
++  unsigned int vcd_idx_;
++  char vcd_start_signal_;
++  char vcd_end_signal_;
+   bool header_written_;
+ 
+   // use boost
+   sysx::units::time_type scale_;
+ 
+   std::vector<std::unique_ptr<impl::vcd_event_converter_base>> converters_;
++  
++  time_type max_time_;
+ };
+ 
+ } // namespace tracing
+diff --git a/src/tvs/tracing/timed_stream.h b/src/tvs/tracing/timed_stream.h
+index e1caa85..77c0d08 100644
+--- a/src/tvs/tracing/timed_stream.h
++++ b/src/tvs/tracing/timed_stream.h
+@@ -29,7 +29,7 @@
+ #include "tvs/tracing/timed_stream_base.h"
+ #include "tvs/tracing/timed_value.h"
+ 
+-#include "report_msgs.h"
++#include "tvs/tracing/report_msgs.h"
+ 
+ namespace tracing {
+ 

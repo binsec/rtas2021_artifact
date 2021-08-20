@@ -1,0 +1,151 @@
+\mode<article>{\usepackage{fullpage}}
+%\mode<presentation>{\usetheme{CEA}}
+\mode<presentation>{\usepackage{beamerthemeCeaList2012Red}}
+% everyone:
+\usepackage[english]{babel}
+\usepackage{pgf}
+\usepackage{graphicx}
+\usepackage{pstricks}
+\usepackage{pdfpages}
+\usepackage{listings}
+\usepackage{verbatim}
+\usepackage{tikz}
+\usetikzlibrary{arrows}
+
+\mode<article> {
+	\usepackage[center]{caption}
+	\usepackage{hyperref}%                   % Utilisation de HyperTeX
+
+	\hypersetup{
+		pdfauthor   = {Gilles Mouchard, R\'eda Nouacer, Daniel Gracia P\'erez},%
+		pdftitle    = {UNISIM Virtual Platforms Training},%
+		pdfsubject  = {UNISIM-VP},%
+		pdfkeywords = {simulation framework, architectural exploration, embedded system design, system verification},%
+		pdfcreator  = {rubber},%
+		pdfproducer = {rubber}
+	}
+}
+%%\usepackage{xmpmulti}
+%%\pgfdeclareimage[height=1cm]{myimage}{filename}
+
+\mode<article> {
+	\setjobnamebeamerversion{main.beamer}
+}
+
+
+\title{SystemC (VP3) \& SystemC TLM Tutorial (VP4)}
+\author{Gilles Mouchard \\ R\'eda Nouacer \\ Daniel Gracia P\'erez}
+\date{March 19, 2015}
+
+%\usetheme{CEA}
+\usepackage{beamerthemeCeaList2012Red}
+
+\begin{document}
+\mode<presentation>{
+\lstset{% general command to set parameter(s)
+language=c++,
+basicstyle=\tiny, % print whole listing tiny
+keywordstyle=\color{black}\bfseries, % bold black keywords
+identifierstyle=, % nothing happens
+commentstyle=\color{blue}, % white comments
+stringstyle=\ttfamily, % typewriter type for strings
+showstringspaces=false,
+tabsize=4,
+breaklines=true,
+numbers=left,
+framexleftmargin=7.5mm,
+xleftmargin=0.13\textwidth,
+xrightmargin=0.1\textwidth,
+frame=tlbr}
+}
+\mode<article>{
+\lstset{% general command to set parameter(s)
+language=c++,
+basicstyle=\footnotesize, % print whole listing small
+keywordstyle=\color{black}\bfseries, % bold black keywords
+identifierstyle=, % nothing happens
+commentstyle=\color{blue}, % white comments
+stringstyle=\ttfamily, % typewriter type for strings
+showstringspaces=false,
+tabsize=4,
+breaklines=true,
+numbers=left,
+framexleftmargin=7.5mm,
+xleftmargin=0.13\textwidth,
+xrightmargin=0.1\textwidth,
+frame=tlbr}
+}
+% \lstset{language=c++,basicstyle={\ttfamily\footnotesize},tabsize=4,breaklines=true,numbers=left,framexleftmargin=7.5mm,xleftmargin=0.13\textwidth,xrightmargin=0.1\textwidth,frame=tlbr}
+\maketitle
+
+\mode<article>{
+\chapter*{Outline}
+}
+
+\mode<presentation>{
+\part{Outline}
+}
+
+\mode<presentation>{
+\begin{frame}
+	\frametitle{Outline}
+	\begin{itemize}
+		\item Introduction (VP3)
+		\item SystemC basics/CLM (VP3)
+		\item SystemC TLM (VP4)\newline
+		\item {\color{blue}\ldots and your questions}
+	\end{itemize}
+\end{frame}
+}
+
+\mode<article>{
+Welcome to the SystemC tutorial.
+We will introduce you to the exciting world of SystemC and the possibilities opened to you with SystemC Transaction Level Modelling (aka TLM).
+We start with a presentation on what is SystemC and what you can use it for.
+Then the basics of SystemC programming will be introduced, so you can start coding SystemC cycle level models.
+The third part introduces SystemC TLM programming model, and more concretely TLM 2.0.
+
+%Once the basics have been introduced, we will give an overview of the different existent frameworks that use SystemC.
+%A special section will be reserved for the UNISIM simulation framework.
+%More on them at the end of the tutorial.
+
+% \begin{figure}[!h]
+% 	\begin{center}
+% 		\includegraphics[page=1,height=6cm]{main_beamer.pdf}
+% 	\end{center}
+% 	\caption{Outline slide.}
+% 	\label{slide:outline}
+% \end{figure}
+}
+
+\newpage
+
+\mode<article>{
+\tableofcontents
+\listoffigures
+\listoftables
+}
+
+\input{introduction/intro_main}
+
+\newpage
+
+\input{systemc_cycle/main}
+
+\newpage
+
+\input{tlm/main}
+
+% \newpage
+
+% \input{systemc_basics/basics_main}
+
+% \newpage
+
+% \input{tlm/tlm_main}
+
+% \newpage
+
+% \input{services/services_main}
+
+\end{document}

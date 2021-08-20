@@ -1,0 +1,67 @@
+/*
+ *  Copyright (c) 2007-2018,
+ *  Commissariat a l'Energie Atomique (CEA)
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without modification,
+ *  are permitted provided that the following conditions are met:
+ *
+ *   - Redistributions of source code must retain the above copyright notice, this
+ *     list of conditions and the following disclaimer.
+ *
+ *   - Redistributions in binary form must reproduce the above copyright notice,
+ *     this list of conditions and the following disclaimer in the documentation
+ *     and/or other materials provided with the distribution.
+ *
+ *   - Neither the name of CEA nor the names of its contributors may be used to
+ *     endorse or promote products derived from this software without specific prior
+ *     written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ *  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *  DISCLAIMED.
+ *  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ *  INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ *  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+ *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ *  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Authors: Yves Lhuillier (yves.lhuillier@cea.fr)
+ */
+
+op rldcl(30[6]:rs[5]:ra[5]:rb[5]:mb1[5]:shl<5>mb0[1]:8[4]:rc[1]);
+rldcl.var mb : {uint8_t} = {mb0|mb1};
+
+rldcl.execute = {
+	// Read the input operands
+	U64 s( cpu->GetGPR(rs) );
+	U8  n( cpu->GetGPR(rb) & U64(0x3f) );
+	
+	// Compute the result
+	U64 result = RotateLeft(s, n) & U64(uint64_t(-1) >> mb);
+	
+	// Write back the result
+	cpu->SetGPR(ra, result);
+	
+	if (unlikely(rc))
+	{
+		XER& xer = cpu->GetXER();
+		CR& cr = cpu->GetCR();
+		cr.Set<CR::CR0::SO>(xer.Get<XER::SO>());
+		cr.Set<CR::CR0::LT>(S64(result) < S64(0));
+		cr.Set<CR::CR0::GT>(S64(result) > S64(0));
+		cr.Set<CR::CR0::EQ>(result == U64(0));
+	}
+	
+	return true;
+};
+
+rldcl.disasm = {
+	os << "rldcl" << (rc ? "." : "") << ' ' << GPRPrint(ra) << ',' << GPRPrint(rs) << ',' << GPRPrint(rb) << ',' << int(mb);
+};
+
+specialize rldcl(rc=0);
+specialize rldcl(rc=1);

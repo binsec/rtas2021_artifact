@@ -1,0 +1,2 @@
+This is a port of Cacti (see http://www.hpl.hp.com/research/cacti/) to a C++ library of class.
+See file COPYING for license information.

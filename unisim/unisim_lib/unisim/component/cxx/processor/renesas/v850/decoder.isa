@@ -1,0 +1,452 @@
+/*
+ *  Copyright (c) 2017,
+ *  Commissariat a l'Energie Atomique (CEA)
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without modification,
+ *  are permitted provided that the following conditions are met:
+ *
+ *   - Redistributions of source code must retain the above copyright notice, this
+ *     list of conditions and the following disclaimer.
+ *
+ *   - Redistributions in binary form must reproduce the above copyright notice,
+ *     this list of conditions and the following disclaimer in the documentation
+ *     and/or other materials provided with the distribution.
+ *
+ *   - Neither the name of CEA nor the names of its contributors may be used to
+ *     endorse or promote products derived from this software without specific prior
+ *     written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ *  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *  DISCLAIMED.
+ *  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ *  INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ *  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+ *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ *  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Authors: Yves Lhuillier (yves.lhuillier@cea.fr)
+ */
+ 
+/**********************************************
+ *             V850 EMULATOR ISA              *
+ **********************************************/
+
+namespace unisim::component::cxx::processor::renesas::v850
+
+set endianness little;
+set addressclass {uint32_t};
+set words_order ascending;
+set fields_order descending;
+
+template <{typename} {ARCH}>;
+
+decl {
+#include <iosfwd>
+#include <inttypes.h>
+} // end of decl
+
+action {void} execute({ARCH &} {cpu}) const {
+  cpu.UndefinedInstruction( this );
+}
+
+action {void} disasm({ARCH &} {cpu}, {std::ostream&} {sink}) const {
+  sink << "; Unknown V850 instruction";
+}
+
+impl {
+#include <unisim/component/cxx/processor/renesas/v850/disasm.hh>
+
+} // end of impl
+
+op add_imm(rd[5] : 0b010010[6] : sext imm[5]);
+
+add_imm.disasm = {
+  sink << "add\t" << PrintImm(imm) << ", " << PrintReg(rd);
+};
+
+op add(rd[5] : 0b001110[6] : ra[5]);
+
+add.disasm = {
+  sink << "add\t" << PrintReg(ra) << ", " << PrintReg(rd);
+};
+
+op and(rd[5] : 0b001010[6] : ra[5]);
+
+and.disasm = {
+  sink << "and\t" << PrintReg(ra) << ", " << PrintReg(rd);
+};
+
+op breakpoint(0b0000000000000001[16]);
+
+breakpoint.disasm = {
+  sink << "breakpoint";
+};
+
+op bcc(shl<4> sext o1[5] : 0b1011[4] : shl<1> o0[3] : cond[4]);
+bcc.var offset : {uint32_t} = {o1|o0};
+
+bcc.disasm = {
+  sink << "b" << PrintBranchCond(cond) << "\t" << PrintHex(GetAddr()+offset);
+};
+
+op cmp_imm(rd[5] : 0b010011[6] : sext imm[5]);
+
+cmp_imm.disasm = {
+  sink << "cmp\t" << PrintImm(imm) << ", " << PrintReg(rd);
+};
+
+op cmp(rd[5] : 0b001111[6] : ra[5]);
+
+cmp.disasm = {
+  sink << "cmp\t" << PrintReg(ra) << ", " << PrintReg(rd);
+};
+
+op divh(rd[5] : 0b000010[6] : ra[5]);
+
+divh.disasm = {
+  sink << "divh\t" << PrintReg(ra) << ", " << PrintReg(rd);
+};
+
+op jmp(0b00000000011[11] : rl[5]);
+
+jmp.disasm = {
+  sink << "jmp\t[" << PrintReg(rl) << "]";
+};
+
+op mov_imm(rd[5] : 0b010000[6] : sext imm[5]);
+
+mov_imm.disasm = {
+  sink << "mov\t" << PrintImm(imm) << ", " << PrintReg(rd);
+};
+
+op mov(rd[5] : 0b000000[6] : ra[5]);
+
+mov.disasm = {
+  sink << "mov\t" << PrintReg(ra) << ", " << PrintReg(rd);
+};
+
+op mulh_imm(rd[5] : 0b010111[6] : sext imm[5]);
+
+mulh_imm.disasm = {
+  sink << "mulh\t" << PrintImm(imm) << ", " << PrintReg(rd);
+};
+
+op mulh(rd[5] : 0b000111[6] : ra[5]);
+
+mulh.disasm = {
+  sink << "mulh\t" << PrintReg(ra) << ", " << PrintReg(rd);
+};
+
+op nop(0b0000000000000000[16]);
+
+nop.disasm = {
+  sink << "nop";
+};
+
+op not(rd[5] : 0b000001[6] : ra[5]);
+
+not.disasm = {
+  sink << "not\t" << PrintReg(ra) << ", " << PrintReg(rd);
+};
+
+op or(rd[5] : 0b001000[6] : ra[5]);
+
+or.disasm = {
+  sink << "or\t" << PrintReg(ra) << ", " << PrintReg(rd);
+};
+
+op sar_imm(rd[5] : 0b010101[6] : imm[5]);
+
+sar_imm.disasm = {
+  sink << "sar\t" << PrintImm(imm) << ", " << PrintReg(rd);
+};
+
+op satadd_imm(rd[5] : 0b010001[6] : sext imm[5]);
+
+satadd_imm.disasm = {
+  sink << "satadd\t" << PrintImm(imm) << ", " << PrintReg(rd);
+};
+
+op satadd(rd[5] : 0b000110[6] : ra[5]);
+
+satadd.disasm = {
+  sink << "satadd\t" << PrintReg(ra) << ", " << PrintReg(rd);
+};
+
+op satsub(rd[5] : 0b000101[6] : ra[5]);
+
+satsub.disasm = {
+  sink << "satsub\t" << PrintReg(ra) << ", " << PrintReg(rd);
+};
+
+op satsubr(rd[5] : 0b000100[6] : ra[5]);
+
+satsubr.disasm = {
+  sink << "satsubr\t" << PrintReg(ra) << ", " << PrintReg(rd);
+};
+
+op shl_imm(rd[5] : 0b010110[6] : imm[5]);
+
+shl_imm.disasm = {
+  sink << "shl\t" << PrintImm(imm) << ", " << PrintReg(rd);
+};
+
+op shr_imm(rd[5] : 0b010100[6] : imm[5]);
+
+shr_imm.disasm = {
+  sink << "shr\t" << PrintImm(imm) << ", " << PrintReg(rd);
+};
+
+op sld_b(rd[5] : 0b0110[4] : imm[7]);
+
+sld_b.disasm = {
+  sink << "sld.b\t" << PrintImm(imm) << "[" << PrintReg(30) << "], " << PrintReg(rd);
+};
+
+op sld_h(rd[5] : 0b1000[4] : shl<1> imm[7]);
+
+sld_h.disasm = {
+  sink << "sld.h\t" << PrintImm(imm) << "[" << PrintReg(30) << "], " << PrintReg(rd);
+};
+
+op sld_w(rd[5] : 0b1010[4] : shl<2> imm[6] : 0b0[1]);
+
+sld_w.disasm = {
+  sink << "sld.w\t" << PrintImm(imm) << "[" << PrintReg(30) << "], " << PrintReg(rd);
+};
+
+op sst_b(rt[5] : 0b0111[4] : imm[7]);
+
+sst_b.disasm = {
+  sink << "sst.b\t" << PrintReg(rt) << ", " << PrintImm(imm) << "[" << PrintReg(30) << "]";
+};
+
+op sst_h(rt[5] : 0b1001[4] : shl<1> imm[7]);
+
+sst_h.disasm = {
+  sink << "sst.h\t" << PrintReg(rt) << ", " << PrintImm(imm) << "[" << PrintReg(30) << "]";
+};
+
+op sst_w(rt[5] : 0b1010[4] : shl<2> imm[6] : 0b1[1]);
+
+sst_w.disasm = {
+  sink << "sst.w\t" << PrintReg(rt) << ", " << PrintImm(imm) << "[" << PrintReg(30) << "]";
+};
+
+op sub(rd[5] : 0b001101[6] : ra[5]);
+
+sub.disasm = {
+  sink << "sub\t" << PrintReg(ra) << ", " << PrintReg(rd);
+};
+
+op subr(rd[5] : 0b001100[6] : ra[5]);
+
+subr.disasm = {
+  sink << "subr\t" << PrintReg(ra) << ", " << PrintReg(rd);
+};
+
+op tst(rd[5] : 0b001011[6] : ra[5]);
+
+tst.disasm = {
+  sink << "tst\t" << PrintReg(ra) << ", " << PrintReg(rd);
+};
+
+op xor(rd[5] : 0b001001[6] : ra[5]);
+
+xor.disasm = {
+  sink << "xor\t" << PrintReg(ra) << ", " << PrintReg(rd);
+};
+
+op addi(rd[5] : 0b110000[6] : ra[5] :> <: sext imm[16]);
+
+addi.disasm = {
+  sink << "addi\t" << PrintImm(imm) << ", " << PrintReg(ra) << ", " << PrintReg(rd);
+};
+
+op andi(rd[5] : 0b110110[6] : ra[5] :> <: imm[16]);
+
+andi.disasm = {
+  sink << "andi\t" << PrintImm(imm) << ", " << PrintReg(ra) << ", " << PrintReg(rd);
+};
+
+op clr1(0b10[2] : k[3] : 0b111110[6] : rl[5] :> <: sext imm[16]);
+
+clr1.disasm = {
+  sink << "clr1\t" << PrintImm(k) << ", " << PrintImm(imm) << "[" << PrintReg(rl) << "]";
+};
+
+op di(0b0000011111100000[16] :> <: 0b0000000101100000[16]);
+
+di.disasm = {
+  sink << "di";
+};
+
+op ei(0b1000011111100000[16] :> <: 0b0000000101100000[16]);
+
+ei.disasm = {
+  sink << "ei";
+};
+
+op halt(0b0000011111100000[16] :> <: 0b0000000100100000[16]);
+
+halt.disasm = {
+  sink << "halt";
+};
+
+op jarl(rd[5] : 0b11110[5] : shl<16> sext o1[6] :> <: shl<1> o0[15] : 0b0[1]);
+jarl.var offset : {uint32_t} = {o1|o0};
+
+jarl.disasm = {
+  sink << "jarl\t" << PrintHex(GetAddr()+offset) << ", " << PrintReg(rd);
+};
+
+op jr(0b0000011110[10] : shl<16> sext o1[6] :> <: shl<1> o0[15] : 0b0[1]);
+jr.var offset : {uint32_t} = {o1|o0};
+
+jr.disasm = {
+  sink << "jr\t" << PrintHex(GetAddr()+offset);
+};
+
+op ld_b(rd[5] : 0b111000[6] : rl[5] :> <: sext imm[16]);
+
+ld_b.disasm = {
+  sink << "ld.b\t" << PrintImm(imm) << "[" << PrintReg(rl) << "], " << PrintReg(rd);
+};
+
+op ld_h(rd[5] : 0b111001[6] : rl[5] :> <: shl<1> sext imm[15] : 0b0[1]);
+
+ld_h.disasm = {
+  sink << "ld.h\t" << PrintImm(imm) << "[" << PrintReg(rl) << "], " << PrintReg(rd);
+};
+
+op ld_w(rd[5] : 0b111001[6] : rl[5] :> <: shl<1> sext imm[15] : 0b1[1]);
+
+ld_w.disasm = {
+  sink << "ld.w\t" << PrintImm(imm) << "[" << PrintReg(rl) << "], " << PrintReg(rd);
+};
+
+op ldsr(rd[5] : 0b111111[6] : rs[5] :> <: ?[5] : 0b00000100000[11]);
+
+ldsr.disasm = {
+  sink << "ldsr\t" << PrintReg(rs) << ", " << PrintSReg(rd);
+};
+
+op movea(rd[5] : 0b110001[6] : ra[5] :> <: sext imm[16]);
+
+movea.disasm = {
+  sink << "movea\t" << PrintImm(imm) << ", " << PrintReg(ra) << ", " << PrintReg(rd);
+};
+
+op movhi(rd[5] : 0b110010[6] : ra[5] :> <: sext imm[16]);
+
+movhi.disasm = {
+  sink << "movhi\t" << PrintImm(imm) << ", " << PrintReg(ra) << ", " << PrintReg(rd);
+};
+
+op mulhi(rd[5] : 0b110111[6] : ra[5] :> <: sext imm[16]);
+
+mulhi.disasm = {
+  sink << "mulhi\t" << PrintImm(imm) << ", " << PrintReg(ra) << ", " << PrintReg(rd);
+};
+
+op not1(0b01[2] : k[3] : 0b111110[6] : rl[5] :> <: sext imm[16]);
+
+not1.disasm = {
+  sink << "not1\t" << PrintImm(k) << ", " << PrintImm(imm) << "[" << PrintReg(rl) << "]";
+};
+
+op ori(rd[5] : 0b110100[6] : ra[5] :> <: imm[16]);
+
+ori.disasm = {
+  sink << "ori\t" << PrintImm(imm) << ", " << PrintReg(ra) << ", " << PrintReg(rd);
+};
+
+op reti(0b0000011111100000[16] :> <: 0b0000000101000000[16]);
+
+reti.disasm = {
+  sink << "reti";
+};
+
+op sar(rd[5] : 0b111111[6] : ra[5] :> <: 0b0000000010100000[16]);
+
+sar.disasm = {
+  sink << "sar\t" << PrintReg(ra) << ", " << PrintReg(rd);
+};
+
+op satsubi(rd[5] : 0b110011[6] : ra[5] :> <: sext imm[16]);
+
+satsubi.disasm = {
+  sink << "satsubi\t" << PrintImm(imm) << ", " << PrintReg(ra) << ", " << PrintReg(rd);
+};
+
+op set1(0b00[2] : k[3] : 0b111110[6] : rl[5] :> <: sext imm[16]);
+
+set1.disasm = {
+  sink << "set1\t" << PrintImm(k) << ", " << PrintImm(imm) << "[" << PrintReg(rl) << "]";
+};
+
+op setf(rd[5] : 0b1111110[7] : cond[4] :> <: 0b0000000000000000[16]);
+
+setf.disasm = {
+  sink << "setf\t" << PrintCond(cond) << ", " << PrintReg(rd);
+};
+
+op shl_(rd[5] : 0b111111[6] : ra[5] :> <: 0b0000000011000000[16]);
+
+shl_.disasm = {
+  sink << "shl\t" << PrintReg(ra) << ", " << PrintReg(rd);
+};
+
+op shr_(rd[5] : 0b111111[6] : ra[5] :> <: 0b0000000010000000[16]);
+
+shr_.disasm = {
+  sink << "shr\t" << PrintReg(ra) << ", " << PrintReg(rd);
+};
+
+op st_b(rt[5] : 0b111010[6] : rl[5] :> <: sext imm[16]);
+
+st_b.disasm = {
+  sink << "st.b\t" << PrintReg(rt) << ", " << PrintImm(imm) << "[" << PrintReg(rl) << "]";
+};
+
+op st_h(rt[5] : 0b111011[6] : rl[5] :> <: shl<1> sext imm[15] : 0b0[1]);
+
+st_h.disasm = {
+  sink << "st.h\t" << PrintReg(rt) << ", " << PrintImm(imm) << "[" << PrintReg(rl) << "]";
+};
+
+op st_w(rt[5] : 0b111011[6] : rl[5] :> <: shl<1> sext imm[15] : 0b1[1]);
+
+st_w.disasm = {
+  sink << "st.w\t" << PrintReg(rt) << ", " << PrintImm(imm) << "[" << PrintReg(rl) << "]";
+};
+
+op stsr(rd[5] : 0b111111[6] : rs[5] :> <: ?[5] : 0b00001000000[11]);
+
+stsr.disasm = {
+  sink << "stsr\t" << PrintSReg(rs) << ", " << PrintReg(rd);
+};
+
+op trap(0b00000111111[11] : imm[5] :> <: 0b0000000100000000[16]);
+
+trap.disasm = {
+  sink << "trap\t" << PrintImm(imm);
+};
+
+op tst1(0b11[2] : k[3] : 0b111110[6] : rl[5] :> <: sext imm[16]);
+
+tst1.disasm = {
+  sink << "tst1\t" << PrintImm(k) << ", " << PrintImm(imm) << "[" << PrintReg(rl) << "]";
+};
+
+op xori(rd[5] : 0b110101[6] : ra[5] :> <: imm[16]);
+
+xori.disasm = {
+  sink << "xori\t" << PrintImm(imm) << ", " << PrintReg(ra) << ", " << PrintReg(rd);
+};
+

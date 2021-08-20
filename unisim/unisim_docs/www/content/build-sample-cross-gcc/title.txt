@@ -1,0 +1,1 @@
+Build a sample GCC cross compiler using crosstool-NG

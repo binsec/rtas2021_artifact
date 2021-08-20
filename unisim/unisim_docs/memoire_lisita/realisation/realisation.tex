@@ -1,0 +1,210 @@
+\subsection{Méthodologie}
+
+\subsubsection{Découpage et phasage du problème}
+Dès mon arrivée, mon maître de stage m'a expliqué les spécificités du développement d'un simulateur et les principales difficultés que j'allais rencontrer. 
+En effet dans ce type de développement la difficulté ne réside pas dans la compléxité du code car les spécifications des instructions utilisent des opérations aryhtmétiques et logiques simples,
+Les sources d'erreur viennent plus de la comprèhension du modèle à simuler que de la façon de l'implémenter.
+Le nombre d'instruction executé (par seconde en moyenne de dans le cas du simulateur réalisé) amplifie l'effet des ces erreurs et les rendent plus difficile à détecter. 
+La pluspart du temps il s'agit d'une mauvaise traductions de la spécifications ou d'erreurs dans des expressions aryhtmétiques ou logique. 
+En pratique il est impossible d'écrire un simulateur sans introduire de telles erreurs mais il est important de les réduire le plus possible. 
+De plus le simulateurs ne peut être testé qu'à partir d'un certain niveau d'avancement, l'exécution des programmes les plus simples utilisant déjà un certain nombres d'instruction principales.
+Pour cela on m'a conseillé de suivre au cours de mon stages les étapes de développement décrites ci-dessus.
+
+\begin{itemize}
+\item Etude des spécifications.
+\item Implémentation des fonctions de désassemblage.
+\item Vérification du désassemblage.
+\item Implémentation des instructions (fonctions execute).
+\item Tests avec benchmarks et correction des bogues.
+\end{itemize}
+
+\subsubsection{Etude des spécifications}
+
+L'étude des spécifications consiste à comprendre le fonctionnement du processeur et ses caractéristiques. 
+Cela permet d'une part d'établir un modèle de représentation des registres généraux et spécifiques tel que le PC, mais aussi de définir les fonctions qui seront utilisées par les instructions lors de l'implémentation. 
+D'autre part cette lecture permettra de lever toutes les ambiguités sur la fonction précise de chaque instruction.
+Pour établir les spécifications de la version du processeur AVR32UC3C j'ai utilisé la documentation officiel de l'AVR32 disponible sur le site du constructeur ATMEL.
+En particulier le document "AVR32 architecture manual" qui contient les informations techniques et architecurales sur le processeur et une description de chaque instruction.
+ 
+(description du processeur)
+ 
+Pour chaque instruction une description détaillé est présenté sous cette forme:
+
+\begin{itemize}
+\item une description du rôle de l'instruction.
+\item les opérations effectué (rd <- rd \& rs).
+\item la synthaxe en assembleur (ex: and rd, rs).
+\item le code opération associé.
+\end{itemize}
+
+La taille des mots en nombre de bits est représenté selon la convention suivante pour le nom des instructions:
+
+\begin{itemize}
+\item Byte: 8 bits
+\item HalfWord: 16 bits
+\item Word: 32 bits
+\item DoubleWord: 64 bits
+\end{itemize}
+
+Certaines instructions n'utlisent seulement qu'une partie d'un mot de 32 bits situé dans un registre.
+C'est le cas par exemple de l'instruction mulhh.w qui multiplie 2 mots de 16 bits pour stocker le résultat dans un mot de 32 bits, et dont la syntaxe est:
+\[ mulhh.w Rd, Rx:<Rx-part>, Ry:<Ry-part> \]
+Son code opération est: \[(0b111[3]:rx[4]:0b00000[5]:ry[4]:><:0b00000111[8]:0b10[2]:rx_part[1]:ry_part[1]:rd[4]) \]
+Suivant la partie low (l) ou bottom (b) designé par Rx-part/Ry-part, les 16 premiers ou 16 derniers bits (dans l'ordre big endian) sont extrait du registre Rx/Ry. 
+Rd étant le registre destination. 
+
+\subsubsection{implémentation de la boucle de simulation}
+
+Explication sur le squelette du simulateurs implémenter par mon maitre de stage
+
+Choix de la mise à jour du compteur de programme.
+
+\subsubsection{Implémentation des fonctions de désassemblage}
+
+La première partie du développement fut d'écrire les opcodes et les fonctions de désassemblage du jeu d'instruction complet.
+Les instructions sont régroupés selon les catégorie suivantes:
+
+\begin{description}
+\item[arithmetic\_operations :] contient les opérations arithétique tel que l'addition, la soustraction, la compraraison de byte,word.
+\item[bit\_shift\_operations :] contient les opérations sur les bits tel que les cast, extension de signe, swap et les opérations de décalages et rotation des bits.
+\item[coprocessor\_interface :] non implémenté
+\item[data\_transfer\_operations :] contient les opérations de chargement, rangement et écriture de bit en mémoire.
+\item[dsp\_operations :] instructions avec saturations
+\item[instruction\_flow :] contient les instructions de brachement, de saut, d'appel et retour de sous routine.
+\item[logic\_operations :] contient les opérations logiques tel que AND et OR. 
+\item[multiplication\_operations :] contient les différentes instructions de multiplication.
+\item[simd\_operations :] non implémenté. 
+\item[system\_control\_operations :] instructions contrôlant le comportement du système.
+\end{description}
+
+Pour chacune d'entre elles 
+
+voir la couverture du jeu d'instruction en annexe pour la liste complète des instructions.
+
+Cette étape permet de charger des programmes en mémoire que l'on peux utiliser pour vérifier la synthaxe du désassemblage des instructions. 
+Pour cela on utilise l'outils de la chaine ATMEL Objdump qui convertis le code source d'un programme en instruction assembleur. 
+Pour chaque programme executé sur la machine cible il est important de vérfier le bon désassemblage des instructions utilisé en comparant avec celui d'objdump
+afin de vérifier qu'il n'y ai pas eu d'erreur mais surtous que la synthaxe soit conforme.
+
+\subsubsection{Implémentation des instructions}
+L'implémentation des fonctions execute se fait également en suivant les opérations de la documentation. Pour la pluspart des instructions sont divisé en 3 parties:
+\begin{itemize}
+\item récupération des données.
+\item traitement et calcul du résultat.
+\item mise à jour des registres.
+\item mise à jour des flags si nécessaire.
+\end{itemize}
+ 
+
+Les fonctions qui permettent d'effectuer des transferts entre la mémoire du processeur et les registres sont stocké dans la classe "cpu" car celle-ci sont propres
+au modèles de simualteurs.Elles sont appelé par les méthodes de rangement et chargement (load/store). 
+
+Pour les instructions de rangement (store), les fonctions suivantes stockent la partie voulue du contenue du registre à l'adresse addr. 
+
+\begin{itemize}
+\item IntStoreByte(unsigned int rs,typename CONFIG::address\_t addr)
+\item IntStoreHalfWord(unsigned int rs,typename CONFIG::address\_t addr)
+\item IntStoreWord(unsigned int rs,typename CONFIG::address\_t addr)
+\item StoreHalfWordIntoWord(unsigned int rx,unsigned int ry,unsigned int x\_part,unsigned int y\_part,typename CONFIG::address\_t addr)
+\item SwapAndStoreHalfWord(unsigned int rs, typename CONFIG::address\_t addr)
+\item SwapAndStoreWord(unsigned int rs, typename CONFIG::address\_t addr)
+\end{itemize}
+
+les 2 fonctions swap effectuent respectivement une inversion entre les 2 Bytes/HalfWords
+
+Pour les instructions de chargement (load), les fonctions suivantes chargent le registre rd avec la donnée stockée à l'adresse addr.
+
+\begin{itemize}
+\item UintLoadByte(unsigned int rd,typename CONFIG::address\_t addr)
+\item UintLoadHalfWord(unsigned int rd,typename CONFIG::address\_t addr)
+\item IntLoadWord(unsigned int rd,typename CONFIG::address\_t addr)
+\item SintLoadByte(unsigned int,typename CONFIG::address\_t addr)
+\item SintLoadHalfWord(unsigned int rd,typename CONFIG::address\_t addr)
+\item LoadAndInsertByte(unsigned int rd,typename CONFIG::address\_t addr,unsigned int part)
+\item LoadAndInsertHalfWord(unsigned int rd,typename CONFIG::address\_t addr,unsigned int part)
+\item SintLoadHalDans la suite du rapport j'utiliserai conformement au document les conventions suivantes concernant la taille des mots:fWordAndSwap(unsigned int rd,typename CONFIG::address\_t addr)
+\end{itemize}
+
+Les fonctions précèdés de U distinguent les données représentant des entier non signé a celles signé nécessitant une extension de signe avant le stockage dans
+le registre.
+Les fonctions LoadAndInsertByte et LoadAndInsertHalfWord chargent dans le registre rd respectivement le Byte/HalfWord (contenue a l'addresse addr) sans effacer le reste du registre.
+la position est déterminé par la variable part.
+
+\begin{itemize}
+\item ExchangeRegMem(unsigned int rd,unsigned int rx,unsigned int ry)
+\end{itemize}
+
+\begin{itemize}
+\item MemoryBitAccess(typename CONFIG::address\_t addr,unsigned int mode, unsigned int pos)
+\end{itemize}
+Suivant le mode choisie(clear, set ou toggle), le bit dont la position est donnée par pos est modifié dans le mot situé à l'adresse mémoire addr.
+
+\subsubsection{Méthodes de débogage}
+
+Les différents types de bogues rencontrés sont:
+\begin{itemize}
+\item décodage
+\item endian
+\item erreur typographique
+\item mauvaise interprétation d'une spécification
+\item erreur arythmétique
+\item réutilisation d'un bloque de code inaproprié
+\end{itemize}
+
+Dans la pluspart des cas ceux-ci sont introduits par inattention, par exemple lors de l'implémenatation d'une série d'instruction qui différent très peu les unes 
+des autres. A cause du nombre important d'instruction éxecuté,la présence de bogues se manifeste part des effets de bord. Afin de retrouver les causes j'ai du avoir aux méthodes suivantes:
+
+\begin{itemize}
+\item recherche par dichotomie.
+\item excécution instruction par instruction. 
+\item relecture de code.
+\end{itemize}
+
+La recherche de bug par dichotomie consiste à découper le programme en morceaux jusqu'à trouver l'instruction qui cause l'erreur.
+
+L'exécution instruction par instruction consiste à excecuter les instructions les unes après les autres et vérfier à chaque fois si les valeurs dans les regsitres
+sont celles attendus. Cette méthode est assez longue donc nécessite de cibler 
+
+Dans certains cas, il fut impossible de retrouver la cause d'un bogues par les 2 précèdentes méthodes. 
+Dans ce cas la seule solution consiste à réanalyser chaque instruction avec les spécifiations afin de detecter une erreur d'implémenation directement dans le code source.
+Plusieurs relecture successive d'un ensemble d'instructions m'ont permis de retrouver certaines erreurs de cette façon ce qui évite également de passer du temps à les retrouver par déboguage.
+De plus les bogues devienent de plus en plus difficile à détecter au cours du débogage, car il apparraissent dans des instructions plus rare. 
+
+Afin de pouvoir améliorer d'avantage le simulateur il serai nécessaire d'introduire des tests unitaires permettant de valider chaque instruction de façon indépendante.
+
+\subsection{Evaluation et résultats expérimentaux}
+
+\subsubsection{Présentation des benchmarks utilisés}
+
+Introduction sur la suite Mibench d'après le document "Mibench: A free, commercially representative embedded benchmark suite"
+
+Listes de benchmarks utilisés avec leurs descriptions
+
+\begin{description}
+\item [Basicmath:]...
+\item [Bitcount:]...
+\item [Dijkstra:]...
+\item [Stringsearch:]...
+\item [Blowfish:]...
+\item [Rijndael:]...
+\item [SHA:]...
+\item [Adpcm:]...
+\item [CRC32:]...
+\end{description}
+
+\subsubsection{Grandeurs mesurées}
+
+\begin{description}
+\item [nombre d'instructions exécutées:]...
+\item [temps exacte de simulation:]...
+\item [vitesse de simulation de la machine hôte:]...
+\item [dilatation du temps:]...
+\end{description}
+
+\subsection{Discussion des résultats obtenues}
+
+diagramme representant le taux d'instruction implémentés, le taux d'instruction couvertes par les benchmarks.
+
+Liste des instructions non testés.
+
+discussion sur la table de couverture de benchmarks

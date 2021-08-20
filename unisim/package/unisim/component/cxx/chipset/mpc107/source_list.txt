@@ -1,0 +1,6 @@
+unisim/component/cxx/chipset/mpc107/address_map_entry.cc
+unisim/component/cxx/chipset/mpc107/address_maps.cc
+unisim/component/cxx/chipset/mpc107/address_maps_debug.cc
+unisim/component/cxx/chipset/mpc107/config_regs.cc
+unisim/component/cxx/chipset/mpc107/pci_controller.cc
+unisim/component/cxx/chipset/mpc107/pci_controller_debug.cc

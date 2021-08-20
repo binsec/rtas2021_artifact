@@ -1,0 +1,95 @@
+/*
+ *  Copyright (c) 2013-2016,
+ *  Commissariat a l'Energie Atomique (CEA)
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without modification,
+ *  are permitted provided that the following conditions are met:
+ *
+ *   - Redistributions of source code must retain the above copyright notice, this
+ *     list of conditions and the following disclaimer.
+ *
+ *   - Redistributions in binary form must reproduce the above copyright notice,
+ *     this list of conditions and the following disclaimer in the documentation
+ *     and/or other materials provided with the distribution.
+ *
+ *   - Neither the name of CEA nor the names of its contributors may be used to
+ *     endorse or promote products derived from this software without specific prior
+ *     written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ *  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *  DISCLAIMED.
+ *  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ *  INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ *  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+ *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ *  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Authors: Yves Lhuillier (yves.lhuillier@cea.fr)
+ */
+
+ldc2.specialize( ldc_unindexed, mrrc );
+stc2.specialize( stc_unindexed, mcrr );
+blx_pcrel.specialize( b, bl );
+pld_imm.specialize( ldr_imm, ldrb_imm );
+pld_reg.specialize( ldr_reg, ldrb_reg );
+
+/* The following group specialization makes unconditional instructions
+ * ([31..28] == 0b1111) always above unconditional operations
+ * ([31..28] == cond; defined here as an explicit group). */
+
+group conditional (ldr_imm,ldr_reg,ldrh_imm,ldrh_reg,ldrsh_imm,ldrsh_reg,ldrb_imm,ldrb_reg, \
+                   ldrsb_imm,ldrsb_reg,ldrd_imm,ldrd_reg,str_imm,str_reg,strh_imm,strh_reg, \
+                   strb_imm,strb_reg,strd_imm,strd_reg,ldrt_imm,ldrt_reg,ldrht_imm,ldrht_reg, \
+                   ldrsht_imm,ldrsht_reg,ldrbt_imm,ldrbt_reg,ldrsbt_imm,ldrsbt_reg,strt_imm,strt_reg, \
+                   strht_imm,strht_reg,strbt_imm,strbt_reg,ldm,stm,ldm_usr,ldm_rfe, \
+                   stm_usr,swp,swpb,ldrex,ldrexh,ldrexb,ldrexd,strex,   \
+                   strexh,strexb,strexd,cdp,ldc,ldc_unindexed,mcr,      \
+                   mrc,stc,stc_unindexed,mcrr,mrrc,b,bl,                \
+                   cp15_mrc, cp15_mcr,                                  \
+                   bx,bxj,blx_reg,mla,mls,mul,smlal,smlald,             \
+                   smlsld,smull,umlal,umaal,umull,smlaxy,smlad,smuad,   \
+                   smlsd,smusd,smmla,smmul,smmls,smlalxy,smlawy,smulxy, \
+                   smulwy,sdiv,udiv,swi,hvc,smc,eret,mrs,               \
+                   msr_reg,msr_reg_psr,msr_imm_psr,                     \
+                   and_32imm,and_imm_shift,and_reg_shift,eor_32imm,eor_imm_shift,eor_reg_shift, \
+                   sub_32imm,sub_imm_shift,sub_reg_shift,rsb_32imm,rsb_imm_shift,rsb_reg_shift, \
+                   add_32imm,add_imm_shift,add_reg_shift,adc_32imm,adc_imm_shift,adc_reg_shift, \
+                   sbc_32imm,sbc_imm_shift,sbc_reg_shift,rsc_32imm,rsc_imm_shift,rsc_reg_shift, \
+                   orr_32imm,orr_imm_shift,orr_reg_shift,bic_32imm,bic_imm_shift,bic_reg_shift, \
+                   tst_32imm,tst_imm_shift,tst_reg_shift,teq_32imm,teq_imm_shift,teq_reg_shift, \
+                   cmp_32imm,cmp_imm_shift,cmp_reg_shift,cmn_32imm,cmn_imm_shift,cmn_reg_shift, \
+                   mov_32imm,mov_imm_shift,mov_reg_shift,mvn_32imm,mvn_imm_shift,mvn_reg_shift, \
+                   andspc_imm, andspc_imm_shift,eorspc_imm, eorspc_imm_shift, \
+                   subspc_imm, subspc_imm_shift,rsbspc_imm, rsbspc_imm_shift, \
+                   addspc_imm, addspc_imm_shift,adcspc_imm, adcspc_imm_shift, \
+                   sbcspc_imm, sbcspc_imm_shift,rscspc_imm, rscspc_imm_shift, \
+                   orrspc_imm, orrspc_imm_shift,movspc_imm, movspc_imm_shift, \
+                   bicspc_imm, bicspc_imm_shift,mvnspc_imm, mvnspc_imm_shift, \
+                   clz,rbit,rev,revsh,rev16,                            \
+                   movw,movt,                                           \
+                   qadd,qsub,qdadd,qdsub,pkh,sxtab16,sxtb16,uxtab16,    \
+                   uxtb16,sel,ssat,ssat16,usat,usat16,sxtab,sxtb,       \
+                   sxtah,sxth,uxtab,uxtb,uxtah,uxth,usad8,usada8,       \
+                   sbfx,bfi,bfc,ubfx,sadd16,sadd8,ssub16,ssub8,         \
+                   sasx,ssax,shadd16,shasx,shsax,shsub16,shadd8,shsub8, \
+                   uadd16,uasx,usax,usub16,uadd8,usub8,qadd16,qasx,     \
+                   qsax,qsub16,qadd8,qsub8,uqadd16,uqasx,uqsax,uqsub16, \
+                   uqadd8,uqsub8,uhadd16,uhasx,uhsax,uhsub16,uhadd8,uhsub8, \
+                   nop,yield,wfe,wfi,sev,dbg);
+
+op unconditional( 0b1111[4]: ?[28] );
+
+unconditional.disasm = {
+  buffer << "unconditional group\t(" << std::hex << this->GetEncoding() << std::dec << ")";
+};
+
+unconditional.execute = {
+  cpu.UndefinedInstruction( this );
+};
+
+unconditional.specialize( conditional );

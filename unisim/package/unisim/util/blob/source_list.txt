@@ -1,0 +1,6 @@
+unisim/util/blob/blob32.cc
+unisim/util/blob/blob64.cc
+unisim/util/blob/section32.cc
+unisim/util/blob/section64.cc
+unisim/util/blob/segment32.cc
+unisim/util/blob/segment64.cc

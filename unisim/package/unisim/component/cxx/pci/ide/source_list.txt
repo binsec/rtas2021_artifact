@@ -1,0 +1,4 @@
+unisim/component/cxx/pci/ide/disk_image.cc
+unisim/component/cxx/pci/ide/ide_ctrl.cc
+unisim/component/cxx/pci/ide/ide_disk.cc
+unisim/component/cxx/pci/ide/pcidev.cc

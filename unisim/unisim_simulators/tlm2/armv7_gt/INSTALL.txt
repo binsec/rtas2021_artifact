@@ -1,0 +1,35 @@
+INSTALLATION
+------------
+
+Requirements:
+  - GNU bash
+  - cmake (>= 2.8)
+  - GNU flex
+  - GNU bison
+  - boost (http://www.boost.org) development package (libboost-devel for Redhat/Mandriva, libboost-graph-dev for Debian/Ubuntu)
+  - libxml2 (http://xmlsoft.org/libxml2) development package (libxml2-devel for Redhat/Mandriva, libxml2-dev for Debian/Ubuntu)
+  - zlib (http://www.zlib.net) development package (zlib1g-devel for Redhat/Mandriva, zlib1g-devel for Debian/Ubuntu)
+  - libedit (http://www.thrysoee.dk/editline) development package (libedit-devel for Redhat/Mandriva, libedit-dev for Debian/Ubuntu)
+  - Core SystemC Language >= 2.1 (http://www.systemc.org)
+
+Optional:
+  - CACTI 4.2 (power consumption library for SRAM structures)
+
+Building instructions:
+Create an empty directory to build the simulator and go into it. Then use cmake to configure it, and finally call make. For example: 
+  $ mkdir <my-build-dir>
+  $ cd <my-build-dir>
+  $ cmake -Dwith_osci_systemc=<path-to-systemc-install-dir> -Dwith_osci_tlm2=<path-to-tlm2-install-dir> [-Dwith_cacti_4_2=<path-to-cacti-4.2-source-dir>] <path-to-simulator-source>
+  $ make
+The CACTI option is not required, but SystemC and TLM2 are compulsory.
+The simulator will be created in the 'bin' directory and its data resources in the 'share' directory.
+
+Installing (optional):
+To install the simulator just type:
+  $ make install
+This will install it in your system, typically at /usr/bin and /usr/share, so you will usually require root permissions to do it.
+If you want to install the software somewhere (for example in a user location) set the CMAKE_INSTALL_PREFIX. For example (once the simulator has been built):
+  $ cd <my-build-dir>
+  $ cmake -DCMAKE_INSTALL_PREFIX=<my-install-dir> .
+  $ make install
+

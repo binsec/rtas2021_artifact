@@ -1,0 +1,2 @@
+unisim/component/tlm/bridge/snooping_fsb_to_mem/addr32_burstsize32.cc
+unisim/component/tlm/bridge/snooping_fsb_to_mem/addr32_burstsize32_debug.cc

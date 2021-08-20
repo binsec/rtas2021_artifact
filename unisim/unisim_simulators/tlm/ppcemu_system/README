@@ -1,0 +1,119 @@
+Description:
+------------
+
+ppcemu-system is a full system simulator of an MPC7447A/MPC107 (PowerPC) based board with Linux boot capability.
+The simulated board is very similar to a PowerMac G4 PCI machine. Computations on IEEE 754 floating point numbers
+are emulated using simfloat. Altivec instructions are currently decoded but not implemented. The running PowerPC
+application is a PowerMac Linux Kernel and all the applications installed on the hard disk image and/or the initial
+RAM disk image. Software running on the simulated hardware can be debugged by connecting a GDB client to the simulator
+through the GDB serial remote protocol. The GDB client can be either the standard text based client (i.e. command gdb),
+a graphical front-end to GDB (e.g. ddd), or even Eclipse CDT.
+
+Modules and Services:
+---------------------
+
+The simulator is composed of the following modules:
+    * PowerPC CPU configured as an MPC7447A
+    * snooping bus (front side bus)
+    * MPC107 chipset
+    * memory
+    * rom
+    * AM29LVxxx flash memory configured as an AM29LV800
+    * PCI bus
+    * PIIX4 IDE controller
+    * Heathrow Programmable Interrupt Controller
+    * Video frame buffer display
+    * PCI-to-ISA bridge
+    * i8042 keyboard controller
+
+The simulator uses the following services:
+    * SDL
+    * PowerMac Linux kernel loader
+    * GDB Server
+    * Inline debugger
+    * SystemC Time
+    * Host Time
+    * Power Estimators (for ITLB, DTLB, IL1, DL1 and L2)
+
+Using the simulator:
+--------------------
+
+Usage: ppcemu-system [<options>] <linux kernel> [linux kernel arguments]
+
+‘linux kernel’ is an ELF32 uncompressed Linux kernel (vmlinux) A ‘Mac OS BootX’ loader is emulated instead of directly running an open firmware and a boot loader
+
+Options:
+
+    * Starting the inline debugger
+--inline-debugger
+-d
+
+    * Starting a GDB server: The GDB server will wait for a GDB client connection on the specified TCP port.
+--gdb-server <TCP port>
+-g <TCP port>
+
+    * Defining the width (in pixels) of the video display
+--screen-width <width>
+-x <width>
+
+    * Defining the height (in pixels) of the video display
+--screen-height <height>
+-y <height>
+
+    * Capturing the video display as Windows bitmap (.BMP) files
+--capture <bitmap out filename>
+-u <bitmap out filename>
+
+    * Defining the architecture description to be used by the GDB server
+--gdb-server-arch-file <arch file>
+-a  <arch file>
+
+    * Defining the device tree to be used by the PowerMac Linux kernel loader
+--device-tree
+-t  <devtree file>
+
+    * Defining the video display refresh period (in milliseconds)
+--video-refresh-period <period>
+-f <period>
+
+    * Disabling the video display
+--no-video
+-n
+
+    * Defining the number of instructions to simulate before exiting
+-i <count>
+--max:inst <count>
+
+    * Enabling power estimation for ITLB, DTLB, IL1, DL1, and L2
+-p
+--power
+
+    * Defining the compressed initial ramdisk image to be loaded by the PowerMac Linux kernel loader
+-r <file>
+--ramdisk <file>
+
+    * Defining the IDE disk image (ide0)
+-c <file>
+--disk:image0 <file,file,...>
+
+    * Redirecting the logger output into a file
+-l <file>
+--logger:file <file>
+
+    * Enabling compression (gzip format) of the logger output
+-z
+--logger:zip
+
+    * Redirecting the logger output to the standard error output
+-e
+--logger:error
+
+    * Redirecting the logger output to the standard output
+-o
+--logger:out
+
+    * Displaying the integrated help
+
+--help
+-h
+

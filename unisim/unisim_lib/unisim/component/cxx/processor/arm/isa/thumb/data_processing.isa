@@ -1,0 +1,896 @@
+/*
+ *  Copyright (c) 2007-2016,
+ *  Commissariat a l'Energie Atomique (CEA)
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without modification,
+ *  are permitted provided that the following conditions are met:
+ *
+ *   - Redistributions of source code must retain the above copyright notice, this
+ *     list of conditions and the following disclaimer.
+ *
+ *   - Redistributions in binary form must reproduce the above copyright notice,
+ *     this list of conditions and the following disclaimer in the documentation
+ *     and/or other materials provided with the distribution.
+ *
+ *   - Neither the name of CEA nor the names of its contributors may be used to
+ *     endorse or promote products derived from this software without specific prior
+ *     written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ *  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *  DISCLAIMED.
+ *  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ *  INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ *  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+ *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ *  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Authors: Yves Lhuillier (yves.lhuillier@cea.fr), Daniel Gracia Perez (daniel.gracia-perez@cea.fr)
+ */
+ 
+/**********************************************
+
+      THUMB DATA PROCESSING INSTRUCTIONS
+
+**********************************************/
+
+/*******************************************************************
+ * adc (add with carry) instruction
+ */
+
+op adc( 0b010000[6]: 0b0101[4]: rm[3]: rdn[3] );
+
+adc.disasm = {
+  buffer << "adcs\t" << DisasmRegister(rdn) << ", " << DisasmRegister(rm);
+};
+
+adc.execute = {
+  if (unlikely( not CheckCondition(cpu, cpu.itcond()) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  U32 op1 = cpu.GetGPR( rdn ), op2 = cpu.GetGPR( rm ), carry = cpu.CPSR().Get( C ), res = op1 + op2 + carry;
+  cpu.SetGPR( rdn, res );
+  if (not cpu.itblock()) UpdateStatusAddWithCarry( cpu, res, op1, op2, carry );
+};
+
+/*
+ * end of adc (add with carry) instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * add(1) (add immediate) instruction
+ * NOTE: mov(2) is equivalent to add(1)
+ */
+
+op add_1( 0b0001110[7]: imm[3]: rn[3]: rd[3] );
+
+add_1.disasm = {
+  buffer << "adds\t" << DisasmRegister(rd) << ", " << DisasmRegister(rn) << ", " << DisasmI(imm);
+};
+
+add_1.execute = {
+  if (unlikely( not CheckCondition(cpu, cpu.itcond()) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  U32 op1 = cpu.GetGPR( rn ), op2 = U32( imm ), res = op1 + op2;
+  cpu.SetGPR( rd, res );
+  if (not cpu.itblock()) UpdateStatusAdd( cpu, res, op1, op2 );
+};
+
+/*
+ * end of add(1) (add immediate) instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * add (add large immediate) instruction
+ */
+
+op add_2( 0b00110[5]: rdn[3]: imm[8] );
+
+add_2.disasm = {
+  buffer << "adds\t" << DisasmRegister(rdn) << ", " << DisasmI(imm);
+};
+
+add_2.execute = {
+  if (unlikely( not CheckCondition(cpu, cpu.itcond()) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  U32 op1 = cpu.GetGPR( rdn ), op2 = U32( imm ), res = op1 + op2;
+  cpu.SetGPR( rdn, res );
+  if (not cpu.itblock()) UpdateStatusAdd( cpu, res, op1, op2 );
+};
+
+/*
+ * end of add (add large immediate) instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * add (add register) instruction
+ */
+
+op add_3( 0b0001100[7]: rm[3]: rn[3]: rd[3] );
+
+add_3.disasm = {
+  buffer << "adds\t" << DisasmRegister(rd) << ", " << DisasmRegister(rn) << ", " << DisasmRegister(rm);
+};
+
+add_3.execute = {
+  if (unlikely( not CheckCondition(cpu, cpu.itcond()) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  U32 op1 = cpu.GetGPR( rn ), op2 = cpu.GetGPR( rm ), res = op1 + op2;
+  cpu.SetGPR( rd, res );
+  if (not cpu.itblock()) UpdateStatusAdd( cpu, res, op1, op2 );
+};
+
+/*
+ * end of add (add register) instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * add (add high registers) instruction
+ */
+
+op add_4( 0b01000100[8]: shl<3> rdn1[1]: rm[4]: rdn0[3] );
+add_4.var rdn : {uint8_t} = {rdn1|rdn0};
+
+add_4.disasm = {
+  buffer << "add\t" << DisasmRegister(rdn) << ", " << DisasmRegister(rm);
+};
+
+add_4.execute = {
+  if (unlikely( not CheckCondition(cpu, cpu.itcond()) )) return;
+  
+  cpu.SetGPR( rdn, cpu.GetGPR( rdn ) + cpu.GetGPR( rm ) );
+};
+
+op add_4_pc( 0b01000100[8]: 0b1[1]: rm[4]: 0b111[3] );
+
+add_4_pc.disasm = {
+  buffer << "add\tpc, " << DisasmRegister(rm);
+};
+
+add_4_pc.execute = {
+  if (unlikely( not CheckCondition(cpu, cpu.itcond()) )) return;
+  
+  cpu.SetGPR( 15, cpu.GetGPR( 15 ) + cpu.GetGPR( rm ) );
+};
+
+/*
+ * end of add (add high registers) instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * adr (add immediate to program counter) instruction
+ */
+
+op adr( 0b10100[5]: rd[3]: shl<2> imm[8] );
+
+adr.disasm = {
+  buffer << "add\t" << DisasmRegister(rd) << ", pc, " << DisasmI(imm);
+};
+
+adr.execute = {
+  if (unlikely( not CheckCondition(cpu, cpu.itcond()) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  cpu.SetGPR( rd, (cpu.GetGPR( 15 ) & U32(-4)) + U32(imm) );
+};
+
+/*
+ * end of add (add immediate to program counter) instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * add (add immediate to stack pointer) instruction
+ */
+
+op add_6( 0b10101[5]: rd[3]: shl<2> imm[8] );
+
+add_6.disasm = {
+  buffer << "add\t" << DisasmRegister(rd) << ", sp, " << DisasmI(imm);
+};
+
+add_6.execute = {
+  if (unlikely( not CheckCondition(cpu, cpu.itcond()) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  cpu.SetGPR( rd, cpu.GetGPR(cpu.SP_reg) + U32(imm) );
+};
+
+/*
+ * end of add (add immediate to stack pointer) instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * add (increment stack pointer) instruction
+ */
+
+op add_7( 0b101100000[9]: shl<2> imm[7] );
+
+add_7.disasm = {
+  buffer << "add\tsp, " << DisasmI(imm);
+};
+
+add_7.execute = {
+  if (unlikely( not CheckCondition(cpu, cpu.itcond()) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  cpu.SetGPR( cpu.SP_reg, cpu.GetGPR(cpu.SP_reg) + U32(imm) );
+};
+
+/*
+ * end of add (increment stack pointer) instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * and (logical and) instruction
+ */
+
+op and( 0b010000[6]: 0b0000[4]: rm[3]: rdn[3] );
+
+and.disasm = {
+  buffer << "ands\t" << DisasmRegister(rdn) << ", " << DisasmRegister(rm);
+};
+
+and.execute = {
+  if (unlikely( not CheckCondition(cpu, cpu.itcond()) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  typedef typename ARCH::S32 S32;
+  
+  U32 op1 = cpu.GetGPR( rdn ), op2 = cpu.GetGPR( rm ), res = op1 & op2;
+  cpu.SetGPR( rdn, res );
+  
+  if (not cpu.itblock())
+    {
+      cpu.CPSR().Set( N, S32(res) < S32(0) );
+      cpu.CPSR().Set( Z,     res == U32(0) );
+    }
+};
+
+/*
+ * end of and (logical and) instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * asr(2) (arithmetic shift right register) instruction
+ */
+
+op asr_reg( 0b010000[6]: 0b0100[4]: rm[3]: rdn[3] );
+
+asr_reg.disasm = {
+  buffer << "asrs\t" << DisasmRegister(rdn) << ", " << DisasmRegister(rm);
+};
+
+asr_reg.execute = {
+  if (unlikely( not CheckCondition(cpu, cpu.itcond()) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  U32 op1 = cpu.GetGPR(rdn), op2 = cpu.GetGPR(rm), res = ComputeRegShift( cpu, op1, /*asr*/2, op2 );
+  cpu.SetGPR( rdn, res );
+  if (not cpu.itblock()) UpdateStatusRegShift( cpu, res, op1, /*asr*/2, op2 );
+};
+
+/*
+ * end of asr(2) (arithmetic shift right register) instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * bic (bit clear) instruction
+ */
+
+op bic( 0b010000[6]: 0b1110[4]: rm[3]: rdn[3] );
+
+bic.disasm = {
+  buffer << "bics\t" << DisasmRegister(rdn) << ", " << DisasmRegister(rm);
+};
+
+bic.execute = {
+  if (unlikely( not CheckCondition(cpu, cpu.itcond()) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  typedef typename ARCH::S32 S32;
+  
+  U32 op1 = cpu.GetGPR( rdn ), op2 = cpu.GetGPR( rm ), res = op1 & ~op2;
+  cpu.SetGPR( rdn, res );
+  
+  if (not cpu.itblock())
+    {
+      cpu.CPSR().Set( N, S32(res) < S32(0) );
+      cpu.CPSR().Set( Z,     res == U32(0) );
+    }
+};
+
+/*
+ * end of bic (bit clear) instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * cmn (compare negative) instruction
+ */
+
+op cmn( 0b010000[6]: 0b1011[4]: rm[3]: rn[3] );
+
+cmn.disasm = {
+  buffer << "cmn\t" << DisasmRegister(rn) << ", " << DisasmRegister(rm);
+};
+
+cmn.execute = {
+  if (unlikely( not CheckCondition(cpu, cpu.itcond()) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  U32 op1 = cpu.GetGPR( rn ), op2 = cpu.GetGPR( rm ), res = op1 + op2;
+  UpdateStatusAdd( cpu, res, op1, op2 );
+};
+
+/*
+ * end of cmn (compare negative) instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * cmp(1) (compare immediate) instruction
+ */
+
+op cmp_1( 0b00101[5]: rn[3]: imm[8] );
+
+cmp_1.disasm = {
+  buffer << "cmp\t" << DisasmRegister(rn) << ", " << DisasmI(imm);
+};
+
+cmp_1.execute = {
+  if (unlikely( not CheckCondition(cpu, cpu.itcond()) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  U32 op1 = cpu.GetGPR( rn ), op2 = U32(imm), res = op1 - op2;
+  UpdateStatusSub( cpu, res, op1, op2 );
+};
+
+/*
+ * end of cmp(1) (compare immediate) instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * cmp(2) (compare register) instruction
+ */
+
+op cmp_2( 0b010000[6]: 0b1010[4]: rm[3]: rn[3] );
+op cmp_3( 0b01000101[8]: shl<3> rn1[1]: rm[4]: rn0[3] );
+cmp_3.var rn : {uint8_t} = {rn1|rn0};
+cmp_3.var reject : {Reject} = {((rn < 8) and (rm < 8)) or (rn == 15) or (rm == 15)};
+group cmp_rr( cmp_2, cmp_3 );
+
+cmp_rr.disasm = {
+  buffer << "cmp\t" << DisasmRegister(rn) << ", " << DisasmRegister(rm);
+};
+
+cmp_rr.execute = {
+  if (unlikely( not CheckCondition(cpu, cpu.itcond()) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  U32 op1 = cpu.GetGPR( rn ), op2 = cpu.GetGPR( rm ), res = op1 - op2;
+  UpdateStatusSub( cpu, res, op1, op2 );
+};
+
+/*
+ * end of cmp(2) (compare register) instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * eor (exclusive or) instruction
+ */
+
+op eor( 0b010000[6]: 0b0001[4]: rm[3]: rdn[3] );
+
+eor.disasm = {
+  buffer << "eors\t" << DisasmRegister(rdn) << ", " << DisasmRegister(rm);
+};
+
+eor.execute = {
+  if (unlikely( not CheckCondition(cpu, cpu.itcond()) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  typedef typename ARCH::S32 S32;
+  
+  U32 op1 = cpu.GetGPR( rdn ), op2 = cpu.GetGPR( rm ), res = op1 ^ op2;
+  cpu.SetGPR( rdn, res );
+  
+  if (not cpu.itblock())
+    {
+      cpu.CPSR().Set( N, S32(res) < S32(0) );
+      cpu.CPSR().Set( Z,     res == U32(0) );
+    }
+};
+
+/*
+ * end of eor (exclusive or) instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * lsl(2) (logical shift left register) instruction
+ */
+
+op lsl_reg( 0b010000[6]: 0b0010[4]: rm[3]: rdn[3] );
+
+lsl_reg.disasm = {
+  buffer << "lsls\t" << DisasmRegister(rdn) << ", " << DisasmRegister(rm);
+};
+
+lsl_reg.execute = {
+  if (unlikely( not CheckCondition(cpu, cpu.itcond()) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  U32 op1 = cpu.GetGPR(rdn), op2 = cpu.GetGPR(rm),
+           res = ComputeRegShift( cpu, op1, /*lsl*/0, op2 );
+  cpu.SetGPR( rdn, res );
+  if (not cpu.itblock()) UpdateStatusRegShift( cpu, res, op1, /*lsl*/0, op2 );
+};
+
+/*
+ * end of lsl(2) (logical shift left register) instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * lsr(2) (logical shift right register) instruction
+ */
+
+op lsr_reg( 0b010000[6]: 0b0011[4]: rm[3]: rdn[3] );
+
+lsr_reg.disasm = {
+  buffer << "lsrs\t" << DisasmRegister(rdn) << ", " << DisasmRegister(rm);
+};
+
+lsr_reg.execute = {
+  if (unlikely( not CheckCondition(cpu, cpu.itcond()) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  U32 op1 = cpu.GetGPR(rdn), op2 = cpu.GetGPR(rm),
+           res = ComputeRegShift( cpu, op1, /*lsr*/1, op2 );
+  cpu.SetGPR( rdn, res );
+  if (not cpu.itblock()) UpdateStatusRegShift( cpu, res, op1, /*lsr*/1, op2 );
+};
+
+/*
+ * end of lsr(2) (logical shift right register) instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * mov(1) (move immediate) instruction
+ */
+
+op mov_1( 0b00100[5]: rd[3]: imm[8] );
+
+mov_1.disasm = {
+  buffer << "movs\t" << DisasmRegister(rd) << ", " << DisasmI(imm);
+};
+
+mov_1.execute = {
+  if (unlikely( not CheckCondition(cpu, cpu.itcond()) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  typedef typename ARCH::S32 S32;
+  
+  U32 res = U32(imm);
+  cpu.SetGPR( rd, res );
+  
+  if (not cpu.itblock())
+    {
+      cpu.CPSR().Set( N, S32(res) < S32(0) );
+      cpu.CPSR().Set( Z,     res == U32(0) );
+    }
+};
+
+/*
+ * end of mov(1) (move immediate) instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * mov shifted register (Move Shifted Register) instruction
+ */
+
+op mov_reg_shift( 0b000[3]: shift[2]: imm[5]: rm[3]: rd[3] );
+
+mov_reg_shift.disasm = {
+  if (imm == 0 and shift == 0) buffer << "movs\t" << DisasmRegister(rd) << ", " << DisasmRegister(rm);
+  else buffer << DisasmShift(shift) << "s\t" << DisasmRegister(rd) << ", " << DisasmRegister(rm) << ", " << DisasmI(imm?imm:32);
+};
+
+mov_reg_shift.execute = {
+  if (unlikely( not CheckCondition(cpu, cpu.itcond()) )) return;
+  
+  typename ARCH::U32 rmval = cpu.GetGPR( rm ), res = ComputeImmShift( cpu, rmval, shift, imm );
+  cpu.SetGPR( rd, res );
+  if (not cpu.itblock()) UpdateStatusImmShift( cpu, res, rmval, shift, imm );
+};
+
+/*
+ * end of mov shifted register (Move Shifted Register) instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * mov(3) (move high registers) instruction
+ */
+
+op mov_3( 0b01000110[8]: shl<3> rd1[1]: rm[4]: rd0[3] );
+mov_3.var rd : {uint8_t} = {rd1|rd0};
+
+mov_3.disasm = {
+  buffer << "mov\t" << DisasmRegister(rd) << ", " << DisasmRegister(rm);
+};
+
+mov_3.execute = {
+  if (unlikely( not CheckCondition(cpu, cpu.itcond()) )) return;
+  
+  cpu.SetGPR( rd, cpu.GetGPR(rm) );
+};
+
+op mov_3_pc( 0b01000110[8]: 0b1[1]: rm[4]: 0b111[3] );
+
+mov_3_pc.disasm = {
+  buffer << "mov\tpc, " << DisasmRegister(rm);
+};
+
+mov_3_pc.execute = {
+  if (unlikely( not CheckCondition(cpu, cpu.itcond()) )) return;
+  
+  cpu.Branch( cpu.GetGPR( rm ), ARCH::B_JMP );
+};
+
+/*
+ * end of mov(3) (move high registers) instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * mvn (move not register) instruction
+ */
+
+op mvn( 0b010000[6]: 0b1111[4]: rm[3]: rd[3] );
+
+mvn.disasm = {
+  buffer << "mvns\t" << DisasmRegister(rd) << ", " << DisasmRegister(rm);
+};
+
+mvn.execute = {
+  if (unlikely( not CheckCondition(cpu, cpu.itcond()) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  typedef typename ARCH::S32 S32;
+  
+  U32 res = ~(cpu.GetGPR( rm ));
+  cpu.SetGPR( rd, res );
+  
+  if (not cpu.itblock())
+    {
+      cpu.CPSR().Set( N, S32(res) < S32(0) );
+      cpu.CPSR().Set( Z,     res == U32(0) );
+    }
+};
+
+/*
+ * end of mvn (move not register) instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * neg (negate register) instruction
+ */
+
+op neg( 0b010000[6]: 0b1001[4]: rm[3]: rd[3] );
+
+neg.disasm = {
+  buffer << "negs\t" << DisasmRegister(rd) << ", " << DisasmRegister(rm);
+};
+
+neg.execute = {
+  if (unlikely( not CheckCondition(cpu, cpu.itcond()) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  U32 op1 = U32(0), op2 = cpu.GetGPR( rm ), res = op1 - op2;
+  cpu.SetGPR( rd, res );
+  if (not cpu.itblock()) UpdateStatusSub( cpu, res, op1, op2 );
+};
+
+/*
+ * end of neg (negate register) instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * orr (logical or) instruction
+ */
+
+op orr( 0b010000[6]: 0b1100[4]: rm[3]: rdn[3] );
+
+orr.disasm = {
+  buffer << "orrs\t" << DisasmRegister(rdn) << ", " << DisasmRegister(rm);
+};
+
+orr.execute = {
+  if (unlikely( not CheckCondition(cpu, cpu.itcond()) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  typedef typename ARCH::S32 S32;
+  
+  U32 op1 = cpu.GetGPR( rdn ), op2 = cpu.GetGPR( rm ), res = op1 | op2;
+  cpu.SetGPR( rdn, res );
+  
+  if (not cpu.itblock())
+    {
+      cpu.CPSR().Set( N, S32(res) < S32(0) );
+      cpu.CPSR().Set( Z,     res == U32(0) );
+    }
+};
+
+/*
+ * end of orr (logical or) instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * ror (rotate right register) instruction
+ */
+
+op ror_reg( 0b010000[6]: 0b0111[4]: rm[3]: rdn[3] );
+
+ror_reg.disasm = {
+  buffer << "rors\t" << DisasmRegister(rdn) << ", " << DisasmRegister(rm);
+};
+
+ror_reg.execute = {
+  if (unlikely( not CheckCondition(cpu, cpu.itcond()) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  U32 op1 = cpu.GetGPR(rdn), op2 = cpu.GetGPR(rm),
+           res = ComputeRegShift( cpu, op1, /*ror*/3, op2 );
+  cpu.SetGPR( rdn, res );
+  if (not cpu.itblock()) UpdateStatusRegShift( cpu, res, op1, /*ror*/3, op2 );
+};
+
+/*
+ * end of ror (rotate right register) instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * sbc (subtract with carry register) instruction
+ */
+
+op sbc( 0b010000[6]: 0b0110[4]: rm[3]: rdn[3] );
+
+sbc.disasm = {
+  buffer << "sbcs\t" << DisasmRegister(rdn) << ", " << DisasmRegister(rm);
+};
+
+sbc.execute = {
+  if (unlikely( not CheckCondition(cpu, cpu.itcond()) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  U32 op1 = cpu.GetGPR( rdn ), op2 = cpu.GetGPR( rm ), borrow = cpu.CPSR().Get( C ) ^ U32(1), res = op1 - op2 - borrow;
+  cpu.SetGPR( rdn, res );
+  if (not cpu.itblock()) UpdateStatusSubWithBorrow( cpu, res, op1, op2, borrow );
+};
+
+/*
+ * end of sbc (subtract with carry register) instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * sub(1) (subtract immediate) instruction
+ */
+
+op sub_1( 0b0001111[7]: imm[3]: rn[3]: rd[3] );
+
+sub_1.disasm = {
+  buffer << "subs\t" << DisasmRegister(rd) << ", " << DisasmRegister(rn) << ", " << DisasmI(imm);
+};
+
+sub_1.execute = {
+  if (unlikely( not CheckCondition(cpu, cpu.itcond()) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  U32 op1 = cpu.GetGPR( rn ), op2 = U32(imm), res = op1 - op2;
+  cpu.SetGPR( rd, res );
+  if (not cpu.itblock()) UpdateStatusSub( cpu, res, op1, op2 );
+};
+
+/*
+ * end of sub(1) (subtract immediate) instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * sub(2) (subtract large immediate) instruction
+ */
+
+op sub_2( 0b00111[5]: rdn[3]: imm[8] );
+
+sub_2.disasm = {
+  buffer << "subs\t" << DisasmRegister(rdn) << ", " << DisasmI(imm);
+};
+
+sub_2.execute = {
+  if (unlikely( not CheckCondition(cpu, cpu.itcond()) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  U32 op1 = cpu.GetGPR( rdn ), op2 = U32(imm), res = op1 - op2;
+  cpu.SetGPR( rdn, res );
+  if (not cpu.itblock()) UpdateStatusSub( cpu, res, op1, op2 );
+};
+
+/*
+ * end of sub(2) (subtract large immediate) instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * sub(3) (subtract register) instruction
+ */
+
+op sub_3( 0b0001101[7]: rm[3]: rn[3]: rd[3] );
+
+sub_3.disasm = {
+  buffer << "subs\t" << DisasmRegister(rd) << ", " << DisasmRegister(rn) << ", " << DisasmRegister(rm);
+};
+
+sub_3.execute = {
+  if (unlikely( not CheckCondition(cpu, cpu.itcond()) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  U32 op1 = cpu.GetGPR( rn ), op2 = cpu.GetGPR( rm ), res = op1 - op2;
+  cpu.SetGPR( rd, res );
+  if (not cpu.itblock()) UpdateStatusSub( cpu, res, op1, op2 );
+};
+
+/*
+ * end of sub(3) (subtract register) instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * sub(4) (decrement stack pointer) instruction
+ */
+
+op sub_4( 0b101100001[9]: shl<2> imm[7] );
+
+sub_4.disasm = {
+  buffer << "sub\tsp, " << DisasmI(imm);
+};
+
+sub_4.execute = {
+  if (unlikely( not CheckCondition(cpu, cpu.itcond()) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  cpu.SetGPR( cpu.SP_reg, cpu.GetGPR( cpu.SP_reg ) - U32(imm) );
+};
+
+/*
+ * end of sub(4) (decrement stack pointer) instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * tst (test register) instruction
+ */
+
+op tst( 0b010000[6]: 0b1000[4]: rm[3]: rn[3] );
+
+tst.disasm = {
+  buffer << "tst\t" << DisasmRegister(rn) << ", " << DisasmRegister(rm);
+};
+
+tst.execute = {
+  if (unlikely( not CheckCondition(cpu, cpu.itcond()) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  typedef typename ARCH::S32 S32;
+  
+  U32 op1 = cpu.GetGPR(rn), op2 = cpu.GetGPR(rm), res = op1 & op2;
+  
+  cpu.CPSR().Set( N, S32(res) < S32(0) );
+  cpu.CPSR().Set( Z,     res == U32(0) );
+};
+
+/*
+ * end of tst (test register) instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * rev (Byte-Reverse Word) instruction
+ *
+ * REV reverses the byte order in a 32-bit register.
+ */
+
+{ ARCH::Config::insns6 }:                               \
+op rev( 0b1011101000[10]: rm[3]: rd[3] );
+
+rev.disasm = {
+  buffer << "rev\t" << DisasmRegister(rd) << ", " << DisasmRegister(rm);
+}
+
+rev.execute = {
+  if (unlikely( not CheckCondition(cpu, cpu.itcond()) )) return;
+
+  typedef typename ARCH::U32 U32;
+  U32 rmval = cpu.GetGPR(rm), rdval = ByteSwap( rmval );
+
+  cpu.SetGPR( rd, rdval );
+}
+
+/*
+ * end of rev instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * rev16 (Byte-Reverse Packed Halfword) instruction
+ *
+ * REV16 reverses the byte order in each16-bit halfword of a 32-bit register.
+ */
+
+{ ARCH::Config::insns6 }:                               \
+op rev16( 0b1011101001[10]: rm[3]: rd[3] );
+
+rev16.disasm = {
+  buffer << "rev16\t" << DisasmRegister(rd) << ", " << DisasmRegister(rm);
+}
+
+rev16.execute = {
+  if (unlikely( not CheckCondition(cpu, cpu.itcond()) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  U32 rmval = cpu.GetGPR( rm ), rdval = ByteSwap( RotateRight( rmval, 16 ) );
+  cpu.SetGPR( rd, rdval );
+};
+
+/*
+ * end of rev16 instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * revsh (Byte-Reverse Signed Halfword) instruction
+ *
+ * REVSH reverses the byte order in the lower 16-bit halfword of a
+ * 32-bit register, and sign-extends the result to 32 bits.
+ */
+
+{ ARCH::Config::insns6 }:                               \
+op revsh( 0b1011101011[10]: rm[3]: rd[3] );
+
+revsh.disasm = {
+  buffer << "revsh\t" << DisasmRegister(rd) << ", " << DisasmRegister(rm);
+};
+
+revsh.execute = {
+  if (unlikely( not CheckCondition(cpu, cpu.itcond()) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  typedef typename ARCH::S32 S32;
+  typedef typename ARCH::S16 S16;
+  typedef typename ARCH::U16 U16;
+  
+  U16 src( cpu.GetGPR(rm) );
+  cpu.SetGPR( rd, U32(S32(S16((src >> 8) | (src << 8)))) );
+};
+
+/*
+ * end of revsh instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * setend (Set Endianness) instruction
+ *
+ * SETEND writes a new value to ENDIANSTATE.
+ */
+
+{ ARCH::Config::insns6 }:                               \
+op setend( 0b101101100101[12]: endianness[1]: 0b000[3] );
+
+setend.disasm = {
+  buffer << "setend\t" << (endianness ? "be":"le");
+};
+
+setend.execute = {
+  // if (unlikely( not CheckCondition(cpu, cpu.itcond()) )) return;
+  // TODO:  Not permitted in IT block
+  
+  cpu.CPSR().Set( E, typename ARCH::U32(endianness) );
+};
+
+/*
+ * end of setend instruction
+ *******************************************************************/

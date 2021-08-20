@@ -1,0 +1,529 @@
+/*
+ *  Copyright (c) 2007-2016,
+ *  Commissariat a l'Energie Atomique (CEA)
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without modification,
+ *  are permitted provided that the following conditions are met:
+ *
+ *   - Redistributions of source code must retain the above copyright notice, this
+ *     list of conditions and the following disclaimer.
+ *
+ *   - Redistributions in binary form must reproduce the above copyright notice,
+ *     this list of conditions and the following disclaimer in the documentation
+ *     and/or other materials provided with the distribution.
+ *
+ *   - Neither the name of CEA nor the names of its contributors may be used to
+ *     endorse or promote products derived from this software without specific prior
+ *     written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ *  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *  DISCLAIMED.
+ *  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ *  INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ *  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+ *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ *  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Authors: Yves Lhuillier (yves.lhuillier@cea.fr), Daniel Gracia Perez (daniel.gracia-perez@cea.fr)
+ */
+ 
+/**********************************************
+
+    THUMB LOAD STORE REGISTER INSTRUCTIONS
+
+**********************************************/
+
+/*******************************************************************
+ * ldr(1) (load word immediate offset) instruction
+ */
+
+op ldr_1( 0b01101[5]: shl<2> imm[5]: rn[3]: rt[3] );
+
+ldr_1.disasm = {
+  buffer << "ldr\t" << DisasmRegister(rt) << ", "
+         << DisasmMemoryRI(rn,imm,true,false);
+};
+
+ldr_1.execute = {
+  if (unlikely( not CheckCondition(cpu, cpu.itcond()) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  cpu.SetGPR_mem( rt, cpu.MemURead32( cpu.GetGPR(rn) + U32(imm) ) );
+};
+
+/*
+ * end of ldr(1) (load word immediate offset) instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * ldr(2) (load word register offset) instruction
+ */
+
+op ldr_2( 0b0101100[7]: rm[3]: rn[3]: rt[3] );
+
+ldr_2.disasm = {
+  buffer << "ldr\t" << DisasmRegister(rt) << ", " << DisasmMemoryRR(rn,rm,true,true,false);
+};
+
+ldr_2.execute = {
+  if (unlikely( not CheckCondition(cpu, cpu.itcond()) )) return;
+  
+  cpu.SetGPR_mem( rt, cpu.MemURead32( cpu.GetGPR(rn) + cpu.GetGPR(rm) ) );
+};
+
+/*
+ * ldr(2) (load word register offset) instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * ldr(3) (load word pc-relative) instruction
+ */
+
+op ldr_lit_s( 0b01001[5]: rt[3]: shl<2> imm[8] );
+
+ldr_lit_s.disasm = {
+  buffer << "ldr\t" << DisasmRegister(rt) << ", [pc, " << DisasmI(imm) << "]";
+};
+
+ldr_lit_s.execute = {
+  if (unlikely( not CheckCondition(cpu, cpu.itcond()) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  cpu.SetGPR_mem( rt, cpu.MemURead32( (cpu.GetGPR( 15 ) & U32(-4)) + U32(imm) ) );
+};
+
+/*
+ * ldr(3) (load word pc-relative) instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * ldr(4) (load word sp-relative) instruction
+ */
+
+op ldr_4( 0b10011[5]: rt[3]: shl<2> imm[8] );
+
+ldr_4.disasm = {
+  buffer << "ldr\t" << DisasmRegister(rt) << ", [sp, " << DisasmI(imm) << "]";
+};
+
+ldr_4.execute = {
+  if (unlikely( not CheckCondition(cpu, cpu.itcond()) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  cpu.SetGPR_mem( rt, cpu.MemURead32( cpu.GetGPR( 13 ) + U32(imm) ) );
+};
+
+/*
+ * ldr(4) (load word sp-relative) instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * ldrb(1) (load unsigned byte immediate offset) instruction
+ */
+
+op ldrb_1( 0b01111[5]: imm[5]: rn[3]: rt[3] );
+
+ldrb_1.disasm = {
+  buffer << "ldrb\t" << DisasmRegister(rt) << ", "
+         << DisasmMemoryRI(rn,imm,true,false);
+};
+
+ldrb_1.execute = {
+  if (unlikely( not CheckCondition(cpu, cpu.itcond()) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  cpu.SetGPR_mem( rt, U32( cpu.MemRead8( cpu.GetGPR(rn) + U32(imm) ) ) );
+};
+
+/*
+ * ldrb(1) (load unsigned byte immediate offset) instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * ldrb(2) (load unsigned byte register offset) instruction
+ */
+
+op ldrb_2( 0b0101110[7]: rm[3]: rn[3]: rt[3] );
+
+ldrb_2.disasm = {
+  buffer << "ldrb\t" << DisasmRegister(rt) << ", " << DisasmMemoryRR(rn,rm,true,true,false);
+};
+
+ldrb_2.execute = {
+  if (unlikely( not CheckCondition(cpu, cpu.itcond()) )) return;
+  
+  cpu.SetGPR_mem( rt, typename ARCH::U32( cpu.MemRead8( cpu.GetGPR(rn) + cpu.GetGPR(rm) ) ) );
+};
+
+/*
+ * ldrb(2) (load unsigned byte register offset) instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * ldrh(1) (load unsigned halfword immediate offset) instruction
+ */
+
+op ldrh_1( 0b10001[5]: shl<1> imm[5]: rn[3]: rt[3] );
+
+ldrh_1.disasm = {
+  buffer << "ldrh\t" << DisasmRegister(rt) << ", "
+         << DisasmMemoryRI(rn,imm,true,false);
+};
+
+ldrh_1.execute = {
+  if (unlikely( not CheckCondition(cpu, cpu.itcond()) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  cpu.SetGPR_mem( rt, U32( cpu.MemURead16( cpu.GetGPR(rn) + U32(imm) ) ) );
+};
+
+/*
+ * ldrh(1) (load unsigned halfword immediate offset) instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * ldrh(2) (load unsigned halfword register offset) instruction
+ */
+
+op ldrh_2( 0b0101101[7]: rm[3]: rn[3]: rt[3] );
+
+ldrh_2.disasm = {
+  buffer << "ldrh\t" << DisasmRegister(rt) << ", " << DisasmMemoryRR(rn,rm,true,true,false);
+};
+
+ldrh_2.execute = {
+  if (unlikely( not CheckCondition(cpu, cpu.itcond()) )) return;
+  
+  cpu.SetGPR_mem( rt, typename ARCH::U32( cpu.MemURead16( cpu.GetGPR(rn) + cpu.GetGPR(rm) ) ) );
+};
+
+/*
+ * ldrh(2) (load unsigned halfword register offset) instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * ldrsb (load signed byte register offset) instruction
+ */
+
+op ldrsb( 0b0101011[7]: rm[3]: rn[3]: rt[3] );
+
+ldrsb.disasm = {
+  buffer << "ldrsb\t" << DisasmRegister(rt) << ", " << DisasmMemoryRR(rn,rm,true,true,false);
+};
+
+ldrsb.execute = {
+  if (unlikely( not CheckCondition(cpu, cpu.itcond()) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  typedef typename ARCH::S32 S32;
+  typedef typename ARCH::S8  S8;
+  cpu.SetGPR_mem( rt, U32( S32( S8( cpu.MemRead8( cpu.GetGPR(rn) + cpu.GetGPR(rm) ) ) ) ) );
+};
+
+/*
+ * ldrsb (load signed byte register offset) instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * ldrsh (load signed halfword register offset) instruction
+ */
+
+op ldrsh( 0b0101111[7]: rm[3]: rn[3]: rt[3] );
+
+ldrsh.disasm = {
+  buffer << "ldrsh\t" << DisasmRegister(rt) << ", " << DisasmMemoryRR(rn,rm,true,true,false);
+};
+
+ldrsh.execute = {
+  if (unlikely( not CheckCondition(cpu, cpu.itcond()) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  typedef typename ARCH::S32 S32;
+  typedef typename ARCH::S16 S16;
+  cpu.SetGPR_mem( rt, U32( S32( S16( cpu.MemURead16( cpu.GetGPR( rn ) + cpu.GetGPR( rm ) ) ) ) ) );
+};
+
+/*
+ * ldrsh (load signed halfword register offset) instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * str(1) (store word immediate offset) instruction
+ */
+
+op str_1( 0b01100[5]: shl<2> imm[5]: rn[3]: rt[3] );
+
+str_1.disasm = {
+  buffer << "str\t" << DisasmRegister(rt) << ", "
+         << DisasmMemoryRI(rn,imm,true,false);
+};
+
+str_1.execute = {
+  if (unlikely( not CheckCondition(cpu, cpu.itcond()) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  cpu.MemUWrite32(cpu.GetGPR(rn) + U32(imm), cpu.GetGPR(rt));
+};
+
+/*
+ * str(1) (store word immediate offset) instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * str(2) (store word register offset) instruction
+ */
+
+op str_2( 0b0101000[7]: rm[3]: rn[3]: rt[3] );
+
+str_2.disasm = {
+  buffer << "str\t" << DisasmRegister(rt) << ", " << DisasmMemoryRR(rn,rm,true,true,false);
+};
+
+str_2.execute = {
+  if (unlikely( not CheckCondition(cpu, cpu.itcond()) )) return;
+  
+  cpu.MemUWrite32( cpu.GetGPR(rn) + cpu.GetGPR(rm), cpu.GetGPR(rt) );
+};
+
+/*
+ * str(2) (store word register offset) instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * str(3) (store word sp-relative) instruction
+ */
+
+op str_3( 0b10010[5]: rt[3]: shl<2> imm[8] );
+
+str_3.disasm = {
+  buffer << "str\t" << DisasmRegister(rt) << ", [sp, " << DisasmI(imm) << "]";
+};
+
+str_3.execute = {
+  if (unlikely( not CheckCondition(cpu, cpu.itcond()) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  cpu.MemUWrite32(cpu.GetGPR(cpu.SP_reg) + U32(imm), cpu.GetGPR(rt));
+};
+
+/*
+ * str(3) (store word sp-relative) instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * strb(1) (store byte immediate offset) instruction
+ */
+
+op strb_1( 0b01110[5]: imm[5]: rn[3]: rt[3] );
+
+strb_1.disasm = {
+  buffer << "strb\t" << DisasmRegister(rt) << ", "
+         << DisasmMemoryRI(rn,imm,true,false);
+};
+
+strb_1.execute = {
+  if (unlikely( not CheckCondition(cpu, cpu.itcond()) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  typedef typename ARCH::U8  U8;
+  cpu.MemWrite8( cpu.GetGPR(rn) + U32(imm), U8(cpu.GetGPR(rt)) );
+};
+
+/*
+ * strb(1) (store byte immediate offset) instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * strb(2) (store byte register offset) instruction
+ */
+
+op strb_2( 0b0101010[7]: rm[3]: rn[3]: rt[3] );
+
+strb_2.disasm = {
+  buffer << "strb\t" << DisasmRegister(rt) << ", " << DisasmMemoryRR(rn,rm,true,true,false);
+};
+
+strb_2.execute = {
+  if (unlikely( not CheckCondition(cpu, cpu.itcond()) )) return;
+  
+  typedef typename ARCH::U8  U8;
+  cpu.MemWrite8( cpu.GetGPR(rn) + cpu.GetGPR(rm), U8(cpu.GetGPR(rt)) );
+};
+
+/*
+ * strb(2) (store byte register offset) instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * strh(1) (store halfword immediate offset) instruction
+ */
+
+op strh_1( 0b10000[5]: shl<1> imm[5]: rn[3]: rt[3] );
+
+strh_1.disasm = {
+  buffer << "strh\t" << DisasmRegister(rt) << ", "
+         << DisasmMemoryRI(rn,imm,true,false);
+};
+
+strh_1.execute = {
+  if (unlikely( not CheckCondition(cpu, cpu.itcond()) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  typedef typename ARCH::U16 U16;
+  cpu.MemUWrite16( cpu.GetGPR(rn) + U32(imm), U16(cpu.GetGPR(rt)) );
+};
+
+/*
+ * strh(1) (store halfword immediate offset) instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * strh(2) (store halfword register offset) instruction
+ */
+
+op strh_2( 0b0101001[7]: rm[3]: rn[3]: rt[3] );
+
+strh_2.disasm = {
+  buffer << "strh\t" << DisasmRegister(rt) << ", " << DisasmMemoryRR(rn,rm,true,true,false);
+};
+
+strh_2.execute = {
+  if (unlikely( not CheckCondition(cpu, cpu.itcond()) )) return;
+  
+  typedef typename ARCH::U16 U16;
+  cpu.MemUWrite16( cpu.GetGPR(rn) + cpu.GetGPR(rm), U16(cpu.GetGPR(rt)) );
+};
+
+/*
+ * strh(2) (store halfword register offset) instruction
+ *******************************************************************/
+
+/**********************************************
+
+    THUMB LOAD STORE MULTIPLE INSTRUCTIONS
+
+**********************************************/
+
+/*******************************************************************
+ * ldmia (load multiple) instruction
+ */
+
+op ldmia( 0b11001[5]: rn[3]: <32> reglist[8] );
+ldmia.var reject : {Reject} = {(reglist == 0)};
+
+ldmia.disasm = {
+  if ((reglist >> rn) & 1)
+    buffer << "ldmia\t" << DisasmRegister(rn) << ", {" << DisasmRegList( reglist ) << "}";
+  else
+    buffer << "ldmia\t" << DisasmRegister(rn) << "!, {" << DisasmRegList( reglist ) << "}";
+};
+
+ldmia.execute = {
+  if (unlikely( not CheckCondition(cpu, cpu.itcond()) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  U32 base = cpu.GetGPR( rn );
+  LSMIter itr(LSMIter::IA, reglist);
+  while (itr.next()) {
+    cpu.SetGPR_mem( itr.reg(), cpu.MemRead32( base + U32(itr.offset()) ) );
+  }
+  
+  bool overwritten = (reglist >> rn) & 1;
+  if (not overwritten) cpu.SetGPR( rn, base + U32(itr.offset()) );
+};
+
+/*
+ * end of ldmia (load multiple) instruction
+ *******************************************************************/
+
+/*******************************************************************
+* pop (pop multiple) instruction
+ */
+
+op pop( 0b1011110[7]: shl<15> reglist1[1]: reglist0[8] );
+pop.var reglist : {uint32_t} = {reglist1|reglist0};
+pop.var reject : {Reject} = {(reglist == 0)};
+
+pop.disasm = {
+  buffer << "pop\t{" << DisasmRegList(reglist) << "}";
+};
+
+pop.execute = {
+  if (unlikely( not CheckCondition(cpu, cpu.itcond()) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  U32 base = cpu.GetGPR( cpu.SP_reg );
+  LSMIter itr(LSMIter::IA, reglist);
+  while (itr.next()) {
+    cpu.SetGPR_mem( itr.reg(), cpu.MemRead32( base + U32(itr.offset()) ) );
+  }
+  
+  bool overwritten = (reglist >> cpu.SP_reg) & 1;
+  if (not overwritten) cpu.SetGPR( cpu.SP_reg, base + U32(itr.offset()) );
+};
+
+/*
+ * end of pop (pop multiple) instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * push (push multiple) instruction
+ */
+
+op push( 0b1011010[7]: shl<14> reglist1[1]: reglist0[8] );
+push.var reglist : {uint32_t} = {reglist1|reglist0};
+push.var reject : {Reject} = {(reglist == 0)};
+
+push.disasm = {
+  buffer << "push\t{" << DisasmRegList(reglist) << "}";
+};
+
+push.execute = {
+  if (unlikely( not CheckCondition(cpu, cpu.itcond()) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  U32 base = cpu.GetGPR( cpu.SP_reg );
+  LSMIter itr(LSMIter::DB, reglist);
+  while (itr.next()) {
+    cpu.MemWrite32( base + U32(itr.offset()), cpu.GetGPR( itr.reg() ) );
+  }
+  
+  cpu.SetGPR( cpu.SP_reg, base + U32(itr.offset()) );
+};
+
+/*
+ * end of push (push multiple) instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * stmia (store multiple) instruction
+ */
+
+op stmia( 0b11000[5]: rn[3]: reglist[8] );
+stmia.var reject : {Reject} = {(reglist == 0) or (((reglist & (reglist-1)) >> rn) & 1)};
+
+stmia.disasm = {
+  buffer << "stmia\t" << DisasmRegister(rn) << "!, {" << DisasmRegList(reglist) << "}";
+};
+
+stmia.execute = {
+  if (unlikely( not CheckCondition(cpu, cpu.itcond()) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  U32 base = cpu.GetGPR( rn );
+  LSMIter itr(LSMIter::IA, reglist);
+  while (itr.next()) {
+    cpu.MemWrite32( base + U32(itr.offset()), cpu.GetGPR( itr.reg() ) );
+  }
+  
+  cpu.SetGPR( rn, base + U32(itr.offset()) );
+};
+
+/*
+ * end of stmia (store multiple) instruction
+ *******************************************************************/

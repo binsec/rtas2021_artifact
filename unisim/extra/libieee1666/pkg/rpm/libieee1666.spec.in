@@ -1,0 +1,66 @@
+%define _disable_ld_no_undefined 1
+%define version                  @PACKAGE_VERSION@
+%define release                  @PACKAGE_RELEASE@
+
+Summary:   A free implementation of IEEE Standard 1666-2011, the IEEE standard that defines SystemC language
+License:   BSD
+Name:      libieee1666
+Version:   %{version}
+Release:   %{release}
+Source:    %{name}-%{version}.tar.gz
+Group:     Development/Libraries
+URL:       http://unisim-vp.org
+
+%description
+libieee1666 is a free implementation of IEEE Standard 1666-2011, the IEEE standard that defines SystemC language.
+SystemC is an extensible C++ class library intended for modeling both software and hardware at different abstraction level of modeling and level of detail, using the power of C++.
+More than a hardware description language (HDL), SystemC is a system-level modeling language.
+SystemC is closely related to an emerging methodology known as Electronic System Level (ESL) design and verification.
+
+%package devel
+Summary:    Dynamic libraries, includes, etc. to develop with libieee1666
+Group:      Development/Libraries
+Requires:   %{name} = %{version}-%{release}
+
+%description devel
+Dynamic libraries, include files, etc you can use to develop SystemC modules and simulators using libieee1666.
+
+%package static-devel
+Summary:    Static libraries to develop with libieee1666
+Group:      Development/Libraries
+Requires:   %{name}-devel = %{version}-%{release}
+
+%description static-devel
+Static libraries you can use to develop SystemC modules and simulators using libieee1666.
+
+%prep
+%autosetup
+
+%build
+%configure --disable-accellera-install-layout
+make
+
+%install
+%make_install
+
+find %{buildroot} -name "*.la" -delete
+
+%files
+%defattr(-,root,root)
+%{_libdir}/libieee1666-*.so
+%{_datadir}/%{name}
+
+%files devel
+%defattr(-,root,root)
+%{_libdir}/libieee1666.so
+%{_libdir}/pkgconfig/*
+%{_includedir}/*
+
+%files static-devel
+%defattr(-,root,root)
+%{_libdir}/*.a
+
+%changelog
+* @RPM_PACKAGE_DATE@ Gilles Mouchard <gilles.mouchard@cea.fr> @PACKAGE_VERSION@-@PACKAGE_RELEASE@
+upstream release
+

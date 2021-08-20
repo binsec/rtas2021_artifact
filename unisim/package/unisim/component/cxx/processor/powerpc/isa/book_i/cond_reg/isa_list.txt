@@ -1,0 +1,9 @@
+unisim/component/cxx/processor/powerpc/isa/book_i/cond_reg/crandc.isa
+unisim/component/cxx/processor/powerpc/isa/book_i/cond_reg/crand.isa
+unisim/component/cxx/processor/powerpc/isa/book_i/cond_reg/creqv.isa
+unisim/component/cxx/processor/powerpc/isa/book_i/cond_reg/crnand.isa
+unisim/component/cxx/processor/powerpc/isa/book_i/cond_reg/crnor.isa
+unisim/component/cxx/processor/powerpc/isa/book_i/cond_reg/crorc.isa
+unisim/component/cxx/processor/powerpc/isa/book_i/cond_reg/cror.isa
+unisim/component/cxx/processor/powerpc/isa/book_i/cond_reg/crxor.isa
+unisim/component/cxx/processor/powerpc/isa/book_i/cond_reg/mcrf.isa

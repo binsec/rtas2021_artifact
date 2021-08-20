@@ -1,0 +1,2 @@
+unisim/component/cxx/com/xilinx/xps_uart_lite/config.hh
+unisim/component/cxx/com/xilinx/xps_uart_lite/xps_uart_lite.hh

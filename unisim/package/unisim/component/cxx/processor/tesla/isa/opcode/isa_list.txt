@@ -1,0 +1,6 @@
+unisim/component/cxx/processor/tesla/isa/opcode/branch.isa
+unisim/component/cxx/processor/tesla/isa/opcode/fp32.isa
+unisim/component/cxx/processor/tesla/isa/opcode/fp64.isa
+unisim/component/cxx/processor/tesla/isa/opcode/integer.isa
+unisim/component/cxx/processor/tesla/isa/opcode/mov.isa
+unisim/component/cxx/processor/tesla/isa/opcode/tesla.isa

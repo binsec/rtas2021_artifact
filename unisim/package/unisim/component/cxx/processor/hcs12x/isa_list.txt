@@ -1,0 +1,15 @@
+unisim/component/cxx/processor/hcs12x/addition_substraction.isa
+unisim/component/cxx/processor/hcs12x/bit.isa
+unisim/component/cxx/processor/hcs12x/boolean-logic.isa
+unisim/component/cxx/processor/hcs12x/branch.isa
+unisim/component/cxx/processor/hcs12x/compare_test.isa
+unisim/component/cxx/processor/hcs12x/decrement_increment.isa
+unisim/component/cxx/processor/hcs12x/fuzzy-logic.isa
+unisim/component/cxx/processor/hcs12x/hcs12x.isa
+unisim/component/cxx/processor/hcs12x/load_store.isa
+unisim/component/cxx/processor/hcs12x/move.isa
+unisim/component/cxx/processor/hcs12x/multiplication_division.isa
+unisim/component/cxx/processor/hcs12x/others.isa
+unisim/component/cxx/processor/hcs12x/stacking.isa
+unisim/component/cxx/processor/hcs12x/transfer_exchange.isa
+unisim/component/cxx/processor/hcs12x/xb_sub.isa

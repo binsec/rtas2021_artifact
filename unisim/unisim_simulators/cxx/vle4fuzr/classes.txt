@@ -1,0 +1,16 @@
+UC_HOOK_INTR, uc_cb_hookintr_t
+UC_HOOK_INSN, [uc_cb_insn_syscall_t, uc_cb_insn_out_t, uc_cb_insn_in_t]
+UC_HOOK_CODE, uc_cb_hookcode_t
+UC_HOOK_BLOCK, uc_cb_hookcode_t
+UC_HOOK_MEM_READ_UNMAPPED, uc_cb_eventmem_t
+UC_HOOK_MEM_WRITE_UNMAPPED, uc_cb_eventmem_t
+UC_HOOK_MEM_FETCH_UNMAPPED, uc_cb_eventmem_t
+UC_HOOK_MEM_READ_PROT, uc_cb_eventmem_t
+UC_HOOK_MEM_WRITE_PROT, uc_cb_eventmem_t
+UC_HOOK_MEM_FETCH_PROT, uc_cb_eventmem_t
+UC_HOOK_MEM_READ, uc_cb_hookmem_t
+UC_HOOK_MEM_WRITE, uc_cb_hookmem_t
+# UC_HOOK_MEM_FETCH, uc_cb_hookmem_t
+UC_HOOK_MEM_READ_AFTER, uc_cb_hookmem_t
+UC_HOOK_INSN_INVALID, uc_cb_hookinsn_invalid_t
+

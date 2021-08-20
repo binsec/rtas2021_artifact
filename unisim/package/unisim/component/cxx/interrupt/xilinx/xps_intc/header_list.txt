@@ -1,0 +1,2 @@
+unisim/component/cxx/interrupt/xilinx/xps_intc/config.hh
+unisim/component/cxx/interrupt/xilinx/xps_intc/xps_intc.hh

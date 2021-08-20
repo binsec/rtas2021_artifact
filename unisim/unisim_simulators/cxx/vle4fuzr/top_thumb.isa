@@ -1,0 +1,77 @@
+/*
+ *  Copyright (c) 2019,
+ *  Commissariat a l'Energie Atomique (CEA)
+ *  All rights reserved.
+ *
+ * FUZR RENAULT CEA FILE
+ *
+ * Authors: Yves Lhuillier (yves.lhuillier@cea.fr), Gilles Mouchard <gilles.mouchard@cea.fr>
+ */
+
+
+namespace unisim::component::cxx::processor::arm::isa::thumb
+
+set codetype scalar;
+set addressclass {uint32_t}
+set endianness little;
+//set fields_order descending;
+set words_order ascending;
+set withcache_p false;
+
+var branch : {typename ARCH::InsnBranch};
+
+template <{typename} {ARCH}>
+
+decl {
+#include <emu.hh>
+#include <iosfwd>
+#include <stdint.h>
+} // end of decl
+
+action {void} execute({ARCH &} {cpu}) {
+  cpu.UndefinedInstruction( this );
+}
+
+action {void} disasm({ARCH &} {cpu}, {std::ostream &} {buffer}) {
+  buffer << "; Unknown THUMB instruction";
+}
+
+impl {
+#include <unisim/component/cxx/processor/arm/isa/decode.hh>
+#include <unisim/component/cxx/processor/arm/disasm.hh>
+#include <unisim/component/cxx/processor/arm/models.hh>
+#include <unisim/component/cxx/processor/arm/exception.hh>
+#include <unisim/util/arithmetic/arithmetic.hh>
+#include <unisim/util/endian/endian.hh>
+#include <iostream>
+#include <iomanip>
+
+#include <unisim/util/likely/likely.hh>
+
+using unisim::util::arithmetic::BitScanReverse;
+using unisim::util::endian::ByteSwap;
+using unisim::util::arithmetic::RotateRight;
+
+#include <unisim/component/cxx/processor/arm/execute.hh>
+} // end of impl
+
+include "unisim/component/cxx/processor/arm/isa/thumb/data_processing.isa"
+include "unisim/component/cxx/processor/arm/isa/thumb/load_store.isa"
+include "unisim/component/cxx/processor/arm/isa/thumb/multiply.isa"
+include "unisim/component/cxx/processor/arm/isa/thumb/misc_arithmetic.isa"
+include "unisim/component/cxx/processor/arm/isa/thumb/branch.isa"
+include "unisim/component/cxx/processor/arm/isa/thumb/exception.isa"
+
+include "unisim/component/cxx/processor/arm/isa/thumb2/data_processing.isa"
+include "unisim/component/cxx/processor/arm/isa/thumb2/load_store.isa"
+include "unisim/component/cxx/processor/arm/isa/thumb2/misc_arithmetic.isa"
+include "unisim/component/cxx/processor/arm/isa/thumb2/branch.isa"
+include "unisim/component/cxx/processor/arm/isa/thumb2/multiply.isa"
+include "unisim/component/cxx/processor/arm/isa/thumb2/coprocessor.isa"
+include "unisim/component/cxx/processor/arm/isa/thumb2/hints.isa"
+include "unisim/component/cxx/processor/arm/isa/thumb2/exception.isa"
+include "unisim/component/cxx/processor/arm/isa/thumb2/status_register_access.isa"
+include "unisim/component/cxx/processor/arm/isa/thumb2/vfp.isa"
+//include "unisim/component/cxx/processor/arm/isa/thumb2/neon.isa"
+//include "unisim/component/cxx/processor/arm/isa/thumb2/xscale.isa"
+include "unisim/component/cxx/processor/arm/isa/thumb2/ordering.isa"

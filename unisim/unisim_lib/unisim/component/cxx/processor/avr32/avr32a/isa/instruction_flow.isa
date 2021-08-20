@@ -1,0 +1,15 @@
+scall.execute={
+                  
+
+	if(cpu->GetSR_M()==(0b000 || 0b001))
+	{
+		cpu->SetGPR(REG_PC,cpu->GetEvba()+0x100);
+		cpu->SetSR_M(0b001);
+	}
+	else
+	{
+		cpu->SetLR(Operation<CONFIG>::GetAddr() + 2);
+		cpu->SetGPR(REG_PC,cpu->GetEvba()+0x100);
+	}
+	return true;
+}

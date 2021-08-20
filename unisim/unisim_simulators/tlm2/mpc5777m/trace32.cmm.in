@@ -1,0 +1,10 @@
+SYStem.CPU MPC5777M
+SYStem.PORT 127.0.0.1:12345
+SYStem.GDBFILE C:\unisim-mpc5777m-@PACKAGE_VERSION@\sim\share\unisim-mpc5777m-@PACKAGE_VERSION@\soft\bin\Z4_2\flash_boot.elf
+
+OS.screen C:\unisim-mpc5777m-@PACKAGE_VERSION@\sim\bin\unisim-mpc5777m-@PACKAGE_VERSION@.exe -c sim_config.xml
+
+wait 7.
+SYStem.Mode Attach
+
+Data.LOAD.ELF C:\unisim-mpc5777m-@PACKAGE_VERSION@\sim\share\unisim-mpc5777m-@PACKAGE_VERSION@\soft\bin\Z4_2\flash_boot.elf /NOCODE

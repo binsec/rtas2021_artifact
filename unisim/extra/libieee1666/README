@@ -1,0 +1,56 @@
+libieee1666 is a free implementation of IEEE Standard 1666-2011, the IEEE standard that defines SystemC language.
+SystemC is an extensible C++ class library intended for modeling both software and hardware at different abstraction level of modeling and level of detail, using the power of C++.
+More than a hardware description language (HDL), SystemC is a system-level modeling language.
+SystemC is closely related to an emerging methodology known as Electronic System Level (ESL) design and verification.
+
+  1. Installation instructions
+  ----------------------------
+
+See INSTALL for installation instructions.
+
+   2. Licensing
+   ------------
+   
+See COPYING for licensing information.
+
+   3. Note for SystemC developpers
+   -------------------------------
+
+libieee1666 supports several coroutine systems for the low level implementation of SystemC coroutines (a.k.a. SC_THREAD and SC_CTHREAD):
+ - Boost::Context (fcontext): It provides a sort of cooperative multitasking on a single thread.
+ - POSIX.1-2001 ucontext: It provides user-level context switching between multiple threads of control within a process.
+ - Windows Fibers: Windows provides native support of fibers, units of execution that must be manually scheduled by the application.
+ - POSIX threads
+
+While Windows Fibers and POSIX threads coroutine systems provide stack allocation and overflow protection, Boost::Context (fcontext) or POSIX.1-2001 ucontext coroutine systems do not.
+When using the later, libieee1666 allocates coroutine stacks in the heap, and can optionnally protect heap and other stacks from a coroutine stack overflow using a guarded stack.
+A guarded stack has one extra mapped page for which any access will result in a page access violation error.
+
+Coroutine system is selectable before program startup by setting one of the following values into LIBIEEE1666_COROUTINE_SYSTEM environment variable:
+ - UCONTEXT for ucontext
+ - FCONTEXT for Boost::Context (fcontext)
+ - WINDOWS_FIBER for Windows Fiber
+ - PTHREAD for POSIX threads
+
+If LIBIEEE1666_COROUTINE_SYSTEM environment variable is not set, one of the following coroutine systems is selected in order of availability:
+ - for Unix:
+     1. Boost::Context (fcontext)
+     2. ucontext
+     3. POSIX threads
+ - for Windows:
+     1. Boost::Context (fcontext)
+     2. Windows Fiber
+     3. POSIX threads
+ 
+Stack system is selectable before program startup by setting one of the following values into LIBIEEE1666_STACK_SYSTEM environment variable:
+ - POSIX_GUARDED for a guarded stack on POSIX systems (to be used with Boost::Context and ucontext)
+ - WINDOWS_GUARDED for a guarded stack on Windows systems (to be used with Boost::Context)
+ - SIMPLE for a simple ungarded stack (to be used with Boost::Context and ucontext)
+
+If LIBIEEE1666_STACK_SYSTEM environment variable is not set, one of the following stack systems is selected in order of availability:
+ - for Unix:
+     1. POSIX guarded stack
+     2. Simple unguarded stack
+ - for Windows:
+     1. Windows guarded stack
+     2. Simple unguarded stack

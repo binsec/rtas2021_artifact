@@ -1,0 +1,50 @@
+<div class="content-item">
+	<div class="content-item-title"><h2>How to build a GCC cross compiler ?</h2></div>
+	<div class="content-item-body">
+		<p>Building a GCC cross compiler from scratch is a very tedious task. The process consists of a quite high number of undocumented steps, and mostly relies on the users experience.
+		Fortunately a community sharing its experience, the <a class="online-document" href="http://sourceware.org/ml/crossgcc">crossgcc mailing list</a>, actively supports a tool, <a class="online-document" href="http://ymorin.is-a-geek.org/projects/crosstool">crosstool-NG</a>, that considerably simplifies the process of building a GCC cross compiler.
+		</p>
+		<h3>1. Get crosstool-NG</h3>
+		<p>
+			Download the crosstool-NG archive (e.g crosstool-ng-1.5.3.tar.bz2) from this <a class="online-document" href="http://ymorin.is-a-geek.org/projects/crosstool">page</a>.
+		</p>
+		<h3>2. Uncompress crosstool-NG archive</h3>
+		<pre>
+			$ tar jxvf crosstool-ng-1.5.3.tar.bz2
+		</pre>
+		<h3>3. Configure crosstool-NG</h3>
+		<pre>
+			$ cd crosstool-ng-1.5.3
+			$ ./configure --local
+		</pre>
+
+		<h3>4. Compile crosstool-NG</h3>
+		<pre>
+			$ make
+		</pre>
+
+		<h3>5. (optional) Install additional sample configuration files</h3>
+
+		<p>
+			The following files should be uncompressed into subdirectory samples of crosstool-NG:
+			<ul>
+				<li>
+					powerpc-750-linux-gnu-gcc 4.3.4 (C and C++): <a class="download-file" href=``DOWNLOADS/cross-gcc/crosstool-ng-1.5.3-powerpc-750-gcc-4.3.4.tar.bz2``>download</a>
+				</li>
+			</ul>
+		</p>
+
+		<h3>6. Build the GCC cross compiler</h3>
+		<p>
+			Follow one of the following tutorials:
+		</p>
+		<ul>
+			<li>
+				<a class="online-document" href="build-sample-cross-gcc.html">Build a sample GCC cross compiler using crosstool-NG</a> (recommended)
+			</li>
+			<li>
+				<a class="online-document" href="build-custom-cross-gcc.html">Build a custom GCC cross compiler using crosstool-NG</a>
+			</li>
+		</ul>
+	</div>
+</div>

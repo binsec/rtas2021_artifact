@@ -1,0 +1,1 @@
+The UNISIM Virtual Platforms are a collection of research cross-platform open source simulators sharing a common base. The applications of such simulators go from non-intrusive debugging of software, through hardware/software integration, to massive testing of software, all on a virtual hardware.

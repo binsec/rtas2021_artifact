@@ -1,0 +1,9 @@
+unisim/util/truth_table
+std/iostream
+std/iomanip
+std/iosfwd
+std/map
+libc/stdint
+unisim/util/arithmetic
+unisim/util/endian
+unisim/util/likely

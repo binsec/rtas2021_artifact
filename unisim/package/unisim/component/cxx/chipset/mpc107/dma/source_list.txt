@@ -1,0 +1,7 @@
+unisim/component/cxx/chipset/mpc107/dma/buffer_32.cc
+unisim/component/cxx/chipset/mpc107/dma/buffer_64.cc
+unisim/component/cxx/chipset/mpc107/dma/dma_32.cc
+unisim/component/cxx/chipset/mpc107/dma/dma_32_debug.cc
+unisim/component/cxx/chipset/mpc107/dma/dma_64.cc
+unisim/component/cxx/chipset/mpc107/dma/dma_64_debug.cc
+unisim/component/cxx/chipset/mpc107/dma/register.cc

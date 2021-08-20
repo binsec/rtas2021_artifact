@@ -1,0 +1,6 @@
+unisim/component/cxx/processor/sparc/isa/sv8/control.isa
+unisim/component/cxx/processor/sparc/isa/sv8/floating-point.isa
+unisim/component/cxx/processor/sparc/isa/sv8/integer.isa
+unisim/component/cxx/processor/sparc/isa/sv8/isa.isa
+unisim/component/cxx/processor/sparc/isa/sv8/memory.isa
+unisim/component/cxx/processor/sparc/isa/sv8/special.isa

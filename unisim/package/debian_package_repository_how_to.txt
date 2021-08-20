@@ -1,0 +1,41 @@
+This document is intended for the debian repository maintainers
+
+1) Building the packages
+------------------------
+
+IMPORTANT: You must have the source tarballs in the current directory.
+
+$ <path-to-unisim-devel>/package/build-packages.sh i386-deb <version> <path-to-systemc-install> <path-to-TLM2.0-install>
+
+You finally get unisim-tools*.deb, unisim-lib*.deb and unisim-simulators*.deb
+Move these packages to <path-to-unisim.org/distributions/binary/deb>/dists/stable/main/binary-i386
+
+2) Building the package list
+----------------------------
+
+This is the tree on the UNISIM web server for the debian repository:
+
+http://unisim.org/distributions/binary/deb
+|
+- dists
+   |
+   - stable
+       |
+       - main
+           |
+           - binary-i386
+
+
+Go into the debian repository, and run dpkg-scanpackages:
+$ cd <path-to-unisim.org/distributions/binary/deb>
+$ dpkg-scanpackages dists/stable/main/binary-i386 /dev/null | gzip -9c > dists/stable/main/binary-i386/Packages.gz
+
+3) Using the repository in a debian packager such as synaptic, adept, or apt-get
+--------------------------------------------------------------------------------
+
+Edit /etc/apt/source.list.d/unisim.list with the following content:
+deb http://unisim.org/distributions/binary/deb stable main
+
+
+Update your local package list cache:
+$ apt-get update

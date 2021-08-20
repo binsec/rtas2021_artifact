@@ -1,0 +1,3 @@
+unisim/component/cxx/processor/avr32/avr32a/avr32uc/config.cc
+unisim/component/cxx/processor/avr32/avr32a/avr32uc/cpu.cc
+unisim/component/cxx/processor/avr32/avr32a/avr32uc/cpu_debug.cc

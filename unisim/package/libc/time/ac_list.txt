@@ -1,0 +1,1 @@
+AC_CHECK_HEADER([time.h],, AC_MSG_ERROR([time.h is missing]))

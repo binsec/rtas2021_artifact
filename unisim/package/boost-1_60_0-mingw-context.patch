@@ -1,0 +1,75 @@
+diff -Naur boost_1_60_0/libs/context/build/Jamfile.v2 boost_1_60_0-mingw/libs/context/build/Jamfile.v2
+--- boost_1_60_0/libs/context/build/Jamfile.v2	2015-10-21 15:15:01.000000000 +0200
++++ boost_1_60_0-mingw/libs/context/build/Jamfile.v2	2016-03-24 19:15:24.057184520 +0100
+@@ -45,10 +45,11 @@
+ local rule default_binary_format ( )
+ {
+     local tmp = elf ;
+-    if [ os.name ] = "NT" { tmp = pe ; }
+-    else if [ os.name ] = "CYGWIN" { tmp = pe ; }
+-    else if [ os.name ] = "AIX" { tmp = xcoff ; }
+-    else if [ os.name ] = "MACOSX" { tmp = mach-o ; }
++#     if [ os.name ] = "NT" { tmp = pe ; }
++#     else if [ os.name ] = "CYGWIN" { tmp = pe ; }
++#     else if [ os.name ] = "AIX" { tmp = xcoff ; }
++#     else if [ os.name ] = "MACOSX" { tmp = mach-o ; }
++    tmp = pe ;
+     return $(tmp) ;
+ }
+ 
+@@ -65,10 +66,11 @@
+ local rule default_abi ( )
+ {
+     local tmp = sysv ;
+-    if [ os.name ] = "NT" { tmp = ms ; }
+-    else if [ os.name ] = "CYGWIN" { tmp = ms ; }
+-    else if [ os.platform ] = "ARM" { tmp = aapcs ; }
+-    else if [ os.platform ] = "MIPS" { tmp = o32 ; }
++#     if [ os.name ] = "NT" { tmp = ms ; }
++#     else if [ os.name ] = "CYGWIN" { tmp = ms ; }
++#     else if [ os.platform ] = "ARM" { tmp = aapcs ; }
++#     else if [ os.platform ] = "MIPS" { tmp = o32 ; }
++    tmp = ms ;
+     return $(tmp) ;
+ }
+ 
+diff -Naur boost_1_60_0/libs/context/src/asm/jump_i386_ms_pe_gas.asm boost_1_60_0-mingw/libs/context/src/asm/jump_i386_ms_pe_gas.asm
+--- boost_1_60_0/libs/context/src/asm/jump_i386_ms_pe_gas.asm	2015-10-21 15:15:01.000000000 +0200
++++ boost_1_60_0-mingw/libs/context/src/asm/jump_i386_ms_pe_gas.asm	2016-03-24 19:15:09.683364218 +0100
+@@ -138,3 +138,6 @@
+ 
+     /* indirect jump to context */
+     jmp  *%edx
++
++.section .drectve
++.ascii " -export:\"jump_fcontext\""
+diff -Naur boost_1_60_0/libs/context/src/asm/jump_x86_64_ms_pe_gas.asm boost_1_60_0-mingw/libs/context/src/asm/jump_x86_64_ms_pe_gas.asm
+--- boost_1_60_0/libs/context/src/asm/jump_x86_64_ms_pe_gas.asm	2015-10-21 15:15:01.000000000 +0200
++++ boost_1_60_0-mingw/libs/context/src/asm/jump_x86_64_ms_pe_gas.asm	2016-03-24 19:15:16.656277044 +0100
+@@ -223,3 +223,6 @@
+     /* indirect jump to context */
+     jmp  *%r10
+ .seh_endproc
++
++.section .drectve
++.ascii " -export:\"jump_fcontext\""
+diff -Naur boost_1_60_0/libs/context/src/asm/make_i386_ms_pe_gas.asm boost_1_60_0-mingw/libs/context/src/asm/make_i386_ms_pe_gas.asm
+--- boost_1_60_0/libs/context/src/asm/make_i386_ms_pe_gas.asm	2015-10-21 15:15:01.000000000 +0200
++++ boost_1_60_0-mingw/libs/context/src/asm/make_i386_ms_pe_gas.asm	2016-03-24 19:15:30.444104673 +0100
+@@ -122,3 +122,6 @@
+     hlt
+ 
+ .def	__exit;	.scl	2;	.type	32;	.endef  /* standard C library function */
++
++.section .drectve
++.ascii " -export:\"make_fcontext\""
+diff -Naur boost_1_60_0/libs/context/src/asm/make_x86_64_ms_pe_gas.asm boost_1_60_0-mingw/libs/context/src/asm/make_x86_64_ms_pe_gas.asm
+--- boost_1_60_0/libs/context/src/asm/make_x86_64_ms_pe_gas.asm	2015-10-21 15:15:01.000000000 +0200
++++ boost_1_60_0-mingw/libs/context/src/asm/make_x86_64_ms_pe_gas.asm	2016-03-24 19:15:38.969998085 +0100
+@@ -149,3 +149,6 @@
+ .seh_endproc
+ 
+ .def	_exit;	.scl	2;	.type	32;	.endef  /* standard C library function */
++
++.section .drectve
++.ascii " -export:\"make_fcontext\""

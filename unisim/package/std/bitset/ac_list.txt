@@ -1,0 +1,1 @@
+AC_CHECK_HEADER([bitset],, AC_MSG_ERROR([bitset is missing]))

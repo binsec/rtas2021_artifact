@@ -1,0 +1,10 @@
+.DS_Store
+*~
+unisim_docs/www/content/*-view-image-*
+unisim_docs/www/content/*-view-video-*
+unisim_docs/www/content/image-gallery-*
+unisim_docs/www/content/video-gallery-*
+unisim_docs/www/content/index/news.html
+unisim_docs/www/content/news/news.html
+unisim_docs/www/content/sitemap/sitemap.html
+unisim_docs/www/template/whats_new.html

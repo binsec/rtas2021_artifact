@@ -1,0 +1,496 @@
+\section{Introduction}
+
+%-------------------------------------------------------------------------
+Instruction set simulators are usefull for processor simulation, either
+architecture or micro-architecture simulation. Architecture simulation,
+also called functional simulation, refers to simulation of the processor
+instruction set, whereas micro-architecture simulation refers to components
+inside the processor such as pipelines, caches, functional units, branch
+predictors. Implementing the instruction set into a software instruction set
+simulator is needed for developping and testing software before the target
+processor is available or for analyzing softwares without disturbing their execution.
+To go from the instruction set specification to a software
+implementation of the instruction set, it is convenient to have a description language
+for easily describing the instruction encoding, but most description languages
+are restricted to only few syntaxical constructions for describing the
+instructions behavior. Beside, it is important to have a multipurpose instruction decoder as needs evolves.
+GenISSLib is intended for developping such instruction set simulators. It uses a
+description language for describing instruction encoding. C++ source code blended with
+the description language allow the use of complex instruction behavior, or even more functionalities
+like disassembling, binary translation, system calls translation.
+
+\section{Quick Start}
+
+We will now presents you how to use GenISSLib through an example. Suppose that we want to build an instruction set simulator for
+a simple 16-bit RISC processor, see table~\ref{instruction_set_summary}. We need GenISSLib to generate C++ class 'Decoder' to decode an instruction, and a C++ class 'Operation' representing the decoded instruction.
+class 'Operation' would have a C++ method named 'execute' to execute the instruction, and a C++ method to disassemble the instruction into a string buffer:
+\begin{itemize}
+	\item \texttt{Operation *Decoder::decode(uint16\_t addr, uint16\_t instruction)}
+	\begin{itemize}
+		\item \texttt{addr} is the address of the instruction
+		\item \texttt{instruction} is the instruction word to decode
+		\item \texttt{decode} returns an instance of class \texttt{Operation} containing the decoded instruction
+	\end{itemize}
+	\item \texttt{void Operation::execute()}
+	\item \texttt{void Operation::disasm(uint16\_t pc, char *s)}
+	\begin{itemize}
+		\item \texttt{pc} is the address of the instruction
+		\item \texttt{s} is a string where to disassemble the instruction
+	\end{itemize}
+\end{itemize}
+
+GenISSLib automatically generates the \texttt{Decoder} class. To ask GenISSLib to generate \texttt{execute} and \texttt{disasm} methods, we have
+to declare them using the description language, see figure~\ref{action}. The grammar of the description language is on figure~\ref{grammar}. In the description language, \texttt{execute} and \texttt{disasm} are actions having a prototype.
+The action prototype is simply a template for the action. As you can see, the declaration in the instruction set simulator source code directly derives
+from these action prototypes. If an instruction is invalid, we can tell GenISSLib to use a default implementation for the action. The default
+action implementation for \texttt{execute} is printing \texttt{"Unknown instruction\textbackslash n"} and exit whereas the default action implementation
+for \texttt{disasm} is writing a \texttt{"?"} into the string \texttt{s}.
+
+\begin{figure}[ht]
+\begin{verbatim}
+action {void} execute() {
+    printf("Unknown instruction\n");
+    exit(-1);
+}
+
+action {void} disasm({uint16_t} {pc}, {char *} {s}) {
+    sprintf(s, "?");
+}
+\end{verbatim}
+\caption{Declaring the \texttt{execute} and \texttt{disasm} action prototypes.}
+\label{action}
+\end{figure}
+
+\begin{figure}[h!tb]
+	\begin{center}
+		\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|}
+			\hline
+			instructions &  15  &  14  &  13  &  12  &  11  &  10  &  ~9  & ~8  &  ~7  &  ~6  &  ~5  &  ~4  &  ~3  &  ~2  &  ~1  &  ~0 \\
+			\hline
+			add    &   0  &   0  &   0  &   0  & \multicolumn{4}{|c|}{rd} & \multicolumn{4}{|c|}{rs1} & \multicolumn{4}{|c|}{rs2}\\
+			\hline
+			sub    &   0  &   0  &   0  &   1  & \multicolumn{4}{|c|}{rd} & \multicolumn{4}{|c|}{rs1} & \multicolumn{4}{|c|}{rs2}\\
+			\hline
+			or     &   0  &   0  &   1  &   0  & \multicolumn{4}{|c|}{rd} & \multicolumn{4}{|c|}{rs1} & \multicolumn{4}{|c|}{rs2}\\
+			\hline
+			and    &   0  &   0  &   1  &   1  & \multicolumn{4}{|c|}{rd} & \multicolumn{4}{|c|}{rs1} & \multicolumn{4}{|c|}{rs2}\\
+			\hline
+			not    &   0  &   1  &   0  &   0  & \multicolumn{4}{|c|}{rd}  & \multicolumn{4}{|c|}{rs} &   x  &   x  &   x  &   x \\
+			\hline
+			shl    &   0  &   1  &   0  &   1  & \multicolumn{4}{|c|}{rd}  & \multicolumn{4}{|c|}{rs} & \multicolumn{4}{|c|}{shamt}\\
+			\hline
+			shr    &   0  &   1  &   1  &   0  & \multicolumn{4}{|c|}{rd}  & \multicolumn{4}{|c|}{rs} & \multicolumn{4}{|c|}{shamt}\\
+			\hline
+			load   &   0  &   1  &   1  &   1  & \multicolumn{4}{|c|}{rd}  & \multicolumn{4}{|c|}{base} & \multicolumn{4}{|c|}{index}\\
+			\hline
+			store  &   1  &   0  &   0  &   0  & \multicolumn{4}{|c|}{rd}  & \multicolumn{4}{|c|}{base} & \multicolumn{4}{|c|}{index}\\
+			\hline
+			branch &   1  &   0  &   0  &   1  & \multicolumn{12}{|c|}{addr}\\
+			\hline
+			bne    &   1  &   0  &   1  &   0  & \multicolumn{4}{|c|}{rs} & \multicolumn{8}{|c|}{offset}\\
+			\hline
+			li     &   1  &   0  &   1  &   1  & \multicolumn{4}{|c|}{rd} & \multicolumn{8}{|c|}{immed}\\
+			\hline
+		\end{tabular}
+		\caption{Instruction Set Summary.}
+		\label{instruction_set_summary}
+	\end{center}
+\end{figure}
+
+\begin{figure}[h!tb]
+\begin{center}
+	\begin{tabular}{cccccccccccccccc}
+		\multicolumn{4}{l}{\Large{\bf{add}}} & \multicolumn{12}{l}{add}\\
+		\multicolumn{16}{c}{}\\
+		15  &  14  &  13  &  12  &  11  &  10  &  ~9  & ~8  &  ~7  &  ~6  &  ~5  &  ~4  &  ~3  &  ~2  &  ~1  &  ~0 \\
+		\hline
+			\multicolumn{1}{|c|}{0}  & \multicolumn{1}{|c|}{0} & \multicolumn{1}{|c|}{0} & \multicolumn{1}{|c|}{0} & \multicolumn{4}{|c|}{rd} & \multicolumn{4}{|c|}{rs1} & \multicolumn{4}{|c|}{rs2}\\
+		\hline
+		\multicolumn{16}{c}{}\\
+		\multicolumn{16}{l}{(rd) $\leftarrow$ (rs1) + (rs2)}\\
+	\end{tabular}
+\end{center}
+\caption{The add instruction.}
+\label{add_instr}
+\end{figure}
+
+\begin{figure}[h!tb]
+\begin{center}
+\begin{verbatim}
+op add(0b0000[4]:rd[4]:rs1[4]:rs2[4])
+\end{verbatim}
+\label{add_decl}
+\caption{declaration of the add operation}
+\end{center}
+\end{figure}
+
+\begin{figure}[h!tb]
+\begin{center}
+	\begin{tabular}{cccccccccccccccc}
+		\multicolumn{4}{l}{\Large{\bf{not}}} & \multicolumn{12}{l}{negation}\\
+		\multicolumn{16}{c}{}\\
+		15  &  14  &  13  &  12  &  11  &  10  &  ~9  & ~8  &  ~7  &  ~6  &  ~5  &  ~4  &  ~3  &  ~2  &  ~1  &  ~0 \\
+		\hline
+		\multicolumn{1}{|c|}{0}  & \multicolumn{1}{|c|}{1} & \multicolumn{1}{|c|}{0} & \multicolumn{1}{|c|}{0} & \multicolumn{4}{|c|}{rd} & \multicolumn{4}{|c|}{rs} & \multicolumn{1}{|c|}{x} & \multicolumn{1}{|c|}{x} & \multicolumn{1}{|c|}{x} & \multicolumn{1}{|c|}{x}\\
+		\hline
+		\multicolumn{16}{c}{}\\
+		\multicolumn{16}{l}{(rd) $\leftarrow$ $~$(rs)}\\
+	\end{tabular}
+\end{center}
+\caption{The not instruction.}
+\label{not_instr}
+\end{figure}
+
+\begin{figure}[h!tb]
+\begin{center}
+\begin{verbatim}
+op not(0b0100[4]:rd[4]:rs[4]:?[4])
+\end{verbatim}
+\label{not_decl}
+\caption{declaration of the not operation}
+\end{center}
+\end{figure}
+
+We can now declare instruction encoding and the action implementation with the description language. First, let's consider the add instruction, see figures \ref{add_instr} and \ref{add_decl}: it has a 4-bit opcode
+which is 0000 and three 4-bit long operand register numbers encoded into the instruction word which are rd, rs1 and rs2. In the description language \texttt{operation} refers to an instruction.
+\texttt{0b0000[4]} refers to the 4-bit opcode, \texttt{rd[4]} to the destination register number which is 4-bit long, \texttt{rs1[4]} and \texttt{rs2[4]} respectively
+to the first and second source register numbers. Each bit fields are separated by \texttt{:}. Instead of using binary digits as in \texttt{0b0000[4]}, we can also use decimal digits as in \texttt{0[4]}, or
+hexadecimal digits as in \texttt{0x0[4]}.
+
+Now, let's declare the not instruction encoding, see figures \ref{not_instr} and \ref{not_decl}:  it has a 4-bit opcode which is 0001, two 4-bit long operand register numbers which are rd and rs, and 4 don't care bits which can be either 0 or 1.
+The 4 don't care bits are represented by \texttt{?[4]} in the declaration of the not operation.
+
+Now, let's implement the actions of the add operation, see figures \ref{add_instr} and \ref{add_impl}. Implementation of an action is just C code.
+We can directly use rd, rs1 and rs2 which have been declared in the operation. We use an array (\texttt{gpr}) to represent the registers. The external declaration of that C array can be done anywhere into the description language : we've just added between \{ and \}, the external declarations of \texttt{gpr} and the memory access functions \texttt{mem\_read} and \texttt{mem\_write}, see figure~\ref{c_decl}.
+
+\begin{figure}[h!tb]
+\begin{center}
+\begin{verbatim}
+add.execute = {
+    gpr[rd] = gpr[rs1] + gpr[rs2];
+}
+
+add.disasm = {
+    sprintf(s, "add r%u, r%u, r%u", rd, rs1, rs2);
+}
+\end{verbatim}
+\caption{implementation of the \texttt{execute} and \texttt{disasm} of the add operation.}
+\label{add_impl}
+\end{center}
+\end{figure}
+
+\begin{figure}[ht]
+\begin{center}
+\begin{verbatim}
+{
+#include <inttypes.h>
+#include <stdio.h>
+
+extern uint16_t cia;
+extern uint16_t nia;
+extern uint16_t gpr[16];
+
+extern uint16_t mem_read(uint16_t addr);
+extern void mem_write(uint16_t addr, uint16_t value);
+}
+\end{verbatim}
+\caption{external declaration of C/C++ variables and functions.}
+\label{c_decl}
+\end{center}
+\end{figure}
+
+\begin{figure}[h!tb]
+\begin{center}
+	\begin{tabular}{cccccccccccccccc}
+		\multicolumn{4}{l}{\Large{\bf{load}}} & \multicolumn{12}{l}{load word}\\
+		\multicolumn{16}{c}{}\\
+		15  &  14  &  13  &  12  &  11  &  10  &  ~9  & ~8  &  ~7  &  ~6  &  ~5  &  ~4  &  ~3  &  ~2  &  ~1  &  ~0 \\
+		\hline
+		\multicolumn{1}{|c|}{0}  & \multicolumn{1}{|c|}{1} & \multicolumn{1}{|c|}{1} & \multicolumn{1}{|c|}{1} & \multicolumn{4}{|c|}{rd} & \multicolumn{4}{|c|}{base} & \multicolumn{4}{|c|}{index}\\
+		\hline
+		\multicolumn{16}{c}{}\\
+		\multicolumn{16}{l}{ea $\leftarrow$ (base) + index}\\
+		\multicolumn{16}{l}{(rd) $\leftarrow$ Mem[ea]}\\
+	\end{tabular}
+\end{center}
+\caption{The load instruction.}
+\label{load_instr}
+\end{figure}
+
+Now, let's write the declaration of the load operation, and the implementation of its actions, see figures \ref{load_instr} and \ref{load_decl}: it has a 4-bit index which
+must be sign extended and added to a base register to compute the effective address of the load.
+Thus we use the \texttt{sext} modifier into the operation declaration. The minimum size in bits of the C variable \texttt{index} holding the \texttt{index} operand field of the operation is supplied between \textless and \textgreater. When decoding a load instruction, GenISSLib will sign extends the \texttt{index} bit field, and store it into the \texttt{index} C variable.
+
+\begin{figure}[h!tb]
+\begin{center}
+\begin{verbatim}
+op load(0b0111[4]:rd[4]:base[4]:sext<16> immed[4])
+
+load.execute = {
+    gpr[rd] = mem_read(gpr[base] + immed);
+}
+
+load.disasm = {
+    sprintf(s, "load r%u, %d(r%u)", rd, immed, base);
+}
+\end{verbatim}
+\caption{The load declaration and implementation.}
+\label{load_decl}
+\end{center}
+\end{figure}
+
+\begin{figure}[h!tb]
+\begin{center}
+	\begin{tabular}{cccccccccccccccc}
+		\multicolumn{4}{l}{\Large{\bf{bne}}} & \multicolumn{12}{l}{conditional branch}\\
+		\multicolumn{16}{c}{}\\
+		15  &  14  &  13  &  12  &  11  &  10  &  ~9  & ~8  &  ~7  &  ~6  &  ~5  &  ~4  &  ~3  &  ~2  &  ~1  &  ~0 \\
+		\hline
+		\multicolumn{1}{|c|}{1}  & \multicolumn{1}{|c|}{0} & \multicolumn{1}{|c|}{1} & \multicolumn{1}{|c|}{0} & \multicolumn{4}{|c|}{rs} &\multicolumn{8}{|c|}{offset}\\
+		\hline
+		\multicolumn{16}{c}{}\\
+		\multicolumn{16}{l}{if (rs) \textless \textgreater 0 then}\\
+		\multicolumn{1}{l}{} &\multicolumn{15}{l}{NIA $\leftarrow$ CIA + offset}\\
+		\multicolumn{16}{l}{else}\\
+		\multicolumn{1}{l}{} & \multicolumn{15}{l}{NIA $\leftarrow$ CIA + 1}\\
+	\end{tabular}
+\end{center}
+\caption{The bne instruction.}
+\label{bne_instr}
+\end{figure}
+
+The implementation of the \texttt{disasm} action of the bne operation uses the \texttt{pc} parameter because we need that the disassembling of the bne instruction contains the target address of the conditional branch, that is \texttt{pc + offset} not \texttt{offset}, see figures \ref{bne_instr} and \ref{bne_decl}.
+
+\begin{figure}[h!tb]
+\begin{center}
+\begin{verbatim}
+op bne(0b1010[4]:rs[4]:sext<16> offset[8])
+bne.execute = {
+    if(gpr[rs] != 0)
+        nia = cia + offset;
+}
+bne.disasm = {
+    sprintf(s, "bne r%u, 0x%04x", rs, pc + offset);
+}
+\end{verbatim}
+\caption{The bne declaration and implementation.}
+\label{bne_decl}
+\end{center}
+\end{figure}
+
+Finally, we uses the generated function to implement the instruction set simulator main loop, see figure~\ref{main}.
+We also implement the external function used into the action implementations, see figure~\ref{extern_impl}.
+
+\begin{figure}[h!tb]
+\begin{center}
+\begin{verbatim}
+#include <inttypes.h>"
+
+uint16_t cia;
+uint16_t nia;
+uint16_t gpr[16];
+uint16_t mem[1 << 16];
+
+uint16_t mem_read(uint16_t addr) {
+    return mem[addr];
+}
+
+void mem_write(uint16_t addr, uint16_t value) {
+    mem[addr] = value;
+}
+\end{verbatim}
+\caption{The implementation of the external data and functions.}
+\label{extern_impl}
+\end{center}
+\end{figure}
+
+\begin{figure}[h!tb]
+\begin{center}
+\begin{verbatim}
+#include "risc16.hh"
+#include <stdio.h>
+
+int main(int argc, char *argv[]) {
+    int i;
+    FILE *f;
+    uint16_t instruction;
+    Operation *operation;
+    char disasm_buffer[256];
+
+    cia = 0;
+    nia = 0;
+    for(i = 0; i < 16; i++) gpr[i] = 0;
+    f = fopen("image", "rb");
+    fread(mem, 1, sizeof(mem), f);
+    fclose(f);
+    Decoder decoder;
+    for(i = 0; i < 1000; i++)	{
+        instruction = mem_read(cia);
+        operation = decoder.decode(cia, instruction);
+        operation->disasm(cia, disasm_buffer);
+        printf("0x%04x: 0x%04x %s\n", cia, instruction,
+                                            disasm_buffer);
+        nia = cia + 1;
+        operation->execute();
+        cia = nia;
+    }
+    return 0;
+}
+\end{verbatim}
+\caption{The main simulation loop.}
+\label{main}
+\end{center}
+\end{figure}
+
+
+
+% \begin{figure}[ht]
+% \begin{center}
+% 	\begin{tabular}{cccccccccccccccc}
+% 		\multicolumn{4}{l}{\Large{\bf{sub}}} & \multicolumn{12}{l}{substract}\\
+% 		\multicolumn{16}{c}{}\\
+% 		15  &  14  &  13  &  12  &  11  &  10  &  ~9  & ~8  &  ~7  &  ~6  &  ~5  &  ~4  &  ~3  &  ~2  &  ~1  &  ~0 \\
+% 		\hline
+% 			\multicolumn{1}{|c|}{0}  & \multicolumn{1}{|c|}{0} & \multicolumn{1}{|c|}{0} & \multicolumn{1}{|c|}{1} & \multicolumn{4}{|c|}{rd} & \multicolumn{4}{|c|}{rs1} & \multicolumn{4}{|c|}{rs2}\\
+% 		\hline
+% 		\multicolumn{16}{c}{}\\
+% 		\multicolumn{16}{l}{(rd) $\leftarrow$ (rs1) - (rs2)}\\
+% 	\end{tabular}
+% \end{center}
+% \caption{The sub instruction.}
+% \label{sub_instr}
+% \end{figure}
+% 
+% \begin{figure}[ht]
+% \begin{center}
+% 	\begin{tabular}{cccccccccccccccc}
+% 		\multicolumn{4}{l}{\Large{\bf{or}}} & \multicolumn{12}{l}{logical or}\\
+% 		\multicolumn{16}{c}{}\\
+% 		15  &  14  &  13  &  12  &  11  &  10  &  ~9  & ~8  &  ~7  &  ~6  &  ~5  &  ~4  &  ~3  &  ~2  &  ~1  &  ~0 \\
+% 		\hline
+% 			\multicolumn{1}{|c|}{0}  & \multicolumn{1}{|c|}{0} & \multicolumn{1}{|c|}{1} & \multicolumn{1}{|c|}{0} & \multicolumn{4}{|c|}{rd} & \multicolumn{4}{|c|}{rs1} & \multicolumn{4}{|c|}{rs2}\\
+% 		\hline
+% 		\multicolumn{16}{c}{}\\
+% 		\multicolumn{16}{l}{(rd) $\leftarrow$ (rs1) \textbar (rs2)}\\
+% 	\end{tabular}
+% \end{center}
+% \caption{The or instruction.}
+% \label{or_instr}
+% \end{figure}
+% 
+% \begin{figure}[ht]
+% \begin{center}
+% 	\begin{tabular}{cccccccccccccccc}
+% 		\multicolumn{4}{l}{\Large{\bf{and}}} & \multicolumn{12}{l}{logical and}\\
+% 		\multicolumn{16}{c}{}\\
+% 		15  &  14  &  13  &  12  &  11  &  10  &  ~9  & ~8  &  ~7  &  ~6  &  ~5  &  ~4  &  ~3  &  ~2  &  ~1  &  ~0 \\
+% 		\hline
+% 			\multicolumn{1}{|c|}{0}  & \multicolumn{1}{|c|}{0} & \multicolumn{1}{|c|}{1} & \multicolumn{1}{|c|}{1} & \multicolumn{4}{|c|}{rd} & \multicolumn{4}{|c|}{rs1} & \multicolumn{4}{|c|}{rs2}\\
+% 		\hline
+% 		\multicolumn{16}{c}{}\\
+% 		\multicolumn{16}{l}{(rd) $\leftarrow$ (rs1) \& (rs2)}\\
+% 	\end{tabular}
+% \end{center}
+% \caption{The and instruction.}
+% \label{and_instr}
+% \end{figure}
+% 
+% 
+% \begin{figure}[ht]
+% \begin{center}
+% 	\begin{tabular}{cccccccccccccccc}
+% 		\multicolumn{4}{l}{\Large{\bf{shl}}} & \multicolumn{12}{l}{Shift left}\\
+% 		\multicolumn{16}{c}{}\\
+% 		15  &  14  &  13  &  12  &  11  &  10  &  ~9  & ~8  &  ~7  &  ~6  &  ~5  &  ~4  &  ~3  &  ~2  &  ~1  &  ~0 \\
+% 		\hline
+% 		\multicolumn{1}{|c|}{0}  & \multicolumn{1}{|c|}{1} & \multicolumn{1}{|c|}{0} & \multicolumn{1}{|c|}{1} & \multicolumn{4}{|c|}{rd} & \multicolumn{4}{|c|}{rs} & \multicolumn{1}{|c|}{x} & \multicolumn{1}{|c|}{x} & \multicolumn{1}{|c|}{x} & \multicolumn{1}{|c|}{x}\\
+% 		\hline
+% 		\multicolumn{16}{c}{}\\
+% 		\multicolumn{16}{l}{(rd) $\leftarrow$ (rs) \textless \textless 1}\\
+% 	\end{tabular}
+% \end{center}
+% \caption{The shl instruction.}
+% \label{shl_instr}
+% \end{figure}
+% 
+% \begin{figure}[ht]
+% \begin{center}
+% 	\begin{tabular}{cccccccccccccccc}
+% 		\multicolumn{4}{l}{\Large{\bf{shr}}} & \multicolumn{12}{l}{Shift right}\\
+% 		\multicolumn{16}{c}{}\\
+% 		15  &  14  &  13  &  12  &  11  &  10  &  ~9  & ~8  &  ~7  &  ~6  &  ~5  &  ~4  &  ~3  &  ~2  &  ~1  &  ~0 \\
+% 		\hline
+% 		\multicolumn{1}{|c|}{0}  & \multicolumn{1}{|c|}{1} & \multicolumn{1}{|c|}{1} & \multicolumn{1}{|c|}{0} & \multicolumn{4}{|c|}{rd} & \multicolumn{4}{|c|}{rs} & \multicolumn{1}{|c|}{x} & \multicolumn{1}{|c|}{x} & \multicolumn{1}{|c|}{x} & \multicolumn{1}{|c|}{x}\\
+% 		\hline
+% 		\multicolumn{16}{c}{}\\
+% 		\multicolumn{16}{l}{(rd) $\leftarrow$ (rs) \textgreater \textgreater 1}\\
+% 	\end{tabular}
+% \end{center}
+% \caption{The shr instruction.}
+% \label{shr_instr}
+% \end{figure}
+% 
+% 
+% \begin{figure}[ht]
+% \begin{center}
+% 	\begin{tabular}{cccccccccccccccc}
+% 		\multicolumn{4}{l}{\Large{\bf{store}}} & \multicolumn{12}{l}{store word}\\
+% 		\multicolumn{16}{c}{}\\
+% 		15  &  14  &  13  &  12  &  11  &  10  &  ~9  & ~8  &  ~7  &  ~6  &  ~5  &  ~4  &  ~3  &  ~2  &  ~1  &  ~0 \\
+% 		\hline
+% 		\multicolumn{1}{|c|}{1}  & \multicolumn{1}{|c|}{0} & \multicolumn{1}{|c|}{0} & \multicolumn{1}{|c|}{0} & \multicolumn{4}{|c|}{rs} & \multicolumn{4}{|c|}{base} & \multicolumn{4}{|c|}{index}\\
+% 		\hline
+% 		\multicolumn{16}{c}{}\\
+% 		\multicolumn{16}{l}{ea $\leftarrow$ (base) + index}\\
+% 		\multicolumn{16}{l}{Mem[ea]  $\leftarrow$ (rs)}\\
+% 	\end{tabular}
+% \end{center}
+% \caption{The store instruction.}
+% \label{store_instr}
+% \end{figure}
+%
+% \begin{figure}[ht]
+% \begin{center}
+% 	\begin{tabular}{cccccccccccccccc}
+% 		\multicolumn{4}{l}{\Large{\bf{branch}}} & \multicolumn{12}{l}{unconditional branch}\\
+% 		\multicolumn{16}{c}{}\\
+% 		15  &  14  &  13  &  12  &  11  &  10  &  ~9  & ~8  &  ~7  &  ~6  &  ~5  &  ~4  &  ~3  &  ~2  &  ~1  &  ~0 \\
+% 		\hline
+% 		\multicolumn{1}{|c|}{1}  & \multicolumn{1}{|c|}{0} & \multicolumn{1}{|c|}{0} & \multicolumn{1}{|c|}{1} & \multicolumn{12}{|c|}{addr}\\
+% 		\hline
+% 		\multicolumn{16}{c}{}\\
+% 		\multicolumn{16}{l}{NIA $\leftarrow$ addr}\\
+% 	\end{tabular}
+% \end{center}
+% \caption{The branch instruction.}
+% \label{branch_instr}
+% \end{figure}
+
+\newpage
+
+\section{Technical Reference}
+
+\begin{figure}[p]
+input $\rightarrow$ decl\_list\\
+decl\_list $\rightarrow$ $\epsilon$ \textbar~~decl\_list decl {\bf $\hookleftarrow$}\\
+decl $\rightarrow$ $\epsilon$ \textbar~~op\_decl \textbar~~action\_proto\_decl \textbar~~action\_decl \textbar~~source\_code\_decl \textbar~~include\_decl\\
+source\_code\_decl $\rightarrow$ {\bf source\_code}\\
+op\_decl $\rightarrow$ {\bf op} {\bf identifier} {\bf (} bitfield\_list {\bf )}\\
+bitfield\_list $\rightarrow$ bitfield \textbar~ bitfield\_list {\bf :} bitfield\\
+bitfield $\rightarrow$ {\bf integer} {\bf [} {\bf integer} {\bf ]} \textbar~ sext\_modifier size\_modifier {\bf identifier} {\bf [} {\bf integer} {\bf ]} \textbar~ ? {\bf [} {\bf integer}�{\bf ]}\\
+sext\_modifier $\rightarrow$ $\epsilon$ \textbar~ {\bf sext}\\
+size\_modifier $\rightarrow$ $\epsilon$ \textbar~ {\bf \textless}~ {\bf integer} {\bf \textgreater}~ \textbar~ {\bf \textless}~ {\bf \textgreater}~\\
+action\_proto\_decl $\rightarrow$ static\_modifier {\bf action} {\bf source\_code} {\bf identifier} {\bf (} params {\bf )} {\bf source\_code}\\
+params $\rightarrow$ $\epsilon$ \textbar~ {\bf source\_code}\\
+static\_modifier $\rightarrow$ $\epsilon$ \textbar~ {\bf static}\\
+action\_decl $\rightarrow$ {\bf identifier} {\bf.} {\bf identifier} {\bf =} {\bf source\_code}\\
+include\_decl $\rightarrow$ {\bf include} {\bf string}\\
+\\
+{\bf source\_code} is C++ source between \{ and \}\\
+{\bf identifier} is an alphanumeric identifier\\
+{\bf integer} is a positive integer either binary, decimal or hexadecimal\\
+{\bf string} is a double-quoted character string\\
+C ( /* */) et C++ ( // ) comments are allowed anywhere.
+\caption{The description language grammar.}
+\label{grammar}
+\end{figure}

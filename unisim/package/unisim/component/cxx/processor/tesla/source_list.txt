@@ -1,0 +1,4 @@
+unisim/component/cxx/processor/tesla/cpu.cc
+unisim/component/cxx/processor/tesla/disasm.cc
+unisim/component/cxx/processor/tesla/flags.cc
+unisim/component/cxx/processor/tesla/g80_debug.cc

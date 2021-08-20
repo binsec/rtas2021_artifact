@@ -1,0 +1,2 @@
+unisim/component/tlm2/processor/avr32/avr32uc/cpu.cc
+unisim/component/tlm2/processor/avr32/avr32uc/cpu_debug.cc

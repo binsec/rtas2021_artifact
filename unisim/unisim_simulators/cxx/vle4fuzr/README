@@ -1,0 +1,4 @@
+This package contains:
+  - s3pac: an ARMv7 decoder for conversion of arm instructions to C code
+  - GenISSLib (will not be installed): an instruction set simulator generator
+See INSTALL for installation instructions.

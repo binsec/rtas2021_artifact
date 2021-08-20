@@ -1,0 +1,37 @@
+<architecture name="arm-with-fpa" endian="little">
+	<breakpoint_kind kind="2" size="2"/>
+	<breakpoint_kind kind="3" size="4"/>
+	<breakpoint_kind kind="4" size="4"/>
+	<program_counter name="pc"/>
+	<feature name="org.gnu.gdb.arm.core">
+		<register name="r0" bitsize="32" type="uint32" regnum="0"/>
+		<register name="r1" bitsize="32" type="uint32"/>
+		<register name="r2" bitsize="32" type="uint32"/>
+		<register name="r3" bitsize="32" type="uint32"/>
+		<register name="r4" bitsize="32" type="uint32"/>
+		<register name="r5" bitsize="32" type="uint32"/>
+		<register name="r6" bitsize="32" type="uint32"/>
+		<register name="r7" bitsize="32" type="uint32"/>
+		<register name="r8" bitsize="32" type="uint32"/>
+		<register name="r9" bitsize="32" type="uint32"/>
+		<register name="r10" bitsize="32" type="uint32"/>
+		<register name="r11" bitsize="32" type="uint32"/>
+		<register name="r12" bitsize="32" type="uint32"/>
+		<register name="sp" bitsize="32" type="data_ptr"/>
+		<register name="lr" bitsize="32"/>
+		<register name="pc" bitsize="32" type="code_ptr"/>
+		<register name="cpsr" bitsize="32" regnum="25"/>
+	</feature>
+	<feature name="org.gnu.gdb.arm.fpa">
+		<register name="f0" bitsize="96" type="arm_fpa_ext" regnum="16"/>
+		<register name="f1" bitsize="96" type="arm_fpa_ext"/>
+		<register name="f2" bitsize="96" type="arm_fpa_ext"/>
+		<register name="f3" bitsize="96" type="arm_fpa_ext"/>
+		<register name="f4" bitsize="96" type="arm_fpa_ext"/>
+		<register name="f5" bitsize="96" type="arm_fpa_ext"/>
+		<register name="f6" bitsize="96" type="arm_fpa_ext"/>
+		<register name="f7" bitsize="96" type="arm_fpa_ext"/>
+		<register name="fps" bitsize="32"/>
+		<register name="cpsr" bitsize="32" regnum="25"/>
+	</feature>
+</architecture>

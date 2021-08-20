@@ -1,0 +1,9 @@
+unisim/component/cxx/processor/intel/arch.hh
+unisim/component/cxx/processor/intel/disasm.hh
+unisim/component/cxx/processor/intel/execute.hh
+unisim/component/cxx/processor/intel/math.hh
+unisim/component/cxx/processor/intel/modrm.hh
+unisim/component/cxx/processor/intel/segments.hh
+unisim/component/cxx/processor/intel/tmp.hh
+unisim/component/cxx/processor/intel/types.hh
+unisim/component/cxx/processor/intel/vectorbank.hh

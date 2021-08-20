@@ -1,0 +1,163 @@
+/*
+ *  Copyright (c) 2007-2016,
+ *  Commissariat a l'Energie Atomique (CEA)
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without modification,
+ *  are permitted provided that the following conditions are met:
+ *
+ *   - Redistributions of source code must retain the above copyright notice, this
+ *     list of conditions and the following disclaimer.
+ *
+ *   - Redistributions in binary form must reproduce the above copyright notice,
+ *     this list of conditions and the following disclaimer in the documentation
+ *     and/or other materials provided with the distribution.
+ *
+ *   - Neither the name of CEA nor the names of its contributors may be used to
+ *     endorse or promote products derived from this software without specific prior
+ *     written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ *  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *  DISCLAIMED.
+ *  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ *  INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ *  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+ *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ *  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Authors: Yves Lhuillier (yves.lhuillier@cea.fr), Daniel Gracia Perez (daniel.gracia-perez@cea.fr)
+ */
+
+/**********************************************
+
+        BRANCH INSTRUCTIONS
+
+**********************************************/
+
+/*******************************************************************
+ * b (branch) instruction
+ */
+
+op b( cond[4]: 0b1010[4]: shl<2> sext<32> imm[24] );
+
+b.disasm = {
+  buffer << "b" << DisasmCondition(cond) << "\t0x" << std::hex << (this->GetAddr() + 8 + imm) << std::dec;
+};
+
+b.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  cpu.Branch( cpu.GetGPR( 15 ) + U32(imm), ARCH::B_JMP );
+};
+
+/*
+ * end of b (branch) instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * bl (branch & link) instruction
+ */
+
+op bl( cond[4]: 0b1011[4]: shl<2> sext<32> imm[24] );
+
+bl.disasm = {
+  buffer << "bl" << DisasmCondition(cond) << "\t0x" << std::hex << (this->GetAddr() + 8 + imm) << std::dec;
+};
+
+bl.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  cpu.SetGPR( cpu.LR_reg, cpu.GetNIA() );
+  cpu.Branch( cpu.GetGPR( 15 ) + U32(imm), ARCH::B_CALL );
+};
+
+/*
+ * end of bl (branch & link) instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * bx (Branch and Exchange) instruction
+ */
+
+{ ARCH::Config::insns4T }: \
+op bx( cond[4]: 0b00010010[8]: 0b1111[4]: 0b1111[4]: 0b1111[4]: 0b0001[4]: rm[4] );
+
+bx.disasm = {
+  buffer << "bx" << DisasmCondition(cond) << "\t" << DisasmRegister(rm);
+};
+
+bx.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+  
+  cpu.BranchExchange( cpu.GetGPR(rm), ARCH::B_JMP );
+};
+
+/*
+ * end of bx (branch and exchange) instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * bxj (Branch and Exchange Jazelle) instruction
+ * 
+ * This instruction attempts to change to Jazelle state. If the
+ * attempt fails, it branches to an address and instruction set
+ * specified by a register as though it were a BX instruction.
+ */
+
+{ ARCH::Config::insns5J }:                                      \
+op bxj( cond[4]: 0b00010010[8]: 0b1111[4]: 0b1111[4]: 0b1111[4]: 0b0010[4]: rm[4] );
+
+bxj.disasm = {
+  buffer << "bxj" << DisasmCondition(cond) << '\t' << DisasmRegister(rm);
+};
+
+/*
+ * end of bxj (Branch and Exchange Jazelle) instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * blx (Branch with Link and Exchange) instruction
+ *
+ * BLX calls a subroutine (at a PC-relative or register address), and
+ * changes instruction set from Thumb to ARM.
+ */
+
+{ ARCH::Config::insns5T }: \
+op blx_pcrel( 0b1111101[7]: shl<1> im0[1]: shl<2> sext<32> im1[24] );
+blx_pcrel.var imm : {uint32_t} = {im1|im0};
+
+blx_pcrel.disasm = {
+  buffer << "blx\t0x" << std::hex << ((this->GetAddr() + 8 + imm) & -2) << std::dec;
+};
+
+blx_pcrel.execute = {
+  typedef typename ARCH::U32 U32;
+  cpu.SetGPR( cpu.LR_reg, cpu.GetNIA() );
+  cpu.BranchExchange( (cpu.GetGPR( 15 ) + U32(imm)) | U32(1), ARCH::B_CALL );
+};
+
+{ ARCH::Config::insns5T }: \
+op blx_reg( cond[4]: 0b00010010[8]: 0b1111[4]: 0b1111[4]: 0b1111[4]: 0b0011[4]: rm[4] );
+
+blx_reg.disasm = {
+  buffer << "blx" << DisasmCondition(cond) << "\t" << DisasmRegister(rm);
+};
+
+blx_reg.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  U32 rm_value = cpu.GetGPR(rm);
+  cpu.SetGPR( cpu.LR_reg, cpu.GetNIA() );
+  cpu.BranchExchange( rm_value, ARCH::B_CALL );
+};
+
+/*
+ * end of blx (Branch with Link and Exchange) instruction
+ *******************************************************************/

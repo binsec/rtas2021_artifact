@@ -1,0 +1,79 @@
+/*
+ *  Copyright (c) 2007-2018,
+ *  Commissariat a l'Energie Atomique (CEA)
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without modification,
+ *  are permitted provided that the following conditions are met:
+ *
+ *   - Redistributions of source code must retain the above copyright notice, this
+ *     list of conditions and the following disclaimer.
+ *
+ *   - Redistributions in binary form must reproduce the above copyright notice,
+ *     this list of conditions and the following disclaimer in the documentation
+ *     and/or other materials provided with the distribution.
+ *
+ *   - Neither the name of CEA nor the names of its contributors may be used to
+ *     endorse or promote products derived from this software without specific prior
+ *     written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ *  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *  DISCLAIMED.
+ *  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ *  INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ *  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+ *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ *  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Authors: Gilles Mouchard (gilles.mouchard@cea.fr)
+ */
+
+/*  Subtract From */
+op subf(31[6]:rd[5]:ra[5]:rb[5]:oe[1]:40[9]:rc[1]);
+
+subf.execute = {
+	// Read the input operands
+	SINT a = SINT(cpu->GetGPR(ra)), b = SINT(cpu->GetGPR(rb));
+	
+	// Compute the result
+	SINT result = b - a;
+	
+	if(unlikely(oe))
+	{
+		// Overflow: expected result sign and actual result sign differs
+		UINT overflow = UINT((b < a) xor (SINT(result) < SINT(0)));
+		
+		// Generate XER[OV] and XER[SO]
+		XER& xer = cpu->GetXER();
+		xer.Set<XER::OV>(overflow);
+		xer.Set<XER::SO>(xer.Get<XER::SO>() | overflow);
+	}
+	
+	if(unlikely(rc))
+	{
+		// Generate CR0: CR0[SO]=XER[SO] CR0[LT]=(result<0) CR0[GT]=(result>0) CR0[EQ]=(result==0)
+		CR& cr = cpu->GetCR();
+		cr.Set<CR::CR0::SO>(cpu->GetXER().Get<XER::SO>());
+		cr.Set<CR::CR0::LT>(result < SINT(0));
+		cr.Set<CR::CR0::GT>(result > SINT(0));
+		cr.Set<CR::CR0::EQ>((UINT(result) == UINT(0)));
+	}
+	
+	// Write back the result
+	cpu->SetGPR(rd, UINT(result));
+	
+	return true;
+};
+
+subf.disasm = {
+	os << "subf" << (oe ? "o" : "") << (rc ? "." : "") << " " << GPRPrint(rd) << ", " << GPRPrint(ra) << ", " << GPRPrint(rb);
+};
+
+specialize subf(rc=0,oe=0);
+specialize subf(rc=0,oe=1);
+specialize subf(rc=1,oe=0);
+specialize subf(rc=1,oe=1);

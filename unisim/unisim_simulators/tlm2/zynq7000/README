@@ -1,0 +1,5 @@
+This package contains:
+  - Zynq7000: a xilinx Zynq full system simulator
+  - UniSIM GenISSLib (will not be installed): an instruction set simulator generator
+
+See INSTALL for installation instructions.

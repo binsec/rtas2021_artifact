@@ -1,0 +1,4 @@
+This package contains:
+  - UNISIM GenISSLib: an instruction set simulator generator
+  - UNISIM Virtex 5 FXT Simulator: a full system Virtex-5-FXT-like simulator including a PPC440x5 and some Xilinx Virtex 5 FXT IPs.
+See INSTALL for installation instructions.

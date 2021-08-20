@@ -1,0 +1,39 @@
+<div class="content-item">
+	<div class="content-item-title"><h2>What is it ?</h2></div>
+	<div class="content-item-body">
+		<p>
+			UNISIM provides several virtual platforms and a framework to ease the development of new virtual platforms.
+			A virtual platform is a software tool, often called simulator, that mimics the behavior of an electronic system so that software can run on it before silicon or FPGA implementation of that electronic system is available.
+			The simulated electronic system can include lots of microprocessors and devices.
+			<br>
+			Depending on the needed representativeness and simulator development budget, a simulator can be as simple as an <a class="online-document" href="http://en.wikipedia.org/wiki/Instruction_set_simulator">instruction set simulator</a> as well as a <a class="online-document" href="http://en.wikipedia.org/wiki/Full_system_simulator">full system simulator</a>.
+			A full system simulator, not only executes the microprocessor instruction set, like an instruction set simulator, but also simulates buses, I/O devices, sensors, actuators, so that real application workloads and operating systems can run on them.
+			Most of UNISIM virtual platforms are full system simulators, which means that they are sufficiently representative of the real hardware that whole operating systems (e.g. Linux, VxWorks), unmodified software stacks (e.g. an AUTOSAR software stack), and industrial applications can run on them.
+			<br>
+			The UNISIM virtual platforms are modular: a simulator is the assembly of properly configured simulation components (e.g. CPU, RAM, buses).
+			They are written in C/C++ and based on industry standards, like <a class="online-document" href="http://standards.ieee.org/getieee/1666/index.html">IEEE1666<sup>TM</sup></a>, <a class="online-document" href="http://www.systemc.org/downloads/standards">OSCI SystemC<sup>TM</sup></a> and <a class="online-document" href="http://www.systemc.org/downloads/standards">OSCI SystemC<sup>TM</sup> TLM 2.0</a>.
+		</p>
+		<img src=``IMAGES/overview.png`` alt=``IMAGES/overview.png``>
+		<p>
+			Some use cases of UNISIM virtual platforms are:
+		</p>
+		<ul>
+			<li>
+				Development of SystemC IPs (intellectual property) and new virtual platforms: UNISIM is an open development environment that comprise a SystemC module library, and a set of services (debugging, program loaders, …). It can be a fundation for the development of new SystemC IPs and new virtual virtual platforms.
+			</li>
+			<li>
+				Hybrid virtual platform: UNISIM/SystemC and an FPGA accelerator can be mixed to build some hybrid virtual platforms: for instance simulating processor cores within UNISIM/SystemC, and prototyping specialized IPs/devices within an FPGA accelerator. Hybridization allows using indifferently both UNISIM/SystemC IPs (on a standard host machine) and VHDL IPs (on an FPGA accelerator), but also speeding up simulation of large systems.
+			</li>
+			<li>
+				Non-intrusive debugging and testing of software: It means that, unlike on the real hardware, software can be debugged and tested without affecting either its functional and/or temporal behavior. With such virtual instrumentation, the user can seamlessly stop and resume execution of software, profile the software, inspect the system status, inject values on the sensors, modify the state of program variables and microprocessor/device registers, and then analyze the result without modifying the software.
+			</li>
+			<li>
+				Hardware/software integration: software stack can be debugged and tested within a representative hardware environment before the availability of either the FPGA prototypes or the real hardware. The software stack can be composed of low level software (e.g. drivers), of a real-time operating system, and of applications generated from high level models (Papyrus, Matlab Simulink, Statemate Stateflow, &hellip;)
+			</li>
+		</ul>
+		<p>
+			Several open source virtual platforms for different targets (<a href="arm.html">ARM</a>, <a href="powerpc.html">PowerPC</a>, <a href="s12x.html">Star12X</a>, and <a href="tms320c3x.html">TMS320C3X</a>) and different hosts (Linux, Windows, Mac OS X) are available for download <a href="download.html">here</a>.
+			These virtual platforms have been evaluated and used in various industry domains such as automotive, avionic, military, electrical equipments for medium tension, nuclear safety.
+		</p>
+	</div>
+</div>

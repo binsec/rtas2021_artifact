@@ -1,0 +1,127 @@
+/*
+ *  Copyright (c) 2007-2016,
+ *  Commissariat a l'Energie Atomique (CEA)
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without modification,
+ *  are permitted provided that the following conditions are met:
+ *
+ *   - Redistributions of source code must retain the above copyright notice, this
+ *     list of conditions and the following disclaimer.
+ *
+ *   - Redistributions in binary form must reproduce the above copyright notice,
+ *     this list of conditions and the following disclaimer in the documentation
+ *     and/or other materials provided with the distribution.
+ *
+ *   - Neither the name of CEA nor the names of its contributors may be used to
+ *     endorse or promote products derived from this software without specific prior
+ *     written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ *  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *  DISCLAIMED.
+ *  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ *  INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ *  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+ *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ *  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Authors: Yves Lhuillier (yves.lhuillier@cea.fr), Daniel Gracia Perez (daniel.gracia-perez@cea.fr)
+ */
+ 
+/**********************************************
+
+        THUMB BRANCH INSTRUCTIONS
+
+**********************************************/
+
+/*******************************************************************
+ * b (Branch) instruction
+ * 
+ * B causes a branch to a target address.
+ */
+
+op b_1( 0b1101[4]: cond[4]: shl<1> sext<32> imm[8] );
+b_1.var reject : {Reject} = {cond == 0xe};
+
+b_1.disasm = {
+  buffer << "b" << DisasmCondition(cond) << ".n\t0x" << std::hex << ((this->GetAddr() + 4 + imm) & -2) << std::dec;
+};
+
+b_1.execute = {
+  if (unlikely( not CheckCondition(cpu, cond) )) return;
+  // Note: according to specification, if InITBlock() then UNPREDICTABLE;
+  
+  typedef typename ARCH::U32 U32;
+  cpu.Branch(cpu.GetGPR( 15 ) + U32(imm), ARCH::B_JMP);
+};
+
+op b_2( 0b11100[5]: shl<1> sext<32> imm[11] );
+
+b_2.disasm = {
+  buffer << "b.n\t0x" << std::hex << ((this->GetAddr() + 4 + imm) & -2) << std::dec;
+};
+
+b_2.execute = {
+  if (unlikely( not CheckCondition(cpu, cpu.itcond()) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  cpu.Branch(cpu.GetGPR( 15 ) + U32(imm), ARCH::B_JMP);
+};
+
+/*
+ * end of b (Branch) instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * bx (Branch and Exchange) instruction
+ *
+ * BX causes a branch to an address and instruction set specified by a
+ * register.
+ */
+
+op bx( 0b010001110[9]: rm[4]: 0b000[3] );
+
+bx.disasm = {
+  buffer << "bx\t" << DisasmRegister(rm);
+};
+
+bx.execute = {
+  if (unlikely( not CheckCondition(cpu, cpu.itcond()) )) return;
+  
+  cpu.BranchExchange( cpu.GetGPR(rm), ARCH::B_JMP );
+};
+
+/*
+ * end of bx (Branch and Exchange) instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * blx (Branch with Link and Exchange) instruction
+ *
+ * BLX (register) calls a subroutine at an address and instruction set
+ * specified by a register.
+ */
+
+{ ARCH::Config::insns5T }:                              \
+op blx( 0b010001111[9]: rm[4]: 0b000[3] );
+
+blx.disasm = {
+  buffer << "blx\t" << DisasmRegister(rm);
+};
+
+blx.execute = {
+  if (unlikely( not CheckCondition(cpu, cpu.itcond()) )) return;
+  
+  typedef typename ARCH::U32 U32;
+  U32 address = cpu.GetGPR(rm);
+  cpu.SetGPR( cpu.LR_reg, cpu.GetNIA() | U32(1) );
+  cpu.BranchExchange( address, ARCH::B_CALL );
+};
+
+/*
+ * end of blx (Branch with Link and Exchange) instruction
+ *******************************************************************/

@@ -1,0 +1,9 @@
+unisim/component/cxx/processor/hcs12x/ccr.hh
+unisim/component/cxx/processor/hcs12x/concatenated_register.hh
+unisim/component/cxx/processor/hcs12x/config.hh
+unisim/component/cxx/processor/hcs12x/cpu.hh
+unisim/component/cxx/processor/hcs12x/exception.hh
+unisim/component/cxx/processor/hcs12x/mmc.hh
+unisim/component/cxx/processor/hcs12x/s12mpu_if.hh
+unisim/component/cxx/processor/hcs12x/types.hh
+unisim/component/cxx/processor/hcs12x/xgate.hh

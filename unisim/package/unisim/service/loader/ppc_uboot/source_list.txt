@@ -1,0 +1,2 @@
+unisim/service/loader/ppc_uboot/ppc_uboot32.cc
+unisim/service/loader/ppc_uboot/ppc_uboot64.cc

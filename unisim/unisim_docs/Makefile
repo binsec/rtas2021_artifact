@@ -1,0 +1,431 @@
+CC=gcc
+RUBBER=rubber
+
+# TLM
+TLM_LATEX_SOURCES=tlm/tlm.tex \
+tlm/appendix.tex
+TLM_CPP_SOURCES= \
+tlm/interface1.cpp \
+tlm/interface2.cpp \
+tlm/interface3.cpp \
+tlm/new_operator.cpp \
+tlm/memory_req_rsp.cpp \
+tlm/utlm_processor.cpp \
+tlm/utlm_memory.cpp \
+tlm/ttlm_processor.cpp \
+tlm/ttlm_memory.cpp \
+tlm/ttlm_router.cpp \
+tlm/ttlm_router_adv.cpp \
+tlm/ttlm_router_adv2.cpp 
+
+TLM_FIGURES= \
+tlm/utlm_principle.pdf \
+tlm/ttlm_principle.pdf \
+tlm/chaining_communication_steps.pdf \
+tlm/n_to_m.pdf
+
+TLM_GENERATED_LATEX=$(patsubst %.cpp,%.tex,$(TLM_CPP_SOURCES))
+
+# services
+SERVICES_LATEX_SOURCES=services/services.tex
+SERVICES_CPP_SOURCES= \
+services/instanciation.cpp \
+services/connection.cpp \
+services/simple_service.cpp \
+services/simple_client.cpp \
+services/run_time_parameter.cpp
+SERVICES_FIGURES=
+
+SERVICES_GENERATED_LATEX=$(patsubst %.cpp,%.tex,$(SERVICES_CPP_SOURCES))
+
+# introduction
+INTRODUCTION_LATEX_SOURCES=introduction/introduction.tex
+INTRODUCTION_CPP_SOURCES=
+INTRODUCTION_FIGURES=
+
+INTRODUCTION_GENERATED_LATEX=$(patsubst %.cpp,%.tex,$(INTRODUCTION_CPP_SOURCES))
+
+# installation
+INSTALL_LATEX_SOURCES=installation/install.tex
+INSTALL_CPP_SOURCES=
+INSTALL_FIGURES=
+
+INSTALL_GENERATED_LATEX=$(patsubst %.cpp,%.tex,$(INSTALL_CPP_SOURCES))
+
+# genisslib
+GENISSLIB_LATEX_SOURCES=genisslib/genisslib.tex
+GENISSLIB_CPP_SOURCES=
+GENISSLIB_FIGURES=
+
+GENISSLIB_GENERATED_LATEX=$(patsubst %.cpp,%.tex,$(GENISSLIB_CPP_SOURCES))
+
+# ppcemu_system
+PPCEMU_SYSTEM_LATEX_SOURCES=ppcemu_system/ppcemu_system.tex
+PPCEMU_SYSTEM_CPP_SOURCES=
+PPCEMU_SYSTEM_FIGURES=ppcemu_system/fig_schematic.pdf
+
+PPCEMU_SYSTEM_GENERATED_LATEX=$(patsubst %.cpp,%.tex,$(PPCEMU_SYSTEM_CPP_SOURCES))
+
+# ppcemu
+PPCEMU_LATEX_SOURCES=ppcemu/ppcemu.tex
+PPCEMU_CPP_SOURCES=
+PPCEMU_FIGURES=ppcemu/fig_schematic.pdf
+
+PPCEMU_GENERATED_LATEX=$(patsubst %.cpp,%.tex,$(PPCEMU_CPP_SOURCES))
+
+# embedded_ppc_g4_board
+EMBEDDED_PPC_G4_BOARD_LATEX_SOURCES=embedded_ppc_g4_board/embedded_ppc_g4_board.tex
+EMBEDDED_PPC_G4_BOARD_CPP_SOURCES=
+EMBEDDED_PPC_G4_BOARD_FIGURES=embedded_ppc_g4_board/fig_schematic.pdf
+
+EMBEDDED_PPC_G4_BOARD_GENERATED_LATEX=$(patsubst %.cpp,%.tex,$(EMBEDDED_PPC_G4_BOARD_CPP_SOURCES))
+
+# s12xemu
+S12XEMU_LATEX_SOURCES=mc9s12xdp512/mc9s12xdp512.tex
+S12XEMU_CPP_SOURCES=
+S12XEMU_FIGURES=mc9s12xdp512/mc9s12xdp512_schema.pdf
+
+S12XEMU_GENERATED_LATEX=$(patsubst %.cpp,%.tex,$(S12XEMU_CPP_SOURCES))
+
+# armemu
+ARMEMU_LATEX_SOURCES=armemu/armemu.tex
+ARMEMU_CPP_SOURCES=
+ARMEMU_FIGURES=armemu/fig_schematic.pdf
+
+ARMEMU_GENERATED_LATEX=$(patsubst %.cpp,%.tex,$(ARMEMU_CPP_SOURCES))
+
+# avr32emu
+AVR32EMU_LATEX_SOURCES=avr32emu/avr32emu.tex
+AVR32EMU_CPP_SOURCES=
+AVR32EMU_FIGURES=avr32emu/fig_schematic.pdf
+
+AVR32EMU_GENERATED_LATEX=$(patsubst %.cpp,%.tex,$(AVR32EMU_CPP_SOURCES))
+
+# arm7tdmi
+ARM7TDMI_LATEX_SOURCES=arm7tdmi/arm7tdmi.tex
+ARM7TDMI_CPP_SOURCES=
+ARM7TDMI_FIGURES=arm7tdmi/fig_arm7tdmi.pdf
+
+ARM7TDMI_GENERATED_LATEX=$(patsubst %.cpp,%.tex,$(ARM7TDMI_CPP_SOURCES))
+
+# arm966e_s
+ARM966E_S_LATEX_SOURCES=arm966e_s/arm966e_s.tex
+ARM966E_S_CPP_SOURCES=
+ARM966E_S_FIGURES=arm966e_s/fig_arm966e_s.pdf
+
+ARM966E_S_GENERATED_LATEX=$(patsubst %.cpp,%.tex,$(ARM966E_S_CPP_SOURCES))
+
+# tms320c3x
+TMS320C3X_LATEX_SOURCES=tms320c3x/tms320c3x.tex
+TMS320C3X_CPP_SOURCES=\
+tms320c3x/service_instanciation.cpp \
+tms320c3x/service_connection.cpp \
+tms320c3x/simple_service.cpp \
+tms320c3x/simple_client.cpp \
+tms320c3x/run_time_parameter.cpp \
+tms320c3x/debug_control_interface.cpp \
+tms320c3x/disassembly_interface.cpp \
+tms320c3x/loader_interface.cpp \
+tms320c3x/memory_access_reporting_control_interface.cpp \
+tms320c3x/memory_access_reporting_interface.cpp \
+tms320c3x/memory_injection_interface.cpp \
+tms320c3x/memory_interface.cpp \
+tms320c3x/registers_interface.cpp \
+tms320c3x/symbol_table_lookup_interface.cpp \
+tms320c3x/ti_c_io_interface.cpp \
+tms320c3x/time_interface.cpp \
+tms320c3x/trap_reporting_interface.cpp \
+tms320c3x/including_logger.cpp \
+tms320c3x/deriving_from_object.cpp \
+tms320c3x/binding_logger.cpp \
+tms320c3x/using_logger.cpp \
+tms320c3x/register_interface.cpp \
+tms320c3x/assembly_pattern.cpp
+
+TMS320C3X_FIGURES=\
+tms320c3x/fig_tms320c3x.pdf \
+tms320c3x/fig_object_hierarchy.pdf \
+tms320c3x/fig_code_composer.jpg \
+tms320c3x/fig_tms320c3x_board.jpg \
+tms320c3x/fig_tms320c3x_dev_kit.jpg \
+tms320c3x/fig_unit_test_generator.pdf \
+tms320c3x/fig_unit_test.pdf \
+tms320c3x/fig_driver_error.jpg \
+tms320c3x/fig_fft512_output0.pdf \
+tms320c3x/fig_iir_output.pdf \
+tms320c3x/fig_lp_output.pdf \
+tms320c3x/fig_bp_output.pdf
+
+TMS320C3X_GENERATED_LATEX=$(patsubst %.cpp,%.tex,$(TMS320C3X_CPP_SOURCES))
+
+# virtex5fxt
+VIRTEX5FXT_LATEX_SOURCES=virtex5fxt/virtex5fxt.tex virtex5fxt/techref.tex
+VIRTEX5FXT_CPP_SOURCES=virtex5fxt/boot.cpp
+VIRTEX5FXT_FIGURES=virtex5fxt/fig_schematic.pdf
+
+VIRTEX5FXT_GENERATED_LATEX=$(patsubst %.cpp,%.tex,$(VIRTEX5FXT_CPP_SOURCES))
+
+# arm7tdmi_validation
+ARM7TDMI_VALIDATION_LATEX_SOURCES=\
+arm7tdmi_validation/adc_imm.tex \
+arm7tdmi_validation/introduction.tex \
+arm7tdmi_validation/validation_system.tex \
+arm7tdmi_validation/validation_user.tex \
+arm7tdmi_validation/conclusion.tex \
+arm7tdmi_validation/report.tex \
+arm7tdmi_validation/validation_user_benchmark.tex \
+arm7tdmi_validation/description.tex \
+arm7tdmi_validation/tools.tex \
+arm7tdmi_validation/validation_user_random.tex
+ARM7TDMI_VALIDATION_CPP_SOURCES=
+ARM7TDMI_VALIDATION_FIGURES=\
+arm7tdmi_validation/figures/ARM7TDMI_architecture.pdf \
+arm7tdmi_validation/figures/ARM7TDMI_user_level.pdf \
+arm7tdmi_validation/figures/random_tests_methodology.pdf
+
+ARM7TDMI_VALIDATION_GENERATED_LATEX=$(patsubst %.cpp,%.tex,$(ARM7TDMI_VALIDATION_CPP_SOURCES))
+
+# str7_validation
+STR7_VALIDATION_LATEX_SOURCES=\
+str7_validation/report.tex \
+str7_validation/introduction.tex \
+str7_validation/description.tex \
+str7_validation/tools.tex \
+str7_validation/validation_user.tex \
+str7_validation/validation_user_benchmark.tex \
+str7_validation/validation_user_random.tex \
+str7_validation/validation_system.tex \
+str7_validation/microcontroller_validation.tex \
+str7_validation/conclusion.tex \
+str7_validation/adc_imm.tex
+STR7_VALIDATION_CPP_SOURCES=
+STR7_VALIDATION_FIGURES= \
+str7_validation/figures/ARM7TDMI_user_level.pdf \
+str7_validation/figures/str7_architecture.pdf \
+str7_validation/figures/random_tests_methodology.pdf
+
+STR7_VALIDATION_GENERATED_LATEX=$(patsubst %.cpp,%.tex,$(STR7_VALIDATION_CPP_SOURCES))
+
+# fast_sim_sota
+FAST_SIM_SOTA_LATEX_SOURCES=fast_sim_sota/fast_sim_sota.tex
+FAST_SIM_SOTA_CPP_SOURCES=
+FAST_SIM_SOTA_FIGURES=
+
+FAST_SIM_SOTA_GENERATED_LATEX=$(patsubst %.cpp,%.tex,$(FAST_SIM_SOTA_CPP_SOURCES))
+
+# TLM manual
+TLM_MANUAL_LATEX_SOURCES=tlm_manual.tex $(TLM_LATEX_SOURCES)
+TLM_MANUAL_FIGURES=$(TLM_FIGURES)
+TLM_MANUAL_TARGET_PDF=tlm_manual.pdf
+
+# services manual
+SERVICES_MANUAL_LATEX_SOURCES=services_manual.tex $(SERVICES_LATEX_SOURCES)
+SERVICES_MANUAL_FIGURES=$(SERVICES_FIGURES)
+SERVICES_MANUAL_TARGET_PDF=services_manual.pdf
+
+# genisslib manual
+GENISSLIB_MANUAL_LATEX_SOURCES=genisslib_manual.tex $(GENISSLIB_LATEX_SOURCES)
+GENISSLIB_MANUAL_FIGURES=$(GENISSLIB_FIGURES)
+GENISSLIB_MANUAL_TARGET_PDF=genisslib_manual.pdf
+
+# ppcemu-system manual
+PPCEMU_SYSTEM_MANUAL_LATEX_SOURCES=ppcemu_system_manual.tex $(PPCEMU_SYSTEM_LATEX_SOURCES)
+PPCEMU_SYSTEM_MANUAL_FIGURES=$(PPCEMU_SYSTEM_FIGURES)
+PPCEMU_SYSTEM_MANUAL_TARGET_PDF=ppcemu_system_manual.pdf
+
+# ppcemu manual
+PPCEMU_MANUAL_LATEX_SOURCES=ppcemu_manual.tex $(PPCEMU_LATEX_SOURCES)
+PPCEMU_MANUAL_FIGURES=$(PPCEMU_FIGURES)
+PPCEMU_MANUAL_TARGET_PDF=ppcemu_manual.pdf
+
+# embedded_ppc_g4_board manual
+EMBEDDED_PPC_G4_BOARD_MANUAL_LATEX_SOURCES=embedded_ppc_g4_board_manual.tex $(EMBEDDED_PPC_G4_BOARD_LATEX_SOURCES)
+EMBEDDED_PPC_G4_BOARD_MANUAL_FIGURES=$(EMBEDDED_PPC_G4_BOARD_FIGURES)
+EMBEDDED_PPC_G4_BOARD_MANUAL_TARGET_PDF=embedded_ppc_g4_board_manual.pdf
+
+# s12xemu manual
+S12XEMU_MANUAL_LATEX_SOURCES=s12x_manual.tex $(S12XEMU_LATEX_SOURCES)
+S12XEMU_MANUAL_FIGURES=$(S12XEMU_FIGURES)
+S12XEMU_MANUAL_TARGET_PDF=s12x_manual.pdf
+
+# armemu manual
+ARMEMU_MANUAL_LATEX_SOURCES=armemu_manual.tex $(ARMEMU_LATEX_SOURCES)
+ARMEMU_MANUAL_FIGURES=$(ARMEMU_FIGURES)
+ARMEMU_MANUAL_TARGET_PDF=armemu_manual.pdf
+
+# avr32emu manual
+AVR32EMU_MANUAL_LATEX_SOURCES=avr32emu_manual.tex $(AVR32EMU_LATEX_SOURCES)
+AVR32EMU_MANUAL_FIGURES=$(AVR32EMU_FIGURES)
+AVR32EMU_MANUAL_TARGET_PDF=avr32emu_manual.pdf
+
+# tms320c3x manual
+TMS320C3X_MANUAL_LATEX_SOURCES=tms320c3x_manual.tex $(TMS320C3X_LATEX_SOURCES)
+TMS320C3X_MANUAL_FIGURES=$(TMS320C3X_FIGURES)
+TMS320C3X_MANUAL_TARGET_PDF=tms320c3x_manual.pdf
+
+# virtex5fxt manual
+VIRTEX5FXT_MANUAL_LATEX_SOURCES=virtex5fxt_manual.tex $(VIRTEX5FXT_LATEX_SOURCES)
+VIRTEX5FXT_MANUAL_FIGURES=$(VIRTEX5FXT_FIGURES)
+VIRTEX5FXT_MANUAL_TARGET_PDF=virtex5fxt_manual.pdf
+
+# arm7tdmi manual
+ARM7TDMI_MANUAL_LATEX_SOURCES=arm7tdmi_manual.tex $(ARM7TDMI_LATEX_SOURCES)
+ARM7TDMI_MANUAL_FIGURES=$(ARM7TDMI_FIGURES)
+ARM7TDMI_MANUAL_TARGET_PDF=arm7tdmi_manual.pdf
+
+# arm966e_s manual
+ARM966E_S_MANUAL_LATEX_SOURCES=arm966e_s_manual.tex $(ARM966E_S_LATEX_SOURCES)
+ARM966E_S_MANUAL_FIGURES=$(ARM966E_S_FIGURES)
+ARM966E_S_MANUAL_TARGET_PDF=arm966e_s_manual.pdf
+
+# arm7tdmi_validation manual
+ARM7TDMI_VALIDATION_MANUAL_LATEX_SOURCES=arm7tdmi_validation_manual.tex $(ARM7TDMI_VALIDATION_LATEX_SOURCES)
+ARM7TDMI_VALIDATION_MANUAL_FIGURES=$(ARM7TDMI_VALIDATION_FIGURES)
+ARM7TDMI_VALIDATION_MANUAL_TARGET_PDF=arm7tdmi_validation_manual.pdf
+
+# str7_validation manual
+STR7_VALIDATION_MANUAL_LATEX_SOURCES=str7_validation_manual.tex $(STR7_VALIDATION_LATEX_SOURCES)
+STR7_VALIDATION_MANUAL_FIGURES=$(STR7_VALIDATION_FIGURES)
+STR7_VALIDATION_MANUAL_TARGET_PDF=str7_validation_manual.pdf
+
+# installation manual
+INSTALL_MANUAL_LATEX_SOURCES=install_manual.tex $(INSTALL_LATEX_SOURCES)
+INSTALL_MANUAL_FIGURES=$(INSTALL_FIGURES)
+INSTALL_MANUAL_TARGET_PDF=install_manual.pdf
+
+# fast_sim_sota report
+FAST_SIM_SOTA_REPORT_LATEX_SOURCES=fast_sim_sota_report.tex $(FAST_SIM_SOTA_LATEX_SOURCES)
+FAST_SIM_SOTA_REPORT_FIGURES=$(FAST_SIM_SOTA_FIGURES)
+FAST_SIM_SOTA_REPORT_TARGET_PDF=fast_sim_sota_report.pdf
+
+# Whole manual
+MANUAL_LATEX_SOURCES= \
+manual.tex \
+$(INTRODUCTION_LATEX_SOURCES) \
+$(GENISSLIB_LATEX_SOURCES) \
+${ARMEMU_LATEX_SOURCES} \
+${AVR32EMU_LATEX_SOURCES} \
+${S12XEMU_LATEX_SOURCES} \
+${ARM7TDMI_LATEX_SOURCES} \
+${PPCEMU_LATEX_SOURCES} \
+${PPCEMU_SYSTEM_LATEX_SOURCES} \
+$(EMBEDDED_PPC_G4_BOARD_LATEX_SOURCES) \
+$(TLM_LATEX_SOURCES) \
+$(SERVICES_LATEX_SOURCES) \
+$(INSTALL_LATEX_SOURCES) \
+$(TMS320C3X_LATEX_SOURCES) \
+$(VIRTEX5FXT_LATEX_SOURCES) \
+$(ARM7TDMI_VALIDATION_LATEX_SOURCES) \
+$(STR7_VALIDATION_LATEX_SOURCES)
+
+MANUAL_GENERATED_LATEX= \
+$(INTRODUCTION_GENERATED_LATEX) \
+$(GENISSLIB_GENERATED_LATEX) \
+${ARMEMU_GENERATED_LATEX} \
+${AVR32EMU_GENERATED_LATEX} \
+${ARM7TDMI_GENERATED_LATEX} \
+${S12XEMU_GENERATED_LATEX} \
+${PPCEMU_GENERATED_LATEX} \
+${PPCEMU_SYSTEM_GENERATED_LATEX} \
+$(EMBEDDED_PPC_G4_BOARD_GENERATED_LATEX) \
+$(TLM_GENERATED_LATEX) \
+$(SERVICES_GENERATED_LATEX) \
+$(INSTALL_GENERATED_LATEX) \
+$(TMS320C3X_GENERATED_LATEX) \
+$(VIRTEX5FXT_GENERATED_LATEX) \
+$(ARM7TDMI_VALIDATION_GENERATED_LATEX) \
+$(STR7_VALIDATION_GENERATED_LATEX)
+
+MANUAL_FIGURES= \
+logo_unisim.pdf \
+$(INTRODUCTION_FIGURES) \
+$(GENISSLIB_FIGURES) \
+${ARMEMU_FIGURES} \
+${AVR32EMU_FIGURES} \
+${ARM7TDMI_FIGURES} \
+${S12XEMU_FIGURES} \
+${PPCEMU_FIGURES} \
+${PPCEMU_SYSTEM_FIGURES} \
+${EMBEDDED_PPC_G4_BOARD_FIGURES} \
+$(TLM_FIGURES) \
+$(SERVICES_FIGURES) \
+$(INSTALL_FIGURES) \
+$(TMS320C3X_FIGURES) \
+$(VIRTEX5FXT_FIGURES) \
+$(ARM7TDMI_VALIDATION_FIGURES) \
+$(STR7_VALIDATION_FIGURES)
+
+MANUAL_TARGET_PDF=manual.pdf
+MEMOIRE_LISITA_TARGET_PDF=memoire_lisita.pdf
+
+# memoire Julien Lisita (2014) ###############
+MEMOIRE_LISITA_LATEX_SOURCES= \
+memoire_lisita.tex \
+memoire_lisita/introduction/introduction.tex \
+memoire_lisita/annexe/annexe.tex
+
+MEMOIRE_LISITA_CPP_SOURCES=
+
+MEMOIRE_LISITA_GENERATED_LATEX=$(patsubst %.cpp,%.tex,$(MEMOIRE_LISITA_CPP_SOURCES))
+
+
+MEMOIRE_LISITA_FIGURES=
+##############################################
+
+ALL_TARGET= \
+$(MANUAL_TARGET_PDF) \
+$(GENISSLIB_MANUAL_TARGET_PDF) \
+$(ARMEMU_MANUAL_TARGET_PDF) \
+$(AVR32EMU_MANUAL_TARGET_PDF) \
+$(ARM7TDMI_MANUAL_TARGET_PDF) \
+$(ARM966E_S_MANUAL_TARGET_PDF) \
+$(S12XEMU_MANUAL_TARGET_PDF) \
+$(PPCEMU_MANUAL_TARGET_PDF) \
+$(PPCEMU_SYSTEM_MANUAL_TARGET_PDF) \
+$(EMBEDDED_PPC_G4_BOARD_MANUAL_TARGET_PDF) \
+$(TLM_MANUAL_TARGET_PDF) \
+$(SERVICES_MANUAL_TARGET_PDF) \
+$(INSTALL_MANUAL_TARGET_PDF) \
+$(TMS320C3X_MANUAL_TARGET_PDF) \
+$(VIRTEX5FXT_MANUAL_TARGET_PDF) \
+$(ARM7TDMI_VALIDATION_MANUAL_TARGET_PDF) \
+$(STR7_VALIDATION_MANUAL_TARGET_PDF) \
+$(FAST_SIM_SOTA_REPORT_TARGET_PDF) \
+$(MEMOIRE_LISITA_TARGET_PDF)
+
+
+all: $(ALL_TARGET)
+
+clean:
+	rm -f $(ALL_TARGET) $(MANUAL_GENERATED_LATEX) *.aux *.log *.bbl *.blg *.toc *.lof ./c_to_tex
+	
+c_to_tex: c_to_tex.c
+	$(CC) c_to_tex.c -o c_to_tex
+
+$(TLM_MANUAL_TARGET_PDF): $(TLM_MANUAL_LATEX_SOURCES) $(TLM_GENERATED_LATEX) $(TLM_MANUAL_FIGURES)
+$(SERVICES_MANUAL_TARGET_PDF): $(SERVICES_MANUAL_LATEX_SOURCES) $(SERVICES_GENERATED_LATEX) $(SERVICES_MANUAL_FIGURES)
+$(INSTALL_MANUAL_TARGET_PDF): $(INSTALL_MANUAL_LATEX_SOURCES) $(INSTALL_GENERATED_LATEX) $(INSTALL_MANUAL_FIGURES)
+$(GENISSLIB_MANUAL_TARGET_PDF): $(GENISSLIB_MANUAL_LATEX_SOURCES) $(GENISSLIB_GENERATED_LATEX) $(GENISSLIB_MANUAL_FIGURES)
+$(ARMEMU_MANUAL_TARGET_PDF): $(ARMEMU_MANUAL_LATEX_SOURCES) $(ARMEMU_GENERATED_LATEX) $(ARMEMU_MANUAL_FIGURES)
+$(AVR32EMU_MANUAL_TARGET_PDF): $(AVR32EMU_MANUAL_LATEX_SOURCES) $(AVR32EMU_GENERATED_LATEX) $(AVR32EMU_MANUAL_FIGURES)
+$(ARM7TDMI_MANUAL_TARGET_PDF): $(ARM7TDMI_MANUAL_LATEX_SOURCES) $(ARM7TDMI_GENERATED_LATEX) $(ARM7TDMI_MANUAL_FIGURES)
+$(ARM966E_S_MANUAL_TARGET_PDF): $(ARM966E_S_MANUAL_LATEX_SOURCES) $(ARM966E_S_GENERATED_LATEX) $(ARM966E_S_MANUAL_FIGURES)
+$(S12XEMU_MANUAL_TARGET_PDF): $(S12XEMU_MANUAL_LATEX_SOURCES) $(S12XEMU_GENERATED_LATEX) $(S12XEMU_MANUAL_FIGURES)
+$(PPCEMU_SYSTEM_MANUAL_TARGET_PDF): $(PPCEMU_SYSTEM_MANUAL_LATEX_SOURCES) $(PPCEMU_SYSTEM_GENERATED_LATEX) $(PPCEMU_SYSTEM_MANUAL_FIGURES)
+$(PPCEMU_MANUAL_TARGET_PDF): $(PPCEMU_MANUAL_LATEX_SOURCES) $(PPCEMU_GENERATED_LATEX) $(PPCEMU_MANUAL_FIGURES)
+$(EMBEDDED_PPC_G4_BOARD_MANUAL_TARGET_PDF): $(EMBEDDED_PPC_G4_BOARD_MANUAL_LATEX_SOURCES) $(EMBEDDED_PPC_G4_BOARD_GENERATED_LATEX) $(EMBEDDED_PPC_G4_BOARD_MANUAL_FIGURES)
+$(TMS320C3X_MANUAL_TARGET_PDF): $(TMS320C3X_MANUAL_LATEX_SOURCES) $(TMS320C3X_GENERATED_LATEX) $(TMS320C3X_MANUAL_FIGURES)
+$(VIRTEX5FXT_MANUAL_TARGET_PDF): $(VIRTEX5FXT_MANUAL_LATEX_SOURCES) $(VIRTEX5FXT_GENERATED_LATEX) $(VIRTEX5FXT_MANUAL_FIGURES)
+$(ARM7TDMI_VALIDATION_MANUAL_TARGET_PDF): $(ARM7TDMI_VALIDATION_MANUAL_LATEX_SOURCES) $(ARM7TDMI_VALIDATION_GENERATED_LATEX) $(ARM7TDMI_VALIDATION_MANUAL_FIGURES)
+$(STR7_VALIDATION_MANUAL_TARGET_PDF): $(STR7_VALIDATION_MANUAL_LATEX_SOURCES) $(STR7_VALIDATION_GENERATED_LATEX) $(STR7_VALIDATION_MANUAL_FIGURES)
+$(FAST_SIM_SOTA_REPORT_TARGET_PDF): $(FAST_SIM_SOTA_REPORT_LATEX_SOURCES) $(FAST_SIM_SOTA_GENERATED_LATEX) $(FAST_SIM_SOTA_MANUAL_FIGURES)
+$(MANUAL_TARGET_PDF): $(MANUAL_LATEX_SOURCES) $(MANUAL_GENERATED_LATEX) $(MANUAL_FIGURES)
+
+$(MEMOIRE_LISITA_TARGET_PDF): $(MEMOIRE_LISITA_LATEX_SOURCES) $(MEMOIRE_LISITA_GENERATED_LATEX) $(MEMOIRE_LISITA_FIGURES)
+
+%.tex: %.cpp ./c_to_tex
+	./c_to_tex $< $@ 10000 95
+
+%.pdf: %.tex
+	$(RUBBER) -d $<
+

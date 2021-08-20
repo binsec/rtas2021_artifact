@@ -1,0 +1,34 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<simulator>
+	<name>tms320c3x</name>
+	<version>0.9</version>
+	<authors>
+		<author>Gilles Mouchard (gilles.mouchard@cea.fr)</author>
+		<author>Daniel Gracia Pérez (daniel.gracia-perez@cea.fr)</author>
+	</authors>
+	<files>
+		<file>main.cc</file>
+	</files>
+	<depends>
+		<!--<dep>stl_iostream</dep> -->
+		<!--<dep>clib_getopt_h</dep> -->
+		<!--<dep>clib_stdlib_h</dep> -->
+		<!--<dep>clib_signal_h</dep> -->
+		<!--<dep>stl_stdexcept</dep> -->
+		<dep>unisim::kernel::service</dep>
+		<dep>unisim::component::cxx::processor::tms320</dep>
+		<dep>unisim::component::cxx::memory::ram</dep>
+		<dep>unisim::service::time::host_time</dep>
+		<dep>unisim::service::debug::gdb_server</dep>
+		<dep>unisim::service::debug::inline_debugger</dep>
+		<dep>unisim::service::loader::coff_loader</dep>
+		<dep>unisim::service::os::ti_c_io</dep>
+		<!--<dep>win_windows_h</dep> -->
+		<!--<dep>win_winsock2_h</dep> -->
+	</depends>
+	<cmake>CMakeLists.txt</cmake>
+	<autotools>
+		<automake>cxx/tms320c3x/meta/tms320c3x.am</automake>
+		<autoconf>cxx/tms320c3x/meta/tms320c3x.ac</autoconf>
+	</autotools>
+</simulator>

@@ -1,0 +1,2 @@
+unisim/util/debug/coff_symtab/coff_symtab32.cc
+unisim/util/debug/coff_symtab/coff_symtab64.cc

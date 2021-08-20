@@ -1,0 +1,5 @@
+AC_DEFUN([UNISIM_CHECK_BOOST], [
+	AX_BOOST_BASE([$1], AC_MSG_NOTICE([boost >= $1 found.]), AC_MSG_ERROR([boost >= $1 not found.]))
+	CPPFLAGS="${BOOST_CPPFLAGS} ${CPPFLAGS}"
+	LDFLAGS="${BOOST_LDFLAGS} ${LDFLAGS}"
+])

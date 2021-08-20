@@ -1,0 +1,49 @@
+all-local: all-local-bin all-local-lib all-local-include 
+
+all-local-bin: $(bin_PROGRAMS)
+	@list='$(bin_PROGRAMS)'; \
+	for p in $$list; do \
+		rm -f $(top_builddir)/$(ROOT_DIR)/bin/$$p; \
+		mkdir -p $(top_builddir)/$(ROOT_DIR)/bin; \
+		(cd $(top_builddir)/$(ROOT_DIR)/bin && $(LN_S) $(abs_top_builddir)/$$p $$p); \
+	done
+
+all-local-lib: $(lib_LIBRARIES)
+	@list='$(lib_LIBRARIES)'; \
+	for p in $$list; do \
+		rm -f $(top_builddir)/$(ROOT_DIR)/lib/$$p; \
+		mkdir -p $(top_builddir)/$(ROOT_DIR)/lib; \
+		(cd $(top_builddir)/$(ROOT_DIR)/lib && $(LN_S) $(abs_top_builddir)/$$p $$p); \
+	done
+
+all-local-include: $(include_HEADERS)
+	@if test "x$(include_HEADERS)" != "x"; \
+	then \
+		if test ! -d $(top_builddir)/$(ROOT_DIR)/include; \
+		then  \
+			(cd $(top_builddir)/$(ROOT_DIR) && \
+			mkdir -p include && \
+			cd include && \
+			$(LN_S) $(abs_top_srcdir)/$(ROOT_DIR)/unisim unisim); \
+		fi \
+	fi
+
+clean-local: clean-local-bin clean-local-lib clean-local-include
+
+clean-local-bin:
+	@if test "x$(bin_PROGRAMS)" != "x"; \
+	then \
+		rm -rf $(top_builddir)/$(ROOT_DIR)/bin; \
+	fi
+
+clean-local-lib:
+	@if test "x$(lib_LIBRARIES)" != "x"; \
+	then \
+		rm -rf $(top_builddir)/$(ROOT_DIR)/lib; \
+	fi
+
+clean-local-include:
+	@if test "x$(include_HEADERS)" != "x"; \
+	then \
+		rm -rf $(top_builddir)/$(ROOT_DIR)/include; \
+	fi

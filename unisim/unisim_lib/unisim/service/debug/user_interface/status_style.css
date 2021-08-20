@@ -1,0 +1,29 @@
+.debug-ui-status
+{
+/* 	width:370px; */
+	height:24px;
+}
+
+.debug-ui-status .name
+{
+	text-align:left;
+	padding-right:6px;
+}
+
+.debug-ui-status .name span
+{
+    line-height:24px;
+}
+
+.debug-ui-status .state
+{
+	width:50px;
+	text-align:left;
+}
+
+.debug-ui-status .state span
+{
+	display:inline-block;
+    line-height:24px;
+	white-space:nowrap;
+}

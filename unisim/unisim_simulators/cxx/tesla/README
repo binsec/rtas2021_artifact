@@ -1,0 +1,107 @@
+Barra - NVidia G80 functional simulator
+ http://gpgpu.univ-perp.fr/index.php/Barra
+ Version 0.2
+ 05/2009
+
+
+Barra simulates CUDA programs at the assembly language level (Tesla ISA). Its
+ultimate goal is to provide a 100% bit-accurate simulation, offering
+bug-for-bug compatibility with NVidia G80-based GPUs. It works directly with
+CUDA executables; no source modification nor recompilation is required. 
+
+Barra is primarily intended as a tool for research in computer architecture,
+although it can also be used to debug, profile and optimize CUDA programs at
+the lowest level.
+
+  Download
+  
+Links to binaries are at http://gpgpu.univ-perp.fr/index.php/Barra.
+
+Barra source code can be accessed through the Unisim subversion repository at
+http://unisim.org/site/download/start#subversion_repository
+
+  Supported platforms
+
+Barra was tested on GNU/Linux i386 and x86_64. It should be easily portable to
+Win32 with Cygwin and Mac OS X, but this has not been tested so far.
+
+CUDA 2.0 and CUDA 2.1 are supported. 
+
+  How Does It Work?
+
+Barra is comprised of a simulator and a driver.
+The Barra driver is a dynamic library which exports the same symbols and API
+as the CUDA Driver library (libcuda.so/cuda.dll).
+
+To simulate a CUDA program which uses the Driver API, we temporarily replace
+the NVidia-provided CUDA Driver library with our Barra library by setting
+the LD_LIBRARY_PATH or PATH variable. This way, cuXxx calls are redirected
+to the Barra driver, which can then configure and run the simulator as if
+it were an actual GPU. When cuLaunch or cuLaunchGrid is called, control is
+transferred to the simulator for execution.
+
+Programs that use the CUDA Runtime API are still linked with the official CUDA
+Runtime library provided by NVidia (libcudart.so/cudart.dll).
+This Runtime library is only a wrapper over the Driver library, which
+translates cudaXxx calls into cuYyy calls.
+We can then trick the Runtime library into using our driver instead of NVidia's
+driver, just as we do with programs using the Driver API directly.
+
+
+  How To Use It?
+
+First, compile and install unisim-tools, unisim-lib and unisim-simulators
+according to each INSTALL instructions.
+
+Let's assume we want to simulate the matrixMul sample of the NVidia CUDA SDK
+under GNU/Linux.
+The Barra driver is named libunisimsimulator_cxx_tesla_tesla.so (this might
+change in the future. libbarra.so or even libcuda.so are good candidates).
+Since we want to override libcuda.so, we create some symbolic links to our
+library. Assuming Unisim was installed in /usr/local/unisim:
+> cd NVIDIA_CUDA_SDK/bin/linux/debug
+> ln -s /usr/local/unisim/lib/libunisimsimulator_cxx_tesla_tesla.so libcuda.so.1
+> ln -s libcuda.so.1 libcuda.so
+(Note: we need to create both files, as the CUDA Runtime looks for libcuda.so.1,
+while most programs using the CUDA Driver API will look for libcuda.so.)
+
+We then temporarily override the default library search path:
+> LD_LIBRARY_PATH=".:/usr/local/unisim/lib/"
+
+Finally, we can launch our executable:
+> ./matrixMul
+
+By default, Barra outputs some debug information (CUDA function calls,
+cubin data, disassembly, memory allocation...) during program execution.
+More data can be output by setting specific environment variables.
+
+For more information, please refer to the project page:
+http://gpgpu.univ-perp.fr/index.php/Barra
+
+
+  Feedback
+  
+Contact: sylvain.collange @ univ-perp.fr
+Bug reports and comments are welcome.
+
+  Credits
+
+* Sylvain Collange (sylvain.collange @ univ-perp.fr), developer
+* Marc Daumas (marc.daumas @ univ-perp.fr)
+* David Defour (david.defour @ univ-perp.fr)
+* David Parello (david.parello @ univ-perp.fr)
+
+  Publication
+  
+Sylvain Collange, David Defour, David Parello.
+Barra, a Modular Functional GPU Simulator for GPGPU.
+Technical Report hal-00359342, Université de Perpignan, 2009.
+http://hal.archives-ouvertes.fr/hal-00359342
+
+
+  Special Thanks
+
+* Wladimir J. van der Laan, for his amazing work on recovering the G80
+  instruction set and for developing the decuda and cudasm tools, without
+  which this work would not have been possible.
+

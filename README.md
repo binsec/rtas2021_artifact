@@ -185,3 +185,24 @@ analyze binary code).
 
 BINSEC/Codex itself is tested for soundness using our soundness check (RQ0) and
 our collection of 96 EducRTOS versions (RQ4).
+
+# (Experimental) Analyzing standalone executables
+
+To analyze executables that are not kernels should be simpler, because it is not
+required to separately analyze the boot code and runtime code (see paper for
+details about that). To analyze in "non-kernel" mode, one simply needs to omit
+the `-codex-analyze-kernel` option, e.g.:
+```
+binsec -codex <executable file> -entrypoint <start symbol>
+```
+
+# (Experimental) Analyzing ARMv7 executables
+
+```
+binsec -isa arm32 -decoder unisim-armsec -codex -entrypoint <start symbol> <executable file>
+```
+
+Or shorter, using the file `standalone_arm.ini`:
+```
+binsec -config standalone_arm.ini <executable file>
+```

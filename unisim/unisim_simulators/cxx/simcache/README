@@ -1,0 +1,3 @@
+This package contains:
+  - simcache: a unit test for the standalone MemorySubSystem instanciation.
+See INSTALL for installation instructions.

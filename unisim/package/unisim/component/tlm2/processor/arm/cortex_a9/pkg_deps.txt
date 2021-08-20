@@ -1,0 +1,8 @@
+libc/inttypes
+m4/systemc
+unisim/component/cxx/processor/arm
+unisim/component/cxx/processor/arm/vmsav7
+unisim/kernel/logger
+unisim/kernel/tlm2
+unisim/kernel/variable/sc_time
+unisim/util/likely

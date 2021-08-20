@@ -1,0 +1,3 @@
+class MyObject : public Object {
+    ...
+};

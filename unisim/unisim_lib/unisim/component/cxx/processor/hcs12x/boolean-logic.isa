@@ -1,0 +1,1292 @@
+/*
+ *  Copyright (c) 2008,
+ *  Commissariat a l'Energie Atomique (CEA)
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without modification,
+ *  are permitted provided that the following conditions are met:
+ *
+ *   - Redistributions of source code must retain the above copyright notice, this
+ *     list of conditions and the following disclaimer.
+ *
+ *   - Redistributions in binary form must reproduce the above copyright notice,
+ *     this list of conditions and the following disclaimer in the documentation
+ *     and/or other materials provided with the distribution.
+ *
+ *   - Neither the name of CEA nor the names of its contributors may be used to
+ *     endorse or promote products derived from this software without specific prior
+ *     written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ *  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *  DISCLAIMED.
+ *  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ *  INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ *  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+ *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ *  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Authors: Reda   Nouacer  (reda.nouacer@cea.fr)
+ */
+
+
+// ANDA/ANDB  IMM  (regAB & ii => regAB)
+op and_ab_imm(0b1[1]:b[1]:0x04[6]:opr8i[8])
+
+and_ab_imm.getCycles = { return 1; }
+
+and_ab_imm.disasm = {
+	string mnem;
+	
+	if (b==0) {
+		mnem = "ANDA";
+	} else {
+		mnem = "ANDB";
+	}
+	sink << mnem << " #0x" << std::hex << opr8i;
+	
+	return mnem;
+}
+
+and_ab_imm.execute = {
+	uint8_t result;
+	
+	uint8_t regVal;
+	if (b==0) {
+		regVal = cpu->getRegA();
+	} else {
+		regVal = cpu->getRegB();
+	}
+
+	result = regVal & opr8i;
+	
+	if (b==0) {
+		cpu->setRegA(result);
+	} else {
+		cpu->setRegB(result);
+	}
+	
+	cpu->ccr->clrV();
+	
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x80) == 0x80) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+// ANDA/ANDB  DIR  (regAB & mem[regDirect:opr8a] => regAB)s
+op and_ab_dir(0b1[1]:b[1]:0x14[6]:opr8a[8])
+
+and_ab_dir.getCycles = { return 3; }
+
+and_ab_dir.disasm = {
+	string mnem;
+	
+	if (b==0) {
+		mnem = "ANDA";
+	} else {
+		mnem = "ANDB"; 
+	}
+	sink << mnem << " 0x" << std::hex << opr8a;
+	
+	return mnem;
+}
+
+and_ab_dir.execute = {
+	uint8_t result;
+	
+	uint8_t regVal;
+	if (b==0) {
+		regVal = cpu->getRegA();
+	} else {
+		regVal = cpu->getRegB();
+	}
+	
+	uint8_t opr8aVal = cpu->memRead8(opr8a, ADDRESS::DIRECT, false);
+
+	result = regVal & opr8aVal;
+		
+	if (b==0) {
+		cpu->setRegA(result);
+	} else {
+		cpu->setRegB(result);
+	}
+	
+	cpu->ccr->clrV();
+	
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x80) == 0x80) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+// ANDA/ANDB EXT (regAB & mem[opr16a] => regAB)
+op and_ab_ext(0b1[1]:b[1]:0x34[6]:> <:opr16a[16])
+
+and_ab_ext.getCycles = { return 3; }
+
+and_ab_ext.disasm = {
+	string mnem;
+	
+	if (b==0) {
+		mnem = "ANDA";
+	} else {
+		mnem = "ANDB";		
+	}
+	sink << mnem << " 0x" << std::hex << opr16a;
+	
+	return mnem;
+}
+
+and_ab_ext.execute = {
+	uint8_t result;
+	
+	uint8_t regVal;
+	if (b==0) {
+		regVal = cpu->getRegA();
+	} else {
+		regVal = cpu->getRegB();
+	}
+	physical_address_t addr = opr16a;		
+	uint8_t opr16aVal = cpu->memRead8(addr);
+
+	result = regVal & opr16aVal;	
+
+	if (b==0) {
+		cpu->setRegA(result);
+	} else {
+		cpu->setRegB(result);
+	}
+	
+	cpu->ccr->clrV();
+	
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x80) == 0x80) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+// ANDA/ANDB  IDX or IDX1 or IDX2 or [D,IDX] or [IDX2] (regAB & mem[xb->addrE] => regAB)
+op and_ab_idx(0b1[1]:b[1]:0x24[6]:> <:*xb[XB])
+
+and_ab_idx.pre_execute = {
+	
+	xb->pre_execute(sink);
+	// after: other specific actions
+}
+
+and_ab_idx.post_execute = {
+
+	// before: other specific actions
+	xb->post_execute(sink);
+}
+
+and_ab_idx.getCycles = { return XbModes::GetIDXCycles(xb->getXbMode(), 3, 3, 4, 6, 6); }
+
+and_ab_idx.disasm = {
+	string mnem;
+	
+	if (b==0){
+		mnem = "ANDA";
+	} else {
+		mnem = "ANDB";
+	}
+
+	sink << mnem << " ";
+	xb->disasm(sink);
+	
+	return mnem;
+}
+
+and_ab_idx.execute = {
+	uint8_t result;
+	
+	uint8_t regVal;
+	
+	if (b==0) {
+		regVal = cpu->getRegA();
+	} else {
+		regVal = cpu->getRegB();
+	}
+	physical_address_t addr = xb->getEAddr(cpu);		
+	uint8_t xbVal = cpu->memRead8(addr);
+
+	result = regVal & xbVal;
+	
+	if (b==0) {
+		cpu->setRegA(result);
+	} else {
+		cpu->setRegB(result);
+	}
+	
+	cpu->ccr->clrV();
+	
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x80) == 0x80) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+// ANDCC  IMM  (ccr & ii => ccr)
+op andcc_imm(0x10[8]:opr8i[8])
+
+andcc_imm.getCycles = { return 1; }
+
+andcc_imm.disasm = {
+	string mnem = "ANDCC";
+
+	sink << mnem << " #0x" << std::hex << opr8i;
+	
+	return mnem;
+}
+
+andcc_imm.execute = {
+	uint8_t result;
+	
+	uint8_t regVal = cpu->ccr->getCCRLow();
+
+	result = regVal & opr8i;
+	
+	cpu->ccr->setCCRLow(result);
+
+	return getCycles();
+}
+
+// ANDX/ANDY IMM (regXY & opr16i => regXY)
+op and_xy_imm(0x18[8]:0b1[1]:b[1]:0x04[6]:opr16i[16])
+
+and_xy_imm.getCycles = { return 3; }
+
+and_xy_imm.disasm = {
+	string mnem;
+	
+	if (b==0) {
+		mnem = "ANDX";
+	} else {
+		mnem = "ANDY";
+	}
+
+	sink << mnem << " #0x" << std::hex << opr16i;
+	
+	return mnem;
+}
+
+and_xy_imm.execute = {
+
+	uint16_t result, regVal;
+	
+	if (b==0) {
+		regVal = cpu->getRegX();
+	} else {
+		regVal = cpu->getRegY();
+	}
+	
+	result = regVal & opr16i;
+
+	if (b==0) {
+		cpu->setRegX(result);
+	} else {
+		cpu->setRegY(result);
+	}
+
+	cpu->ccr->clrV();
+	
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x8000) == 0x8000) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+// ANDX/ANDY DIR (regXY & mem[regDirect:opr8a]:mem[regDirect:opr8a+1] => regXY)
+op and_xy_dir(0x18[8]:0b1[1]:b[1]:0x14[6]:> <:opr8a[8])
+
+and_xy_dir.getCycles = { return 4; }
+
+and_xy_dir.disasm = {
+	string mnem;
+	
+	if (b==0) {
+		mnem = "ANDX";
+	} else {
+		mnem = "ANDY";
+	}
+
+	sink << mnem << " 0x" << std::hex << opr8a;
+	
+	return mnem;
+}
+
+and_xy_dir.execute = {
+
+	uint16_t result, regVal;
+	
+	uint16_t opr8aVal = cpu->memRead16(opr8a, ADDRESS::DIRECT, false);
+	
+	if (b==0) {
+		regVal = cpu->getRegX();
+	} else {
+		regVal = cpu->getRegY();
+	}
+	
+	result = regVal & opr8aVal;
+
+	if (b==0) {
+		cpu->setRegX(result);
+	} else {
+		cpu->setRegY(result);
+	}
+
+	cpu->ccr->clrV();
+	
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x8000) == 0x8000) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+// ANDX/ANDY EXT (regXY & mem[opr16a]:mem[opr16a+1] => regXY)
+op and_xy_ext(0x18[8]:0b1[1]:b[1]:0x34[6]:opr16a[16])
+
+and_xy_ext.getCycles = { return 4; }
+
+and_xy_ext.disasm = {
+	string mnem;
+	
+	if (b==0) {
+		mnem = "ANDX";
+	} else {
+		mnem = "ANDY";
+	}
+
+	sink << mnem << " 0x" << std::hex << opr16a;
+	
+	return mnem;
+}
+
+and_xy_ext.execute = {
+
+	uint16_t result, regVal;
+	physical_address_t addr = opr16a;	
+	uint16_t opr16aVal = cpu->memRead16(addr);
+	
+	if (b==0) {
+		regVal = cpu->getRegX();
+	} else {
+		regVal = cpu->getRegY();
+	}
+	
+	result = regVal & opr16aVal;
+
+	if (b==0) {
+		cpu->setRegX(result);
+	} else {
+		cpu->setRegY(result);
+	}
+
+	cpu->ccr->clrV();
+	
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x8000) == 0x8000) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+// ANDX/ANDY IDX or IDX1 or IDX2 or [D,IDX] or [IDX2] (regXY & mem[xb->addrE]:mem[xb->addrE+1] => regXY)
+op and_xy_idx(0x18[8]:0b1[1]:b[1]:0x24[6]:> <:*xb[XB])
+
+and_xy_idx.pre_execute = {
+	
+	xb->pre_execute(sink);
+	// after: other specific actions
+}
+
+and_xy_idx.post_execute = {
+
+	// before: other specific actions
+	xb->post_execute(sink);
+}
+
+and_xy_idx.getCycles = { return XbModes::GetIDXCycles(xb->getXbMode(), 4, 4, 5, 7, 7); }
+
+and_xy_idx.disasm = {
+	string mnem;
+	
+	if (b==0) {
+		mnem = "ANDX";
+	} else {
+		mnem = "ANDY";
+	}
+
+	sink << mnem << " ";
+	xb->disasm(sink);
+	
+	return mnem;
+}
+
+and_xy_idx.execute = {
+
+	uint16_t result, regVal;
+	physical_address_t addr = xb->getEAddr(cpu);		
+	uint16_t xbVal = cpu->memRead16(addr);
+	
+	if (b==0) {
+		regVal = cpu->getRegX();
+	} else {
+		regVal = cpu->getRegY();
+	}
+	
+	result = regVal & xbVal;
+
+	if (b==0) {
+		cpu->setRegX(result);
+	} else {
+		cpu->setRegY(result);
+	}
+
+	cpu->ccr->clrV();
+	
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x8000) == 0x8000) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+// ORAA/ORAB IMM (regAB or opr8i => regAB)
+
+op ora_ab_imm(0b1[1]:b[1]:0x0A[6]:opr8i[8])
+
+ora_ab_imm.getCycles = { return 1; }
+
+ora_ab_imm.disasm = {
+	string mnem;
+	
+	if (b==0) {
+		mnem = "ORAA";
+	} else {
+		mnem = "ORAB";
+	}
+	sink << mnem << " #0x" << std::hex << opr8i;
+	
+	return mnem;
+}
+
+ora_ab_imm.execute = {
+	uint8_t result;
+	
+	uint8_t regVal;
+	if (b==0) {
+		regVal = cpu->getRegA();
+	} else {
+		regVal = cpu->getRegB();
+	}
+
+	result = regVal | opr8i;
+	
+	if (b==0) {
+		cpu->setRegA(result);
+	} else {
+		cpu->setRegB(result);
+	}
+	
+	cpu->ccr->clrV();
+	
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x80) == 0x80) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+// ORAA/ORAB  DIR  (regAB | mem[regDirect:opr8a] => regAB)s
+op ora_ab_dir(0b1[1]:b[1]:0x1A[6]:opr8a[8])
+
+ora_ab_dir.getCycles = { return 3; }
+
+ora_ab_dir.disasm = {
+	string mnem;
+	
+	if (b==0) {
+		mnem = "ORAA";
+	} else {
+		mnem = "ORAB"; 
+	}
+	sink << mnem << " 0x" << std::hex << opr8a;
+	
+	return mnem;
+}
+
+ora_ab_dir.execute = {
+	uint8_t result;
+	
+	uint8_t regVal;
+	if (b==0) {
+		regVal = cpu->getRegA();
+	} else {
+		regVal = cpu->getRegB();
+	}
+
+	uint8_t opr8aVal = cpu->memRead8(opr8a, ADDRESS::DIRECT, false);
+
+	result = regVal | opr8aVal;
+		
+	if (b==0) {
+		cpu->setRegA(result);
+	} else {
+		cpu->setRegB(result);
+	}
+	
+	cpu->ccr->clrV();
+	
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x80) == 0x80) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+// ORAA/ORAB EXT (regAB | mem[opr16a] => regAB)
+op ora_ab_ext(0b1[1]:b[1]:0x3A[6]:> <:opr16a[16])  
+
+ora_ab_ext.getCycles = { return 3; }
+
+ora_ab_ext.disasm = {
+	string mnem;
+	
+	if (b==0) {
+		mnem = "ORAA";
+	} else {
+		mnem = "ORAB";		
+	}
+	sink << mnem << " 0x" << std::hex << opr16a;
+	
+	return mnem;
+}
+
+ora_ab_ext.execute = {
+	uint8_t result;
+	
+	uint8_t regVal;
+	if (b==0) {
+		regVal = cpu->getRegA();
+	} else {
+		regVal = cpu->getRegB();
+	}
+	physical_address_t addr = opr16a;		
+	uint8_t opr16aVal = cpu->memRead8(addr);
+
+	result = regVal | opr16aVal;	
+
+	if (b==0) {
+		cpu->setRegA(result);
+	} else {
+		cpu->setRegB(result);
+	}
+	
+	cpu->ccr->clrV();
+	
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x80) == 0x80) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+// ORAA/ORAB  IDX or IDX1 or IDX2 or [D,IDX] or [IDX2] (regAB | mem[xb->addrE] => regAB)
+op ora_ab_idx(0b1[1]:b[1]:0x2A[6]:> <:*xb[XB])
+
+ora_ab_idx.pre_execute = {
+	
+	xb->pre_execute(sink);
+	// after: other specific actions
+}
+
+ora_ab_idx.post_execute = {
+
+	// before: other specific actions
+	xb->post_execute(sink);
+}
+
+ora_ab_idx.getCycles = { return XbModes::GetIDXCycles(xb->getXbMode(), 3, 3, 4, 6, 6); }
+
+ora_ab_idx.disasm = {
+	string mnem;
+	
+	if (b==0){
+		mnem = "ORAA";
+	} else {
+		mnem = "ORAB";
+	}
+
+	sink << mnem << " ";
+	xb->disasm(sink);
+	
+	return mnem;
+}
+
+ora_ab_idx.execute = {
+	uint8_t result;
+	
+	uint8_t regVal;
+	
+	if (b==0) {
+		regVal = cpu->getRegA();
+	} else {
+		regVal = cpu->getRegB();
+	}
+	physical_address_t addr = xb->getEAddr(cpu);		
+	uint8_t xbVal = cpu->memRead8(addr);
+
+	result = regVal | xbVal;
+	
+	if (b==0) {
+		cpu->setRegA(result);
+	} else {
+		cpu->setRegB(result);
+	}
+	
+	cpu->ccr->clrV();
+	
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x80) == 0x80) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+// ORCC  IMM  (ccr & ii => ccr)
+op orcc_imm(0x14[8]:opr8i[8])
+
+orcc_imm.getCycles = { return 1; }
+
+orcc_imm.disasm = {
+	string mnem = "ORCC";
+	
+	sink << mnem << " #0x" << std::hex << opr8i;
+	
+	return mnem;
+}
+
+orcc_imm.execute = {
+	uint8_t result, xFlag;
+	
+	uint8_t regVal = cpu->ccr->getCCRLow();
+
+	// get ccr.X which may not be affected by ORCC instruction
+	// if (ccr.X==1) then xFlag=0xFF else xFlag=0xBF;  0xBF = 0b10111111
+	xFlag = regVal | 0xBF;  
+	
+	result = (regVal | opr8i) & xFlag;  
+	
+	cpu->ccr->setCCRLow(result);
+
+	return getCycles();
+}
+
+// TODO: implement specialization ++++++++++++++
+
+// SEC: set carry 
+// use specialize orcc_imm with opr8i=0x01
+
+// SEI: set I (inhibit I interrupts)
+// use specialize orcc_imm with opr8i=0x10
+
+// SEV: set overflow
+// use specialize orcc_imm with opr8i=0x02 
+
+// end todo specialization ++++++++++++++++++++++
+
+
+// ORX/ORY IMM (regXY | opr16i => regXY)
+op or_xy_imm(0x18[8]:0b1[1]:b[1]:0x0A[6]:opr16i[16])
+
+or_xy_imm.getCycles = { return 3; }
+
+or_xy_imm.disasm = {
+	string mnem;
+	
+	if (b==0) {
+		mnem = "ORX";
+	} else {
+		mnem = "ORY";
+	}
+
+	sink << mnem << " #0x" << std::hex << opr16i;
+	
+	return mnem;
+}
+
+or_xy_imm.execute = {
+
+	uint16_t result, regVal;
+	
+	if (b==0) {
+		regVal = cpu->getRegX();
+	} else {
+		regVal = cpu->getRegY();
+	}
+	
+	result = regVal | opr16i;
+
+	if (b==0) {
+		cpu->setRegX(result);
+	} else {
+		cpu->setRegY(result);
+	}
+
+	cpu->ccr->clrV();
+	
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x8000) == 0x8000) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+// ORX/ORY DIR (regXY | mem[regDirect:opr8a]:mem[regDirect:opr8a+1] => regXY)
+op or_xy_dir(0x18[8]:0b1[1]:b[1]:0x1A[6]:> <:opr8a[8])
+
+or_xy_dir.getCycles = { return 4; }
+
+or_xy_dir.disasm = {
+	string mnem;
+	
+	if (b==0) {
+		mnem = "ORX";
+	} else {
+		mnem = "ORY";
+	}
+
+	sink << mnem << " 0x" << std::hex << opr8a;
+	
+	return mnem;
+}
+
+or_xy_dir.execute = {
+
+	uint16_t result, regVal;
+
+	uint16_t opr8aVal = cpu->memRead16(opr8a, ADDRESS::DIRECT, false);
+	
+	if (b==0) {
+		regVal = cpu->getRegX();
+	} else {
+		regVal = cpu->getRegY();
+	}
+	
+	result = regVal | opr8aVal;
+
+	if (b==0) {
+		cpu->setRegX(result);
+	} else {
+		cpu->setRegY(result);
+	}
+
+	cpu->ccr->clrV();
+	
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x8000) == 0x8000) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+// ORX/ORY EXT (regXY | mem[opr16a]:mem[opr16a+1] => regXY)
+op or_xy_ext(0x18[8]:0b1[1]:b[1]:0x3A[6]:opr16a[16])
+
+or_xy_ext.getCycles = { return 4; }
+
+or_xy_ext.disasm = {
+	string mnem;
+	
+	if (b==0) {
+		mnem = "ORX";
+	} else {
+		mnem = "ORY";
+	}
+
+	sink << mnem << " 0x" << std::hex << opr16a;
+	
+	return mnem;
+}
+
+or_xy_ext.execute = {
+
+	uint16_t result, regVal;
+	physical_address_t addr = opr16a;		
+	uint16_t opr16aVal = cpu->memRead16(addr);
+	
+	if (b==0) {
+		regVal = cpu->getRegX();
+	} else {
+		regVal = cpu->getRegY();
+	}
+	
+	result = regVal | opr16aVal;
+
+	if (b==0) {
+		cpu->setRegX(result);
+	} else {
+		cpu->setRegY(result);
+	}
+
+	cpu->ccr->clrV();
+	
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x8000) == 0x8000) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+// ORX/ORY IDX or IDX1 or IDX2 or [D,IDX] or [IDX2] (regXY | mem[xb->addrE]:mem[xb->addrE+1] => regXY)
+op or_xy_idx(0x18[8]:0b1[1]:b[1]:0x2A[6]:> <:*xb[XB])
+
+or_xy_idx.pre_execute = {
+	
+	xb->pre_execute(sink);
+	// after: other specific actions
+}
+
+or_xy_idx.post_execute = {
+
+	// before: other specific actions
+	xb->post_execute(sink);
+}
+
+or_xy_idx.getCycles = { return XbModes::GetIDXCycles(xb->getXbMode(), 4, 4, 5, 7, 7); }
+
+or_xy_idx.disasm = {
+	string mnem;
+	
+	if (b==0) {
+		mnem = "ORX";
+	} else {
+		mnem = "ORY";
+	}
+
+	sink << mnem << " ";
+	xb->disasm(sink);
+	
+	return mnem;
+}
+
+or_xy_idx.execute = {
+
+	uint16_t result, regVal;
+	physical_address_t addr = xb->getEAddr(cpu);	
+	uint16_t xbVal = cpu->memRead16(addr);
+	
+	if (b==0) {
+		regVal = cpu->getRegX();
+	} else {
+		regVal = cpu->getRegY();
+	}
+	
+	result = regVal | xbVal;
+
+	if (b==0) {
+		cpu->setRegX(result);
+	} else {
+		cpu->setRegY(result);
+	}
+
+	cpu->ccr->clrV();
+	
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x8000) == 0x8000) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+// EORA/EORB IMM (regAB ^ opr8i => regAB)
+
+op eor_ab_imm(0b1[1]:b[1]:0x08[6]:opr8i[8])
+
+eor_ab_imm.getCycles = { return 1; }
+
+eor_ab_imm.disasm = {
+	string mnem;
+	
+	if (b==0) {
+		mnem = "EORA";
+	} else {
+		mnem = "EORB";
+	}
+	sink << mnem << " #0x" << std::hex << opr8i;
+	
+	return mnem;
+}
+
+eor_ab_imm.execute = {
+	uint8_t result;
+	
+	uint8_t regVal;
+	if (b==0) {
+		regVal = cpu->getRegA();
+	} else {
+		regVal = cpu->getRegB();
+	}
+
+	result = regVal ^ opr8i;  
+	
+	if (b==0) {
+		cpu->setRegA(result);
+	} else {
+		cpu->setRegB(result);
+	}
+	
+	cpu->ccr->clrV();
+	
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x80) == 0x80) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+// EORA/EORB  DIR  (regAB ^ mem[regDirect:opr8a] => regAB)s
+op eor_ab_dir(0b1[1]:b[1]:0x18[6]:opr8a[8])
+
+eor_ab_dir.getCycles = { return 3; }
+
+eor_ab_dir.disasm = {
+	string mnem;
+	
+	if (b==0) {
+		mnem = "ORAA";
+	} else {
+		mnem = "ORAB"; 
+	}
+	sink << mnem << " 0x" << std::hex << opr8a;
+	
+	return mnem;
+}
+
+eor_ab_dir.execute = {
+	uint8_t result;
+	
+	uint8_t regVal;
+	if (b==0) {
+		regVal = cpu->getRegA();
+	} else {
+		regVal = cpu->getRegB();
+	}
+	
+	uint8_t opr8aVal = cpu->memRead8(opr8a, ADDRESS::DIRECT, false);
+
+	result = regVal ^ opr8aVal;
+		
+	if (b==0) {
+		cpu->setRegA(result);
+	} else {
+		cpu->setRegB(result);
+	}
+	
+	cpu->ccr->clrV();
+	
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x80) == 0x80) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+// EORA/EORB EXT (regAB ^ mem[opr16a] => regAB)
+op eor_ab_ext(0b1[1]:b[1]:0x38[6]:> <:opr16a[16])  
+
+eor_ab_ext.getCycles = { return 3; }
+
+eor_ab_ext.disasm = {
+	string mnem;
+	
+	if (b==0) {
+		mnem = "EORA";
+	} else {
+		mnem = "EORB";		
+	}
+	sink << mnem << " 0x" << std::hex << opr16a;
+	
+	return mnem;
+}
+
+eor_ab_ext.execute = {
+	uint8_t result;
+	
+	uint8_t regVal;
+	if (b==0) {
+		regVal = cpu->getRegA();
+	} else {
+		regVal = cpu->getRegB();
+	}
+	physical_address_t addr = opr16a;		
+	uint8_t opr16aVal = cpu->memRead8(addr);
+
+	result = regVal ^ opr16aVal;	
+
+	if (b==0) {
+		cpu->setRegA(result);
+	} else {
+		cpu->setRegB(result);
+	}
+	
+	cpu->ccr->clrV();
+	
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x80) == 0x80) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+// EORA/EORB  IDX or IDX1 or IDX2 or [D,IDX] or [IDX2] (regAB ^ mem[xb->addrE] => regAB)
+op eor_ab_idx(0b1[1]:b[1]:0x28[6]:> <:*xb[XB])
+
+eor_ab_idx.pre_execute = {
+	
+	xb->pre_execute(sink);
+	// after: other specific actions
+}
+
+eor_ab_idx.post_execute = {
+
+	// before: other specific actions
+	xb->post_execute(sink);
+}
+
+eor_ab_idx.getCycles = { return XbModes::GetIDXCycles(xb->getXbMode(), 3, 3, 4, 6, 6); }
+
+eor_ab_idx.disasm = {
+	string mnem;
+	
+	if (b==0){
+		mnem = "EORA";
+	} else {
+		mnem = "EORB";
+	}
+
+	sink << mnem << " ";
+	xb->disasm(sink);
+	
+	return mnem;
+}
+
+eor_ab_idx.execute = {
+	uint8_t result;
+	
+	uint8_t regVal;
+	
+	if (b==0) {
+		regVal = cpu->getRegA();
+	} else {
+		regVal = cpu->getRegB();
+	}
+	physical_address_t addr = xb->getEAddr(cpu);		
+	uint8_t xbVal = cpu->memRead8(addr);
+
+	result = regVal ^ xbVal;
+	
+	if (b==0) {
+		cpu->setRegA(result);
+	} else {
+		cpu->setRegB(result);
+	}
+	
+	cpu->ccr->clrV();
+	
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x80) == 0x80) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+// EORX/EORY IMM (regXY ^ opr16i => regXY)
+op eor_xy_imm(0x18[8]:0b1[1]:b[1]:0x08[6]:opr16i[16])
+
+eor_xy_imm.getCycles = { return 3; }
+
+eor_xy_imm.disasm = {
+	string mnem;
+	
+	if (b==0) {
+		mnem = "EORX";
+	} else {
+		mnem = "EORY";
+	}
+
+	sink << mnem << " #0x" << std::hex << opr16i;
+	
+	return mnem;
+}
+
+eor_xy_imm.execute = {
+
+	uint16_t result, regVal;
+	
+	if (b==0) {
+		regVal = cpu->getRegX();
+	} else {
+		regVal = cpu->getRegY();
+	}
+	
+	result = regVal ^ opr16i;
+
+	if (b==0) {
+		cpu->setRegX(result);
+	} else {
+		cpu->setRegY(result);
+	}
+
+	cpu->ccr->clrV();
+	
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x8000) == 0x8000) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+// EORX/EORY DIR (regXY ^ mem[regDirect:opr8a]:mem[regDirect:opr8a+1] => regXY)
+op eor_xy_dir(0x18[8]:0b1[1]:b[1]:0x18[6]:> <:opr8a[8])
+
+eor_xy_dir.getCycles = { return 4; }
+
+eor_xy_dir.disasm = {
+	string mnem;
+	
+	if (b==0) {
+		mnem = "EORX";
+	} else {
+		mnem = "EORY";
+	}
+
+	sink << mnem << " 0x" << std::hex << opr8a;
+	
+	return mnem;
+}
+
+eor_xy_dir.execute = {
+
+	uint16_t result, regVal;
+
+	uint16_t opr8aVal = cpu->memRead16(opr8a, ADDRESS::DIRECT, false);
+	
+	if (b==0) {
+		regVal = cpu->getRegX();
+	} else {
+		regVal = cpu->getRegY();
+	}
+	
+	result = regVal ^ opr8aVal;
+
+	if (b==0) {
+		cpu->setRegX(result);
+	} else {
+		cpu->setRegY(result);
+	}
+
+	cpu->ccr->clrV();
+	
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x8000) == 0x8000) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+// EORX/EORY EXT (regXY ^ mem[opr16a]:mem[opr16a+1] => regXY)
+op eor_xy_ext(0x18[8]:0b1[1]:b[1]:0x38[6]:opr16a[16])
+
+eor_xy_ext.getCycles = { return 4; }
+
+eor_xy_ext.disasm = {
+	string mnem;
+	
+	if (b==0) {
+		mnem = "EORX";
+	} else {
+		mnem = "EORY";
+	}
+
+	sink << mnem << " 0x" << std::hex << opr16a;
+	
+	return mnem;
+}
+
+eor_xy_ext.execute = {
+
+	uint16_t result, regVal;
+	physical_address_t addr = opr16a;		
+	uint16_t opr16aVal = cpu->memRead16(addr);
+	
+	if (b==0) {
+		regVal = cpu->getRegX();
+	} else {
+		regVal = cpu->getRegY();
+	}
+	
+	result = regVal ^ opr16aVal;
+
+	if (b==0) {
+		cpu->setRegX(result);
+	} else {
+		cpu->setRegY(result);
+	}
+
+	cpu->ccr->clrV();
+	
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x8000) == 0x8000) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}
+
+// EORX/EORY IDX or IDX1 or IDX2 or [D,IDX] or [IDX2] (regXY ^ mem[xb->addrE]:mem[xb->addrE+1] => regXY)
+op eor_xy_idx(0x18[8]:0b1[1]:b[1]:0x28[6]:> <:*xb[XB])
+
+eor_xy_idx.pre_execute = {
+	
+	xb->pre_execute(sink);
+	// after: other specific actions
+}
+
+eor_xy_idx.post_execute = {
+
+	// before: other specific actions
+	xb->post_execute(sink);
+}
+
+eor_xy_idx.getCycles = { return XbModes::GetIDXCycles(xb->getXbMode(), 4, 4, 5, 7, 7); }
+
+eor_xy_idx.disasm = {
+	string mnem;
+	
+	if (b==0) {
+		mnem = "EORX";
+	} else {
+		mnem = "EORY";
+	}
+
+	sink << mnem << " ";
+	xb->disasm(sink);
+	
+	return mnem;
+}
+
+eor_xy_idx.execute = {
+
+	uint16_t result, regVal;
+	physical_address_t addr = xb->getEAddr(cpu);	
+	uint16_t xbVal = cpu->memRead16(addr);
+	
+	if (b==0) {
+		regVal = cpu->getRegX();
+	} else {
+		regVal = cpu->getRegY();
+	}
+	
+	result = regVal ^ xbVal;
+
+	if (b==0) {
+		cpu->setRegX(result);
+	} else {
+		cpu->setRegY(result);
+	}
+
+	cpu->ccr->clrV();
+	
+	if (result == 0) cpu->ccr->setZ(); else cpu->ccr->clrZ();
+	if ((result & 0x8000) == 0x8000) cpu->ccr->setN(); else cpu->ccr->clrN();
+
+	return getCycles();
+}

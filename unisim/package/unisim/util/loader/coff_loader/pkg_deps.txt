@@ -1,0 +1,17 @@
+libc/inttypes
+libc/stdlib
+std/fstream
+std/iosfwd
+std/iostream
+std/map
+std/sstream
+std/vector
+unisim/kernel
+unisim/service/interfaces/blob
+unisim/service/interfaces/loader
+unisim/service/interfaces/memory
+unisim/service/interfaces/symbol_table_lookup
+unisim/util/debug/coff_symtab
+unisim/util/endian
+unisim/util/likely
+unisim/util/loader/coff_loader/ti

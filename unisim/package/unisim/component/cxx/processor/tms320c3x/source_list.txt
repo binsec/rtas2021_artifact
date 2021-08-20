@@ -1,0 +1,3 @@
+unisim/component/cxx/processor/tms320c3x/cpu_tms320vc33.cc
+unisim/component/cxx/processor/tms320c3x/cpu_tms320vc33_debug.cc
+unisim/component/cxx/processor/tms320c3x/register.cc

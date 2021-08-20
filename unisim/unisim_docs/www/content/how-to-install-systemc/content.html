@@ -1,0 +1,68 @@
+<div class="content-item">
+	<div class="content-item-title"><h2>How to install SystemC<sup>TM</sup> ?</h2></div>
+	<div class="content-item-body">
+		<h3>1. Downloading the source code</h3>
+		<p>
+			Register at <a class="online-document" href="http://www.systemc.org">http:\doubleshashwww.systemc.org</a> and then download systemc-2.2.0.tgz and TLM-2.0.1.tgz from the <a class="online-document" href="http://www.systemc.org/downloads/standards">OSCI standards download page</a>
+		</p>
+		<h3>2. Uncompressing the source code tarballs</h3>
+
+		<pre>
+			$ tar zxvf systemc-2.2.0.tgz
+			$ tar zxvf TLM-2.0.1.tgz
+		</pre>
+
+		<p>
+			This will uncompress the source of SystemC in directory systemc-2.2.0 and the source TLM 2.0.1 in directory TLM-2009-07-15
+		</p>
+
+		<h3>3. Patching the source code</h3>
+
+		<p>
+			Download and apply the following patch to SystemC 2.2.0: <a class="download-file" href=``DOWNLOADS/patch-systemc-2.2.0.gz``>patch-systemc-2.2.0.gz</a>
+		</p>
+
+		<pre>
+			$ cd systemc-2.2.0
+			$ gzip -dc patch-systemc-2.2.0.gz | patch -p1
+		</pre>
+
+		<h3>4. Configuring SystemC</h3>
+
+		<p>
+			To configure, compile, and install SystemC in your home directory, do the following at the command prompt:
+		</p>
+
+		<pre>
+			$ cd systemc-2.2.0
+			$ mkdir objdir
+			$ cd objdir
+			$ mkdir ${HOME}/systemc
+			$ ../configure --prefix=${HOME}/systemc
+		</pre>
+
+		<h3>5. Compiling and installing SystemC</h3>
+
+		<p>
+			To handle threads, SystemC relies on QuickThreads, a fast implementation of user`s threads.
+			QuickThreads speeds-up threads switching compared to the slower kernel POSIX threads and thus considerably improves overall simulation performance.
+			To compile SystemC with the built-in QuickThreads (recommended), do the following at the command prompt:
+		</p>
+
+		<pre>
+			$ make
+			$ make install
+		</pre>
+
+		<p>
+			However, if you intend to instrument your simulator (e.g. with valgrind) to debug the simulator memory leaks, bad memory accesses, pointers, and uninitialized memory reads, you should use the slower kernel POSIX threads.
+			To compile SystemC with the kernel POSIX threads, do the following at the command prompt:
+		</p>
+
+		<pre>
+			$ make pthreads
+			$ make install
+		</pre>
+
+	</div>
+</div>

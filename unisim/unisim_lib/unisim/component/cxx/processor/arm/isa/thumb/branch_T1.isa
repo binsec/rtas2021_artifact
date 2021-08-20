@@ -1,0 +1,118 @@
+/*
+ *  Copyright (c) 2007-2016,
+ *  Commissariat a l'Energie Atomique (CEA)
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without modification,
+ *  are permitted provided that the following conditions are met:
+ *
+ *   - Redistributions of source code must retain the above copyright notice, this
+ *     list of conditions and the following disclaimer.
+ *
+ *   - Redistributions in binary form must reproduce the above copyright notice,
+ *     this list of conditions and the following disclaimer in the documentation
+ *     and/or other materials provided with the distribution.
+ *
+ *   - Neither the name of CEA nor the names of its contributors may be used to
+ *     endorse or promote products derived from this software without specific prior
+ *     written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ *  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *  DISCLAIMED.
+ *  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ *  INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ *  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+ *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ *  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Authors: Yves Lhuillier (yves.lhuillier@cea.fr), Daniel Gracia Perez (daniel.gracia-perez@cea.fr)
+ */
+ 
+/**********************************************
+
+     THUMB1 HALFWORDS BRANCH INSTRUCTIONS
+
+**********************************************/
+
+/*******************************************************************
+ * bl prefix (Branch with Link) instruction
+ *
+ * Prefix for BL and BLX Thumb1 instructions
+ *
+ */
+
+{ not ARCH::Config::insnsT2 }:                         \
+op bl_h1( 0b11110[5]: shl<12> sext<32> imm1[11] );
+
+bl_h1.disasm = {
+  buffer << "bl{x}\tLR=0x" << std::hex << (this->GetAddr() + 4 + imm1) << std::dec << " (prefix)";
+};
+
+bl_h1.execute = {
+  if (unlikely( not CheckCondition(cpu, cpu.itcond()) )) return;
+  
+  cpu.SetGPR( 14, cpu.GetGPR( 15 ) + imm1 );
+};
+
+/*
+ * end of bl prefix (Branch with Link) instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * bl postfix (Branch with Link) instruction
+ *
+ * Postfix for the BL Thumb1 instruction.
+ *
+ * BL calls a subroutine at a PC-relative address.
+ */
+
+{ not ARCH::Config::insnsT2 }:                         \
+op bl_h2( 0b11111[5]: shl<1> imm0[11] );
+
+bl_h2.disasm = {
+  buffer << "bl\tLR+0x" << std::hex << imm0 << std::dec << " (postfix)";
+};
+
+bl_h2.execute = {
+  if (unlikely( not CheckCondition(cpu, cpu.itcond()) )) return;
+  
+  uint32_t address = cpu.GetGPR(cpu.LR_reg) + imm0;
+  cpu.SetGPR( cpu.LR_reg, cpu.GetNIA() | 1 );
+  cpu.Branch( address, ARCH::B_CALL );
+};
+
+/*
+ * end of bl postfix (Branch with Link) instruction
+ *******************************************************************/
+
+/*******************************************************************
+ * blx postfix (Branch with Link and Exchange) instruction
+ *
+ * Postfix for the BLX Thumb1 instruction.
+ *
+ * BLX calls a subroutine at a PC-relative address, and changes
+ * instruction set from Thumb to ARM.
+ */
+
+{ ARCH::Config::insns5T and not ARCH::Config::insnsT2 }:       \
+op blx_h3( 0b11101[5]: shl<2> imm0[10]: 0b0[1] );
+
+blx_h3.disasm = {
+  buffer << "blx\tLR+0x" << std::hex  << imm0 << std::dec << " (postfix)";
+};
+
+blx_h3.execute = {
+  if (unlikely( not CheckCondition(cpu, cpu.itcond()) )) return;
+  
+  uint32_t address = (cpu.GetGPR(cpu.LR_reg) + imm0) & -4;
+  cpu.SetGPR( cpu.LR_reg, cpu.GetNIA() | 1 );
+  cpu.BranchExchange( address, ARCH::B_CALL );
+};
+
+/*
+ * end of blx postfix (Branch with Link and Exchange) instruction
+ *******************************************************************/

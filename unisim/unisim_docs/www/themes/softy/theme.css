@@ -1,0 +1,150 @@
+/* page header */
+
+.header
+{
+	background: url(unisim.png) no-repeat top left;
+}
+
+/* area of the unisim icon */
+
+.logo-sensitive-area
+{
+	float:left;
+	position: relative;
+	left:0px;
+	top:0px;
+	width:152px;
+	height:132px;
+}
+
+/* an area that make visitors to know more about */
+
+.beyond-sensitive-area
+{
+	float:right;
+	position: relative;
+	left:-2px;
+	top:42px;
+	width:290px;
+	height:44px;
+}
+
+/* left side (content) and right side (aside) of the page */
+
+.aside-item
+{
+	background: url(red-sbbody-r.png) no-repeat bottom right;
+}
+
+.content-item
+{
+	background: url(blue-sbbody-r.png) no-repeat bottom right;
+}
+
+.aside-item-title
+{
+	background: url(red-sbhead-r.png) no-repeat top right;
+}
+
+.content-item-title
+{
+	background: url(blue-sbhead-r.png) no-repeat top right;
+}
+
+.aside-item-title h2, .content-item-title h2
+{
+	color: white; 
+}
+
+.aside-item-title h2, .content-item-title h2
+{
+	text-shadow:0px 2px 5px rgb(0, 0, 0); /* this is CSS level 3, and will validate with the W3C CSS validator */
+}
+
+.aside-item-title h2, .content-item-title h2
+{
+	text-shadow:0px 2px 5px rgba(0, 0, 0, 0.4); /* this is CSS level 3, and won't validate with the W3C CSS validator */
+}
+
+.aside-item-title h2
+{
+	background: url(red-sbhead-l.png) no-repeat top left;
+}
+
+.content-item-title h2
+{
+	background: url(blue-sbhead-l.png) no-repeat top left;
+}
+
+.aside-item-body
+{
+	background: url(red-sbbody-l.png) no-repeat bottom left;
+}
+
+.content-item-body
+{
+	background: url(blue-sbbody-l.png) no-repeat bottom left;
+}
+
+/* unvisited link */
+.aside a:link, .content a:link
+{
+	color:#40519c;
+}
+
+/* visited link */ 
+.aside a:visited, .content a:visited
+{
+	color:#40519c;
+}
+
+/* mouse over link */  
+.aside a:hover, .content a:hover
+{
+	color:#b12c30;
+}
+
+/* selected link */
+.aside a:active, .content a:active
+{
+	color:#b12c30;
+}
+
+/* separator */
+
+.separator
+{
+	visibility:hidden;
+}
+
+/* bullets in lists */
+
+.content-item-body ul, .aside-item-body ul
+{
+	padding-left: 24px;
+}
+
+.content-item-body li, .aside-item-body li
+{
+	padding-left: 16px;
+	list-style-type: none;
+	background-repeat:no-repeat;
+ 	background-position: -0 .45em;
+}
+
+.content-item-body li
+{
+	background-image:url(blue-bullet.png);
+}
+
+.aside-item-body li
+{
+	background-image:url(red-bullet.png);
+}
+
+/* page footer */
+
+.download-table-link
+{
+	background-color:#eaeaea;
+}

@@ -1,0 +1,4 @@
+unisim/component/clm/pipeline/decode/allocator_renamer.hh
+unisim/component/clm/pipeline/decode/allocator_renamer_mc.hh
+unisim/component/clm/pipeline/decode/dispatcher.hh
+unisim/component/clm/pipeline/decode/dispatcher_mc.hh

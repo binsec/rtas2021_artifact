@@ -1,0 +1,3 @@
+This package contains:
+  - armemu: an ARMv7 application level simulator (LinuxOS emulation)
+See INSTALL for installation instructions.
